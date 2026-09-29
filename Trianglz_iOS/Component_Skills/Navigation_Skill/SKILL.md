@@ -1,0 +1,78 @@
+---
+name: trianglz-ios-navigation
+description: Use when building, auditing or coding actions and navigation with the Trianglz iOS Design System (Figma q5nQHGEGzZ94WN0wilJwLW) - tab bar (iOS 26 Liquid Glass), buttons (bordered prominent, bordered, borderless, Liquid Glass text/symbol, destructive), action sheets and alerts. Covers only the ⭐Navigation group; tells the agent which component and variant to use on iOS and how it maps to Apple HIG.
+---
+
+# Trianglz iOS DS - Navigation
+
+> **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
+
+**Load `../../Foundation_Skill/SKILL.md` first** (tokens, text styles, file structure, build order, atomic rules).
+
+Scope: **⭐Navigation** pages only: ➜ Tab Bar, ➜ Buttons (page name `➜  Buttons`), ➜ Action Sheets + Alerts. Platform iOS (HIG, iOS 26 Liquid Glass).
+Navigation bars and bottom toolbars currently live in ⭐Form Elements (➜ Toolbars & Search) - see that skill; they should move here.
+Reference: `references/components.md`, `references/gaps.md`, `references/screens/` (to capture).
+
+## 1. Inventory
+
+| Component | Set id | Variants | Tier | Tokens |
+|---|---|---|---|---|
+| `_Tab Bar Button - iPhone` | 10:1712 | 4 (Mode x Selected) | Atom | local (Brand Primary, Text/Secondary Text, Backgrounds/Group) + raw overlays |
+| `_Tab Bar Button - iPhone - Search` | 10:1695 | 4 | Atom | local/raw |
+| **Tab Bar - iPhone** | 10:1739 | 24 = Minimized x Tabs (2-5) x Type | Organism | remote Liquid Glass background |
+| `_Label - Text` | 197:2886 | 24 = Mode x Size (Large/Small) x Type (Default/Preferred/Destructive) x Is Enabled | Atom | mixed |
+| `_Label - Symbol - Preferred / Default / Destructive Default` | 197:2761 / 2770 / 2779 | 4 each | Atom | mixed |
+| **Button - Content Area** | 197:2272 | 108 = Size (S/M/L) x Style x Label Style x Is Enabled x Destructive | Atom/Molecule | Brand Primary + remote fills/text styles |
+| **Button - Liquid Glass - Text** | 197:2788 | 24 = Size x Style (Glass / Glass Prominent) x Is Enabled x Destructive | Molecule | remote glass + `_Label - Text` |
+| **Button - Liquid Glass - Symbol** | 197:2861 | 8 | Molecule | remote glass + symbol label |
+| **Alert** | 7:1004 | 2 (Button Layout Side-by-Side / Stacked) | Organism | remote glass/labels, local text styles |
+| **Action Sheet** | 7:972 | 1 | Organism | local text colors, remote button instances |
+| `_Buttons` (alert/sheet action) | 7:1113 | 8 = Mode x Role (None/Default/Destructive/Cancel) | Atom | remote |
+| `Text Field` (alert field) / `_Text Field Background` | 7:1024 / 7:1054 | 1 / 2 | Molecule | raw/remote |
+
+## 2. Tab Bar (Organism)
+
+- `Tab Bar - iPhone`: `Tabs` = 2 | 3 | 4 | 5 · `Type` = Default | Search Role | Prominent Tab · `Minimized` = False | True (iOS 26 collapses the bar on scroll).
+- Built from `_Tab Bar Button - iPhone` instances over a remote `Liquid Glass - Regular - Small` background (402x95, padding 16/25/25/25).
+- Tab button: 24pt icon instance (`Component 1`, `Property 1 = Selected | Default`) + label `Caption2/Emphasized`. Selected = label `Brand Primary`, pill `Backgrounds/Group` behind + brand tint layer; Unselected = label `Text/Secondary Text`. Light/Dark are **variants** (`Mode`), and the Light/Dark doc frames (263:1240 / 263:1247) switch Semantic mode.
+- Search role tab (`_Tab Bar Button - iPhone - Search`) sits apart on the trailing side (iOS 26 pattern).
+
+Use: 3-5 top-level app sections on iPhone, always visible except in immersive flows. Never use for actions (use toolbar buttons). Max 5 tabs; more goes into a "More" tab or a different IA. Labels 1 word; icons SF Symbols style (filled when selected).
+
+## 3. Buttons
+
+Apple styles implemented:
+| Style (property) | HIG name | Look | Use |
+|---|---|---|---|
+| `Bordered - Prominent` | .borderedProminent | Brand Primary capsule, white text (`Text/On Brand Text`) | the one primary action of a screen/sheet |
+| `Bordered` | .bordered | tinted gray capsule (remote `Fills/Tertiary`), brand text | secondary actions |
+| `Borderless` | .borderless / plain | text or symbol only, brand color | tertiary, inline, toolbar-like |
+| `Glass Prominent` (Liquid Glass) | .glassProminent | tinted glass capsule | primary action floating over content/media |
+| `Glass` (Liquid Glass) | .glass | clear glass capsule | secondary action over content/media |
+| `Destructive = True` | role .destructive | systemRed text / fill (remote `Accents/Red`) | delete, remove; pair with Cancel |
+
+- `Button - Content Area`: `Size` = Small | Medium (34pt: padding 7/14, Subheadline 15) | Large (50pt, Body 17) · `Label Style` = Title and Icon | Icon only | Title only · `Is Enabled` · `Destructive`. TEXT `Label`, `Symbol` (the SF Symbol glyph as text). Radius Full (capsule).
+- `Button - Liquid Glass - Text/Symbol` wrap `_Label - Text` / `_Label - Symbol - *` atoms over a remote glass background (padding 8/12, gap 4).
+- Examples: sections Light Examples / Dark Examples / over light or dark background context (instances; the Dark section uses a remote collection mode).
+
+HIG rules: minimum 44x44pt tap area (Small buttons need extra padding in a row); one prominent button per view; destructive buttons never prominent-blue; use Liquid Glass styles only on top of content (toolbars, media, maps), not in plain forms; labels are verbs in Title Case.
+
+## 4. Alerts and Action Sheets (Organisms)
+
+- **Alert** (300 wide, Liquid Glass Medium background, padding 14): Title (`Headline/Emphasized`), Message (`Body/Regular`, `Show Message`), optional `Show Text Field` (Text Field molecule, radius 26), `Actions` slot with `_Buttons` instances; `Button Layout` = Side-by-Side (2 actions) | Stacked (3+ or long labels).
+- **Action Sheet** (300 wide): Title + Message (`Show Message`), Actions stack of `_Buttons` (Destructive first when relevant, Cancel separated).
+- `_Buttons` `Role` = None | Default (blue filled capsule, remote `Accents/Blue`, white Body/Emphasized) | Destructive (red) | Cancel; 48pt capsules.
+
+Use Alert for critical info that needs a decision (max 2-3 actions, Cancel on the leading side in side-by-side). Use Action Sheet for choosing among actions tied to the user's last tap (share, delete options). Don't use either for routine confirmation that can be undone - use an undo toast or inline feedback.
+
+## 5. Choosing (iOS)
+
+| Need | Use |
+|---|---|
+| Switch between top-level sections | Tab Bar - iPhone |
+| Go back / drill down | Navigation bar (`Toolbar - Top - iPhone`) with `_Back Bar Button Item` |
+| Primary action on a screen | Button Bordered - Prominent (Large), or bottom toolbar prominent button |
+| Secondary | Button Bordered or Glass |
+| Inline / low emphasis | Button Borderless |
+| Destructive | Button with Destructive=True + confirmation (Alert or Action Sheet) |
+| Choose one of several actions | Action Sheet (iPhone) / Context Menu (Data display) |

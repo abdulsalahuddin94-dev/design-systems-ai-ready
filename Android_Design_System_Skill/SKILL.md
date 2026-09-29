@@ -1,0 +1,170 @@
+---
+name: android-design-system-builder
+description: Main skill for building a new Android design system in Figma from scratch (Scenario A), from existing Android UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Material Design 3 token architecture (tonal palettes, md.sys.color schemes, state layers, md.sys.typescale, md.sys.shape, elevation levels, window size classes), Material Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the Trianglz Android M3 Design System. Independent from the Web and iOS skills. Load with figma-use and figma-generate-library before creating anything; save the project's skills under [Root]\[Project]_Android\.
+---
+
+# Android Design System Builder (Main Skill)
+
+Reference implementation studied: **Trianglz - Android M3 x Design System** (`Trianglz_Android/` in the Root; Figma template link in `References.md`).
+It is the Google Material 3 (Expressive) Design Kit re-themed with Trianglz palettes. Copy its **structure, M3 component coverage and property conventions**. Do **not** copy its mistakes (section 9).
+Platform: Android, Material Design 3 Expressive, Jetpack Compose, dp / sp.
+Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
+
+---
+
+## 1. File structure (pages, in this order)
+
+```
+Cover
+-
+⭐Setup
+➜ Color                  (tonal palettes + scheme Light/Dark (+ contrast) swatches, all bound)
+➜ Typography             (type scale specimens, bound styles)
+➜ Shape                  (corner scale + expressive shape set)
+➜ Spacing                (4dp scale)
+➜ Elevation              (levels 0-5, tone + shadow)
+➜ State Layers           (hover/focus/pressed/dragged recipe)
+➜ Icons                  (Material Symbols)
+➜ Layout                 (window size classes, grids, example layouts)
+➜ Utilities              (status bar, gesture bar, keyboard, scrim, focus indicator)
+-
+⭐Form Elements
+➜ Text Fields            (filled, outlined, exposed dropdown, multiline)
+➜ Checkbox · ➜ Radio · ➜ Switch
+➜ Search                 (search bar, docked / full-screen views)
+➜ Sliders
+➜ Date & Time Pickers
+-----
+⭐Navigation
+➜ Buttons                (common buttons, toggle, icon, FAB, extended FAB, FAB menu, groups, split)
+➜ App Bar
+➜ Navigation             (nav bar, nav rail, expanded rail)
+➜ Toolbar
+➜ Tabs
+➜ Menu
+-----
+⭐Data display
+➜ Cards · ➜ Lists · ➜ Chips · ➜ Badges · ➜ Avatars · ➜ Dividers
+➜ Dialogs · ➜ Sheets · ➜ Snackbar · ➜ Tooltips
+➜ Carousel · ➜ Progress & Loading
+-----
+```
+Keep research boards out of the DS file (the reference has a 12800px ➜ Research page in Setup). XR variants go in their own `... for XR` sections.
+
+### Group routing rule
+| Request is about... | Goes under | Android examples |
+|---|---|---|
+| Tokens, type, shape, elevation, state layers, grids, icons, utilities | **⭐Setup** | new scheme role, typescale change, window class grid |
+| Anything the user **enters or chooses data** with | **⭐Form Elements** | text field, dropdown, checkbox, radio, switch, slider, search, pickers |
+| Any **action** or **movement between destinations** | **⭐Navigation** | buttons, FAB, app bar, nav bar/rail, toolbar, tabs, menus |
+| Anything that **displays information** | **⭐Data display** | cards, lists, chips, badges, dialogs, sheets, snackbar, tooltip, carousel, progress |
+
+Page convention (from the kit): one Section per family with `Header`, the public set(s), a `Building Blocks` frame for private parts (`.Building Blocks/...`), `Note` sections, and **Light + Dark preview frames** of instances (missing in the reference - add them).
+
+## 2. Build order (each layer only uses the layers before it)
+1. **Primitives** = tonal palettes (tones 0, 4, 6, 10, 12, 17, 20, 22, 24, 30, 40, 50, 60, 70, 80, 87, 90, 92, 94, 95, 96, 98, 99, 100) per key color, generated with Material Color Utilities (HCT) from the brand seeds. 1 mode.
+2. **Semantic** = md.sys.color scheme roles aliased to palette tones, modes **Light / Dark** (+ **Light Medium/High Contrast**, **Dark Medium/High Contrast** when required); **state layers** as aliases + opacity variables.
+3. **Spacing, Shape, Typography** variables (md.sys.typescale: font, size, line height, tracking, weight per role/size).
+4. **Styles**: text styles bound to the typescale variables; **Elevation 1-5** effect styles; grid styles per window size class.
+5. **Icons** (Material Symbols, atoms), then components **Atoms -> Molecules -> Organisms -> Patterns**.
+6. **Documentation pages** linked. 7. **Audit** + write the project skills.
+Before each component: state tier, list dependencies, build lower tiers first, post the atomic structure map.
+
+## 3. Token architecture (md.sys naming)
+
+### Palettes (primitives, 1 mode, no scopes, hidden)
+`palette/{primary, secondary, tertiary, error, neutral, neutral-variant}/{tone}` + custom `palette/{success, warning, info}/{tone}`. Generate with HCT so tone = perceptual lightness (the reference hand-picked tones: uneven steps).
+
+### Schemes (modes Light / Dark / contrast) - `md.sys.color` roles, Figma path `Schemes/<Group>/<Role>`
+| Role family | Light tone | Dark tone |
+|---|---|---|
+| primary / on-primary / primary-container / on-primary-container | 40 / 100 / 90 / 10 (30 in Expressive light) | 80 / 20 / 30 / 90 |
+| secondary..., tertiary..., error... | same pattern | same |
+| custom success / warning / info (+ containers) | same pattern | same |
+| surface / surface-dim / surface-bright | 98 / 87 / 98 (N) | 6 / 6 / 24 |
+| surface-container-lowest / low / (default) / high / highest | 100 / 96 / 94 / 92 / 90 | 4 / 10 / 12 / 17 / 22 |
+| on-surface / on-surface-variant | N10 / NV30 | N90 / NV80 |
+| outline / outline-variant | NV50 / NV80 | NV60 / NV30 |
+| inverse-surface / inverse-on-surface / inverse-primary | N20 / N95 / P80 | N90 / N20 / P40 |
+| primary-fixed / -fixed-dim / on-primary-fixed / on-primary-fixed-variant (and secondary, tertiary) | 90 / 80 / 10 / 30 | same |
+| shadow, scrim | N0 | N0 |
+- Scopes per role (TEXT_FILL for on-*, FRAME/SHAPE_FILL for containers/surfaces, STROKE for outline) - **never ALL_SCOPES**.
+- Code syntax **Android** on every variable: `MaterialTheme.colorScheme.primary` (Compose) / `?attr/colorPrimary`; description with the md.sys token name.
+- Drop deprecated roles (background, surface-variant) or mark them deprecated.
+
+### State layers
+- Opacity variables `state/hover 0.08`, `state/focus 0.10`, `state/pressed 0.10`, `state/dragged 0.16`, `state/disabled-container 0.12`, `state/disabled-content 0.38`.
+- State layer color = the **content (on-) role alias** (e.g. `State Layers/On Primary` -> Schemes/On Primary) with the opacity applied on the layer, not raw RGBA copies (reference: 180 raw RGBA values, several stale).
+
+### Typography (md.sys.typescale) - 1 mode (add a Large-screen mode only if needed)
+`typescale/{display,headline,title,label,body}-{large,medium,small}/{size, line-height, tracking, weight}` + `font/{brand, plain}`.
+M3 values: display 57/64 -0.25, 45/52, 36/44 · headline 32/40, 28/36, 24/32 · title 22/28, 16/24 +0.15, 14/20 +0.1 · label 14/20 +0.1, 12/16 +0.5, 11/16 +0.5 · body 16/24 +0.5, 14/20 +0.25, 12/16 +0.4. Emphasized variants (Expressive) use a heavier weight (Medium 500 / Bold for display).
+Font: Roboto Flex by default, or the brand font (the reference uses Google Sans Flex - confirm licensing).
+
+### Shape (md.sys.shape.corner) - `Corner/{None 0, Extra-small 4, Small 8, Medium 12, Large 16, Large-increased 20, Extra-large 28, Extra-large-increased 32, Extra-extra-large 48, Full}`, CORNER_RADIUS scope, usage descriptions (text field top XS, chip S, card M, FAB L, dialog/sheet XL, button Full).
+### Spacing (dp) - `space/{0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64}` + `space/margin-compact 16`, `space/margin-medium 24`, `space/gutter`. Scopes GAP + WIDTH_HEIGHT. (Missing entirely in the reference.)
+### Elevation - `elevation/level-{0..5}` = 0, 1, 3, 6, 8, 12 dp (documented), effect styles Elevation 1-5.
+
+## 4. Styles
+- **Text styles** `{role}/{size}` and `{role}/{size}-emphasized` (30), all properties bound to **local** typescale variables. Description `16sp / 24sp / 400 / +0.5 · MaterialTheme.typography.bodyLarge`.
+- **Effect styles** `Elevation/1..5` (key + ambient shadows; one set - Light and Dark are identical in M3), colors bound to `Schemes/Shadow` if export allows.
+- **Grid styles** per window size class: Compact 0-599 (4 col, 16 margin, 16 gutter), Medium 600-839 (8, 24-32, 16-24), Expanded 840-1199 (12, 24, 24), Large 1200-1599, Extra-large 1600+ (+ layout region variants).
+- No color styles (utility paint styles only if needed).
+
+## 5. Icons
+- Material Symbols (Rounded or Outlined - pick one), weight 400, grade 0, optical size 24; names snake_case as in Google Fonts (`arrow_back`, `more_vert`), filled versions with `_filled` suffix (never two components with the same name).
+- 24dp default (18 chips, 20 small buttons, 36 large FAB), single vector bound to `Schemes/On Surface` and recolored per component with on-roles.
+- Exposed as INSTANCE_SWAP `Icon` / `Icon (selected)` with `Show icon` booleans (M3 kit convention). Components use the **local** icon set only (reference uses remote kit icons).
+
+## 6. Component conventions (M3 kit)
+- Public names match M3 (`Button`, `Button - tonal`, `Icon button - outline`, `Navigation Rail`); private parts start with `.Building Blocks/` and live in the Building Blocks frame.
+- Properties: `State` = Enabled, Hovered, Focused, Pressed, (Dragged), Disabled · `Selected` · `Size` XSmall, Small, Medium, Large, XLarge · `Type`/`Style`/`Color`/`Configuration` · BOOLEAN `Show ...` and `Show focus indicator` · TEXT `Label text`, `Supporting text`, `Headline` · INSTANCE_SWAP `Icon`, `Icon (selected)` · SLOT `Content`.
+- Anatomy: container > `State-layer` frame (state overlay) > content; ripple only in Pressed; focus indicator 3dp outline offset (Utilities).
+- 100% bound: fills, strokes, **padding/gap (spacing)**, **radius (Shape)**, text styles, effect styles; 0 remote variables/styles/components.
+- Touch target 48x48dp (visual 40dp controls inside 48 targets).
+- Disabled per M3 recipe: container on-surface 12%, content on-surface 38%.
+- Descriptions on every set (M3 kit text is fine) + when to use / not use.
+
+### Required inventory and states (Android)
+| Tier | Component | Variants / states |
+|---|---|---|
+| Atom | Button (filled, tonal, outlined, elevated, text) | XSmall-XLarge · Round/Square · icon optional · Enabled, Hovered, Focused, Pressed, Disabled |
+| Atom | Toggle button, Icon button (standard, filled, tonal, outlined; togglable) | + Selected · Width Narrow/Default/Wide |
+| Atom | FAB, Extended FAB | Default/Medium/Large · 6 colors · Enabled, Hovered, Focused, Pressed |
+| Atom | Checkbox (incl. error), Radio, Switch (icon optional) | Selected x 5 states |
+| Atom | Chips (assist, filter, input, suggestion), Badge (small/large), Avatar, Divider, Nav item, Tab item, Menu item, Progress / Loading indicator | M3 states |
+| Molecule | Text field (filled/outlined, leading/trailing icon, supporting text, error, prefix/suffix, counter), Exposed dropdown, Search bar, Button groups (standard/connected), Split button, List item, Snackbar, Tooltips, Slider | |
+| Organism | App bar (small, center, medium, large, search), Navigation bar / rail / expanded rail, Toolbar (docked/floating), Tabs, Menu, Dialog (basic, list, full-screen), Bottom / side sheet, Card (elevated, filled, outlined), Date/time pickers, Carousel, FAB menu | |
+| Pattern | Screens per window size class (compact list-detail, expanded two-pane), sign-in, OTP, settings | |
+
+## 7. Theming and adaptivity
+- Dark mode = `m3` Dark mode on the frame; contrast modes as extra modes; dynamic color (Material You) documented as a runtime option.
+- Adaptive layout: Compact -> Navigation bar; Medium -> Navigation rail; Expanded+ -> Expanded rail / two panes; grids per window class.
+
+## 8. Documentation pages (linked, never static)
+- ➜ Color: palettes and schemes (Light and Dark) with every swatch bound (the reference does this well: ~97% bound).
+- ➜ Typography: every specimen uses its local style; table values from variables.
+- ➜ Shape: swatches bound to Shape variables (reference: unbound). ➜ Elevation: local styles, Dark frame on the local mode.
+
+## 9. Mistakes found in Trianglz Android - never repeat them
+1. No spacing variables - every padding and gap raw.
+2. Typography sizes/line heights bound to **remote** M3 kit `Static/*` variables; display/headline raw; tracking 0; sizes off the M3 scale.
+3. ALL_SCOPES on palettes and schemes; no code syntax; almost no descriptions.
+4. State layers as ~180 **raw RGBA** copies, several stale vs the brand scheme.
+5. Components still using **remote M3 kit** icons, text styles (`M3/body/large`...), effect styles, scheme variables and nested components (Button - text, Icon button - standard, dividers).
+6. Hand-picked tonal palettes (not HCT); Dark surface = pure black; surface container tiers off the M3 tones.
+7. Deprecated roles left in (`Background (Deprecated)` with a remote Dark alias, `Surface Variant??`), typos (`Sucess Container`, `Presssed`, `Hovere`, `Time PIcker`, `Accordion buttton`), `Property 1` and an empty property name.
+8. Shape collection underused - radii raw; FAB bound to a remote corner variable.
+9. Duplicate icon names without `_filled`; no dark previews; baseline and expressive generations mixed without deprecation notes; research board inside the DS file.
+
+## 10. Final QA checklist
+- [ ] 0 remote variables, styles and components; 0 raw fills/strokes/padding/gap/radius/effects.
+- [ ] Palettes HCT-generated; schemes follow M3 tones; contrast modes if required.
+- [ ] Every variable: scope, Android code syntax, description (md.sys name). Every set: description, M3 property names, wired props.
+- [ ] State layers = alias + opacity; disabled per M3 recipe; focus indicator on every interactive component.
+- [ ] Typescale local and bound (size, line height, tracking, weight); Shape and Spacing bound everywhere.
+- [ ] Icons local Material Symbols instances with swap properties.
+- [ ] Targets >= 48dp; contrast text >= 4.5:1, UI >= 3:1 in Light and Dark.
+- [ ] Light and Dark preview frames per family; Color/Typography/Shape docs linked.
+- [ ] Screenshot every variant (light + dark) and compare with the description.
+- [ ] Save a version after each phase; write Foundation_Skill and Component_Skills per group.

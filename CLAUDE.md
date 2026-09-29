@@ -1,0 +1,26 @@
+# Design systems Ai Ready
+
+This folder builds, audits and scales AI-ready design systems (Web, iOS, Android) in Figma.
+
+## Always start here
+Before any other work, load and follow `Design_System_Intake_Skill/SKILL.md`.
+It checks the Figma tools first (figma-console-mcp or figma-cli with the Desktop Bridge connected), then asks the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
+
+## Main Skills (Root)
+| Skill | Use for |
+|---|---|
+| `Design_System_Intake_Skill/SKILL.md` | Entry point for every job: preflight, questions, path, checkpoints |
+| `Web_Design_System_Skill/SKILL.md` | Web systems (Tailwind conventions) |
+| `iOS_Design_System_Skill/SKILL.md` | iOS systems (Apple HIG) |
+| `Android_Design_System_Skill/SKILL.md` | Android systems (Material Design 3) |
+
+Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/` (Foundation_Skill + Component_Skills). Template links: `References.md`.
+
+## Rules
+- All paths are relative to this folder. Never write absolute machine paths into skills.
+- Each project lives in `<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, with `Project_Brief.md`, `Inputs/`, `Foundation_Skill/` and `Component_Skills/`.
+- Platforms are independent: nothing is shared or merged between Web, iOS and Android.
+- Find Figma nodes by name. Node IDs in the Trianglz skills are valid in the original files only.
+- Build order: Primitives, Semantics (Light/Dark), Spacing/Radius/Typography variables, styles, icons, components (Atoms, Molecules, Organisms, Patterns), linked docs, audit, project skills.
+- Required skills: figma-use + figma-generate-library before building; figma-generate-design + ui-ux-pro-max for screens; audit-design-system at the end of every build.
+- Never install tools on the user's behalf; show the install steps and let them do it.
