@@ -8,8 +8,9 @@ import re
 import sys
 
 ABSOLUTE = re.compile(
-    r"(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z0-9_]"   # D:\Work, C:/Users
-    r"|(?<![A-Za-z0-9.:/])/(?:Users|home|mnt/[a-z])/[A-Za-z0-9_]"  # /Users/x, /home/x, /mnt/c/x
+    r"(?:(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z0-9_]"   # D:\Work, C:/Users
+    r"|(?<![A-Za-z0-9.:/])/(?:Users|home|mnt/[a-z])/[A-Za-z0-9_])"  # /Users/x, /home/x, /mnt/c/x
+    r"[^\s`'\"<>|]{0,40}"
 )
 CHECKED = (".md", ".json", ".txt", ".mdx", ".ts", ".tsx", ".js", ".jsx", ".css", ".py", ".yml", ".yaml")
 

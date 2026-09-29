@@ -2,6 +2,11 @@
 
 This folder builds, audits and scales AI-ready design systems (Web, iOS, Android) in Figma.
 
+## Project memory
+Shared facts and Abdul's standing decisions (read before any work; update the matching file when a decision changes):
+@memory/MEMORY.md
+@memory/decisions.md
+
 ## Always start here
 Before any other work, load and follow `Design_System_Intake_Skill/SKILL.md`.
 It checks the Figma tools first (figma-console-mcp or figma-cli with the Desktop Bridge connected), then asks the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
@@ -13,8 +18,11 @@ It checks the Figma tools first (figma-console-mcp or figma-cli with the Desktop
 | `Web_Design_System_Skill/SKILL.md` | Web systems (Tailwind conventions) |
 | `iOS_Design_System_Skill/SKILL.md` | iOS systems (Apple HIG) |
 | `Android_Design_System_Skill/SKILL.md` | Android systems (Material Design 3) |
+| `Storybook_Design_System_Skill/SKILL.md` | Optional: live Storybook (React + Storybook MCP) from a finished DS; names match Figma exactly |
 
 Knowledge base (exact values, read these instead of re-deriving): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`).
+
+Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step and for weekly drift), `token-extractor` (Figma variables or screens to `data/tokens.json`), `docs-writer` (skills, registry and usage docs from Figma). Hooks in `.claude/settings.json` block absolute paths in files and remind you to run the audit after Figma changes. Weekly drift audit definition: `.claude/scheduled/weekly-drift-audit.md` (not enabled).
 
 Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/` (Foundation_Skill + Component_Skills). Template links: `References.md`.
 

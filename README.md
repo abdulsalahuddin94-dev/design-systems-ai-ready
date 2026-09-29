@@ -8,7 +8,10 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 - `Web_Design_System_Skill/`, `iOS_Design_System_Skill/`, `Android_Design_System_Skill/`: platform Main Skills.
 - `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/`: studies of the Trianglz template files (foundations, components, known gaps).
 - `*/data/`: JSON knowledge base per DS (tokens, component registry, rules, screen templates) and `*/docs/decisions.md`.
-- `tools/`: `build_tokens.py` (Figma export to tokens.json) and `recolor.py` (change a color and regenerate all its shades). Needs Python 3.
+- `tools/`: `build_tokens.py` (Figma export to tokens.json), `recolor.py` (change a color and regenerate all its shades), `tokens_to_css.py` (tokens.json to Storybook CSS variables) and `storybook_parity.py` (checks Storybook names match Figma). Needs Python 3.
+- `Storybook_Design_System_Skill/`: optional live Storybook for developers (`/storybook-design-system`).
+- `memory/`: shared project memory (decisions, references). `CLAUDE.md` imports it, so every Claude session in this folder starts with it.
+- `.claude/agents/`, `.claude/hooks/`, `.claude/settings.json`, `.claude/scheduled/`: the Claude toolkit (see below).
 - `References.md`: Trianglz Figma template links and tooling links.
 - `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`.
 
@@ -30,3 +33,34 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 Open the folder in Claude Code and say what you want, or run `/design-system-intake`. Claude checks the Figma bridge, asks one question at a time, then builds with approval checkpoints (Foundation, Components, Screens) and finishes with the project's skills and an audit.
 
 Project work is saved in `<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/` next to the Main Skills.
+
+## Claude toolkit (in `.claude/`)
+
+**Subagents** (`.claude/agents/`). Claude hands focused jobs to them; you can also ask for one by name ("run the ds-auditor on the Navigation group").
+| Agent | Does | Writes |
+|---|---|---|
+| `ds-auditor` | Read-only QA: remote variables, raw hex/px, detached components, missing states, unwired properties, icons, contrast, naming, group placement, linked docs. `drift` mode compares Figma with the saved skills, data and Storybook. | `<folder>/audits/<date>-<mode>.md` |
+| `token-extractor` | Exports Figma variables (or scans unstructured screens) and rebuilds `data/tokens.json` with exact Figma names. | `<folder>/data/`, `Inputs/Extracted_Tokens.md` |
+| `docs-writer` | Writes Foundation and Component skills, `component-registry.json`, `Project_Brief.md` and Storybook usage pages from what is in Figma. | skill folders |
+
+None of them can edit Figma; they only have read tools.
+
+**Hooks** (`.claude/settings.json`, scripts in `.claude/hooks/`, need Python 3 on PATH).
+- *Block absolute paths*: any write to a repo file that contains a machine path like `D:\Work\...` or `/Users/...` is stopped, so the folder keeps working on any computer.
+- *Audit reminder*: after Claude changes Figma, the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor or a Figma audit tool clears the reminder.
+
+**Permissions** (`.claude/settings.json`). Figma read tools (status, variables, styles, components, screenshots, audits) and safe read commands (`git status/diff/log`, `ls`, version checks, `build_tokens.py`, running Storybook) run without prompts. Installing anything (`npm install`, `npm create`, `npx storybook add`, `pip install`, `claude mcp add`) and `git push` always ask first. `.env` files are never read. Figma write tools still ask, as before. Put personal overrides in `.claude/settings.local.json` (git-ignored).
+
+**Scheduled weekly drift audit** (`.claude/scheduled/weekly-drift-audit.md`). A ready prompt that runs the ds-auditor in drift mode every Monday and writes a summary to `audits/`. It is not turned on. It must run on your computer (the Figma Desktop Bridge is local), so enable it as a scheduled task in the Claude desktop app or with Windows Task Scheduler; the file has both steps.
+
+**Memory** (`memory/`). Stable facts every session needs: standing decisions (build order, atomic tiers, group placement, platforms independent, never install, Storybook direction) and Trianglz references. `CLAUDE.md` imports it. Update the matching file when a decision changes; keep one fact per file and relative paths only.
+
+## Live Storybook (optional)
+
+Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma stays the source of truth. Storybook is the browsable documentation for developers and AI agents: every component with its variants and properties as controls, usage and use cases, tokens, and a link back to Figma. It is documentation, not production code.
+- One Storybook per platform in `<folder>/storybook/`. Default stack for all platforms: React + Vite + Storybook; iOS and Android components are styled to look native and shown in a device frame.
+- Component, variant, property and token names match Figma exactly; `tools/storybook_parity.py` checks it.
+- Tokens are generated from `data/tokens.json` by `tools/tokens_to_css.py` (Figma modes become toolbar switches: Light/Dark, Desktop/iPad/Mobile).
+- The official Storybook MCP addon (`@storybook/addon-mcp`) serves `http://localhost:6006/mcp` while Storybook runs, so agents can read components and docs before building UI. Docs: https://storybook.js.org/docs/ai/mcp/overview
+- Ask for it in the intake (question 0.7) or later with `/storybook-design-system`. Claude asks before installing any Node package.
+

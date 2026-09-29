@@ -70,6 +70,7 @@ Ask in this order:
 | 0.4 | "Which color modes do you need? Light only / Light and Dark (recommended) / Dark only" | Sets Semantic modes. |
 | 0.5 | "Do you need Arabic / RTL support? Yes / No" | If Yes: mirrored layouts, RTL auto layout checks, directional icons (arrows, chevrons, back) get mirrored variants, Arabic font pairing, and text styles tested with Arabic copy. |
 | 0.6 | "Which fonts should the system use? Name the Latin font and, if RTL is needed, the Arabic font. Reply 'default' to use the platform default." | Defaults: Web = Poppins (org default) or the brand font; iOS = SF Pro; Android = Roboto / Roboto Flex. Arabic default pairing: IBM Plex Sans Arabic (Web/Android), SF Arabic (iOS). Confirm the fonts are installed / available in Figma. |
+| 0.7 | "Do you also want a live Storybook for developers (browse components, try variants and properties, read use cases, link back to Figma)? Yes, after components (recommended when developers will use the DS) / Later / No" | Optional. Yes -> run section 12 after the Components checkpoint. Default stack for every platform: React + Storybook, mobile components styled like iOS / Android. Record the answer in `Project_Brief.md`. |
 
 ---
 
@@ -121,6 +122,7 @@ Intake basics (0.1-0.6)
          └─ Type 3: DS + unlinked screens -> Scenario C: audit -> relink screens
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
 Every path ends: write project skills + final audit (section 11)
+Optional (0.7 = Yes): Storybook after the Components checkpoint (section 12)
 ```
 
 ---
@@ -222,6 +224,7 @@ Platform: <Web / iOS / Android / Both / Flutter / RN> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>
+Storybook: <Yes after components / Later / No>
 Next step: <first action>
 ```
 Ask: "Is this correct? Yes, start / Change something"
@@ -235,6 +238,9 @@ Ask: "Is this correct? Yes, start / Change something"
 ├─ CLAUDE.md                                (tells Claude to start with this skill)
 ├─ README.md, References.md                 (setup steps, Trianglz template links)
 ├─ .claude\skills\                          (slash commands pointing to the Main Skills)
+├─ .claude\agents\, hooks\, settings.json   (subagents, QA hooks, permissions)
+├─ memory\MEMORY.md                        (shared project memory, imported by CLAUDE.md)
+├─ Storybook_Design_System_Skill\SKILL.md  (optional live Storybook)
 ├─ tools\                                   (build_tokens.py, recolor.py, ds_color.py)
 ├─ Design_System_Intake_Skill\SKILL.md      (this skill, runs first)
 ├─ Web_Design_System_Skill\SKILL.md
@@ -250,6 +256,8 @@ Ask: "Is this correct? Yes, start / Change something"
    │  └─ Code_Inventory.md                  (Brownfield type 2)
    ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
    ├─ docs\decisions.md                     (why each decision was made; recolor log)
+   ├─ audits\                              (ds-auditor reports)
+   ├─ storybook\                           (optional live Storybook, section 12)
    ├─ Foundation_Skill\SKILL.md + references\ (variables.md, gaps.md, screens\)
    └─ Component_Skills\
       ├─ Form_Elements_Skill\               (anything the user enters data with)
@@ -276,3 +284,15 @@ Ask: "Is this correct? Yes, start / Change something"
    - Check `tokens.json > recolor_readiness.ready` is true.
 4. Update `Project_Brief.md` with the final state and links, and save the key facts to memory.
 5. Reply to the user with the audit result, the skill paths and what is left.
+
+---
+
+## 12. Step 9 (optional) - Live Storybook
+
+Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever the user asks later).
+1. Load `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
+2. Make sure `data/tokens.json` and `data/component-registry.json` reflect the live Figma file (token-extractor subagent if they need a resync).
+3. Ask before installing any Node package; show the exact commands.
+4. Build the Storybook in `<platform folder>/storybook/`, one per platform, with names that match Figma exactly.
+5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder.
+6. Record the path, run command and MCP status in `Project_Brief.md`.
