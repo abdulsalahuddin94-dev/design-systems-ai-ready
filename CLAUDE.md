@@ -2,6 +2,13 @@
 
 This folder builds, audits and scales AI-ready design systems (Web, iOS, Android) in Figma.
 
+## Storybook (tell the user first)
+This repo has a live Storybook of the design system: `Trianglz/storybook/` (Web). In your first reply of every session, say so in one line and ask: "Do you want me to run the Storybook, update it from Figma, or skip it for now?" A SessionStart hook (`.claude/hooks/storybook_notice.py`) reminds you and says whether it is installed and running.
+- Run: `npm --prefix Trianglz/storybook install` (ask first), then `npm --prefix Trianglz/storybook run storybook` or the `trianglz-web-storybook` preview in `.claude/launch.json`. Opens http://localhost:6006.
+- MCP: `trianglz-web-storybook` in `.mcp.json` (http://localhost:6006/mcp, only while Storybook runs). Use it to read component docs and props before building UI.
+- Update from Figma: `Storybook_Design_System_Skill/SKILL.md`.
+- Other AI tools get the same notice from `AGENTS.md`, `.cursor/rules/storybook.mdc`, `.github/copilot-instructions.md` and `GEMINI.md`.
+
 ## Project memory
 Shared facts and Abdul's standing decisions (read before any work; update the matching file when a decision changes):
 @memory/MEMORY.md

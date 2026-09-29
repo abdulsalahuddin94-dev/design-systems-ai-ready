@@ -2,6 +2,8 @@
 
 Skills that let Claude Code build, audit and scale AI-ready design systems in Figma for Web, iOS and Android: strictly tokenized, componentized and documented so AI agents can build UIs from them.
 
+
+> **Live Storybook:** the design system runs in Storybook (`Trianglz/storybook/`). See [Storybook for the team](#storybook-for-the-team-run-it-on-your-machine) to run it in two commands.
 ## What is inside
 - `CLAUDE.md`: read by Claude Code automatically; tells it to start every job with the intake.
 - `Design_System_Intake_Skill/`: the entry flow (tools check, questions, path, approval checkpoints).
@@ -46,6 +48,7 @@ Project work is saved in `<Project>/` (Web), `<Project>_iOS/`, `<Project>_Androi
 None of them can edit Figma; they only have read tools.
 
 **Hooks** (`.claude/settings.json`, scripts in `.claude/hooks/`, need Python 3 on PATH).
+- *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and asks you whether to run it, update it from Figma or skip it.
 - *Block absolute paths*: any write to a repo file that contains a machine path like `D:\Work\...` or `/Users/...` is stopped, so the folder keeps working on any computer.
 - *Audit reminder*: after Claude changes Figma, the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor or a Figma audit tool clears the reminder.
 
@@ -54,6 +57,21 @@ None of them can edit Figma; they only have read tools.
 **Scheduled weekly drift audit** (`.claude/scheduled/weekly-drift-audit.md`). A ready prompt that runs the ds-auditor in drift mode every Monday and writes a summary to `audits/`. It is not turned on. It must run on your computer (the Figma Desktop Bridge is local), so enable it as a scheduled task in the Claude desktop app or with Windows Task Scheduler; the file has both steps.
 
 **Memory** (`memory/`). Stable facts every session needs: standing decisions (build order, atomic tiers, group placement, platforms independent, never install, Storybook direction) and Trianglz references. `CLAUDE.md` imports it. Update the matching file when a decision changes; keep one fact per file and relative paths only.
+
+## Storybook for the team (run it on your machine)
+
+The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: `Trianglz/storybook/` (Trianglz Web Design System).
+
+Needs **Node.js 18+** (`node --version`). Then:
+1. `git clone <repo URL>` (private repo; ask for access).
+2. `cd "<repo folder>/Trianglz/storybook"`
+3. `npm install` (first time only; `node_modules` is not in the repo).
+4. `npm run storybook`
+5. Open http://localhost:6006
+
+Updates: `git pull` in the repo, then `npm install` again if `package.json` changed, and restart `npm run storybook`.
+
+**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (already in `.mcp.json` for Claude Code; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and asks you whether to run it, update it from Figma or skip it: Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
 
 ## Live Storybook (optional)
 

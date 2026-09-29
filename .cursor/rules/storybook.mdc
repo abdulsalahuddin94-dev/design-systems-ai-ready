@@ -1,0 +1,8 @@
+---
+description: This repo has a live Storybook of the design system; ask the user about it at session start
+alwaysApply: true
+---
+
+This repo has a live Storybook of the Figma design system at `Trianglz/storybook/` (names identical to Figma). In your first reply, tell the user in one line and ask: "Do you want me to run the Storybook, update it from Figma, or skip it for now?"
+
+Run: `cd Trianglz/storybook && npm install && npm run storybook` (ask before installing; Node.js 18+), then http://localhost:6006. Storybook MCP: http://localhost:6006/mcp. Full instructions: `AGENTS.md`.
