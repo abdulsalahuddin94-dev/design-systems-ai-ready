@@ -41,7 +41,7 @@
      "name": "Form",
      "components": [
       "Input / Text (Email)",
-      "Input / Text (password, to build) (Password)",
+      "Input / Text (Show icon + Icon/Eye, Icon/Eye Off) (Password)",
       "Checkbox (Remember me, optional)",
       "Button Type=Link (Forgot password)"
      ],
@@ -84,8 +84,8 @@
      "components": [
       "Input / Text (Full name)",
       "Input / Text (Email)",
-      "Input / Text (password, to build) (Password + hint)",
-      "Input / Text (password, to build) (Confirm)",
+      "Input / Text (Show icon + Icon/Eye, Icon/Eye Off) (Password + hint)",
+      "Input / Text (Show icon + Icon/Eye, Icon/Eye Off) (Confirm)",
       "Checkbox (Accept terms, required)"
      ]
     },

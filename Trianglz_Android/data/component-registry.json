@@ -58,9 +58,6 @@
   "➜ Snackbar",
   "➜ Tooltips"
  ],
- "cleanup": [
-  "Page \"__Claude temp dark capture (delete me)\" is left over from an earlier capture session; delete it in Figma."
- ],
  "components": [
   {
    "name": "Checkboxes",

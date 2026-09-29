@@ -3,12 +3,30 @@
   "figma_file": "Trianglz - Web Design System",
   "figma_url": "https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System",
   "collections": {
-    "primitives": {"name": "Primitives", "role": "primitive"},
-    "semantic": {"name": "Semantic", "role": "semantic"},
-    "typography": {"name": "Typography", "role": "typography"},
-    "spacing": {"name": "Spacing", "role": "spacing"},
-    "radius": {"name": "Radius", "role": "radius"}
+    "VariableCollectionId:6:4": {
+      "name": "Primitives",
+      "role": "primitive"
+    },
+    "VariableCollectionId:15:11": {
+      "name": "Semantic",
+      "role": "semantic"
+    },
+    "VariableCollectionId:24:4": {
+      "name": "Typography",
+      "role": "typography"
+    },
+    "VariableCollectionId:28:2": {
+      "name": "Radius",
+      "role": "radius"
+    },
+    "VariableCollectionId:36:2": {
+      "name": "Spacing",
+      "role": "spacing"
+    }
   },
-  "ramp": {"method": "oklch", "base_step": "500", "order": "ascending"},
-  "note": "Collection names are from the skill notes; confirm them on the next Figma sync."
+  "ramp": {
+    "method": "oklch",
+    "base_step": "500",
+    "order": "ascending"
+  }
 }

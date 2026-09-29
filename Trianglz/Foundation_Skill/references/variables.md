@@ -1,6 +1,6 @@
 # Trianglz Web DS - all local variables (read 2026-09-29)
 
-> **Superseded for values:** exact values, modes and aliases now live in `../../data/tokens.json` (pulled from Figma). This file keeps the study notes; if they differ, trust tokens.json. (Web: tokens.json was built from this file and still needs a Figma re-sync.)
+> **Superseded for values:** exact values, modes and aliases now live in `../../data/tokens.json` (pulled from Figma). This file keeps the study notes; if they differ, trust tokens.json. The live file has more tokens than these notes (icon, border/input, alpha).
 
 > **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
 

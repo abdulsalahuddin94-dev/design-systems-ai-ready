@@ -20,4 +20,3 @@ A log of why the system is built the way it is. Add a dated entry for every deci
 
 ## Open
 - No spacing variables exist yet (every padding/gap is raw); add `space/*` per `rules.json > spacing` before building screens.
-- Delete the leftover page `__Claude temp dark capture (delete me)` in the Figma file.
