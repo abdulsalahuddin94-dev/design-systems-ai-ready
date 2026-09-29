@@ -4,7 +4,8 @@
   python audit_reminder.py stop   Stop hook: if Figma changed since the last audit, ask Claude
                                   (once) to run the QA checklist before ending the turn.
 
-The marker lives in .claude/.state/ (git-ignored). Running the ds-auditor subagent, or any
+The marker lives in .claude/.state/ (git-ignored), one per session, so parallel sessions
+do not remind each other. Running the ds-auditor subagent, or any
 figma audit tool, clears it.
 """
 import json
@@ -12,7 +13,6 @@ import pathlib
 import sys
 
 STATE = pathlib.Path(__file__).resolve().parent.parent / ".state"
-MARK = STATE / "figma-changed"
 
 CHECKLIST = (
     "Figma was changed in this session and no audit has run since. Before you finish, run the "
@@ -29,6 +29,7 @@ def main():
         data = json.load(sys.stdin)
     except Exception:
         data = {}
+    MARK = STATE / ("figma-changed-" + str(data.get("session_id") or "default"))
 
     if mode == "mark":
         tool = data.get("tool_name", "")
