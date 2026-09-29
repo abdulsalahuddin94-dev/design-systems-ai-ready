@@ -1,0 +1,3168 @@
+{
+ "meta": {
+  "platform": "Android",
+  "figma_file": "Trianglz - Android M3 x Design System",
+  "figma_url": "https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System",
+  "source": {
+   "method": "figma-console figma_execute (Desktop Bridge, read-only)",
+   "extracted_at": "2026-09-30",
+   "needs_resync": false
+  },
+  "naming": "Find components by name (page + set name). Node ids and keys are not stored: they change in a duplicate.",
+  "counts": {
+   "component_sets": 172,
+   "standalone_components": 166,
+   "icons": 141,
+   "text_styles": 30,
+   "effect_styles": 10
+  }
+ },
+ "pages": [
+  "Cover",
+  "⭐Setup",
+  "➜ Research",
+  "➜ Color Palette",
+  "➜  Corner Radius",
+  "➜  Elevation",
+  "➜  Icons",
+  "➜  Layout",
+  "➜ Typography",
+  "➜ Utilities",
+  "⭐Form Elements",
+  "➜ Date & Time Pickers",
+  "➜ Checkbox",
+  "➜ Radio",
+  "➜ Search",
+  "➜ Switch",
+  "➜ Text Fields",
+  "➜ Loading & progress",
+  "➜ Sliders",
+  "⭐Navigation ",
+  "➜ Buttons",
+  "➜ App Bar",
+  "➜ Menu",
+  "➜ Navigation",
+  "➜ Toolbar",
+  "➜ Tabs",
+  "⭐Data display",
+  "➜ Cards",
+  "➜ Dialogs",
+  "➜ Avatars",
+  "➜ Badges",
+  "➜ Carousel",
+  "➜ Chips",
+  "➜ Dividers",
+  "➜ Lists",
+  "➜ Shapes",
+  "➜ Sheets",
+  "➜ Snackbar",
+  "➜ Tooltips"
+ ],
+ "cleanup": [
+  "Page \"__Claude temp dark capture (delete me)\" is left over from an earlier capture session; delete it in Figma."
+ ],
+ "components": [
+  {
+   "name": "Checkboxes",
+   "group": "Form Elements",
+   "page": "➜ Checkbox",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Selected",
+     "Unselected",
+     "Indeterminate",
+     "Error unselected",
+     "Error indeterminate",
+     "Error selected"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 30,
+   "use": "Multi-select; error types for validation."
+  },
+  {
+   "name": "Radio buttons",
+   "group": "Form Elements",
+   "page": "➜ Radio",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "True",
+     "False"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 10,
+   "use": "Single choice from a short list."
+  },
+  {
+   "name": "Switch",
+   "group": "Form Elements",
+   "page": "➜ Switch",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ],
+    "Icon": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 20,
+   "use": "Immediate on/off setting."
+  },
+  {
+   "name": "Text field",
+   "group": "Form Elements",
+   "page": "➜ Text Fields",
+   "tier": "Molecule",
+   "variants": {
+    "Style": [
+     "Filled",
+     "Outlined"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Error",
+     "Disabled"
+    ],
+    "Text configurations": [
+     "Input text",
+     "Label text",
+     "Placeholder text"
+    ],
+    "Leading icon": [
+     "False",
+     "True"
+    ],
+    "Trailing icon": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {
+    "Show supporting text": "BOOLEAN",
+    "Label text": "TEXT",
+    "Placeholder text": "TEXT",
+    "Input text": "TEXT",
+    "Supporting text": "TEXT"
+   },
+   "variant_count": 120,
+   "use": "Text entry. Filled for dense forms, Outlined for low emphasis.",
+   "nests": [
+    "Icon"
+   ]
+  },
+  {
+   "name": "Search bar",
+   "group": "Form Elements",
+   "page": "➜ Search",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Pressed"
+    ],
+    "Show avatar": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show 2nd trailing icon": "BOOLEAN",
+    "Show 1st trailing icon": "BOOLEAN",
+    "Placeholder text": "TEXT",
+    "Show leading icon": "BOOLEAN"
+   },
+   "variant_count": 6,
+   "use": "Entry point to search."
+  },
+  {
+   "name": "Search docked layout",
+   "group": "Form Elements",
+   "page": "➜ Search",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Input text",
+     "Supporting text"
+    ]
+   },
+   "properties": {
+    "Show trailing Icon": "BOOLEAN",
+    "Show list items": "BOOLEAN",
+    "Input text": "TEXT",
+    "Placeholder text": "TEXT"
+   },
+   "variant_count": 2,
+   "use": "Search with results panel (medium/expanded windows).",
+   "nests": [
+    "Search bar",
+    "List item"
+   ]
+  },
+  {
+   "name": "Search full-screen layout",
+   "group": "Form Elements",
+   "page": "➜ Search",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Input text",
+     "Supporting text"
+    ]
+   },
+   "properties": {
+    "Show trailing Icon": "BOOLEAN",
+    "Show list items": "BOOLEAN",
+    "Input text": "TEXT",
+    "Placeholder text": "TEXT"
+   },
+   "variant_count": 2,
+   "use": "Full-screen search (compact windows).",
+   "nests": [
+    "Search bar",
+    "List item"
+   ]
+  },
+  {
+   "name": "Search docked layout (baseline)",
+   "group": "Form Elements",
+   "page": "➜ Search",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Supporting text",
+     "Input text"
+    ]
+   },
+   "properties": {
+    "Placeholder text": "TEXT",
+    "Input text": "TEXT",
+    "Show list items": "BOOLEAN"
+   },
+   "variant_count": 2,
+   "use": "Baseline (pre-Expressive) docked search."
+  },
+  {
+   "name": "Search full-screen layout (baseline)",
+   "group": "Form Elements",
+   "page": "➜ Search",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Input text",
+     "Supporting text"
+    ]
+   },
+   "properties": {
+    "Placeholder text": "TEXT",
+    "Input text": "TEXT",
+    "Show list items": "BOOLEAN"
+   },
+   "variant_count": 2,
+   "use": "Baseline full-screen search."
+  },
+  {
+   "name": "Input date picker",
+   "group": "Form Elements",
+   "page": "➜ Date & Time Pickers",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Single input",
+     "Range"
+    ]
+   },
+   "properties": {
+    "Supporting text": "TEXT",
+    "Headline": "TEXT",
+    "Headline (plural)": "TEXT",
+    "Show clear button": "BOOLEAN"
+   },
+   "variant_count": 2,
+   "use": "Typed date entry."
+  },
+  {
+   "name": "Modal date picker",
+   "group": "Form Elements",
+   "page": "➜ Date & Time Pickers",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Day",
+     "Year",
+     "Full-screen (range)"
+    ]
+   },
+   "properties": {
+    "Headline": "TEXT",
+    "Supporting text": "TEXT",
+    "Supporting text (range)": "TEXT",
+    "Headline (range)": "TEXT",
+    "Show clear button": "BOOLEAN"
+   },
+   "variant_count": 3,
+   "use": "Calendar picker in a dialog.",
+   "nests": [
+    ".Building Blocks/Local M3 calendar cell",
+    ".Building Blocks/Year",
+    ".Building Blocks/Menu button"
+   ]
+  },
+  {
+   "name": "Docked input date picker [desktop]",
+   "group": "Form Elements",
+   "page": "➜ Date & Time Pickers",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Day",
+     "Month",
+     "Year"
+    ]
+   },
+   "properties": {
+    "Show Clear button": "BOOLEAN"
+   },
+   "variant_count": 3,
+   "use": "Dropdown calendar under a field (large screens)."
+  },
+  {
+   "name": "Dial picker",
+   "group": "Form Elements",
+   "page": "➜ Date & Time Pickers",
+   "tier": "Organism",
+   "variants": {
+    "Format": [
+     "12 hour",
+     "24 hour"
+    ],
+    "Orientation": [
+     "Vertical",
+     "Horizontal"
+    ]
+   },
+   "properties": {
+    "Headline": "TEXT"
+   },
+   "variant_count": 4,
+   "use": "Clock-dial time picker."
+  },
+  {
+   "name": "Keyboard picker",
+   "group": "Form Elements",
+   "page": "➜ Date & Time Pickers",
+   "tier": "Organism",
+   "variants": {
+    "Format": [
+     "12 hour",
+     "24 hour"
+    ]
+   },
+   "properties": {
+    "Headline": "TEXT"
+   },
+   "variant_count": 2,
+   "use": "Typed time entry."
+  },
+  {
+   "name": "Linear-determinate progress indicator",
+   "group": "Form Elements",
+   "page": "➜ Loading & progress",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Flat",
+     "Wave"
+    ],
+    "Thickness": [
+     "4 dp",
+     "8 dp"
+    ],
+    "Progress": [
+     "0",
+     "10",
+     "20",
+     "50",
+     "80",
+     "100"
+    ]
+   },
+   "properties": {},
+   "variant_count": 24,
+   "use": "Known progress, linear."
+  },
+  {
+   "name": "Linear-indeterminate progress indicator",
+   "group": "Form Elements",
+   "page": "➜ Loading & progress",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Flat",
+     "Wave"
+    ],
+    "Thickness": [
+     "4 dp",
+     "8 dp"
+    ],
+    "Step": [
+     "0",
+     "1",
+     "2"
+    ]
+   },
+   "properties": {},
+   "variant_count": 12,
+   "use": "Unknown progress, linear."
+  },
+  {
+   "name": "Circular-determinate progress indicator",
+   "group": "Form Elements",
+   "page": "➜ Loading & progress",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Flat",
+     "Wave"
+    ],
+    "Thickness": [
+     "4 dp",
+     "8 dp"
+    ],
+    "Progress": [
+     "0",
+     "10",
+     "30",
+     "50",
+     "80",
+     "100"
+    ]
+   },
+   "properties": {},
+   "variant_count": 24,
+   "use": "Known progress, circular."
+  },
+  {
+   "name": "Circular-indeterminate progress indicator",
+   "group": "Form Elements",
+   "page": "➜ Loading & progress",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Flat",
+     "Wave"
+    ],
+    "Thickness": [
+     "4 dp",
+     "8 dp"
+    ],
+    "Step": [
+     "1",
+     "2"
+    ]
+   },
+   "properties": {
+    "Show track": "BOOLEAN"
+   },
+   "variant_count": 8,
+   "use": "Unknown progress, circular."
+  },
+  {
+   "name": "Loading indicator",
+   "group": "Form Elements",
+   "page": "➜ Loading & progress",
+   "tier": "Atom",
+   "variants": {
+    "Steps": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7"
+    ],
+    "Show container": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {},
+   "variant_count": 14,
+   "use": "Expressive shape-morph loader for short waits."
+  },
+  {
+   "name": "Standard slider",
+   "group": "Form Elements",
+   "page": "➜ Sliders",
+   "tier": "Molecule",
+   "variants": {
+    "Orientation": [
+     "Horizontal",
+     "Vertical"
+    ],
+    "Size": [
+     "Large",
+     "XLarge",
+     "Medium",
+     "Small",
+     "XSmall"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Pressed",
+     "Disabled"
+    ],
+    "Value": [
+     "0",
+     "50",
+     "100"
+    ]
+   },
+   "properties": {
+    "Show value indicator": "BOOLEAN",
+    "Show stops": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show icon": "BOOLEAN"
+   },
+   "variant_count": 120,
+   "use": "Pick a value on a range."
+  },
+  {
+   "name": "Centered slider",
+   "group": "Form Elements",
+   "page": "➜ Sliders",
+   "tier": "Molecule",
+   "variants": {
+    "Orientation": [
+     "Horizontal",
+     "Vertical"
+    ],
+    "Size": [
+     "Large",
+     "XLarge",
+     "Medium",
+     "Small",
+     "XSmall"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Pressed",
+     "Disabled"
+    ],
+    "Value": [
+     "-50",
+     "0",
+     "+50"
+    ]
+   },
+   "properties": {
+    "Show value indicator": "BOOLEAN",
+    "Show stops": "BOOLEAN"
+   },
+   "variant_count": 120,
+   "use": "Value around a center (e.g. balance)."
+  },
+  {
+   "name": "Range slider",
+   "group": "Form Elements",
+   "page": "➜ Sliders",
+   "tier": "Molecule",
+   "variants": {
+    "Orientation": [
+     "Horizontal"
+    ],
+    "Size": [
+     "Large",
+     "XLarge",
+     "Medium",
+     "Small",
+     "XSmall"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Pressed",
+     "Disabled"
+    ],
+    "Value": [
+     "-50",
+     "0",
+     "+50"
+    ]
+   },
+   "properties": {
+    "Show value indicator": "BOOLEAN",
+    "Show stops": "BOOLEAN"
+   },
+   "variant_count": 60,
+   "use": "Pick a min-max range."
+  },
+  {
+   "name": "Button",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 50,
+   "use": "Filled button: the one primary action on a screen."
+  },
+  {
+   "name": "Button - tonal",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 50,
+   "use": "Secondary emphasis between filled and outlined."
+  },
+  {
+   "name": "Button - outline",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Presssed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 50,
+   "use": "Medium emphasis, secondary actions.",
+   "issues": [
+    "State value typo \"Presssed\""
+   ]
+  },
+  {
+   "name": "Button - elevated",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 50,
+   "use": "Needs separation from a patterned background."
+  },
+  {
+   "name": "Button - text",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 50,
+   "use": "Lowest emphasis (dialogs, cards)."
+  },
+  {
+   "name": "Toggle button",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN",
+    "Icon (selected)": "INSTANCE_SWAP"
+   },
+   "variant_count": 100,
+   "use": "Button that stays selected (on/off)."
+  },
+  {
+   "name": "Toggle button - tonal",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN",
+    "Icon (selected)": "INSTANCE_SWAP"
+   },
+   "variant_count": 100,
+   "use": "Button that stays selected (on/off)."
+  },
+  {
+   "name": "Toggle button - outline",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN",
+    "Icon (selected)": "INSTANCE_SWAP"
+   },
+   "variant_count": 100,
+   "use": "Button that stays selected (on/off)."
+  },
+  {
+   "name": "Toggle button - elevated",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Show icon": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN",
+    "Icon (selected)": "INSTANCE_SWAP"
+   },
+   "variant_count": 100,
+   "use": "Button that stays selected (on/off)."
+  },
+  {
+   "name": "Icon button",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 150,
+   "use": "Compact icon-only action."
+  },
+  {
+   "name": "Icon button - standard",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 150,
+   "use": "Compact icon-only action."
+  },
+  {
+   "name": "Icon button - tonal",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 150,
+   "use": "Compact icon-only action."
+  },
+  {
+   "name": "Icon button - outline",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 150,
+   "use": "Compact icon-only action."
+  },
+  {
+   "name": "Icon button togglable",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Icon (selected)": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 300,
+   "use": "Icon action with a selected state (favorite, bookmark)."
+  },
+  {
+   "name": "Icon button togglable - tonal",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Icon (selected)": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 300,
+   "use": "Icon action with a selected state (favorite, bookmark)."
+  },
+  {
+   "name": "Icon button togglable - outline",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Icon (selected)": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 300,
+   "use": "Icon action with a selected state (favorite, bookmark)."
+  },
+  {
+   "name": "Icon button togglable - standard",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Width": [
+     "Narrow",
+     "Default",
+     "Wide"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Icon": "INSTANCE_SWAP",
+    "Icon (selected)": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 300,
+   "use": "Icon action with a selected state (favorite, bookmark)."
+  },
+  {
+   "name": "FAB",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Size": [
+     "Default",
+     "Medium",
+     "Large"
+    ],
+    "Color": [
+     "Primary container",
+     "Secondary container",
+     "Tertiary container",
+     "Primary",
+     "Secondary",
+     "Tertiary"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP"
+   },
+   "variant_count": 72,
+   "use": "The screen's most important action, floating."
+  },
+  {
+   "name": "Extended FAB",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Size": [
+     "Small",
+     "Medium",
+     "Large"
+    ],
+    "Color": [
+     "Primary container",
+     "Secondary container",
+     "Tertiary container",
+     "Primary",
+     "Secondary",
+     "Tertiary"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Label text": "TEXT",
+    "Icon": "INSTANCE_SWAP",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 72,
+   "use": "FAB with a label for clarity."
+  },
+  {
+   "name": "FAB menu",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Molecule",
+   "variants": {
+    "Color": [
+     "Primary container",
+     "Secondary container",
+     "Tertiary container"
+    ],
+    "Segments": [
+     "3"
+    ]
+   },
+   "properties": {
+    "Show 4th segment": "BOOLEAN",
+    "Show 5th segment": "BOOLEAN",
+    "Show 6th segment": "BOOLEAN",
+    "Show 3rd segment": "BOOLEAN"
+   },
+   "variant_count": 3,
+   "use": "FAB that opens 2-6 related actions.",
+   "nests": [
+    ".Building Blocks/FAB Menu/*"
+   ]
+  },
+  {
+   "name": "Standard button group",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Molecule",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Color": [
+     "Filled",
+     "Tonal",
+     "Outline"
+    ],
+    "Button type": [
+     "Icon",
+     "Label"
+    ]
+   },
+   "properties": {
+    "Show 5th button": "BOOLEAN",
+    "Show 6th button": "BOOLEAN",
+    "Show 7th button": "BOOLEAN"
+   },
+   "variant_count": 60,
+   "use": "Row of related buttons.",
+   "nests": [
+    "Button",
+    "Icon button"
+   ]
+  },
+  {
+   "name": "Connected button group",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Molecule",
+   "variants": {
+    "Type": [
+     "Round",
+     "Square"
+    ],
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ]
+   },
+   "properties": {
+    "Show 4th segment": "BOOLEAN",
+    "Show 5th segment": "BOOLEAN",
+    "Show 3rd segment": "BOOLEAN"
+   },
+   "variant_count": 10,
+   "use": "Segmented choice with connected shapes (Expressive).",
+   "nests": [
+    "Building Blocks/Button group/Connected segments/*"
+   ]
+  },
+  {
+   "name": "Segmented button",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Molecule",
+   "variants": {
+    "Segments": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "Density": [
+     "0",
+     "-1",
+     "-2",
+     "-3"
+    ]
+   },
+   "properties": {},
+   "variant_count": 16,
+   "use": "Select among 2-5 options or views.",
+   "nests": [
+    "Building Blocks/Segmented button/*"
+   ]
+  },
+  {
+   "name": "Split button",
+   "group": "Navigation",
+   "page": "➜ Buttons",
+   "tier": "Molecule",
+   "variants": {
+    "Size": [
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large",
+     "XLarge"
+    ],
+    "Color": [
+     "Filled",
+     "Tonal",
+     "Elevated",
+     "Outlined"
+    ],
+    "Leading state": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled"
+    ],
+    "Trailing state": [
+     "Enabled",
+     "Focused",
+     "Hovered",
+     "Pressed",
+     "Disabled",
+     "Selected"
+    ]
+   },
+   "properties": {
+    "Leading icon": "INSTANCE_SWAP",
+    "Show leading icon": "BOOLEAN",
+    "Leading label text": "TEXT",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 180,
+   "use": "Main action + menu of related actions."
+  },
+  {
+   "name": "App bar",
+   "group": "Navigation",
+   "page": "➜ App Bar",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Small-centered",
+     "Small-image",
+     "Search",
+     "Small",
+     "Medium",
+     "Large"
+    ],
+    "Elevation": [
+     "Flat",
+     "On-scroll"
+    ]
+   },
+   "properties": {
+    "Image": "INSTANCE_SWAP",
+    "Show 1st trailing action": "BOOLEAN",
+    "Show 2nd trailing action": "BOOLEAN",
+    "Show 3rd trailing action": "BOOLEAN"
+   },
+   "variant_count": 12,
+   "use": "Top app bar: title, navigation and actions.",
+   "nests": [
+    ".Building Blocks/App bar/Content/*",
+    "Icon button"
+   ]
+  },
+  {
+   "name": "Bottom app bar",
+   "group": "Navigation",
+   "page": "➜ App Bar",
+   "tier": "Organism",
+   "variants": {
+    "Icons": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ]
+   },
+   "properties": {
+    "Show FAB": "BOOLEAN"
+   },
+   "variant_count": 4,
+   "use": "Bottom actions + FAB (being replaced by Toolbar in Expressive)."
+  },
+  {
+   "name": "Menu",
+   "group": "Navigation",
+   "page": "➜ Menu",
+   "tier": "Organism",
+   "variants": {
+    "Theme": [
+     "Standard",
+     "Vibrant"
+    ],
+    "Groups": [
+     "1",
+     "2",
+     "3"
+    ]
+   },
+   "properties": {
+    "Show scrollbar": "BOOLEAN",
+    "Show section label": "BOOLEAN",
+    "List 1 content": "SLOT",
+    "List 2 content": "SLOT",
+    "List 3 content": "SLOT"
+   },
+   "variant_count": 6,
+   "use": "Temporary list of choices.",
+   "nests": [
+    "Menu item/Standard",
+    "Menu item/Vibrant"
+   ]
+  },
+  {
+   "name": "Menu (baseline)",
+   "group": "Navigation",
+   "page": "➜ Menu",
+   "tier": "Organism",
+   "variants": {
+    "Density": [
+     "0",
+     "-2",
+     "-4"
+    ]
+   },
+   "properties": {
+    "Show scrollbar": "BOOLEAN"
+   },
+   "variant_count": 3,
+   "use": "Baseline menu.",
+   "nests": [
+    "Building Blocks/Menu list item"
+   ]
+  },
+  {
+   "name": "Menu item/Standard",
+   "group": "Navigation",
+   "page": "➜ Menu",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled",
+     "Active"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show leading element": "BOOLEAN",
+    "Show trailing element": "BOOLEAN",
+    "Show divider": "BOOLEAN",
+    "Show focus indicator": "BOOLEAN",
+    "Content": "SLOT"
+   },
+   "variant_count": 11,
+   "use": "One row in a Menu."
+  },
+  {
+   "name": "Menu item/Vibrant",
+   "group": "Navigation",
+   "page": "➜ Menu",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Disabled",
+     "Active"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show leading element": "BOOLEAN",
+    "Show trailing element": "BOOLEAN",
+    "Show divider": "BOOLEAN",
+    "Show focus indicator": "BOOLEAN",
+    "Content": "SLOT"
+   },
+   "variant_count": 11,
+   "use": "Menu row, vibrant theme."
+  },
+  {
+   "name": "Navigation Bar: Horizontal items",
+   "group": "Navigation",
+   "page": "➜ Navigation",
+   "tier": "Organism",
+   "variants": {
+    "Nav items": [
+     "3",
+     "4",
+     "5",
+     "6"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Bottom navigation, compact windows, 3-5 destinations.",
+   "nests": [
+    "Building Blocks/Navigation bars/Horizontal nav item"
+   ]
+  },
+  {
+   "name": "Navigation Bar: Vertical items",
+   "group": "Navigation",
+   "page": "➜ Navigation",
+   "tier": "Organism",
+   "variants": {
+    "Nav items": [
+     "3",
+     "4",
+     "5"
+    ]
+   },
+   "properties": {},
+   "variant_count": 3,
+   "use": "Bottom navigation with stacked icon + label.",
+   "nests": [
+    "Building Blocks/Navigation bars/Vertical nav item"
+   ]
+  },
+  {
+   "name": "Navigation Rail",
+   "group": "Navigation",
+   "page": "➜ Navigation",
+   "tier": "Organism",
+   "variants": {
+    "Alignment": [
+     "Top",
+     "Middle"
+    ],
+    "Nav items": [
+     "3",
+     "4",
+     "5",
+     "6"
+    ]
+   },
+   "properties": {
+    "Show FAB": "BOOLEAN",
+    "Show Menu": "BOOLEAN",
+    "Segments": "SLOT"
+   },
+   "variant_count": 8,
+   "use": "Side navigation, medium windows.",
+   "nests": [
+    "Building Blocks/Navigation rail/Vertical nav item"
+   ]
+  },
+  {
+   "name": "Navigation Rail: Expanded",
+   "group": "Navigation",
+   "page": "➜ Navigation",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Docked",
+     "Floating"
+    ],
+    "Alignment": [
+     "Top",
+     "Middle"
+    ],
+    "Nav items": [
+     "3",
+     "4",
+     "5",
+     "6"
+    ]
+   },
+   "properties": {
+    "Show Menu": "BOOLEAN",
+    "Show FAB": "BOOLEAN",
+    "Segments": "SLOT"
+   },
+   "variant_count": 16,
+   "use": "Expanded side navigation, expanded windows.",
+   "nests": [
+    "Building Blocks/Navigation rail/Horizontal nav item"
+   ]
+  },
+  {
+   "name": "Toolbar",
+   "group": "Navigation",
+   "page": "➜ Toolbar",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Floating",
+     "Docked"
+    ],
+    "Orientation": [
+     "Horizontal",
+     "Vertical"
+    ],
+    "Color": [
+     "Vibrant",
+     "Standard"
+    ]
+   },
+   "properties": {
+    "Content (standard)": "SLOT",
+    "Content (vibrant)": "SLOT"
+   },
+   "variant_count": 6,
+   "use": "Contextual actions for the current page.",
+   "nests": [
+    "Building Blocks/Standard/*",
+    "Building Blocks/Vibrant/*"
+   ]
+  },
+  {
+   "name": "Tabs",
+   "group": "Navigation",
+   "page": "➜ Tabs",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Fixed",
+     "Scrollable"
+    ],
+    "Style": [
+     "Primary",
+     "Secondary"
+    ],
+    "Layout": [
+     "Icon only",
+     "Label & icon",
+     "Label only"
+    ]
+   },
+   "properties": {
+    "Tab group": "SLOT"
+   },
+   "variant_count": 10,
+   "use": "Switch between related views at the same level.",
+   "nests": [
+    "Primary tabs/*",
+    "Secondary tabs/*"
+   ]
+  },
+  {
+   "name": "Primary tabs/Icon and label",
+   "group": "Navigation",
+   "page": "➜ Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN",
+    "Show badge": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Label text": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "One tab item."
+  },
+  {
+   "name": "Primary tabs/Icon only",
+   "group": "Navigation",
+   "page": "➜ Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN",
+    "Show badge": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP"
+   },
+   "variant_count": 8,
+   "use": "One tab item."
+  },
+  {
+   "name": "Primary tabs/Label only",
+   "group": "Navigation",
+   "page": "➜ Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN",
+    "Show badge": "BOOLEAN",
+    "Label text": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "One tab item."
+  },
+  {
+   "name": "Secondary tabs/Label only",
+   "group": "Navigation",
+   "page": "➜ Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN",
+    "Show badge": "BOOLEAN",
+    "Label text": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "One tab item."
+  },
+  {
+   "name": "Secondary tabs/Icon and label",
+   "group": "Navigation",
+   "page": "➜ Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed"
+    ]
+   },
+   "properties": {
+    "Show focus indicator": "BOOLEAN",
+    "Show badge": "BOOLEAN",
+    "Icon": "INSTANCE_SWAP",
+    "Label text": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "One tab item."
+  },
+  {
+   "name": "Stacked card",
+   "group": "Data display",
+   "page": "➜ Cards",
+   "tier": "Organism",
+   "variants": {
+    "Style": [
+     "Outlined",
+     "Elevated",
+     "Filled"
+    ],
+    "Layout": [
+     "Slot",
+     "Media & text"
+    ]
+   },
+   "properties": {
+    "Slot swap": "INSTANCE_SWAP",
+    "Show secondary action": "BOOLEAN",
+    "Header text": "TEXT",
+    "Subhead text": "TEXT",
+    "Title text": "TEXT",
+    "Subtitle text": "TEXT",
+    "Supporting text": "TEXT",
+    "Content": "SLOT"
+   },
+   "variant_count": 6,
+   "use": "Content and actions about one subject, vertical."
+  },
+  {
+   "name": "Horizontal card",
+   "group": "Data display",
+   "page": "➜ Cards",
+   "tier": "Organism",
+   "variants": {
+    "Style": [
+     "Outlined",
+     "Elevated",
+     "Filled"
+    ],
+    "Layout": [
+     "Slot",
+     "Media & text"
+    ]
+   },
+   "properties": {
+    "Slot swap": "INSTANCE_SWAP",
+    "Header text": "TEXT",
+    "Subhead text": "TEXT",
+    "Content": "SLOT"
+   },
+   "variant_count": 6,
+   "use": "Compact card with media beside text."
+  },
+  {
+   "name": "Basic dialog",
+   "group": "Data display",
+   "page": "➜ Dialogs",
+   "tier": "Organism",
+   "variants": {
+    "Icon": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {
+    "Show divider": "BOOLEAN",
+    "Title": "TEXT",
+    "Supporting text": "TEXT",
+    "Content": "SLOT"
+   },
+   "variant_count": 2,
+   "use": "Interrupting decision or information.",
+   "nests": [
+    "Button - text"
+   ]
+  },
+  {
+   "name": "List dialog",
+   "group": "Data display",
+   "page": "➜ Dialogs",
+   "tier": "Organism",
+   "variants": {
+    "Icon": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Supporting text": "TEXT",
+    "Content": "SLOT"
+   },
+   "variant_count": 2,
+   "use": "Choose from a list in a dialog.",
+   "nests": [
+    "List item"
+   ]
+  },
+  {
+   "name": "Scrollable list dialog",
+   "group": "Data display",
+   "page": "➜ Dialogs",
+   "tier": "Organism",
+   "variants": {
+    "Icon": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Supporting text": "TEXT",
+    "Content": "SLOT"
+   },
+   "variant_count": 2,
+   "use": "Long list in a dialog.",
+   "nests": [
+    "List item"
+   ]
+  },
+  {
+   "name": "Generic avatar",
+   "group": "Data display",
+   "page": "➜ Avatars",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Check",
+     "Monogram",
+     "Avatar"
+    ]
+   },
+   "properties": {
+    "Letter": "TEXT"
+   },
+   "variant_count": 3,
+   "use": "Person or entity image / monogram."
+  },
+  {
+   "name": "Badges",
+   "group": "Data display",
+   "page": "➜ Badges",
+   "tier": "Atom",
+   "variants": {
+    "Size": [
+     "Large",
+     "Small"
+    ]
+   },
+   "properties": {
+    "Badge label": "TEXT"
+   },
+   "variant_count": 2,
+   "use": "Count or status dot on icons/nav items."
+  },
+  {
+   "name": "Carousel",
+   "group": "Data display",
+   "page": "➜ Carousel",
+   "tier": "Organism",
+   "variants": {
+    "Context": [
+     "Mobile",
+     "Tablet"
+    ],
+    "Layout": [
+     "Hero",
+     "Center-aligned hero",
+     "Multi-browse",
+     "Uncontained",
+     "Multi-aspect ratio"
+    ]
+   },
+   "properties": {
+    "Item 1": "INSTANCE_SWAP",
+    "Item 2": "INSTANCE_SWAP",
+    "Item 3": "INSTANCE_SWAP",
+    "Item 4": "INSTANCE_SWAP",
+    "Item 5": "INSTANCE_SWAP",
+    "Show 4th item": "BOOLEAN",
+    "Show 5th item": "BOOLEAN"
+   },
+   "variant_count": 10,
+   "use": "Browse a collection of visual items."
+  },
+  {
+   "name": "Carousel - Full screen",
+   "group": "Data display",
+   "page": "➜ Carousel",
+   "tier": "Organism",
+   "variants": {
+    "Context": [
+     "Mobile"
+    ],
+    "Layout": [
+     "Full screen"
+    ]
+   },
+   "properties": {},
+   "variant_count": 1,
+   "use": "Full-screen immersive carousel."
+  },
+  {
+   "name": "Assistive chip",
+   "group": "Data display",
+   "page": "➜ Chips",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Outlined",
+     "Elevated"
+    ],
+    "Configuration": [
+     "Label only",
+     "Label & icon",
+     "Label & favicon",
+     "Label & brand icon"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Dragged",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Leading icon": "INSTANCE_SWAP",
+    "Branded icon": "INSTANCE_SWAP",
+    "Favicon": "INSTANCE_SWAP",
+    "Label text": "TEXT",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 48,
+   "use": "Smart suggested action."
+  },
+  {
+   "name": "Filter chip",
+   "group": "Data display",
+   "page": "➜ Chips",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Outlined",
+     "Elevated"
+    ],
+    "Configuration": [
+     "Label only",
+     "Label & leading icon"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Dragged",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "Show trailing icon": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Trailing icon": "INSTANCE_SWAP",
+    "Leading icon": "INSTANCE_SWAP",
+    "Label text": "TEXT",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 96,
+   "use": "Filter content (multi-select)."
+  },
+  {
+   "name": "Input chip",
+   "group": "Data display",
+   "page": "➜ Chips",
+   "tier": "Atom",
+   "variants": {
+    "Configuration": [
+     "Label only",
+     "Label & leading icon",
+     "Label & avatar"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Dragged"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "Show closing icon": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {
+    "Leading icon": "INSTANCE_SWAP",
+    "Avatar": "INSTANCE_SWAP",
+    "Label text": "TEXT",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 48,
+   "use": "User-entered item (tag, contact).",
+   "issues": [
+    "lowercase false|true values"
+   ]
+  },
+  {
+   "name": "Suggestion chip",
+   "group": "Data display",
+   "page": "➜ Chips",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Outlined",
+     "Elevated"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Dragged",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ],
+    "Show icon": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Leading icon": "INSTANCE_SWAP",
+    "Label text": "TEXT",
+    "Show focus indicator": "BOOLEAN"
+   },
+   "variant_count": 48,
+   "use": "Dynamic suggestion (e.g. reply)."
+  },
+  {
+   "name": "Chip groups",
+   "group": "Data display",
+   "page": "➜ Chips",
+   "tier": "Molecule",
+   "variants": {
+    "Type": [
+     "Input chips",
+     "Assistive chips",
+     "Filter chips",
+     "Suggestion chips"
+    ],
+    "Layout": [
+     "Single row - scrollable",
+     "Multiple rows - overflow"
+    ]
+   },
+   "properties": {},
+   "variant_count": 8,
+   "use": "Set of chips.",
+   "nests": [
+    "Filter chip",
+    "Input chip",
+    "Assistive chip",
+    "Suggestion chip"
+   ]
+  },
+  {
+   "name": "Horizontal",
+   "group": "Data display",
+   "page": "➜ Dividers",
+   "tier": "Atom",
+   "variants": {
+    "Property 1": [
+     "Divider with subhead",
+     "Full-width",
+     "Inset",
+     "Middle-inset"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Horizontal divider.",
+   "issues": [
+    "generic \"Property 1\"; set name should be Divider / Horizontal"
+   ]
+  },
+  {
+   "name": "Vertical",
+   "group": "Data display",
+   "page": "➜ Dividers",
+   "tier": "Atom",
+   "variants": {
+    "Property 1": [
+     "Full-width",
+     "Inset",
+     "Middle-inset"
+    ]
+   },
+   "properties": {},
+   "variant_count": 3,
+   "use": "Vertical divider.",
+   "issues": [
+    "generic \"Property 1\""
+   ]
+  },
+  {
+   "name": "List item",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Molecule",
+   "variants": {
+    "Alignment": [
+     "Middle-aligned",
+     "Top-aligned"
+    ],
+    "State": [
+     "Enabled",
+     "Hovered",
+     "Focused",
+     "Pressed",
+     "Dragged",
+     "Disabled"
+    ],
+    "Selected": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show trailing element": "BOOLEAN",
+    "Show leading element": "BOOLEAN",
+    "Show focus indicator": "BOOLEAN",
+    "Content": "SLOT"
+   },
+   "variant_count": 24,
+   "use": "One row in a list (Expressive).",
+   "nests": [
+    "Building blocks/Leading element",
+    "Building blocks/Trailing element",
+    "Building blocks/Content"
+   ]
+  },
+  {
+   "name": "List",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Standard",
+     "Segmented (filled)",
+     "Expandable",
+     "Draggable",
+     "Swipable - standard",
+     "Swipable - segmented"
+    ],
+    "Multi-line": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show divider": "BOOLEAN"
+   },
+   "variant_count": 12,
+   "use": "Vertical group of list items.",
+   "nests": [
+    "List item"
+   ]
+  },
+  {
+   "name": "List item - Accordion ",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Molecule",
+   "variants": {
+    "Accordion": [
+     "Collapsed",
+     "Expanded"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Expandable list row.",
+   "issues": [
+    "trailing space in name"
+   ]
+  },
+  {
+   "name": "List Item - Swipe",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Molecule",
+   "variants": {
+    "Swipe state": [
+     "Default",
+     "Initiate reveal",
+     "Swipe Action",
+     "Revealed"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "List row with swipe actions."
+  },
+  {
+   "name": "List item/List Item: 0 Density (baseline)",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Molecule",
+   "variants": {
+    "Condition": [
+     "1 line",
+     "2 line",
+     "3 line+"
+    ],
+    "Leading": [
+     "None",
+     "Monogram",
+     "Icon",
+     "Image",
+     "Video",
+     "Check Box",
+     "Radio Button",
+     "Switch"
+    ],
+    "Trailing": [
+     "None",
+     "Check Box",
+     "Icon",
+     "Radio Button",
+     "Switch"
+    ],
+    "Show overline": [
+     "False",
+     "True"
+    ],
+    "Show supporting text": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Headline": "TEXT",
+    "Overline": "TEXT",
+    "Supporting text": "TEXT",
+    "Trailing supporting text": "TEXT",
+    "Show divider": "BOOLEAN",
+    "State-layer": "INSTANCE_SWAP",
+    "Swap divider type": "INSTANCE_SWAP"
+   },
+   "variant_count": 238,
+   "use": "Baseline list row."
+  },
+  {
+   "name": "List item/List Item: -2 Density (baseline)",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Molecule",
+   "variants": {
+    "Condition": [
+     "1 line",
+     "2 line",
+     "3 line+"
+    ],
+    "Leading": [
+     "None",
+     "Monogram",
+     "Icon",
+     "Image",
+     "Video",
+     "Check Box",
+     "Radio Button",
+     "Switch"
+    ],
+    "Trailing": [
+     "None",
+     "Check Box",
+     "Icon",
+     "Radio Button",
+     "Switch"
+    ],
+    "Show overline": [
+     "False",
+     "True"
+    ],
+    "Show supporting text": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Headline": "TEXT",
+    "Overline": "TEXT",
+    "Supporting text": "TEXT",
+    "Trailing supporting text": "TEXT",
+    "Show divider": "BOOLEAN",
+    "State-layer": "INSTANCE_SWAP",
+    "Swap divider type": "INSTANCE_SWAP"
+   },
+   "variant_count": 217,
+   "use": "Baseline list row."
+  },
+  {
+   "name": "List item/List Item: -4 Density (baseline)",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Molecule",
+   "variants": {
+    "Condition": [
+     "1 line",
+     "2 line",
+     "3 line+"
+    ],
+    "Leading": [
+     "None",
+     "Monogram",
+     "Icon",
+     "Image",
+     "Video",
+     "Check Box",
+     "Radio Button",
+     "Switch"
+    ],
+    "Trailing": [
+     "None",
+     "Check Box",
+     "Icon",
+     "Radio Button",
+     "Switch"
+    ],
+    "Show overline": [
+     "False",
+     "True"
+    ],
+    "Show supporting text": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Headline": "TEXT",
+    "Overline": "TEXT",
+    "Supporting text": "TEXT",
+    "Trailing supporting text": "TEXT",
+    "Show divider": "BOOLEAN",
+    "State-layer": "INSTANCE_SWAP",
+    "Swap divider type": "INSTANCE_SWAP"
+   },
+   "variant_count": 197,
+   "use": "Baseline list row."
+  },
+  {
+   "name": "Full Lists",
+   "group": "Data display",
+   "page": "➜ Lists",
+   "tier": "Organism",
+   "variants": {
+    "Property 1": [
+     "List (baseline)",
+     "List: -2 Density (baseline)",
+     "List: -4 Density (baseline)"
+    ]
+   },
+   "properties": {},
+   "variant_count": 3,
+   "use": "Baseline full lists.",
+   "issues": [
+    "generic \"Property 1\""
+   ]
+  },
+  {
+   "name": "Shape Set",
+   "group": "Data display",
+   "page": "➜ Shapes",
+   "tier": "Atom",
+   "variants": {
+    "Shape": [
+     "4-leaf clover",
+     "4-sided cookie",
+     "6-sided cookie",
+     "7-sided cookie",
+     "8-leaf clover",
+     "9-sided cookie",
+     "12-sided cookie",
+     "Arch",
+     "Arrow",
+     "Boom",
+     "Bun",
+     "Burst",
+     "Circle",
+     "Diamond",
+     "Fan",
+     "Flower",
+     "Gem",
+     "Ghost-ish",
+     "Heart",
+     "Hexagon",
+     "Oval",
+     "Pentagon",
+     "Pill",
+     "Pixel Circle",
+     "Pixel triangle",
+     "Puffy",
+     "Puffy diamond",
+     "Semicircle",
+     "Slanted",
+     "Soft boom",
+     "Soft burst",
+     "Square",
+     "Sunny",
+     "Triangle",
+     "Very sunny"
+    ]
+   },
+   "properties": {},
+   "variant_count": 35,
+   "use": "M3 Expressive shapes for avatars, image masks, loaders."
+  },
+  {
+   "name": "Bottom sheet",
+   "group": "Data display",
+   "page": "➜ Sheets",
+   "tier": "Organism",
+   "variants": {
+    "Modal": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show drag handle": "BOOLEAN",
+    "Content": "SLOT"
+   },
+   "variant_count": 2,
+   "use": "Secondary content anchored to the bottom."
+  },
+  {
+   "name": "Side Sheet",
+   "group": "Data display",
+   "page": "➜ Sheets",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Standard",
+     "Modal"
+    ],
+    "Show back": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Show actions": "BOOLEAN",
+    "Headline text": "TEXT",
+    "Content": "SLOT"
+   },
+   "variant_count": 4,
+   "use": "Secondary content on the side (medium+ windows)."
+  },
+  {
+   "name": "Snackbar",
+   "group": "Data display",
+   "page": "➜ Snackbar",
+   "tier": "Molecule",
+   "variants": {
+    "Configuration": [
+     "Text only",
+     "Text & action",
+     "Text & longer action"
+    ],
+    "(unnamed)": [
+     "One line",
+     "Two lines"
+    ],
+    "Show close affordance": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {
+    "Supporting text": "TEXT"
+   },
+   "variant_count": 10,
+   "use": "Brief message about a process, with optional action.",
+   "issues": [
+    "one variant property has an empty name"
+   ]
+  },
+  {
+   "name": "Plain Tooltip",
+   "group": "Data display",
+   "page": "➜ Tooltips",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Single line",
+     "Multi line"
+    ]
+   },
+   "properties": {
+    "Supporting text": "TEXT"
+   },
+   "variant_count": 2,
+   "use": "Short label for an icon or control."
+  },
+  {
+   "name": "Rich Tooltip",
+   "group": "Data display",
+   "page": "➜ Tooltips",
+   "tier": "Molecule",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "Tooltip with title, text and action."
+  },
+  {
+   "name": "Keyboard",
+   "group": "Setup",
+   "page": "➜ Utilities",
+   "tier": "Organism",
+   "variants": {
+    "Configuration": [
+     "Base keyboard",
+     "Alphanumeric",
+     "Keypad",
+     "Numeric only"
+    ],
+    "Style": [
+     "Portrait",
+     "Landscape",
+     "Floating"
+    ]
+   },
+   "properties": {},
+   "variant_count": 12,
+   "use": "System keyboard for mockups only."
+  },
+  {
+   "name": "Building Blocks/status-bar",
+   "group": "Setup",
+   "page": "➜ Utilities",
+   "tier": "Atom",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "System bar for mockups."
+  },
+  {
+   "name": "Building Blocks/navigation",
+   "group": "Setup",
+   "page": "➜ Utilities",
+   "tier": "Atom",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "System bar for mockups."
+  },
+  {
+   "name": "Scrim",
+   "group": "Setup",
+   "page": "➜ Utilities",
+   "tier": "Atom",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "Dimming layer behind modals."
+  },
+  {
+   "name": "Focus indicator",
+   "group": "Setup",
+   "page": "➜ Utilities",
+   "tier": "Atom",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "3dp focus outline used by every interactive component."
+  }
+ ],
+ "building_blocks": {
+  "rule": "Private parts; use only inside their parent component.",
+  "names": [
+   ".Building Blocks/Local M3 calendar cell",
+   ".Building Blocks/Year",
+   ".Building Blocks/Menu button",
+   ".Building Blocks/Hour",
+   ".Building Blocks/Input",
+   ".Building Blocks/Direct Input (keyboard) input",
+   ".Building Blocks/Period Selector",
+   ".Building Blocks/Period Selector - Horizontal",
+   ".Building Blocks/hour-line",
+   ".Building Blocks/Clock face - 12 hour",
+   ".Building Blocks/Clock face - 24 hour",
+   ".Building Blocks/Progress indicator/*",
+   "Slider parts: .Building Blocks/Handle, Track stop, Inactive track, Stops, Active track, Value indicator",
+   "Building Blocks/Button group/Connected segments/{XSmall..Xlarge}",
+   ".Building Blocks/FAB Menu/{Primary,Secondary,Tertiary}/{Segment,FAB}",
+   "Building Blocks/Segmented button/Button segment (start|middle|end)",
+   ".Building Blocks/App bar/Content/*",
+   ".Building Blocks/{Flat,On-scroll}/Search bar - Modified",
+   "Building Blocks/Menu list item (0, -2, -4 density)",
+   "Building Blocks/Leading element, Trailing element, Trailing element-selected",
+   ".Building Blocks/Label-basic, Label-vibrant, Content",
+   "Building Blocks/Navigation bars/{Vertical,Horizontal} nav item",
+   "Building Blocks/Navigation rail/{Vertical,Horizontal} nav item",
+   "Building Blocks/{Standard,Vibrant}/{Icon button, Icon button toggleable, Button toggleable}",
+   "Building blocks/{Leading element, Trailing element, Content, Reveal element, List item/Accordion buttton}"
+  ]
+ },
+ "xr_components": [
+  "XR/XR App Bar",
+  "XR/XR Navigation Rail",
+  "XR/XR Navigation bar",
+  "XR/XR Toolbar",
+  "XR/Building Blocks/*"
+ ],
+ "icons": {
+  "page": "➜  Icons",
+  "count": 141,
+  "set": "Material Symbols",
+  "examples": [
+   "wifi",
+   "alarm",
+   "bluetooth",
+   "do_not_disturb_on",
+   "flashlight_on",
+   "keyboard_arrow_up",
+   "keyboard_arrow_down",
+   "menu",
+   "arrow_back",
+   "arrow_forward",
+   "check",
+   "close",
+   "add",
+   "stars_filled",
+   "stars"
+  ],
+  "note": "Find an icon by its snake_case name on ➜  Icons."
+ },
+ "text_styles": [
+  {
+   "name": "display/large",
+   "font": "Google Sans Flex Regular",
+   "size": 56,
+   "line_height": 64,
+   "letter_spacing": 0
+  },
+  {
+   "name": "display/large-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 56,
+   "line_height": 64,
+   "letter_spacing": 0
+  },
+  {
+   "name": "display/medium",
+   "font": "Google Sans Flex Regular",
+   "size": 48,
+   "line_height": 56,
+   "letter_spacing": 0
+  },
+  {
+   "name": "display/medium-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 48,
+   "line_height": 56,
+   "letter_spacing": 0
+  },
+  {
+   "name": "display/small",
+   "font": "Google Sans Flex Regular",
+   "size": 40,
+   "line_height": 48,
+   "letter_spacing": 0
+  },
+  {
+   "name": "display/small-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 40,
+   "line_height": 48,
+   "letter_spacing": 0
+  },
+  {
+   "name": "headline/large",
+   "font": "Google Sans Flex Regular",
+   "size": 32,
+   "line_height": 40,
+   "letter_spacing": 0
+  },
+  {
+   "name": "headline/large-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 32,
+   "line_height": 40,
+   "letter_spacing": 0
+  },
+  {
+   "name": "headline/medium",
+   "font": "Google Sans Flex Regular",
+   "size": 28,
+   "line_height": 36,
+   "letter_spacing": 0
+  },
+  {
+   "name": "headline/medium-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 28,
+   "line_height": 36,
+   "letter_spacing": 0
+  },
+  {
+   "name": "headline/small",
+   "font": "Google Sans Flex Regular",
+   "size": 24,
+   "line_height": 32,
+   "letter_spacing": 0
+  },
+  {
+   "name": "headline/small-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 24,
+   "line_height": 32,
+   "letter_spacing": 0
+  },
+  {
+   "name": "title/large",
+   "font": "Google Sans Flex Regular",
+   "size": 20,
+   "line_height": 28,
+   "letter_spacing": 0
+  },
+  {
+   "name": "title/large-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 20,
+   "line_height": 28,
+   "letter_spacing": 0
+  },
+  {
+   "name": "title/medium",
+   "font": "Google Sans Flex Regular",
+   "size": 16,
+   "line_height": 24,
+   "letter_spacing": 0
+  },
+  {
+   "name": "title/medium-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 16,
+   "line_height": 24,
+   "letter_spacing": 0
+  },
+  {
+   "name": "title/small",
+   "font": "Google Sans Flex Regular",
+   "size": 14,
+   "line_height": 20,
+   "letter_spacing": 0
+  },
+  {
+   "name": "title/small-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 14,
+   "line_height": 20,
+   "letter_spacing": 0
+  },
+  {
+   "name": "label/large",
+   "font": "Google Sans Flex Regular",
+   "size": 14,
+   "line_height": 20,
+   "letter_spacing": 0
+  },
+  {
+   "name": "label/large-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 14,
+   "line_height": 20,
+   "letter_spacing": 0
+  },
+  {
+   "name": "label/medium",
+   "font": "Google Sans Flex Regular",
+   "size": 12,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "label/medium-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 12,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "label/small",
+   "font": "Google Sans Flex Regular",
+   "size": 10,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "label/small-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 10,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "body/large",
+   "font": "Google Sans Flex Regular",
+   "size": 16,
+   "line_height": 24,
+   "letter_spacing": 0
+  },
+  {
+   "name": "body/large-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 16,
+   "line_height": 24,
+   "letter_spacing": 0
+  },
+  {
+   "name": "body/medium",
+   "font": "Google Sans Flex Regular",
+   "size": 14,
+   "line_height": 20,
+   "letter_spacing": 0
+  },
+  {
+   "name": "body/medium-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 14,
+   "line_height": 20,
+   "letter_spacing": 0
+  },
+  {
+   "name": "body/small",
+   "font": "Google Sans Flex Regular",
+   "size": 12,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "body/small-emphasized",
+   "font": "Google Sans Flex SemiBold",
+   "size": 12,
+   "line_height": 16,
+   "letter_spacing": 0
+  }
+ ],
+ "effect_styles": [
+  {
+   "name": "Elevation Light/1",
+   "level": 1
+  },
+  {
+   "name": "Elevation Light/2",
+   "level": 2
+  },
+  {
+   "name": "Elevation Light/3",
+   "level": 3
+  },
+  {
+   "name": "Elevation Light/4",
+   "level": 4
+  },
+  {
+   "name": "Elevation Light/5",
+   "level": 5
+  },
+  {
+   "name": "Elevation Dark/1",
+   "level": 1
+  },
+  {
+   "name": "Elevation Dark/2",
+   "level": 2
+  },
+  {
+   "name": "Elevation Dark/3",
+   "level": 3
+  },
+  {
+   "name": "Elevation Dark/4",
+   "level": 4
+  },
+  {
+   "name": "Elevation Dark/5",
+   "level": 5
+  }
+ ],
+ "gaps": "See Component_Skills/*/references/gaps.md"
+}

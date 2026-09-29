@@ -7,6 +7,8 @@ description: Use before building, extending, auditing or coding anything with th
 
 > **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
 
+> **Data files (source of truth for values):** `../data/tokens.json` (every variable and mode, aliases, shade scales and their recolor curves), `../data/component-registry.json`, `../data/rules.json`, `../data/screen-templates.json`, and `../docs/decisions.md`. When a number here and the JSON differ, the JSON wins (it is pulled from Figma). To change a color, follow the Recolor procedure in the platform Main Skill (section 3b).
+
 Source: ⭐Setup pages of `Trianglz - Web Design System` (➜ Layout Grid, ➜ Typography, ➜ Colors, ➜ shadows,
 ➜ Corner Radius & spacings, ➜ Icons). Read through the Figma Desktop Bridge; every documentation frame was
 also checked visually (screenshots in `references/screens/`). Platform: **Web, Tailwind conventions**.

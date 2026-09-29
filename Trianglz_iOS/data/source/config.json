@@ -1,0 +1,14 @@
+{
+  "platform": "iOS",
+  "figma_file": "Trianglz - IOS Design System",
+  "figma_url": "https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System",
+  "collections": {
+    "VariableCollectionId:1:133": {"name": "Typography ", "role": "typography"},
+    "VariableCollectionId:7:645": {"name": "Spacing", "role": "spacing"},
+    "VariableCollectionId:14:327": {"name": "Color / Primitive", "role": "primitive"},
+    "VariableCollectionId:18:605": {"name": "Color / Semantic", "role": "semantic"},
+    "VariableCollectionId:18:606": {"name": "Color / Brand", "role": "brand-alias"},
+    "VariableCollectionId:233:57": {"name": "Raduis", "role": "radius"}
+  },
+  "ramp": {"method": "oklch", "base_step": "500", "order": "ascending"}
+}

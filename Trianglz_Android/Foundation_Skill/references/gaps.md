@@ -30,4 +30,4 @@
 17. **High** - 141 local Material Symbols exist (fill bound to On Surface), but components instance the **remote M3 kit icons** (`stars`, `stars_filled`, `check_small`, `check`, `arrow_drop_down`...). Duplicated names without `_filled` suffix (two `check_box`, `mail`, `share`, `edit`, `delete`, `settings`, `alarm`, `mic`, `inbox`, `archive`...).
 
 ## Screenshots
-18. Figma image export hung during this study (all `exportAsync` calls timed out in both files). No screenshots were captured for Android; re-run the capture pass after restarting the Desktop Bridge plugin (light + dark of every variant).
+18. **Screenshots** - captured 2026-09-29 in `references/screens/` (7 PNGs: color-schemes, corner-radius, elevation, icons, tonal-palettes, typography, utilities). Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. The file has no Dark preview frames for these components, so only Light was captured.

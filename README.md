@@ -7,6 +7,8 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 - `Design_System_Intake_Skill/`: the entry flow (tools check, questions, path, approval checkpoints).
 - `Web_Design_System_Skill/`, `iOS_Design_System_Skill/`, `Android_Design_System_Skill/`: platform Main Skills.
 - `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/`: studies of the Trianglz template files (foundations, components, known gaps).
+- `*/data/`: JSON knowledge base per DS (tokens, component registry, rules, screen templates) and `*/docs/decisions.md`.
+- `tools/`: `build_tokens.py` (Figma export to tokens.json) and `recolor.py` (change a color and regenerate all its shades). Needs Python 3.
 - `References.md`: Trianglz Figma template links and tooling links.
 - `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`.
 

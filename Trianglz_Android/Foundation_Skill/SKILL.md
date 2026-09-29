@@ -7,13 +7,15 @@ description: Use before building, extending, auditing or coding anything with th
 
 > **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
 
+> **Data files (source of truth for values):** `../data/tokens.json` (every variable and mode, aliases, shade scales and their recolor curves), `../data/component-registry.json`, `../data/rules.json`, `../data/screen-templates.json`, and `../docs/decisions.md`. When a number here and the JSON differ, the JSON wins (it is pulled from Figma). To change a color, follow the Recolor procedure in the platform Main Skill (section 3b).
+
 Source: ⭐Setup pages of `Trianglz - Android M3 x Design System`, read through the Figma Desktop Bridge on 2026-09-29 (read-only study, nothing was changed).
 Platform: **Android, Material Design 3 (M3 Expressive, 2025 kit), dp / sp**. The file is built on Google's Material 3 Design Kit re-themed with Trianglz palettes.
 
 Reference files:
 - `references/variables.md` - every collection, scheme role, palette tone, text/effect/grid style.
 - `references/gaps.md` - foundation audit.
-- `references/screens/*.png` - Setup documentation (see screenshot note in gaps.md).
+- `references/screens/*.png` - screenshots of every Setup documentation section (SVG export rendered to PNG).
 
 Component skills: `Component_Skills/Form_Elements_Skill`, `Component_Skills/Navigation_Skill`, `Component_Skills/Data_Display_Skill`.
 

@@ -18,3 +18,7 @@ desktop.ini
 # Temporary files
 *.tmp
 ~$*
+
+# Python
+__pycache__/
+*.pyc

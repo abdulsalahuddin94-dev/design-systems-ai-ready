@@ -9,4 +9,4 @@
 5. **Med** - Baseline (older M3) search layouts kept next to the new ones - mark deprecated or move to an archive page.
 6. **Med** - Group routing: Loading & progress indicators display status (Data display by the routing rule); keep here only if the team agrees.
 7. **Low** - No dark previews on these pages.
-8. **Screenshots** - not captured (Figma export hung). Capture every state per component in Light and Dark.
+8. **Screenshots** - captured 2026-09-29 in `references/screens/` (10 PNGs: checkbox-all-variants, date-pickers, loading-indicators, progress-indicators, radio-all-variants, search, sliders-all-variants, switch-all-variants, text-fields-all-variants, time-pickers). Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. The file has no Dark preview frames for these components, so only Light was captured.

@@ -10,4 +10,4 @@
 6. **Med** - Checkbox/Radio are non-native on iOS; document when to use list checkmarks instead.
 7. **Med** - Touch targets: checkbox/radio 20pt with no 44pt hit area; Input md 45pt ok.
 8. **Low** - No component descriptions (Date pickers carry Apple's placeholder description).
-9. **Screenshots** - not captured: Figma export hung (see Foundation gaps #22). Capture all variants, Light + Dark (Input Light/Dark frames 2006:772 / 2006:779 exist).
+9. **Screenshots** - captured 2026-09-29 in `references/screens/` (8 PNGs: checkbox-radio, date-time-pickers, input-all-variants, input-dark, input-light, radio, toggle-all-variants, toolbars-search). Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. Dark captures exist only where the file has a Dark frame or section (input-dark).

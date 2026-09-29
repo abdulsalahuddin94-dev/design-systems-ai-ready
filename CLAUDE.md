@@ -14,6 +14,8 @@ It checks the Figma tools first (figma-console-mcp or figma-cli with the Desktop
 | `iOS_Design_System_Skill/SKILL.md` | iOS systems (Apple HIG) |
 | `Android_Design_System_Skill/SKILL.md` | Android systems (Material Design 3) |
 
+Knowledge base (exact values, read these instead of re-deriving): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`).
+
 Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/` (Foundation_Skill + Component_Skills). Template links: `References.md`.
 
 ## Rules
@@ -23,4 +25,5 @@ Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Tria
 - Find Figma nodes by name. Node IDs in the Trianglz skills are valid in the original files only.
 - Build order: Primitives, Semantics (Light/Dark), Spacing/Radius/Typography variables, styles, icons, components (Atoms, Molecules, Organisms, Patterns), linked docs, audit, project skills.
 - Required skills: figma-use + figma-generate-library before building; figma-generate-design + ui-ux-pro-max for screens; audit-design-system at the end of every build.
+- Colors are recolor-ready: Semantic tokens only alias Primitives; a color change runs `tools/recolor.py` (full shade scale regenerated, contrast re-checked) and never edits components.
 - Never install tools on the user's behalf; show the install steps and let them do it.

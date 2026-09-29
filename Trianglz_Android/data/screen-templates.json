@@ -1,0 +1,270 @@
+{
+ "meta": {
+  "platform": "Android",
+  "rule": "Screens are assembled only from components in component-registry.json and tokens in tokens.json. \"(to build)\" means the component is missing: build it first, lower tiers first.",
+  "skills": [
+   "figma-generate-design",
+   "figma-use",
+   "ui-ux-pro-max",
+   "audit-design-system"
+  ],
+  "frames": {
+   "Compact": [
+    412,
+    917
+   ],
+   "Medium": [
+    840,
+    1200
+   ],
+   "Expanded": [
+    1280,
+    800
+   ]
+  },
+  "dark_mode": "duplicate the frame and set the Semantic / Schemes mode to Dark; never duplicate components"
+ },
+ "templates": {
+  "sign_in": {
+   "tier": "Pattern",
+   "use": "Email/password sign in with optional social login.",
+   "layout": "single column, max width 400 (web) / full width with margins (mobile), vertically centered on large screens",
+   "sections": [
+    {
+     "name": "Header",
+     "components": [
+      "App bar (mobile only, back action)"
+     ],
+     "content": "logo, title (headline/large), subtitle (body/large)"
+    },
+    {
+     "name": "Form",
+     "components": [
+      "Text field Style=Outlined (Email)",
+      "Text field (trailing visibility icon) (Password)",
+      "Checkboxes (Remember me, optional)",
+      "Button - text (Forgot password)"
+     ],
+     "gap": "space 16 (spacing variables to build)"
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button (filled) Size=Medium (Sign in, full width)",
+      "Button - outline (Continue with Google/Apple, optional)"
+     ]
+    },
+    {
+     "name": "Footer",
+     "components": [
+      "Button - text (Create account)"
+     ],
+     "content": "body/medium"
+    }
+   ],
+   "states": [
+    "default",
+    "field error",
+    "loading (button Loading / Loading indicator)",
+    "server error (Snackbar)"
+   ],
+   "tokens": {
+    "background": "Schemes/Surface/Surface",
+    "section_gap": "space 32",
+    "margin": "Window margin (16 / 24 / 24)"
+   }
+  },
+  "sign_up": {
+   "tier": "Pattern",
+   "use": "Account creation.",
+   "extends": "sign_in",
+   "sections": [
+    {
+     "name": "Form",
+     "components": [
+      "Text field Style=Outlined (Full name)",
+      "Text field Style=Outlined (Email)",
+      "Text field (trailing visibility icon) (Password + hint)",
+      "Text field (trailing visibility icon) (Confirm)",
+      "Checkboxes (Accept terms, required)"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button (filled) Size=Medium (Create account, disabled until valid)"
+     ]
+    }
+   ]
+  },
+  "otp_verification": {
+   "tier": "Pattern",
+   "use": "Verify a code sent by SMS or email.",
+   "sections": [
+    {
+     "name": "Header",
+     "components": [
+      "App bar (back)"
+     ],
+     "content": "title, \"We sent a code to ...\", masked destination"
+    },
+    {
+     "name": "Code",
+     "components": [
+      "OTP field (Molecule, to build from Text field cells) (6 cells, auto-advance, paste support)"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button (filled) Size=Medium (Verify)",
+      "Button - text (Resend code, disabled with countdown)"
+     ]
+    }
+   ],
+   "states": [
+    "empty",
+    "filled",
+    "error (shake + message)",
+    "success",
+    "resend countdown"
+   ]
+  },
+  "list": {
+   "tier": "Pattern",
+   "use": "Browse a collection (orders, contacts, messages).",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "App bar (title + actions)",
+      "Search bar",
+      "Tabs or filter chips (optional)"
+     ]
+    },
+    {
+     "name": "Items",
+     "components": [
+      "List item x N (leading Generic avatar / icon, title, supporting text, trailing Badges or chevron)"
+     ],
+     "rules": "virtualized; pull to refresh on mobile; pagination or infinite scroll"
+    },
+    {
+     "name": "Navigation",
+     "components": [
+      "Navigation Bar: Horizontal items (Compact) / Navigation Rail (Medium+)"
+     ]
+    }
+   ],
+   "states": [
+    "loading (skeleton rows)",
+    "empty (Icon (Material Symbols) + title + Button (filled) Size=Medium)",
+    "error (Snackbar + retry)",
+    "no search results"
+   ]
+  },
+  "detail": {
+   "tier": "Pattern",
+   "use": "One item with its info and actions.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "App bar (back, title, more actions)"
+     ]
+    },
+    {
+     "name": "Hero",
+     "content": "image or Generic avatar, title (headline/large), meta, Badges"
+    },
+    {
+     "name": "Content",
+     "components": [
+      "Stacked card sections",
+      "List item rows for attributes"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button (filled) Size=Medium (main action, sticky bottom on mobile)",
+      "Button - outline"
+     ]
+    }
+   ]
+  },
+  "form": {
+   "tier": "Pattern",
+   "use": "Create or edit a record.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "App bar (Cancel / Save)"
+     ]
+    },
+    {
+     "name": "Fields",
+     "components": [
+      "Text field Style=Outlined",
+      "Menu (exposed dropdown)",
+      "Radio buttons group",
+      "Checkboxes",
+      "Switch"
+     ],
+     "rules": "one column on mobile; labels above fields; hint between label and field; error below field; group related fields with section headers"
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button (filled) Size=Medium (Save)",
+      "Button - outline (Cancel)"
+     ]
+    }
+   ],
+   "states": [
+    "pristine",
+    "dirty",
+    "validation errors (summary Snackbar + inline errors)",
+    "saving",
+    "saved (Snackbar)"
+   ]
+  },
+  "settings": {
+   "tier": "Pattern",
+   "use": "Grouped preferences.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "App bar (Settings)"
+     ]
+    },
+    {
+     "name": "Groups",
+     "components": [
+      "List item with trailing Switch / chevron / value"
+     ],
+     "rules": "section headers; destructive row (Sign out, Delete account) last, danger color, opens Basic dialog"
+    }
+   ],
+   "tokens": {
+    "background": "Schemes/Surface Container/Surface Container"
+   }
+  },
+  "empty_state": {
+   "tier": "Pattern",
+   "use": "No data yet, first-run, or no results.",
+   "sections": [
+    {
+     "name": "Body",
+     "components": [
+      "Icon (Material Symbols) or illustration",
+      "Button (filled) Size=Medium (primary next step)"
+     ],
+     "content": "title (headline/large), one-sentence explanation (body/large)"
+    }
+   ]
+  }
+ }
+}

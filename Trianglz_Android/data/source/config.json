@@ -1,0 +1,12 @@
+{
+  "platform": "Android",
+  "figma_file": "Trianglz - Android M3 x Design System",
+  "figma_url": "https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System",
+  "collections": {
+    "VariableCollectionId:6001:3": {"name": "m3", "role": "semantic"},
+    "VariableCollectionId:6066:1564": {"name": "Palettes", "role": "primitive"},
+    "VariableCollectionId:6132:2059": {"name": "Font", "role": "typography"},
+    "VariableCollectionId:6140:2070": {"name": "Shape", "role": "radius"}
+  },
+  "ramp": {"method": "m3-tone", "base_step": "40", "order": "ascending"}
+}

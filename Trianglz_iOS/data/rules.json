@@ -1,0 +1,82 @@
+{
+  "meta": {
+    "platform": "iOS",
+    "applies_to": "Trianglz - IOS Design System and every new iOS DS built from iOS_Design_System_Skill",
+    "source": "iOS_Design_System_Skill/SKILL.md + Trianglz_iOS/Foundation_Skill (2026-09-29), Apple HIG",
+    "units": "pt"
+  },
+  "accessibility": {
+    "contrast_min": {"text": 4.5, "large_text": 3.0, "ui_boundary": 3.0, "focus_indicator": 3.0},
+    "large_text_definition": ">= 18pt regular or >= 14pt bold (HIG); Title 3 and larger count as large",
+    "touch_target_min": {"hard_min": 44, "recommended": 44},
+    "list_row_min_height": 44,
+    "dynamic_type": {"required": true, "modes": ["xSmall", "Small", "Medium", "Large", "xLarge", "xxLarge", "xxxLarge", "AX1", "AX2", "AX3", "AX4", "AX5"], "default": "Large", "rule": "layouts reflow (stack) at AX sizes instead of truncating"},
+    "disabled_opacity": {"min": 0.3, "max": 0.4}
+  },
+  "color": {
+    "semantic_must_alias_primitive": true,
+    "raw_hex_allowed_in": ["Color / Primitive"],
+    "brand_aliases": "Color / Brand holds aliases to the brand ramp (Brand Primary, Brand secondary); Semantic tokens reference Brand or Primitive, never hex",
+    "ramp_steps": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
+    "ramp_base_step": "500",
+    "apple_semantic_roles": ["label", "background", "grouped background", "fill", "separator", "tint", "icon", "status", "overlay"],
+    "no_color_styles": true
+  },
+  "spacing": {"scale": [0, 2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48], "margins": {"compact": 16, "regular": 20}, "list_row_inset": 16, "rule": "padding and gap bound to spacing variables"},
+  "radius": {"scale": {"none": 0, "xs": 4, "sm": 8, "md": 12, "lg": 16, "xl": 20, "xxl": 26, "sheet": 38, "full": 999}, "corner_smoothing": 0.6},
+  "typography": {
+    "font": "SF Pro (SF Pro Text / Display chosen by size)",
+    "text_style_naming": "{Apple style}/{Regular|Emphasized}",
+    "apple_default_large": {"Large Title": [34, 41, 0.4], "Title 1": [28, 34, 0.38], "Title 2": [22, 28, -0.26], "Title 3": [20, 25, -0.45], "Headline": [17, 22, -0.43], "Body": [17, 22, -0.43], "Callout": [16, 21, -0.31], "Subheadline": [15, 20, -0.23], "Footnote": [13, 18, -0.08], "Caption 1": [12, 16, 0], "Caption 2": [11, 13, 0.06]},
+    "value_format": "[size, line height, tracking] in pt",
+    "bind": ["fontFamily", "fontStyle", "fontSize", "lineHeight", "letterSpacing"]
+  },
+  "icons": {
+    "set": "SF Symbols style (exported vectors, never private-use text glyphs)",
+    "component_naming": "Icon/<Name>, variants Style = Outline | Fill",
+    "frame_sizes": [17, 22, 24, 28],
+    "weight": "match the adjacent text (Regular default)",
+    "color_tokens": "Icon/* semantic colors",
+    "must_be_instance_swap": true
+  },
+  "layout": {"iphone": {"width": 402, "height": 874, "columns": 4, "margin": 16, "gutter": 12}, "ipad": {"width": 820, "columns": 12, "margin": 20}, "safe_area": {"status_bar": 62, "home_indicator": 34}},
+  "components": {
+    "naming": "Family / Variant; '_' or '.' prefix only for private building blocks",
+    "states": ["Default", "Pressed", "Disabled", "Focused (iPad keyboard)"],
+    "no_hover_on_iphone": true,
+    "no_mode_variants": "Never a Mode=Light|Dark variant; dark is the Semantic Dark mode",
+    "button_heights": {"Small": 28, "Medium": 34, "Large": 50},
+    "bound": "100% local variables and styles, 0 remote Apple kit variables"
+  },
+  "build_order": ["Primitives", "Semantic (Light/Dark)", "Spacing, Radius, Typography variables (Dynamic Type modes)", "Text and effect styles (Liquid Glass, blur, shadows)", "Icons", "Atoms", "Molecules", "Organisms", "Patterns", "Linked documentation", "Audit + project skills"],
+  "recolor": {
+    "principle": "A color change edits only Primitive values (Color / Primitive). Color / Brand and Color / Semantic alias them, so every component follows.",
+    "generation": {"method": "oklch", "space": "OKLCH", "curve": "keep each step's captured lightness and chroma ratio; move hue to the new color; base step (500) = exact new color; lightness offset fades to 0 at the ends; clip chroma to sRGB"},
+    "steps": [
+      "Find the ramp in tokens.json > ramps (brand ramps sit under Color / Primitive::⭐ Brand Palette/...).",
+      "Run: python tools/recolor.py Trianglz_iOS --ramp <ramp> --base <#hex>",
+      "Review the contrast report (Light and Dark). Fix failures by re-pointing the Semantic alias to another step.",
+      "Apply the generated script with figma_execute (sets values into the same Primitive variables by name).",
+      "Re-export variables and run python tools/build_tokens.py Trianglz_iOS so tokens.json matches Figma.",
+      "Screenshot ➜ Colors System pages and every component page in Light and Dark.",
+      "Log the change in docs/decisions.md."
+    ],
+    "never": ["rename or delete Primitive variables during a recolor", "put raw hex in Semantic or Brand tokens", "recolor components directly", "hand-edit a single step without regenerating the ramp"],
+    "derived_tokens": []
+  },
+  "contrast_pairs": [
+    {"fg": "Color / Semantic::Text/Primary Text", "bg": "Color / Semantic::Backgrounds/Card", "min": 4.5},
+    {"fg": "Color / Semantic::Text/Primary Text", "bg": "Color / Semantic::Backgrounds/App", "min": 4.5},
+    {"fg": "Color / Semantic::Text/Secondary Text", "bg": "Color / Semantic::Backgrounds/Card", "min": 4.5},
+    {"fg": "Color / Semantic::Text/Tertiary Text", "bg": "Color / Semantic::Backgrounds/Card", "min": 4.5},
+    {"fg": "Color / Semantic::Text/Placeholder", "bg": "Color / Semantic::Backgrounds/Card", "min": 4.5},
+    {"fg": "Color / Semantic::Text/Link Text", "bg": "Color / Semantic::Backgrounds/Card", "min": 4.5},
+    {"fg": "Color / Semantic::Text/On Brand Text", "bg": "Color / Semantic::Backgrounds/Brand", "min": 4.5},
+    {"fg": "Color / Semantic::Status/Danger/Danger Text", "bg": "Color / Semantic::Status/Danger/Danger Background", "min": 4.5},
+    {"fg": "Color / Semantic::Status/Success/Success Text", "bg": "Color / Semantic::Status/Success/Success Background", "min": 4.5},
+    {"fg": "Color / Semantic::Status/Warning/Warning Text", "bg": "Color / Semantic::Status/Warning/Warning Background", "min": 4.5},
+    {"fg": "Color / Semantic::Status/Info/info Text", "bg": "Color / Semantic::Status/Info/info Background", "min": 4.5},
+    {"fg": "Color / Semantic::Borders/Focus", "bg": "Color / Semantic::Backgrounds/Card", "min": 3.0},
+    {"fg": "Color / Semantic::Borders/Strong", "bg": "Color / Semantic::Backgrounds/Card", "min": 3.0}
+  ]
+}

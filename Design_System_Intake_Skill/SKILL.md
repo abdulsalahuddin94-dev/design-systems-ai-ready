@@ -17,6 +17,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 - Use the exact questions below. Offer options on short lines, mark the recommended one, and accept free text.
 - Skip a question when the user already answered it (in this conversation, in the project folder's `Project_Brief.md`, or in memory). Say what you reused in one line.
 - If the user says "you decide", pick the recommended option, say which, and continue.
+- If the user only asks to **change a color** in an existing DS, skip the intake questions: run the Recolor procedure in the platform Main Skill (section 3b) with `tools/recolor.py`.
 - After the last intake question, post a short **Intake Summary** (section 9) and get a "yes" before any Figma work.
 - Record every answer in `[Project folder]\Project_Brief.md` as you go, so a later session never re-asks.
 - All paths are relative to the Root. Never write absolute machine paths (like `D:\...`) into skills or briefs.
@@ -160,6 +161,7 @@ Derive and write down: corner style (sharp 0-4 / soft 6-12 / rounded 16+ / pill)
 Follow the platform Main Skill build order exactly:
 1. Primitives -> 2. Semantics (Light / Dark) -> 3. Spacing, Radius, Typography variables -> 4. Text and effect styles -> 5. Icons -> 6. Components: Atoms -> Molecules -> Organisms -> Patterns -> 7. Linked documentation pages -> 8. Audit + project skills.
 Before each component: state its tier, post its atomic structure map, check dependencies exist, build missing lower tiers first.
+Colors are built **recolor-ready** (platform Main Skill section 3b): full shade scales generated from one base color with a stored curve, Semantic tokens only alias Primitives, so a later color change regenerates every shade and everything follows.
 
 ---
 
@@ -233,6 +235,7 @@ Ask: "Is this correct? Yes, start / Change something"
 ├─ CLAUDE.md                                (tells Claude to start with this skill)
 ├─ README.md, References.md                 (setup steps, Trianglz template links)
 ├─ .claude\skills\                          (slash commands pointing to the Main Skills)
+├─ tools\                                   (build_tokens.py, recolor.py, ds_color.py)
 ├─ Design_System_Intake_Skill\SKILL.md      (this skill, runs first)
 ├─ Web_Design_System_Skill\SKILL.md
 ├─ iOS_Design_System_Skill\SKILL.md
@@ -245,6 +248,8 @@ Ask: "Is this correct? Yes, start / Change something"
    │  ├─ Screens\                           (screenshots of existing UI)
    │  ├─ Extracted_Tokens.md                (Brownfield types 1 and 2)
    │  └─ Code_Inventory.md                  (Brownfield type 2)
+   ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
+   ├─ docs\decisions.md                     (why each decision was made; recolor log)
    ├─ Foundation_Skill\SKILL.md + references\ (variables.md, gaps.md, screens\)
    └─ Component_Skills\
       ├─ Form_Elements_Skill\               (anything the user enters data with)
@@ -267,5 +272,7 @@ Ask: "Is this correct? Yes, start / Change something"
    - `Foundation_Skill`: variables (names, values per mode, scopes, code syntax), styles, grids, icon rules, direction decisions from the intake.
    - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies.
    - `gaps.md` in each: anything left open.
+   - The JSON knowledge base in `<Project>/data/`: export variables and run `python tools/build_tokens.py <Project>` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the Trianglz reference versions as the starting shape) and `docs/decisions.md`.
+   - Check `tokens.json > recolor_readiness.ready` is true.
 4. Update `Project_Brief.md` with the final state and links, and save the key facts to memory.
 5. Reply to the user with the audit result, the skill paths and what is left.

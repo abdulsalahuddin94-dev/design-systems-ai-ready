@@ -1,0 +1,868 @@
+{
+ "meta": {
+  "platform": "iOS",
+  "figma_file": "Trianglz - IOS Design System",
+  "figma_url": "https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System",
+  "source": {
+   "method": "figma-console figma_execute (Desktop Bridge, read-only)",
+   "extracted_at": "2026-09-30",
+   "needs_resync": false
+  },
+  "naming": "Find components by name (page + set name). Node ids and keys are not stored: they change in a duplicate.",
+  "counts": {
+   "component_sets": 92,
+   "standalone_components": 7,
+   "text_styles": 22,
+   "effect_styles": 0
+  }
+ },
+ "pages": [
+  "Cover",
+  "⭐Setup",
+  "➜ Layout Grid",
+  " ➜ Colors System",
+  "↳ Primitive Colors - Designers Only",
+  "↳ Brand Colors",
+  "↳ Semantic Colors",
+  "➜ Typography",
+  "➜ Spacing",
+  "➜ Radius",
+  "➜ App Icon",
+  "➜ App Store Screenshots",
+  "➜ Icons",
+  "➜  Keyboards",
+  "⭐Form Elements",
+  "➜ Input Fields and Dropdown",
+  "➜ Checkbox",
+  "➜ Radio Buttons",
+  "➜ Toggles",
+  "➜ Date and Time Pickers",
+  "➜ Toolbars & Search",
+  "⭐Navigation ",
+  "➜ Tab Bar",
+  "➜  Buttons",
+  "➜ Action Sheets + Alerts",
+  "⭐Data display",
+  "➜ Status Bars and Menu Bars",
+  "➜ Bottom Sheets",
+  "➜ Face ID",
+  "➜ Progress Indicators",
+  "➜ Activity Views",
+  "➜ Contextual Menus"
+ ],
+ "components": [
+  {
+   "name": "Input",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "🎲 Type": [
+     "Default",
+     "Error",
+     "Disabled"
+    ],
+    "🎚️ State": [
+     "Default",
+     "Focus",
+     "filled"
+    ],
+    "📏 Size": [
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {
+    "👁️ IconLeft": "BOOLEAN",
+    "👁️ IconRight": "BOOLEAN",
+    "✏️ Title": "TEXT",
+    "👁️ Description": "BOOLEAN",
+    "✏️ Description": "TEXT",
+    "✏️ Textfield": "TEXT",
+    "⮑ 🔄 iconRight": "INSTANCE_SWAP",
+    "⮑ 🔄 iconLeft": "INSTANCE_SWAP"
+   },
+   "variant_count": 14,
+   "use": "Brand-styled text field with title, helper/error description and optional leading/trailing icons.",
+   "nests": [
+    "Icon"
+   ],
+   "issues": [
+    "emoji property names",
+    "lowercase value \"filled\""
+   ]
+  },
+  {
+   "name": "Checkbox",
+   "group": "Form Elements",
+   "page": "➜ Checkbox",
+   "tier": "Atom",
+   "variants": {
+    "Status": [
+     "Default",
+     "Checked",
+     "Indeterminate",
+     "Disabled",
+     "disabled (selected)"
+    ]
+   },
+   "properties": {
+    "Text": "TEXT"
+   },
+   "variant_count": 5,
+   "use": "Multi-select in brand forms (iOS prefers checkmarks in lists)."
+  },
+  {
+   "name": "RadioButton",
+   "group": "Form Elements",
+   "page": "➜ Radio Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Status": [
+     "Default",
+     "Checked",
+     "Disabled",
+     "Status4"
+    ]
+   },
+   "properties": {
+    "Text": "TEXT"
+   },
+   "variant_count": 4,
+   "use": "Single choice in brand forms.",
+   "issues": [
+    "value \"Status4\" = disabled selected",
+    "duplicate set also on ➜ Checkbox"
+   ]
+  },
+  {
+   "name": "Toggle - Switch",
+   "group": "Form Elements",
+   "page": "➜ Toggles",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Idle",
+     "Pressed"
+    ],
+    "Is On": [
+     "True",
+     "False"
+    ],
+    "Is Enabled": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {
+    "Show AX Label": "BOOLEAN"
+   },
+   "variant_count": 8,
+   "use": "Immediate on/off setting."
+  },
+  {
+   "name": "Date and time - Pickers",
+   "group": "Form Elements",
+   "page": "➜ Date and Time Pickers",
+   "tier": "Organism",
+   "variants": {
+    "Style": [
+     "Compact",
+     "Inline"
+    ]
+   },
+   "properties": {
+    "Show Date": "BOOLEAN",
+    "Show Time": "BOOLEAN",
+    "Text": "TEXT"
+   },
+   "variant_count": 2,
+   "use": "Date/time selection (compact row or inline calendar).",
+   "nests": [
+    "_Day",
+    "_Week",
+    "Date and time - Collapsed"
+   ]
+  },
+  {
+   "name": "Date and time - Collapsed",
+   "group": "Form Elements",
+   "page": "➜ Date and Time Pickers",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Selected"
+    ]
+   },
+   "properties": {
+    "Month": "TEXT",
+    "Year": "TEXT",
+    "Time": "TEXT",
+    "Show date": "BOOLEAN",
+    "Show time": "BOOLEAN"
+   },
+   "variant_count": 2,
+   "use": "Compact date/time trigger pills."
+  },
+  {
+   "name": "Toolbar - Top - iPhone",
+   "group": "Navigation",
+   "page": "➜ Toolbars & Search",
+   "tier": "Organism",
+   "variants": {
+    "Style": [
+     "Default",
+     "Inline Large",
+     "Large Title",
+     "Title 2 Line",
+     "Title 2 Line Left"
+    ]
+   },
+   "properties": {
+    "Show Subtitle": "BOOLEAN",
+    "Leading": "SLOT",
+    "Trailing": "SLOT"
+   },
+   "variant_count": 5,
+   "use": "Navigation bar (inline or large title) with leading/trailing button slots.",
+   "nests": [
+    "_Buttons - Top",
+    "_Back Bar Button Item",
+    "_Title - Large Title",
+    "_Title - Body"
+   ]
+  },
+  {
+   "name": "Toolbar - Bottom - iPhone",
+   "group": "Navigation",
+   "page": "➜ Toolbars & Search",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Buttons",
+     "Buttons + Page Dots",
+     "Search",
+     "Search with Focus",
+     "Search + Trailing Item",
+     "Search + Leading Item"
+    ]
+   },
+   "properties": {
+    "Buttons Leading": "SLOT",
+    "Buttons Trailing": "SLOT"
+   },
+   "variant_count": 6,
+   "use": "Bottom toolbar with actions or search.",
+   "nests": [
+    "_Button - Bottom",
+    "_Search - Bottom",
+    "_Page Dots"
+   ]
+  },
+  {
+   "name": "Tab Bar - iPhone",
+   "group": "Navigation",
+   "page": "➜ Tab Bar",
+   "tier": "Organism",
+   "variants": {
+    "Minimized": [
+     "False",
+     "True"
+    ],
+    "Tabs": [
+     "2",
+     "3",
+     "4",
+     "5"
+    ],
+    "Type": [
+     "Default",
+     "Search Role",
+     "Prominent Tab"
+    ]
+   },
+   "properties": {},
+   "variant_count": 24,
+   "use": "Top-level app sections (2-5 tabs).",
+   "nests": [
+    "_Tab Bar Button - iPhone",
+    "_Tab Bar Button - iPhone - Search"
+   ]
+  },
+  {
+   "name": "Button - Content Area",
+   "group": "Navigation",
+   "page": "➜  Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Size": [
+     "Small",
+     "Medium",
+     "Large"
+    ],
+    "Style": [
+     "Bordered - Prominent",
+     "Bordered",
+     "Borderless"
+    ],
+    "Label Style": [
+     "Title and Icon",
+     "Icon only",
+     "Title only"
+    ],
+    "Is Enabled": [
+     "True",
+     "False"
+    ],
+    "Destructive": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Symbol": "TEXT"
+   },
+   "variant_count": 108,
+   "use": "Buttons inside content (not bars). Prominent = primary action.",
+   "issues": [
+    "icons are SF Symbol text glyphs (Symbol TEXT prop), not Icon instances"
+   ]
+  },
+  {
+   "name": "Button - Liquid Glass - Text",
+   "group": "Navigation",
+   "page": "➜  Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Size": [
+     "Small",
+     "Medium",
+     "Large"
+    ],
+    "Style": [
+     "Glass Prominent",
+     "Glass"
+    ],
+    "Is Enabled": [
+     "True",
+     "False"
+    ],
+    "Destructive": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {},
+   "variant_count": 24,
+   "use": "iOS 26 glass buttons floating over content."
+  },
+  {
+   "name": "Button - Liquid Glass - Symbol",
+   "group": "Navigation",
+   "page": "➜  Buttons",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Glass Prominent",
+     "Glass"
+    ],
+    "Is Enabled": [
+     "True",
+     "False"
+    ],
+    "Destructive": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {},
+   "variant_count": 8,
+   "use": "Icon-only glass button."
+  },
+  {
+   "name": "Alert",
+   "group": "Navigation",
+   "page": "➜ Action Sheets + Alerts",
+   "tier": "Organism",
+   "variants": {
+    "Button Layout": [
+     "Side-by-Side",
+     "Stacked"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Actions": "SLOT",
+    "Message": "TEXT",
+    "Show Message": "BOOLEAN",
+    "Show Text Field": "BOOLEAN"
+   },
+   "variant_count": 2,
+   "use": "Critical interruption needing a decision (max 2-3 actions).",
+   "nests": [
+    "_Buttons",
+    "Text Field"
+   ]
+  },
+  {
+   "name": "Action Sheet",
+   "group": "Navigation",
+   "page": "➜ Action Sheets + Alerts",
+   "tier": "Organism",
+   "variants": {},
+   "properties": {
+    "Title": "TEXT",
+    "Message": "TEXT",
+    "Show Message": "BOOLEAN"
+   },
+   "variant_count": 1,
+   "use": "Choice of actions related to the current context.",
+   "nests": [
+    "_Buttons"
+   ]
+  },
+  {
+   "name": "Status bar and Menu bar- iPad",
+   "group": "Data display",
+   "page": "➜ Status Bars and Menu Bars",
+   "tier": "Organism",
+   "variants": {
+    "Full Screen": [
+     "True",
+     "False"
+    ],
+    "Menu Expanded": [
+     "True",
+     "False"
+    ],
+    "Background": [
+     "Light"
+    ]
+   },
+   "properties": {
+    "Menubar": "SLOT"
+   },
+   "variant_count": 4,
+   "use": "iPad status/menu bar for mockups."
+  },
+  {
+   "name": "Sheet - iPhone",
+   "group": "Data display",
+   "page": "➜ Bottom Sheets",
+   "tier": "Organism",
+   "variants": {
+    "Detent": [
+     "Medium",
+     "Large",
+     "Large (Stacked)"
+    ]
+   },
+   "properties": {
+    "Show Grabber": "BOOLEAN",
+    "Show Dimming Layer": "BOOLEAN",
+    "Content": "SLOT"
+   },
+   "variant_count": 3,
+   "use": "Modal sheet at medium/large detent.",
+   "nests": [
+    "Grabber",
+    "Overlay"
+   ]
+  },
+  {
+   "name": "Grabber",
+   "group": "Data display",
+   "page": "➜ Bottom Sheets",
+   "tier": "Atom",
+   "variants": {
+    "Mode": [
+     "Light",
+     "Dark"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Sheet drag handle.",
+   "issues": [
+    "Mode=Light|Dark variant instead of Semantic mode"
+   ]
+  },
+  {
+   "name": "Face ID",
+   "group": "Data display",
+   "page": "➜ Face ID",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Authenticating",
+     "Success"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Biometric authentication feedback."
+  },
+  {
+   "name": "Progress Bar - Determinate Linear",
+   "group": "Data display",
+   "page": "➜ Progress Indicators",
+   "tier": "Atom",
+   "variants": {
+    "Value": [
+     "0%",
+     "10%",
+     "20%",
+     "30%",
+     "40%",
+     "50%",
+     "60%",
+     "70%",
+     "80%",
+     "90%",
+     "100%"
+    ]
+   },
+   "properties": {
+    "Show Label": "BOOLEAN",
+    "Label": "TEXT"
+   },
+   "variant_count": 11,
+   "use": "Known-duration progress."
+  },
+  {
+   "name": "Progress Bar - Indeterminate Circular (\"Spinner\")",
+   "group": "Data display",
+   "page": "➜ Progress Indicators",
+   "tier": "Atom",
+   "variants": {
+    "Size": [
+     "Small",
+     "Regular",
+     "Large"
+    ]
+   },
+   "properties": {
+    "Show Label": "BOOLEAN",
+    "Label": "TEXT"
+   },
+   "variant_count": 3,
+   "use": "Unknown-duration loading."
+  },
+  {
+   "name": "Activity View - iPhone",
+   "group": "Data display",
+   "page": "➜ Activity Views",
+   "tier": "Organism",
+   "variants": {
+    "Mode": [
+     "Dark",
+     "Light"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Share sheet.",
+   "nests": [
+    "_Activity View",
+    "_Header",
+    "_Actions",
+    "_Contact"
+   ],
+   "issues": [
+    "Mode variant"
+   ]
+  },
+  {
+   "name": "Activity View - iPad",
+   "group": "Data display",
+   "page": "➜ Activity Views",
+   "tier": "Organism",
+   "variants": {
+    "Mode": [
+     "Dark",
+     "Light"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Share popover on iPad.",
+   "issues": [
+    "Mode variant"
+   ]
+  },
+  {
+   "name": "Context Menu",
+   "group": "Data display",
+   "page": "➜ Contextual Menus",
+   "tier": "Organism",
+   "variants": {
+    "Alignment": [
+     "Vertical",
+     "Horizontal (iPad only)"
+    ],
+    "Side": [
+     "Trailing",
+     "Leading"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Long-press menu of actions for an item."
+  },
+  {
+   "name": "Keyboard",
+   "group": "Setup",
+   "page": "➜  Keyboards",
+   "tier": "Organism",
+   "variants": {
+    "Type": [
+     "Lower Case",
+     "Upper Case",
+     "Punctuation",
+     "Numeric",
+     "Web",
+     "URL",
+     "Email",
+     "Number Pad",
+     "Emoji"
+    ]
+   },
+   "properties": {
+    "Show suggestions": "BOOLEAN"
+   },
+   "variant_count": 9,
+   "use": "System keyboard for mockups only (not a product component).",
+   "issues": [
+    "two sets named Keyboard"
+   ]
+  },
+  {
+   "name": "Component 1",
+   "group": "Setup",
+   "page": "➜ Icons",
+   "tier": "Atom",
+   "variants": {
+    "Property 1": [
+     "Selected",
+     "Default"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Unnamed icon toggle.",
+   "issues": [
+    "generic names"
+   ]
+  }
+ ],
+ "building_blocks": {
+  "rule": "Private parts (names starting with _). Use only inside their parent component.",
+  "names": [
+   "_Day",
+   "_Week",
+   "_Title - Large Title",
+   "_Title - Body",
+   "_Title - Subheadline",
+   "_Subtitle - Subheadline",
+   "_Subtitle - Caption",
+   "_Page Dots",
+   "_Button - Symbol",
+   "_Button - Bottom",
+   "_Button - Text",
+   "_Button - Symbol - Prominent",
+   "_Search - Bottom",
+   "_Toolbar page control",
+   "_Button - Text - Prominent",
+   "_Buttons - Top",
+   "_Back Bar Button Item",
+   "_Search - Top",
+   "_Tab Bar Button - iPhone",
+   "_Tab Bar Button - iPhone - Search",
+   "_Label - Text",
+   "_Label - Symbol - Preferred",
+   "_Label - Symbol - Default",
+   "_Label - Symbol - Destructive Default",
+   "_Buttons",
+   "_Text Field Background",
+   "Text Field",
+   "Overlay",
+   "_Activity View",
+   "_Action",
+   "_Contact",
+   "_Actions",
+   "_Close Button",
+   "_Header",
+   "_Separator",
+   "_Button - Liquid Glass"
+  ],
+  "keyboard_parts_count": 32
+ },
+ "icons": {
+  "components": [
+   "Search Icon",
+   "akar-icons:check",
+   "Component 1"
+  ],
+  "note": "No real Icon set yet; most icons are SF Symbol text glyphs. Build Icon/<Name> (SF Symbols style) per rules.json > icons."
+ },
+ "text_styles": [
+  {
+   "name": "Large Title/Regular",
+   "font": "SF Pro Regular",
+   "size": 34,
+   "line_height": 41,
+   "letter_spacing": 0.4
+  },
+  {
+   "name": "Large Title/Emphasized",
+   "font": "SF Pro Bold",
+   "size": 34,
+   "line_height": 41,
+   "letter_spacing": 0.4
+  },
+  {
+   "name": "Title1/Regular",
+   "font": "SF Pro Regular",
+   "size": 28,
+   "line_height": 34,
+   "letter_spacing": 0.38
+  },
+  {
+   "name": "Title1/Emphasized",
+   "font": "SF Pro Bold",
+   "size": 28,
+   "line_height": 34,
+   "letter_spacing": 0.38
+  },
+  {
+   "name": "Title2/Regular",
+   "font": "SF Pro Regular",
+   "size": 22,
+   "line_height": 28,
+   "letter_spacing": -0.26
+  },
+  {
+   "name": "Title2/Emphasized",
+   "font": "SF Pro Bold",
+   "size": 22,
+   "line_height": 28,
+   "letter_spacing": -0.26
+  },
+  {
+   "name": "Title3/Regular",
+   "font": "SF Pro Regular",
+   "size": 20,
+   "line_height": 25,
+   "letter_spacing": -0.45
+  },
+  {
+   "name": "Title3/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 20,
+   "line_height": 25,
+   "letter_spacing": -0.45
+  },
+  {
+   "name": "Headline/Regular",
+   "font": "SF Pro Semibold",
+   "size": 17,
+   "line_height": 22,
+   "letter_spacing": -0.43
+  },
+  {
+   "name": "Headline/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 17,
+   "line_height": 22,
+   "letter_spacing": -0.43
+  },
+  {
+   "name": "Body/Regular",
+   "font": "SF Pro Regular",
+   "size": 17,
+   "line_height": 22,
+   "letter_spacing": -0.43
+  },
+  {
+   "name": "Body/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 17,
+   "line_height": 22,
+   "letter_spacing": -0.43
+  },
+  {
+   "name": "Callout/Regular",
+   "font": "SF Pro Regular",
+   "size": 16,
+   "line_height": 21,
+   "letter_spacing": -0.31
+  },
+  {
+   "name": "Callout/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 16,
+   "line_height": 21,
+   "letter_spacing": -0.31
+  },
+  {
+   "name": "Subheadline/Regular",
+   "font": "SF Pro Regular",
+   "size": 15,
+   "line_height": 20,
+   "letter_spacing": -0.23
+  },
+  {
+   "name": "Subheadline/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 15,
+   "line_height": 20,
+   "letter_spacing": -0.23
+  },
+  {
+   "name": "Footnote/Regular",
+   "font": "SF Pro Regular",
+   "size": 13,
+   "line_height": 18,
+   "letter_spacing": -0.08
+  },
+  {
+   "name": "Footnote/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 13,
+   "line_height": 18,
+   "letter_spacing": -0.08
+  },
+  {
+   "name": "Caption1/Regular",
+   "font": "SF Pro Regular",
+   "size": 12,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "Caption1/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 12,
+   "line_height": 16,
+   "letter_spacing": 0
+  },
+  {
+   "name": "Caption2/Regular",
+   "font": "SF Pro Regular",
+   "size": 10,
+   "line_height": 12,
+   "letter_spacing": 0.06
+  },
+  {
+   "name": "Caption2/Emphasized",
+   "font": "SF Pro Semibold",
+   "size": 10,
+   "line_height": 12,
+   "letter_spacing": 0.06
+  }
+ ],
+ "effect_styles": [],
+ "gaps": "See Component_Skills/*/references/gaps.md"
+}

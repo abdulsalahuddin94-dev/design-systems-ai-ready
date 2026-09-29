@@ -1,0 +1,81 @@
+{
+  "meta": {
+    "platform": "Web",
+    "applies_to": "Trianglz - Web Design System and every new Web DS built from Web_Design_System_Skill",
+    "source": "Web_Design_System_Skill/SKILL.md + Trianglz/Foundation_Skill (2026-09-29)",
+    "units": "px"
+  },
+  "accessibility": {
+    "contrast_min": {"text": 4.5, "large_text": 3.0, "ui_boundary": 3.0, "focus_indicator": 3.0},
+    "large_text_definition": ">= 24px regular or >= 18.66px bold",
+    "touch_target_min": {"hard_min": 24, "recommended": 44},
+    "focus": {"style": "focus-ring (inputs: inset 2px color/border/focus) / focus-ring-offset (buttons: 2px gap + 4px ring)", "required_on": "every interactive component"},
+    "disabled_opacity": 0.5
+  },
+  "color": {
+    "semantic_must_alias_primitive": true,
+    "raw_hex_allowed_in": ["Primitives"],
+    "no_color_styles": true,
+    "ramp_steps": ["0", "50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
+    "ramp_base_step": "500",
+    "status_ui_uses": "color/{bg,text,border,icon}/{info,success,warning,error} - never button tokens"
+  },
+  "spacing": {"base_unit": 4, "scale_variable_prefix": "space/", "rule": "every padding and gap bound to space/*; no raw values"},
+  "radius": {"variables": "radius/{none,sm,base,md,lg,xl,2xl,3xl,full}", "usage": {"base": "default, checkbox", "lg": "inputs, cards, buttons", "xl": "panels", "2xl": "modals", "full": "pills, avatars, toggles"}},
+  "typography": {
+    "font_family_variable": "Typography::Font Family/Font Family",
+    "text_style_naming": "{size}/{weight} e.g. sm/Medium",
+    "bind": ["fontFamily", "fontStyle", "fontSize", "lineHeight", "letterSpacing"],
+    "modes": ["Desktop", "iPad", "Mobile"]
+  },
+  "icons": {
+    "set": "Lucide",
+    "component_naming": "Icon/<Title Case Name>",
+    "frame_size": 24,
+    "sizes_allowed": [16, 20, 24],
+    "stroke_width": 2,
+    "color_tokens": "color/icon/*",
+    "must_be_instance_swap": true
+  },
+  "breakpoints": {"Desktop": {"width": 1440, "columns": 12, "margin": 80, "gutter": 24}, "iPad": {"width": 768, "columns": 8, "margin": 32, "gutter": 16}, "Mobile": {"width": 375, "columns": 4, "margin": 16, "gutter": 16}},
+  "components": {
+    "naming": "Family / Variant, Title Case properties and values",
+    "required_states_interactive": ["Default", "Hover", "Focus", "Pressed", "Disabled"],
+    "required_states_inputs": ["Default", "Hover", "Focus", "Filled", "Error", "Success", "Disabled"],
+    "button_sizes": {"xs": 32, "sm": 36, "base": 40, "lg": 48, "xl": 56},
+    "input_height": 40,
+    "dark_mode": "switch the Semantic mode on the frame; never duplicate components",
+    "bound": "fills, strokes, padding, gap, radius, text styles, effect styles: 100% bound, 0 remote"
+  },
+  "build_order": ["Primitives", "Semantic (Light/Dark)", "Spacing, Radius, Typography variables", "Text and effect styles", "Icons", "Atoms", "Molecules", "Organisms", "Patterns", "Linked documentation", "Audit + project skills"],
+  "recolor": {
+    "principle": "A color change edits only Primitive values. Semantic tokens alias Primitives, and components use Semantic tokens, so they follow automatically.",
+    "generation": {"method": "oklch", "space": "OKLCH", "curve": "each ramp keeps its captured lightness (L) per step and its chroma ratio to the base; hue moves to the new color; the base step becomes the exact new color and the lightness difference fades out toward both ends; chroma is reduced to fit sRGB"},
+    "steps": [
+      "Identify the ramp(s) to change in tokens.json > ramps (brand is usually blue; check which Semantic tokens alias it).",
+      "Run: python tools/recolor.py Trianglz --ramp <ramp> --base <#hex>  (writes data/recolor/<date>-<ramp>.json and a Figma script).",
+      "Review the contrast report; if a pair fails, pick a darker/lighter step in the Semantic alias (never a raw hex).",
+      "Apply the script with figma_execute: it sets the new values into the SAME Primitive variables by name (names never change).",
+      "Re-run: python tools/build_tokens.py Trianglz after re-exporting variables (or python tools/recolor.py ... --write-tokens) so tokens.json matches Figma.",
+      "Screenshot ➜ Colors and every component page in Light and Dark; compare against the previous screenshots.",
+      "Log the change in docs/decisions.md."
+    ],
+    "never": ["rename or delete Primitive variables during a recolor", "put raw hex in Semantic tokens", "recolor components directly", "edit a single step by hand without regenerating the ramp"],
+    "derived_tokens": []
+  },
+  "contrast_pairs": [
+    {"fg": "Semantic::color/text/primary", "bg": "Semantic::color/bg/primary", "min": 4.5},
+    {"fg": "Semantic::color/text/secondary", "bg": "Semantic::color/bg/primary", "min": 4.5},
+    {"fg": "Semantic::color/text/muted", "bg": "Semantic::color/bg/primary", "min": 4.5},
+    {"fg": "Semantic::color/text/placeholder", "bg": "Semantic::color/bg/primary", "min": 4.5},
+    {"fg": "Semantic::color/text/link", "bg": "Semantic::color/bg/primary", "min": 4.5},
+    {"fg": "Semantic::color/text/error", "bg": "Semantic::color/bg/error", "min": 4.5},
+    {"fg": "Semantic::color/text/success", "bg": "Semantic::color/bg/success", "min": 4.5},
+    {"fg": "Semantic::color/text/warning", "bg": "Semantic::color/bg/warning", "min": 4.5},
+    {"fg": "Semantic::color/text/info", "bg": "Semantic::color/bg/info", "min": 4.5},
+    {"fg": "Semantic::color/btn/Primary/text 2", "bg": "Semantic::color/btn/Primary/bg 2", "min": 4.5},
+    {"fg": "Semantic::color/btn/Primary/text 2", "bg": "Semantic::color/btn/Primary/bg-hover 2", "min": 4.5},
+    {"fg": "Semantic::color/border/focus", "bg": "Semantic::color/bg/primary", "min": 3.0},
+    {"fg": "Semantic::color/border/strong", "bg": "Semantic::color/bg/primary", "min": 3.0}
+  ]
+}

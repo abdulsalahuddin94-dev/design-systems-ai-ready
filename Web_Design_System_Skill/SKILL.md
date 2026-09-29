@@ -10,6 +10,8 @@ Copy its **structure**. Do **not** copy its mistakes: every item in section 9 mu
 Platform: Web, Tailwind conventions (scale names, breakpoints, hover/focus/active states).
 Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
+**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
+
 ---
 
 ## 1. File structure (pages, in this order)
@@ -101,6 +103,25 @@ Before each component: state its tier, list dependencies, build missing lower ti
 ### Radius (1 mode) - `radius/{none 0, sm 2, base 4, md 6, lg 8, xl 12, 2xl 16, 3xl 24, full 9999}` with usage descriptions (base default, lg inputs/cards, xl panels, 2xl modals, full pills/avatars).
 ### Opacity - `opacity/disabled` = 0.5 (use for all disabled states).
 
+## 3b. Recolor-ready colors (Abdul's rule: a color change must update every shade cleanly)
+
+Build rules (every new DS):
+- Primitives hold the only raw colors. Each hue is a full shade scale with fixed step names (0, 50, 100 ... 900, 950); a brand color is a ramp, never a single swatch.
+- Generate each ramp from one base color with a stored curve (OKLCH curve: steps keep their lightness and chroma ratio, hue follows the base), not by hand-picking steps. Record the base and the curve in `data/tokens.json > ramps` (run `python tools/build_tokens.py <folder>` after exporting variables).
+- Semantic (and Brand) tokens **only alias** Primitives. Zero raw hex outside Primitives; `tokens.json > recolor_readiness.ready` must be `true`.
+- Components use Semantic tokens only, never Primitives directly and never raw colors.
+- Colors that need alpha (scrims, state layers, tints) use alpha Primitives, or are listed as **derived tokens** in `data/rules.json > recolor.derived_tokens` so the recolor script regenerates them.
+- Never rename a Primitive during a recolor: names are the contract that keeps every alias linked.
+
+Recolor procedure (when the user asks to change a color):
+1. Find the ramp in `data/tokens.json > ramps` and which Semantic tokens alias it.
+2. Run `python tools/recolor.py <folder> --ramp "<ramp>" --base "#hex"`. It regenerates every step with the ramp's curve, recomputes derived tokens, and re-checks every contrast pair in `data/rules.json` in Light and Dark (pairs that were already failing are reported separately).
+3. Fix any NEW contrast failure by re-pointing that Semantic alias to another step (never a raw hex), then run the script again.
+4. Apply the generated `data/recolor/<date>-<ramp>.figma.js` with figma_execute: it sets values into the SAME variables by name and never creates, renames or deletes.
+5. Re-export variables and run `tools/build_tokens.py` (or re-run recolor with `--write-tokens`) so `tokens.json` matches Figma.
+6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
+7. Log it in `docs/decisions.md`.
+
 ## 4. Styles
 
 - **Text styles**: `{size}/{weight}` (40 styles: 10 sizes x Regular, Medium, Semi Bold, Bold). Bind font family, weight, size, **line height and letter spacing** to variables. Description: `14px / 20px / 500 · Tailwind text-sm font-medium` - must match the real values.
@@ -179,3 +200,5 @@ Hint text sits between label and field; error text below the field (12px), same 
 - [ ] Dark previews are instances in Dark-mode frames; Colors/Typography docs linked.
 - [ ] Screenshot every variant (light + dark) and compare against the description.
 - [ ] Save a version in history after each phase; write Foundation_Skill and Component_Skills per group.
+- [ ] `tokens.json > recolor_readiness.ready` is true (0 raw hex in Semantic/Brand tokens) and a test run of `tools/recolor.py` on the brand ramp shows no NEW contrast failures.
+- [ ] `data/tokens.json`, `component-registry.json`, `rules.json`, `screen-templates.json` and `docs/decisions.md` are generated for the new DS.

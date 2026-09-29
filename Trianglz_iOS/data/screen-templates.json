@@ -1,0 +1,266 @@
+{
+ "meta": {
+  "platform": "iOS",
+  "rule": "Screens are assembled only from components in component-registry.json and tokens in tokens.json. \"(to build)\" means the component is missing: build it first, lower tiers first.",
+  "skills": [
+   "figma-generate-design",
+   "figma-use",
+   "ui-ux-pro-max",
+   "audit-design-system"
+  ],
+  "frames": {
+   "iPhone": [
+    402,
+    874
+   ],
+   "iPad": [
+    820,
+    1180
+   ]
+  },
+  "dark_mode": "duplicate the frame and set the Semantic / Schemes mode to Dark; never duplicate components"
+ },
+ "templates": {
+  "sign_in": {
+   "tier": "Pattern",
+   "use": "Email/password sign in with optional social login.",
+   "layout": "single column, max width 400 (web) / full width with margins (mobile), vertically centered on large screens",
+   "sections": [
+    {
+     "name": "Header",
+     "components": [
+      "Toolbar - Top - iPhone (mobile only, back action)"
+     ],
+     "content": "logo, title (Large Title/Emphasized), subtitle (Body/Regular)"
+    },
+    {
+     "name": "Form",
+     "components": [
+      "Input (Email)",
+      "Input (secure, to build) (Password)",
+      "Checkbox (Remember me, optional)",
+      "Button - Content Area Style=Borderless (Forgot password)"
+     ],
+     "gap": "spacnig/md (16)"
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button - Content Area Style=Bordered - Prominent Size=Large (Sign in, full width)",
+      "Button - Content Area Style=Bordered (Continue with Google/Apple, optional)"
+     ]
+    },
+    {
+     "name": "Footer",
+     "components": [
+      "Button - Content Area Style=Borderless (Create account)"
+     ],
+     "content": "Footnote/Regular"
+    }
+   ],
+   "states": [
+    "default",
+    "field error",
+    "loading (button Loading / Progress Bar - Indeterminate Circular (\"Spinner\"))",
+    "server error (Alert)"
+   ],
+   "tokens": {
+    "background": "Backgrounds/App",
+    "section_gap": "spacnig/xl (32)",
+    "margin": "spacnig/margin (16)"
+   }
+  },
+  "sign_up": {
+   "tier": "Pattern",
+   "use": "Account creation.",
+   "extends": "sign_in",
+   "sections": [
+    {
+     "name": "Form",
+     "components": [
+      "Input (Full name)",
+      "Input (Email)",
+      "Input (secure, to build) (Password + hint)",
+      "Input (secure, to build) (Confirm)",
+      "Checkbox (Accept terms, required)"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button - Content Area Style=Bordered - Prominent Size=Large (Create account, disabled until valid)"
+     ]
+    }
+   ]
+  },
+  "otp_verification": {
+   "tier": "Pattern",
+   "use": "Verify a code sent by SMS or email.",
+   "sections": [
+    {
+     "name": "Header",
+     "components": [
+      "Toolbar - Top - iPhone (back)"
+     ],
+     "content": "title, \"We sent a code to ...\", masked destination"
+    },
+    {
+     "name": "Code",
+     "components": [
+      "OTP field (to build) (6 cells, auto-advance, paste support)"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button - Content Area Style=Bordered - Prominent Size=Large (Verify)",
+      "Button - Content Area Style=Borderless (Resend code, disabled with countdown)"
+     ]
+    }
+   ],
+   "states": [
+    "empty",
+    "filled",
+    "error (shake + message)",
+    "success",
+    "resend countdown"
+   ]
+  },
+  "list": {
+   "tier": "Pattern",
+   "use": "Browse a collection (orders, contacts, messages).",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Toolbar - Top - iPhone (title + actions)",
+      "_Search - Top (inside Toolbar - Top)",
+      "Segmented control (to build) or filter chips (optional)"
+     ]
+    },
+    {
+     "name": "Items",
+     "components": [
+      "List cell (Molecule, to build) x N (leading Avatar (to build) / icon, title, supporting text, trailing Badge (to build) or chevron)"
+     ],
+     "rules": "virtualized; pull to refresh on mobile; pagination or infinite scroll"
+    },
+    {
+     "name": "Navigation",
+     "components": [
+      "Tab Bar - iPhone"
+     ]
+    }
+   ],
+   "states": [
+    "loading (skeleton rows)",
+    "empty (Icon (SF Symbols style) + title + Button - Content Area Style=Bordered - Prominent Size=Large)",
+    "error (Alert + retry)",
+    "no search results"
+   ]
+  },
+  "detail": {
+   "tier": "Pattern",
+   "use": "One item with its info and actions.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Toolbar - Top - iPhone (back, title, more actions)"
+     ]
+    },
+    {
+     "name": "Hero",
+     "content": "image or Avatar (to build), title (Large Title/Emphasized), meta, Badge (to build)"
+    },
+    {
+     "name": "Content",
+     "components": [
+      "Card (to build) sections",
+      "List cell (Molecule, to build) rows for attributes"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button - Content Area Style=Bordered - Prominent Size=Large (main action, sticky bottom on mobile)",
+      "Button - Content Area Style=Bordered"
+     ]
+    }
+   ]
+  },
+  "form": {
+   "tier": "Pattern",
+   "use": "Create or edit a record.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Toolbar - Top - iPhone (Cancel / Save)"
+     ]
+    },
+    {
+     "name": "Fields",
+     "components": [
+      "Input",
+      "Context Menu / Sheet - iPhone",
+      "RadioButton group",
+      "Checkbox",
+      "Toggle - Switch"
+     ],
+     "rules": "one column on mobile; labels above fields; hint between label and field; error below field; group related fields with section headers"
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button - Content Area Style=Bordered - Prominent Size=Large (Save)",
+      "Button - Content Area Style=Bordered (Cancel)"
+     ]
+    }
+   ],
+   "states": [
+    "pristine",
+    "dirty",
+    "validation errors (summary Alert + inline errors)",
+    "saving",
+    "saved (Banner (to build))"
+   ]
+  },
+  "settings": {
+   "tier": "Pattern",
+   "use": "Grouped preferences.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Toolbar - Top - iPhone (Settings)"
+     ]
+    },
+    {
+     "name": "Groups",
+     "components": [
+      "List cell (Molecule, to build) with trailing Toggle - Switch / chevron / value"
+     ],
+     "rules": "section headers; destructive row (Sign out, Delete account) last, danger color, opens Alert"
+    }
+   ],
+   "tokens": {
+    "background": "Backgrounds/Card"
+   }
+  },
+  "empty_state": {
+   "tier": "Pattern",
+   "use": "No data yet, first-run, or no results.",
+   "sections": [
+    {
+     "name": "Body",
+     "components": [
+      "Icon (SF Symbols style) or illustration",
+      "Button - Content Area Style=Bordered - Prominent Size=Large (primary next step)"
+     ],
+     "content": "title (Large Title/Emphasized), one-sentence explanation (Body/Regular)"
+    }
+   ]
+  }
+ }
+}

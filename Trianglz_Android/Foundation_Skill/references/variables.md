@@ -1,5 +1,7 @@
 # Trianglz Android M3 DS - variables and styles (read 2026-09-29, Figma file JUs2c8IO6ybFcGRZjcQzr9)
 
+> **Superseded for values:** exact values, modes and aliases now live in `../../data/tokens.json` (pulled from Figma). This file keeps the study notes; if they differ, trust tokens.json.
+
 > **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
 
 4 local collections. No code syntax on any variable. Almost no descriptions (Surface Tint, Warning, Background deprecated).

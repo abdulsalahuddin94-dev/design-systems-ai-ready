@@ -10,6 +10,8 @@ It is the Google Material 3 (Expressive) Design Kit re-themed with Trianglz pale
 Platform: Android, Material Design 3 Expressive, Jetpack Compose, dp / sp.
 Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
+**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz_Android/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
+
 ---
 
 ## 1. File structure (pages, in this order)
@@ -105,6 +107,25 @@ Font: Roboto Flex by default, or the brand font (the reference uses Google Sans 
 ### Spacing (dp) - `space/{0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64}` + `space/margin-compact 16`, `space/margin-medium 24`, `space/gutter`. Scopes GAP + WIDTH_HEIGHT. (Missing entirely in the reference.)
 ### Elevation - `elevation/level-{0..5}` = 0, 1, 3, 6, 8, 12 dp (documented), effect styles Elevation 1-5.
 
+## 3b. Recolor-ready colors (Abdul's rule: a color change must update every shade cleanly)
+
+Build rules (every new DS):
+- Primitives hold the only raw colors. Each hue is a full shade scale with fixed step names (M3 tones 0 ... 100); a brand color is a ramp, never a single swatch.
+- Generate each ramp from one base color with a stored curve (M3 tonal palette: HCT / tone = L*; key color at tone 40), not by hand-picking steps. Record the base and the curve in `data/tokens.json > ramps` (run `python tools/build_tokens.py <folder>` after exporting variables).
+- Semantic (and Brand) tokens **only alias** Primitives. Zero raw hex outside Primitives; `tokens.json > recolor_readiness.ready` must be `true`.
+- Components use Semantic tokens only, never Primitives directly and never raw colors.
+- Colors that need alpha (scrims, state layers, tints) use alpha Primitives, or are listed as **derived tokens** in `data/rules.json > recolor.derived_tokens` so the recolor script regenerates them.
+- Never rename a Primitive during a recolor: names are the contract that keeps every alias linked.
+
+Recolor procedure (when the user asks to change a color):
+1. Find the ramp in `data/tokens.json > ramps` and which Semantic tokens alias it.
+2. Run `python tools/recolor.py <folder> --ramp "<ramp>" --base "#hex"`. It regenerates every step with the ramp's curve, recomputes derived tokens, and re-checks every contrast pair in `data/rules.json` in Light and Dark (pairs that were already failing are reported separately).
+3. Fix any NEW contrast failure by re-pointing that Semantic alias to another step (never a raw hex), then run the script again.
+4. Apply the generated `data/recolor/<date>-<ramp>.figma.js` with figma_execute: it sets values into the SAME variables by name and never creates, renames or deletes.
+5. Re-export variables and run `tools/build_tokens.py` (or re-run recolor with `--write-tokens`) so `tokens.json` matches Figma.
+6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
+7. Log it in `docs/decisions.md`.
+
 ## 4. Styles
 - **Text styles** `{role}/{size}` and `{role}/{size}-emphasized` (30), all properties bound to **local** typescale variables. Description `16sp / 24sp / 400 / +0.5 · MaterialTheme.typography.bodyLarge`.
 - **Effect styles** `Elevation/1..5` (key + ambient shadows; one set - Light and Dark are identical in M3), colors bound to `Schemes/Shadow` if export allows.
@@ -168,3 +189,5 @@ Font: Roboto Flex by default, or the brand font (the reference uses Google Sans 
 - [ ] Light and Dark preview frames per family; Color/Typography/Shape docs linked.
 - [ ] Screenshot every variant (light + dark) and compare with the description.
 - [ ] Save a version after each phase; write Foundation_Skill and Component_Skills per group.
+- [ ] `tokens.json > recolor_readiness.ready` is true (0 raw hex in Semantic/Brand tokens) and a test run of `tools/recolor.py` on the brand ramp shows no NEW contrast failures.
+- [ ] `data/tokens.json`, `component-registry.json`, `rules.json`, `screen-templates.json` and `docs/decisions.md` are generated for the new DS.

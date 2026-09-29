@@ -7,6 +7,8 @@ description: Use when building, auditing or coding information and system surfac
 
 > **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
 
+> **Data files (source of truth for values):** `../../data/tokens.json` (every variable and mode, aliases, shade scales and their recolor curves), `../../data/component-registry.json`, `../../data/rules.json`, `../../data/screen-templates.json`, and `../../docs/decisions.md`. When a number here and the JSON differ, the JSON wins (it is pulled from Figma). To change a color, follow the Recolor procedure in the platform Main Skill (section 3b).
+
 **Load `../../Foundation_Skill/SKILL.md` first** (tokens, text styles, file structure, build order, atomic rules).
 
 Scope: **⭐Data display** pages only: ➜ Status Bars and Menu Bars, ➜ Bottom Sheets, ➜ Face ID, ➜ Progress Indicators, ➜ Activity Views, ➜ Contextual Menus. Platform iOS (HIG, iOS 26).

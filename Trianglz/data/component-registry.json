@@ -1,0 +1,711 @@
+{
+ "meta": {
+  "platform": "Web",
+  "figma_file": "Trianglz - Web Design System",
+  "figma_url": "https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System",
+  "source": {
+   "method": "built from Trianglz/Component_Skills (the Web file was not open in the Desktop Bridge)",
+   "extracted_at": "2026-09-30",
+   "needs_resync": true,
+   "resync": "Open the Web file with the Desktop Bridge plugin and re-extract; confirm which \"name\" (target) vs \"name_in_study\" (old) is live."
+  },
+  "naming": "\"name\" is the target name from the skill refactor plan; \"name_in_study\" is the name seen when the file was studied. Find by name, never by id."
+ },
+ "pages": [
+  "Cover",
+  "⭐Setup",
+  "➜ Layout Grid",
+  "➜ Typography",
+  "➜ Colors",
+  "➜ Shadows",
+  "➜ Corner Radius & Spacing",
+  "➜ Icons",
+  "⭐Form Elements",
+  "➜ Input Fields and Dropdown",
+  "➜ Text Area",
+  "➜ Checkboxes",
+  "➜ Toggles",
+  "➜ Radio Buttons",
+  "⭐Navigation",
+  "➜ Buttons & Links",
+  "➜ Pagination, Tabs & Breadcrumb",
+  "⭐Data Display",
+  "➜ Avatars & Upload Image",
+  "➜ Tooltips",
+  "➜ Banners, Badges & Toasts",
+  "➜ Popups",
+  "➜ Favicon"
+ ],
+ "components": [
+  {
+   "name": "Input / Text",
+   "name_in_study": "Input fields (chevron)",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT",
+    "Show optional": "BOOLEAN",
+    "Show tooltip": "BOOLEAN",
+    "Show hint": "BOOLEAN",
+    "Show icon": "BOOLEAN"
+   },
+   "use": "Standard text input; with Show icon it is the Select / Dropdown trigger.",
+   "nests": [
+    "Icon"
+   ]
+  },
+  {
+   "name": "Input / URL",
+   "name_in_study": "Input fields (link)",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT",
+    "Show optional": "BOOLEAN",
+    "Show tooltip": "BOOLEAN",
+    "Show hint": "BOOLEAN"
+   },
+   "use": "URL input with http:// prefix add-on."
+  },
+  {
+   "name": "Input / Card Number",
+   "name_in_study": "Input fields (payment)",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT",
+    "Show optional": "BOOLEAN",
+    "Show tooltip": "BOOLEAN",
+    "Show hint": "BOOLEAN",
+    "Show Payment icon": "BOOLEAN"
+   },
+   "use": "Card number input with card-brand badge."
+  },
+  {
+   "name": "Search",
+   "name_in_study": "Search",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Filled",
+     "Focus"
+    ]
+   },
+   "properties": {
+    "Placeholder": "TEXT"
+   },
+   "use": "Search bar with magnifier and clear (x). No label.",
+   "nests": [
+    "Icon/Search",
+    "Icon/Close"
+   ]
+  },
+  {
+   "name": "Upload Field",
+   "name_in_study": "Upload Field",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Uploaded",
+     "Error",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Show optional": "BOOLEAN",
+    "Show help": "BOOLEAN"
+   },
+   "use": "Single-file picker row.",
+   "nests": [
+    "Icon/Upload",
+    "Icon/File",
+    "Icon/Delete"
+   ]
+  },
+  {
+   "name": "OTP / Cell",
+   "name_in_study": "code field",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Empty",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error",
+     "Success",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "use": "One 60x60 OTP cell. Only inside OTP / Field."
+  },
+  {
+   "name": "OTP / Field",
+   "name_in_study": "Verification code input field",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Empty",
+     "Filled",
+     "Success",
+     "Error",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Hint text": "TEXT"
+   },
+   "use": "6-digit verification code group.",
+   "nests": [
+    "OTP / Cell",
+    "Icon/Alert Circle"
+   ]
+  },
+  {
+   "name": "Stepper",
+   "name_in_study": "numeric field",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Minimum"
+    ]
+   },
+   "properties": {},
+   "use": "Quantity stepper [-] value [+].",
+   "nests": [
+    "Button (Link, sm, Icon=Only)"
+   ]
+  },
+  {
+   "name": "Textarea",
+   "name_in_study": "Catalyst / Textarea",
+   "group": "Form Elements",
+   "page": "➜ Text Area",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT"
+   },
+   "use": "Multi-line text input."
+  },
+  {
+   "name": "Checkbox",
+   "name_in_study": "Checkbox",
+   "group": "Form Elements",
+   "page": "➜ Checkboxes",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Unchecked",
+     "Checked",
+     "Indeterminate",
+     "Disabled",
+     "Disabled Checked",
+     "Hover",
+     "Focus",
+     "Checked Hover",
+     "Checked Focus"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "use": "Multi-select or single opt-in."
+  },
+  {
+   "name": "Toggle",
+   "name_in_study": "Toggle",
+   "group": "Form Elements",
+   "page": "➜ Toggles",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "On",
+     "Off",
+     "On Disabled",
+     "Off Disabled",
+     "On Hover",
+     "On Focus",
+     "Off Hover",
+     "Off Focus"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "use": "Immediate on/off setting."
+  },
+  {
+   "name": "Radio",
+   "name_in_study": "RadioButton",
+   "group": "Form Elements",
+   "page": "➜ Radio Buttons",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Unchecked",
+     "Checked",
+     "Disabled",
+     "Checked Disabled",
+     "Hover",
+     "Focus",
+     "Checked Hover",
+     "Checked Focus"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "use": "Single choice from 2-5 options."
+  },
+  {
+   "name": "Menu / Item",
+   "name_in_study": null,
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Selected",
+     "Focus",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Leading icon": "INSTANCE_SWAP"
+   },
+   "use": "One option row in a menu.",
+   "issues": [
+    "planned in the skill; confirm it exists on next sync"
+   ]
+  },
+  {
+   "name": "Menu",
+   "name_in_study": null,
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {},
+   "properties": {},
+   "use": "Dropdown option list.",
+   "nests": [
+    "Menu / Item"
+   ],
+   "issues": [
+    "planned"
+   ]
+  },
+  {
+   "name": "Select / Dropdown",
+   "name_in_study": null,
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Organism",
+   "variants": {
+    "Open": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {},
+   "use": "Input trigger + menu.",
+   "nests": [
+    "Input / Text",
+    "Menu"
+   ],
+   "issues": [
+    "planned"
+   ]
+  },
+  {
+   "name": "Button",
+   "name_in_study": "Button",
+   "group": "Navigation",
+   "page": "➜ Buttons & Links",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Filled",
+     "Outline",
+     "Pill",
+     "Link"
+    ],
+    "Size": [
+     "xs",
+     "sm",
+     "base",
+     "lg",
+     "xl"
+    ],
+    "Icon": [
+     "None",
+     "Left",
+     "Right",
+     "Only"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Leading icon": "INSTANCE_SWAP",
+    "Trailing icon": "INSTANCE_SWAP"
+   },
+   "use": "All buttons and button-styled links (320 variants).",
+   "nests": [
+    "Icon"
+   ],
+   "issues": [
+    "no Danger type, no Pressed/Loading state (see Navigation gaps)"
+   ]
+  },
+  {
+   "name": "Pagination / Item",
+   "name_in_study": "Pagination / Item",
+   "group": "Navigation",
+   "page": "➜ Pagination, Tabs & Breadcrumb",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Number",
+     "Ellipsis",
+     "Prev",
+     "Next"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Active"
+    ]
+   },
+   "properties": {},
+   "use": "One pagination cell.",
+   "issues": [
+    "arrows are text glyphs"
+   ]
+  },
+  {
+   "name": "Tabs / Item — Underline",
+   "name_in_study": "Tabs / Item — Underline",
+   "group": "Navigation",
+   "page": "➜ Pagination, Tabs & Breadcrumb",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Active",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "use": "Underline tab."
+  },
+  {
+   "name": "Tabs / Item — Pill",
+   "name_in_study": "Tabs / Item — Pill",
+   "group": "Navigation",
+   "page": "➜ Pagination, Tabs & Breadcrumb",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Active",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "use": "Pill (segmented) tab."
+  },
+  {
+   "name": "Avatar",
+   "name_in_study": "User Avatar",
+   "group": "Data Display",
+   "page": "➜ Avatars & Upload Image",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Initials",
+     "Icon",
+     "Photo"
+    ],
+    "Size": [
+     "Large",
+     "Medium",
+     "Small",
+     "XSmall"
+    ]
+   },
+   "properties": {
+    "Initials": "TEXT"
+   },
+   "use": "Round user picture."
+  },
+  {
+   "name": "Avatar Upload",
+   "name_in_study": "upload image",
+   "group": "Data Display",
+   "page": "➜ Avatars & Upload Image",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Uploaded",
+     "Error"
+    ]
+   },
+   "properties": {},
+   "use": "Profile photo picker.",
+   "nests": [
+    "Avatar",
+    "Button (Icon=Only, Icon/Edit)"
+   ]
+  },
+  {
+   "name": "Tooltip",
+   "name_in_study": "Tooltip",
+   "group": "Data Display",
+   "page": "➜ Tooltips",
+   "tier": "Atom",
+   "variants": {
+    "Arrow": [
+     "Up",
+     "Down",
+     "Left",
+     "Right"
+    ],
+    "Size": [
+     "Small",
+     "Large"
+    ]
+   },
+   "properties": {
+    "Text": "TEXT",
+    "Text (large)": "TEXT"
+   },
+   "use": "Short help bubble."
+  },
+  {
+   "name": "Alert",
+   "name_in_study": "Alerts",
+   "group": "Data Display",
+   "page": "➜ Banners, Badges & Toasts",
+   "tier": "Molecule",
+   "variants": {
+    "Status": [
+     "Info",
+     "Warning",
+     "Error",
+     "Success"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Message": "TEXT",
+    "Show close": "BOOLEAN"
+   },
+   "use": "Full-width inline banner.",
+   "nests": [
+    "Icon",
+    "Button (Link, Icon=Only)"
+   ]
+  },
+  {
+   "name": "Badge",
+   "name_in_study": "badges",
+   "group": "Data Display",
+   "page": "➜ Banners, Badges & Toasts",
+   "tier": "Atom",
+   "variants": {
+    "Status": [
+     "Info",
+     "Warning",
+     "Error",
+     "Success"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "use": "Small status pill.",
+   "nests": [
+    "Icon/Info"
+   ]
+  },
+  {
+   "name": "Toast",
+   "name_in_study": null,
+   "group": "Data Display",
+   "page": "➜ Banners, Badges & Toasts",
+   "tier": "Molecule",
+   "variants": {
+    "Status": [
+     "Info",
+     "Success",
+     "Warning",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Message": "TEXT",
+    "Show close": "BOOLEAN"
+   },
+   "use": "Temporary feedback message.",
+   "nests": [
+    "Icon",
+    "Button (Link, Icon=Only)"
+   ],
+   "issues": [
+    "planned"
+   ]
+  },
+  {
+   "name": "Confirmation Popup",
+   "name_in_study": "Confirmation Popups",
+   "group": "Data Display",
+   "page": "➜ Popups",
+   "tier": "Organism",
+   "variants": {
+    "Status": [
+     "Success",
+     "Info",
+     "Warning",
+     "Danger"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Body": "TEXT",
+    "Show close": "BOOLEAN"
+   },
+   "use": "Centered confirm dialog.",
+   "nests": [
+    "Icon",
+    "Button x2"
+   ]
+  }
+ ],
+ "icons": {
+  "set": "Lucide (target)",
+  "naming": "Icon/<Title Case Name>"
+ },
+ "text_styles": {
+  "naming": "{size}/{weight}",
+  "sizes": [
+   "xs",
+   "sm",
+   "base",
+   "lg",
+   "xl",
+   "2xl",
+   "3xl",
+   "4xl",
+   "5xl",
+   "6xl"
+  ],
+  "weights": [
+   "Regular",
+   "Medium",
+   "Semi Bold",
+   "Bold"
+  ],
+  "font": "Poppins"
+ },
+ "effect_styles": [
+  "shadow-2xs",
+  "shadow-xs",
+  "shadow-sm",
+  "shadow-md",
+  "shadow-lg",
+  "shadow-xl",
+  "shadow-2xl",
+  "inset-shadow-2xs",
+  "inset-shadow-xs",
+  "inset-shadow-sm",
+  "focus-ring",
+  "focus-ring-offset"
+ ],
+ "gaps": "See Component_Skills/*/references/gaps.md"
+}

@@ -1,0 +1,270 @@
+{
+ "meta": {
+  "platform": "Web",
+  "rule": "Screens are assembled only from components in component-registry.json and tokens in tokens.json. \"(to build)\" means the component is missing: build it first, lower tiers first.",
+  "skills": [
+   "figma-generate-design",
+   "figma-use",
+   "ui-ux-pro-max",
+   "audit-design-system"
+  ],
+  "frames": {
+   "Desktop": [
+    1440,
+    1024
+   ],
+   "iPad": [
+    768,
+    1024
+   ],
+   "Mobile": [
+    375,
+    812
+   ]
+  },
+  "dark_mode": "duplicate the frame and set the Semantic / Schemes mode to Dark; never duplicate components"
+ },
+ "templates": {
+  "sign_in": {
+   "tier": "Pattern",
+   "use": "Email/password sign in with optional social login.",
+   "layout": "single column, max width 400 (web) / full width with margins (mobile), vertically centered on large screens",
+   "sections": [
+    {
+     "name": "Header",
+     "components": [
+      "Top bar (Organism, to build) (mobile only, back action)"
+     ],
+     "content": "logo, title (3xl/Semi Bold), subtitle (base/Regular)"
+    },
+    {
+     "name": "Form",
+     "components": [
+      "Input / Text (Email)",
+      "Input / Text (password, to build) (Password)",
+      "Checkbox (Remember me, optional)",
+      "Button Type=Link (Forgot password)"
+     ],
+     "gap": "space/6"
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button Type=Filled Size=base (Sign in, full width)",
+      "Button Type=Outline (Continue with Google/Apple, optional)"
+     ]
+    },
+    {
+     "name": "Footer",
+     "components": [
+      "Button Type=Link (Create account)"
+     ],
+     "content": "sm/Regular"
+    }
+   ],
+   "states": [
+    "default",
+    "field error",
+    "loading (button Loading / Progress (to build))",
+    "server error (Alert)"
+   ],
+   "tokens": {
+    "background": "color/bg/primary",
+    "section_gap": "space/10",
+    "margin": "Grid margin (80 / 32 / 16)"
+   }
+  },
+  "sign_up": {
+   "tier": "Pattern",
+   "use": "Account creation.",
+   "extends": "sign_in",
+   "sections": [
+    {
+     "name": "Form",
+     "components": [
+      "Input / Text (Full name)",
+      "Input / Text (Email)",
+      "Input / Text (password, to build) (Password + hint)",
+      "Input / Text (password, to build) (Confirm)",
+      "Checkbox (Accept terms, required)"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button Type=Filled Size=base (Create account, disabled until valid)"
+     ]
+    }
+   ]
+  },
+  "otp_verification": {
+   "tier": "Pattern",
+   "use": "Verify a code sent by SMS or email.",
+   "sections": [
+    {
+     "name": "Header",
+     "components": [
+      "Top bar (Organism, to build) (back)"
+     ],
+     "content": "title, \"We sent a code to ...\", masked destination"
+    },
+    {
+     "name": "Code",
+     "components": [
+      "OTP / Field (6 cells, auto-advance, paste support)"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button Type=Filled Size=base (Verify)",
+      "Button Type=Link (Resend code, disabled with countdown)"
+     ]
+    }
+   ],
+   "states": [
+    "empty",
+    "filled",
+    "error (shake + message)",
+    "success",
+    "resend countdown"
+   ]
+  },
+  "list": {
+   "tier": "Pattern",
+   "use": "Browse a collection (orders, contacts, messages).",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Top bar (Organism, to build) (title + actions)",
+      "Search",
+      "Tabs / Item — Underline or filter chips (optional)"
+     ]
+    },
+    {
+     "name": "Items",
+     "components": [
+      "List item (Molecule, to build) x N (leading Avatar / icon, title, supporting text, trailing Badge or chevron)"
+     ],
+     "rules": "virtualized; pull to refresh on mobile; pagination or infinite scroll"
+    },
+    {
+     "name": "Navigation",
+     "components": [
+      "Sidebar / Navbar (Organism, to build)"
+     ]
+    }
+   ],
+   "states": [
+    "loading (skeleton rows)",
+    "empty (Icon + title + Button Type=Filled Size=base)",
+    "error (Alert + retry)",
+    "no search results"
+   ]
+  },
+  "detail": {
+   "tier": "Pattern",
+   "use": "One item with its info and actions.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Top bar (Organism, to build) (back, title, more actions)"
+     ]
+    },
+    {
+     "name": "Hero",
+     "content": "image or Avatar, title (3xl/Semi Bold), meta, Badge"
+    },
+    {
+     "name": "Content",
+     "components": [
+      "Card (Organism, to build) sections",
+      "List item (Molecule, to build) rows for attributes"
+     ]
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button Type=Filled Size=base (main action, sticky bottom on mobile)",
+      "Button Type=Outline"
+     ]
+    }
+   ]
+  },
+  "form": {
+   "tier": "Pattern",
+   "use": "Create or edit a record.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Top bar (Organism, to build) (Cancel / Save)"
+     ]
+    },
+    {
+     "name": "Fields",
+     "components": [
+      "Input / Text",
+      "Select / Dropdown",
+      "Radio group",
+      "Checkbox",
+      "Toggle"
+     ],
+     "rules": "one column on mobile; labels above fields; hint between label and field; error below field; group related fields with section headers"
+    },
+    {
+     "name": "Actions",
+     "components": [
+      "Button Type=Filled Size=base (Save)",
+      "Button Type=Outline (Cancel)"
+     ]
+    }
+   ],
+   "states": [
+    "pristine",
+    "dirty",
+    "validation errors (summary Alert + inline errors)",
+    "saving",
+    "saved (Toast)"
+   ]
+  },
+  "settings": {
+   "tier": "Pattern",
+   "use": "Grouped preferences.",
+   "sections": [
+    {
+     "name": "Top",
+     "components": [
+      "Top bar (Organism, to build) (Settings)"
+     ]
+    },
+    {
+     "name": "Groups",
+     "components": [
+      "List item (Molecule, to build) with trailing Toggle / chevron / value"
+     ],
+     "rules": "section headers; destructive row (Sign out, Delete account) last, danger color, opens Confirmation Popup"
+    }
+   ],
+   "tokens": {
+    "background": "color/bg/secondary"
+   }
+  },
+  "empty_state": {
+   "tier": "Pattern",
+   "use": "No data yet, first-run, or no results.",
+   "sections": [
+    {
+     "name": "Body",
+     "components": [
+      "Icon or illustration",
+      "Button Type=Filled Size=base (primary next step)"
+     ],
+     "content": "title (3xl/Semi Bold), one-sentence explanation (base/Regular)"
+    }
+   ]
+  }
+ }
+}

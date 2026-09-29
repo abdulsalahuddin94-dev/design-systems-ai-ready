@@ -1,5 +1,7 @@
 # Trianglz iOS DS - variables (read 2026-09-29, Figma file q5nQHGEGzZ94WN0wilJwLW)
 
+> **Superseded for values:** exact values, modes and aliases now live in `../../data/tokens.json` (pulled from Figma). This file keeps the study notes; if they differ, trust tokens.json.
+
 > **Node IDs:** any id like `75:26830` in this file belongs to the original Trianglz file only. In a duplicated template or another file the ids change, so always find components, styles and variables by **name** (e.g. `figma.root.findAll(n => n.name === 'User Avatar')`, `getLocalVariablesAsync()` by variable name). Never use an id from this file to edit a copy.
 
 6 local collections. No variable has code syntax. Only `Color / Semantic` has descriptions.
