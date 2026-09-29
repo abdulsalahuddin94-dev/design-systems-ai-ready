@@ -70,7 +70,7 @@ Ask in this order:
 | 0.4 | "Which color modes do you need? Light only / Light and Dark (recommended) / Dark only" | Sets Semantic modes. |
 | 0.5 | "Do you need Arabic / RTL support? Yes / No" | If Yes: mirrored layouts, RTL auto layout checks, directional icons (arrows, chevrons, back) get mirrored variants, Arabic font pairing, and text styles tested with Arabic copy. |
 | 0.6 | "Which fonts should the system use? Name the Latin font and, if RTL is needed, the Arabic font. Reply 'default' to use the platform default." | Defaults: Web = Poppins (org default) or the brand font; iOS = SF Pro; Android = Roboto / Roboto Flex. Arabic default pairing: IBM Plex Sans Arabic (Web/Android), SF Arabic (iOS). Confirm the fonts are installed / available in Figma. |
-| 0.7 | "Do you also want a live Storybook for developers (browse components, try variants and properties, read use cases, link back to Figma)? Yes, after components (recommended when developers will use the DS) / Later / No" | Optional. Yes -> run section 12 after the Components checkpoint. Default stack for every platform: React + Storybook, mobile components styled like iOS / Android. Record the answer in `Project_Brief.md`. |
+| 0.7 | "Do you also want a live Storybook for developers (browse components, try variants and properties, read use cases, link back to Figma)? Yes, after components (recommended when developers will use the DS) / Later / No" | Optional. Yes -> run section 12 after the Components checkpoint. Default stack for every platform: React + Storybook. iOS and Android projects get a web Storybook (React + CSS) styled like the native components. Record the answer in `Project_Brief.md`. |
 
 ---
 
@@ -309,6 +309,8 @@ Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever th
 1. Load `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
 2. Make sure `data/tokens.json` and `data/component-registry.json` reflect the live Figma file (token-extractor subagent if they need a resync).
 3. Ask before installing any Node package; show the exact commands.
+   - iOS / Android: build the Storybook as web (React + CSS) styled like the native components (Storybook skill, principle 7).
+   - Meet the Storybook quality bar (principle 8): working components, sidebar navigation, Figma description and use case per component, every Figma property as a control, all states in Light and Dark. Write each component description in Figma and in Storybook during the build.
 4. Build the Storybook in `<platform folder>/storybook/`, one per platform, with names that match Figma exactly.
 5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder.
 6. Record the path, run command and MCP status in `Project_Brief.md`.

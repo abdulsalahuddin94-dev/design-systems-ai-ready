@@ -18,6 +18,14 @@ Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma is the source of
 4. **One platform per Storybook.** Web, iOS and Android each get their own Storybook inside their own folder. Nothing shared or merged.
 5. **Default stack for every platform: React + Vite + TypeScript + Storybook (latest).** Mobile components are React components styled to look like their iOS / Android counterparts, shown inside a device frame.
 6. **Never install without asking.** Show the exact packages and commands and wait for a "yes" before `npm create`, `npm install` or `npx storybook add`.
+7. **iOS and Android projects get a web Storybook (for now).** Every new iOS or Android design system gets its own Storybook rendered as web: React + CSS components styled to look like the native iOS (HIG) or Android (Material 3) components, in a device frame, built from that platform's own tokens. Same setup and quality bar as Web. This is the interim choice until a native Storybook (SwiftUI / Compose) is decided; it applies to future projects, not to the Trianglz reference folders.
+8. **Quality bar for every new Storybook.**
+   - Components really work, not just look right: typing, checking, toggling, opening, closing, selecting and dismissing all behave.
+   - The left sidebar navigates Foundations and every component group, in the same order as the Figma ⭐ groups.
+   - Each component page shows its Figma component description and its use cases (when to use, when not to).
+   - Every property in Figma's right panel (variants, booleans, text, instance swaps) is a control with the same name and the Figma default.
+   - Every variant and state can be seen, in Light and Dark (an "All variants" story plus one story per state).
+   - The component description is always written during the build: in Figma (the component's description / Component documentation) and in Storybook, with the same text.
 
 ---
 
@@ -81,7 +89,7 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
    - Usage docs: `tools/storybook_stories.py` writes tier, use, nests, known Figma gaps and the Figma link into each story's docs description from the registry. Add longer "when not to use" guidance to the registry `use` field or an MDX page.
    - Read exact specs first with a read-only `figma_execute` walk (layout, padding, gap, radius, fills/strokes as variable names, text style names, effect styles) of each component set, then write the replica. Screenshots in `references/screens/` are the visual check.
    - Generate the stories: `python tools/storybook_stories.py <folder>` (Playground, one story per value of the main variant property, an "All variants" grid, and an interactive "In use" example when `component-map.json` has one).
-6. **Mobile (iOS / Android).** Wrap stories in `DeviceFrame` (iOS 393x852, Android 412x915 by default) with the platform's system font stack, safe areas and status bar. iOS: HIG semantic names and Dynamic Type sizes from tokens. Android: md.sys tokens and M3 elevation from tokens.
+6. **Mobile (iOS / Android), rendered as web.** Same React + CSS setup as Web (principle 7). Wrap stories in `DeviceFrame` (iOS 393x852, Android 412x915 by default) with the platform's system font stack, safe areas and status bar. iOS: HIG semantic names and Dynamic Type sizes from tokens. Android: md.sys tokens and M3 elevation from tokens.
 7. **Verify.**
    - `npm run build-storybook` passes with no errors.
    - Parity check: every registry component has a story file; every Figma variant and property appears in `argTypes` with the identical name (`python tools/storybook_parity.py <folder>`; report any mismatch).

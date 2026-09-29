@@ -49,3 +49,5 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Storybook is documentation, not production code, for Web and mobile alike. Default: React + Storybook for all platforms; mobile components styled to look like their iOS/Android counterparts.
 - Component, variant, property and token names in Storybook must match Figma exactly.
 - Optional intake step; skill `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
+- Future iOS and Android projects: Storybook rendered as web (React + CSS) styled like the native components, as an interim choice (Abdul, 2026-09-30). Not built for the Trianglz iOS/Android references.
+- Quality bar for new Storybooks: working components, sidebar navigation across Foundations and components, Figma description and use case per component, every Figma property as a control, all states in Light and Dark; component descriptions are written during the build in Figma and in Storybook. Not yet applied to the Trianglz Web Storybook (Abdul paused that).
