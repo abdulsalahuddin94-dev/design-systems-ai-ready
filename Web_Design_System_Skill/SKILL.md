@@ -122,6 +122,8 @@ Recolor procedure (when the user asks to change a color):
 6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
 7. Log it in `docs/decisions.md`.
 
+**Fix on create:** when a DS starts from an existing file or a Trianglz template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
+
 ## 4. Styles
 
 - **Text styles**: `{size}/{weight}` (40 styles: 10 sizes x Regular, Medium, Semi Bold, Bold). Bind font family, weight, size, **line height and letter spacing** to variables. Description: `14px / 20px / 500 · Tailwind text-sm font-medium` - must match the real values.
@@ -202,3 +204,4 @@ Hint text sits between label and field; error text below the field (12px), same 
 - [ ] Save a version in history after each phase; write Foundation_Skill and Component_Skills per group.
 - [ ] `tokens.json > recolor_readiness.ready` is true (0 raw hex in Semantic/Brand tokens) and a test run of `tools/recolor.py` on the brand ramp shows no NEW contrast failures.
 - [ ] `data/tokens.json`, `component-registry.json`, `rules.json`, `screen-templates.json` and `docs/decisions.md` are generated for the new DS.
+- [ ] `python tools/fix_tokens.py <folder>` returns an empty plan (0 operations).

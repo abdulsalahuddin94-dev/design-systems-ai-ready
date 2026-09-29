@@ -127,6 +127,8 @@ Recolor procedure (when the user asks to change a color):
 6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
 7. Log it in `docs/decisions.md`.
 
+**Fix on create:** when a DS starts from an existing file or a Trianglz template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
+
 ## 4. Styles
 - **Text styles** `{Style}/{Regular|Emphasized}` (22), all properties bound (size, line height, tracking, weight, family). Description `17pt / 22pt / Semibold · SwiftUI .headline`.
 - **Effect styles**: `glass/regular`, `glass/prominent`, `glass/clear` (Liquid Glass recipe: glass/background blur + inner highlight), `blur/thin|regular|thick` materials, `shadow/popover`, `shadow/sheet`, `shadow/card`, `focus-ring` (iPad keyboard focus). Bind colors where possible.
@@ -196,3 +198,4 @@ Recolor procedure (when the user asks to change a color):
 - [ ] Save a version after each phase; write Foundation_Skill and Component_Skills per group.
 - [ ] `tokens.json > recolor_readiness.ready` is true (0 raw hex in Semantic/Brand tokens) and a test run of `tools/recolor.py` on the brand ramp shows no NEW contrast failures.
 - [ ] `data/tokens.json`, `component-registry.json`, `rules.json`, `screen-templates.json` and `docs/decisions.md` are generated for the new DS.
+- [ ] `python tools/fix_tokens.py <folder>` returns an empty plan (0 operations).

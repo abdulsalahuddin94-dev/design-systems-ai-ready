@@ -34,6 +34,39 @@ def with_alpha(hex_color, alpha):
     return rgb_to_hex(r, g, b, alpha)
 
 
+def apply_derived(after, rules):
+    """Recompute derived tokens (colors with alpha that must track a role color) in place.
+    Returns {variable: {mode: hex}} for the values that changed."""
+    changes = {}
+    for rule in rules.get('recolor', {}).get('derived_tokens', []):
+        pat = re.compile(rule['pattern'])
+        for full, v in after.items():
+            m = pat.match(full)
+            if not m:
+                continue
+            if 'source' in rule:
+                src = rule['source'] if rule['source'] in after else None
+            else:
+                role = m.group('role')
+                names = [role, rule.get('role_aliases', {}).get(role, role)]
+                src = next((f for n in names for f in after
+                            if f.split('/')[-1] == n and rule.get('source_prefix', '::Schemes/') in f), None)
+            if not src:
+                continue
+            alpha = int(m.group('pct')) / 100
+            modes = {}
+            for mode in v['values']:
+                base_color = resolve(after, src, mode)
+                if base_color:
+                    val = with_alpha(base_color, alpha)
+                    if v['values'][mode] != val:
+                        v['values'][mode] = val
+                        modes[mode] = val
+            if modes:
+                changes[full] = modes
+    return changes
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('folder')
@@ -69,35 +102,7 @@ def main():
                 modes[m] = new[step]
         changes[full] = modes
 
-    # derived tokens (raw colors that must track a role color)
-    semantic_by_last = {}
-    for full, v in after.items():
-        semantic_by_last.setdefault(full.split('/')[-1], full)
-    for rule in rules.get('recolor', {}).get('derived_tokens', []):
-        pat = re.compile(rule['pattern'])
-        for full, v in after.items():
-            m = pat.match(full)
-            if not m:
-                continue
-            if 'source' in rule:
-                src = rule['source']
-            else:
-                role = m.group('role')
-                role = rule.get('role_aliases', {}).get(role, role)
-                src = next((f for f in after if f.split('/')[-1] == role and '::Schemes/' in f), None)
-            if not src:
-                continue
-            alpha = int(m.group('pct')) / 100
-            modes = {}
-            for mode in v['values']:
-                base_color = resolve(after, src, mode)
-                if base_color:
-                    val = with_alpha(base_color, alpha)
-                    if v['values'][mode] != val:
-                        v['values'][mode] = val
-                        modes[mode] = val
-            if modes:
-                changes[full] = modes
+    changes.update(apply_derived(after, rules))
 
     # which semantics change
     affected = []

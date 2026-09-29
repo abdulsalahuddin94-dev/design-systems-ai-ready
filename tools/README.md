@@ -7,6 +7,7 @@ Python 3, standard library only. Run from the Root.
 | `build_tokens.py <folder>` | Builds `<folder>/data/tokens.json` from the Figma variable export in `data/source/` (every variable per mode, aliases, resolved values, shade scales with their OKLCH curve, and a recolor-readiness report). |
 | `recolor.py <folder> --list` | Lists the shade scales (ramps) and their base colors. |
 | `recolor.py <folder> --ramp "<ramp>" --base "#hex"` | Regenerates the whole ramp from a new base color, recomputes derived tokens, re-checks contrast in every mode and writes `data/recolor/<date>-<ramp>.json` plus a `.figma.js` script for figma_execute. Add `--write-tokens` after the Figma update to store the new values. |
+| `fix_tokens.py <folder>` | Finds and fixes token problems (hand-picked M3 tones, stale state layers, aliases to other libraries, contrast failures, bad names) and writes `data/fixes/<date>-fix-plan.json` plus a `.figma.js` script. Used by the intake's Fix on create step. Lists what still needs a person (component fixes). |
 | `ds_color.py` | Color math used by both (OKLCH, CIELAB L*, WCAG contrast, ramp curves). |
 
 ## Refresh tokens from Figma

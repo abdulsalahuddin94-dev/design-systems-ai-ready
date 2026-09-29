@@ -120,6 +120,7 @@ Intake basics (0.1-0.6)
          ├─ Type 1: screens, no DS  -> extract -> merge approval -> "<Project> Design System" file -> build -> publish/link -> rebuild screens
          ├─ Type 2: live code, no Figma -> repo/path -> extract tokens from code -> "<Project>" + "<Project> Design System" files -> build -> rebuild screens per module
          └─ Type 3: DS + unlinked screens -> Scenario C: audit -> relink screens
+Every path from an existing file: Fix on create (section 7b)
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
 Every path ends: write project skills + final audit (section 11)
 Optional (0.7 = Yes): Storybook after the Components checkpoint (section 12)
@@ -135,7 +136,7 @@ Question 3.1: "Do you already have an AI-ready design system for this project, m
   1. Read the skill files (Foundation_Skill, Component_Skills) and the DS file (⭐Setup first, then component groups; screenshot every variant light and dark).
   2. Run a **quick audit** (audit-design-system): remote variables/styles, raw values, unbound tokens, missing states, bad names, dead properties, missing descriptions. Compare against the platform Main Skill section 9 and 10.
   3. Report findings in a short list and ask: "The DS passed / has N issues. Fix the issues first (recommended) / Work from it as it is"
-  4. Work from the verified DS. Skip to the checkpoint that matches what is missing.
+  4. Run **Fix on create** (section 7b) on it, then work from the fixed DS. Skip to the checkpoint that matches what is missing.
 - **Start from a Trianglz template** -> 3a-2.
 - **No** -> 3b.
 
@@ -145,7 +146,7 @@ Templates are listed in `References.md` in the Root (Web, iOS, Android). Use the
 2. Load the platform's Trianglz skills (`Trianglz/`, `Trianglz_iOS/` or `Trianglz_Android/`: Foundation_Skill first, then the component skills) as the map of what is in the file.
 3. **Node IDs change in a duplicate.** Find every page, component set, style and variable by **name**, never by the ids written in those skills (they belong to the original file only).
 4. Run the brand steps 3b and 3c to get the project's colors, fonts and direction, then rebrand the copy: update Primitives and Semantics, fonts, radius and spacing per the direction.
-5. Fix the template's known gaps (each skill's `references/gaps.md` and the platform Main Skill section 9) before building new components, then continue with 3d from the first missing layer.
+5. Run **Fix on create** (section 7b) on the copy: token fixes with `tools/fix_tokens.py`, then the component gaps from each skill's `references/gaps.md` and the platform Main Skill section 9. Then continue with 3d from the first missing layer.
 
 ### 3b. Colors from the brand folder
 Look in `[Project folder]\Inputs\Brand\` (PDF brand book, logo, images, mood board).
@@ -191,13 +192,28 @@ Colors are built **recolor-ready** (platform Main Skill section 3b): full shade 
 ## 7. Step 6 - Brownfield type 3: DS exists, screens unlinked (Scenario C)
 
 1. Ask: "Please share the design system Figma link and the screens Figma link."
-2. Study the DS (⭐Setup first, then component groups, screenshots light and dark) and run audit-design-system on the DS itself; fix DS gaps first if any (ask before changing).
+2. Study the DS (⭐Setup first, then component groups, screenshots light and dark) and run audit-design-system on the DS itself, then run **Fix on create** (section 7b) on the DS before touching the screens.
 3. **Audit the screens**: hardcoded hex / fonts / spacing / radius, detached or local components, missing components, local overrides. Report per page with counts.
 4. Ask: "Relink everything automatically where there is an exact or near match (recommended) / Review each page with me first"
 5. **Relink**: replace hardcoded values with DS variables and styles, detached copies with DS instances; build any missing components in the DS first (by tier). Document when to use each component.
 6. Re-run the audit and report the before / after numbers.
 
 ---
+
+## 7b. Fix on create (Abdul's rule: every problem found while setting up a project gets fixed)
+
+Runs automatically, without asking, whenever a project starts from an existing file: a duplicated Trianglz template (3a-2), an existing AI-ready DS (3a), a DS with unlinked screens (Step 6), and as the last foundation step of every new build. Work only in the project's own copy, never in an original template.
+1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `<Project>/data/source/`, copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py <Project>`.
+2. Run `python tools/fix_tokens.py <Project>`. It builds `data/fixes/<date>-fix-plan.json` and a `.figma.js` script that:
+   - normalizes hand-picked palette tones to true tones (Android, `known_fixes.normalize_tones`);
+   - recomputes derived tokens (M3 state layers, surface tints) from their role colors;
+   - re-points aliases that point to other libraries (`known_fixes.alias_fixes`);
+   - fixes every failing contrast pair in `rules.json` by moving the Semantic alias to the nearest passing step of the same ramp (never raw hex);
+   - renames bad variable and collection names (typos, double or trailing spaces, `??`, generic ` 2` suffixes, mixed case); renames keep every binding.
+3. Apply the script with figma_execute in the project's DS file, re-export, and re-run `build_tokens.py` and `fix_tokens.py` until the plan is empty and `recolor_readiness.ready` is true.
+4. Fix the component-level items listed in the plan's `needs_a_person` and in each `references/gaps.md` (missing states, `Property 1` / `Status4` names, `Mode=Light|Dark` variants, text glyph icons, unwired properties, missing text/instance-swap properties), lowest tier first, in the same file.
+5. Run audit-design-system (or the ds-auditor agent) and screenshot the affected pages in Light and Dark.
+6. Log every fix in `<Project>/docs/decisions.md` and show the before/after summary at the Foundation checkpoint (section 8). The fixes are already applied at that point; the user reviews them, they are not asked for permission first.
 
 ## 8. Step 7 - Approval checkpoints (every path)
 

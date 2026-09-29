@@ -34,4 +34,5 @@ Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Tria
 - Build order: Primitives, Semantics (Light/Dark), Spacing/Radius/Typography variables, styles, icons, components (Atoms, Molecules, Organisms, Patterns), linked docs, audit, project skills.
 - Required skills: figma-use + figma-generate-library before building; figma-generate-design + ui-ux-pro-max for screens; audit-design-system at the end of every build.
 - Colors are recolor-ready: Semantic tokens only alias Primitives; a color change runs `tools/recolor.py` (full shade scale regenerated, contrast re-checked) and never edits components.
+- Fix on create: every problem found while setting up a project from an existing file is fixed in the project's copy (`tools/fix_tokens.py`, then component gaps), without asking first; results are shown at the Foundation checkpoint.
 - Never install tools on the user's behalf; show the install steps and let them do it.
