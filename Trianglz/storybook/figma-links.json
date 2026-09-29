@@ -1,0 +1,18 @@
+{
+  "file": "https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System",
+  "note": "Node ids are valid in the original Trianglz Web file only. A duplicated file gets new ids: re-run the link export.",
+  "components": {
+    "OTP / Cell": "68:20624", "OTP / Field": "69:20901", "Stepper": "75:27016",
+    "Input / Text": "72:21377", "Input / URL": "73:23456", "Input / Card Number": "73:23641",
+    "Upload Field": "80:28810", "Search": "80:30243", "Menu / Item": "2007:2024", "Menu": "2007:2025",
+    "Select / Dropdown": "2007:2169", "Textarea": "209:206", "Checkbox": "2003:636", "Toggle": "2003:826",
+    "Radio": "80:28711", "Button": "103:859", "Pagination / Item": "245:24",
+    "Tabs / Item — Underline": "245:54", "Tabs / Item — Pill": "245:63", "Breadcrumb / Item": "2013:593",
+    "Breadcrumb": "2013:594", "Avatar": "75:26830", "Avatar Upload": "75:26917", "Tooltip": "75:26731",
+    "Alert": "77:27906", "Badge": "77:27864", "Toast": "2012:543", "Confirmation Popup": "222:3717"
+  },
+  "pages": {
+    "➜ Typography": "74:24539", "➜ Colors ": "0:1", "➜ shadows": "80:28168",
+    "➜ Corner Radius & spacings": "74:24540", "➜ Icons": "74:24541"
+  }
+}

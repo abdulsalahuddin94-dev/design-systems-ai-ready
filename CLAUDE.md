@@ -27,6 +27,7 @@ Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step
 Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/` (Foundation_Skill + Component_Skills). Template links: `References.md`.
 
 ## Rules
+- The full list of prohibitions is `data/rules.json > off_limits` in each DS folder (read it before any build). ds-auditor checks every rule; `.claude/hooks/guard_figma.py` blocks detaching and asks before writing to an original Trianglz template. What each instance swap or slot accepts is in `data/component-registry.json > slots`.
 - All paths are relative to this folder. Never write absolute machine paths into skills.
 - Each project lives in `<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, with `Project_Brief.md`, `Inputs/`, `Foundation_Skill/` and `Component_Skills/`.
 - Platforms are independent: nothing is shared or merged between Web, iOS and Android.

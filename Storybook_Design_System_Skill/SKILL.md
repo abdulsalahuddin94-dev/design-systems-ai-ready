@@ -36,24 +36,29 @@ If `data/` says `needs_resync: true` and the Figma file is open in the Desktop B
 
 ## 3. Output layout
 
+Reference build: `Trianglz/storybook/` (Web, 28 component sets, 2026-09-30). Copy its structure.
+
 ```
 <platform folder>/storybook/
-├─ package.json                 (private, scripts: storybook, build-storybook, tokens)
+├─ package.json, tsconfig.json, README.md
+├─ component-map.json           (Figma component name -> React export; by hand)
+├─ figma-links.json             (Figma file + node ids for "Open in Figma"; export with figma_execute, original file only)
 ├─ .storybook/
-│  ├─ main.ts                   (react-vite, addons: docs, a11y, mcp)
-│  ├─ preview.tsx               (imports tokens.css; toolbars for every Figma mode collection)
-│  └─ manager.ts                (brand title = "<Project> Design System")
-├─ src/
-│  ├─ tokens/tokens.css         (generated: one CSS variable per Figma variable, per mode)
-│  ├─ tokens/tokens.ts          (generated: Figma name -> CSS variable map, used by docs)
-│  ├─ foundations/              (Colors.mdx, Typography.mdx, Spacing.mdx, Radius.mdx, Shadows.mdx, Icons.mdx: live token tables)
-│  ├─ components/<Figma component name>/
-│  │  ├─ <Name>.tsx             (visual replica, props named exactly like Figma)
-│  │  ├─ <Name>.stories.tsx     (one story per variant combination that matters + Playground)
-│  │  └─ <Name>.mdx             (usage: tier, use cases, when not to use, nests, tokens, a11y, Figma link)
-│  └─ device/DeviceFrame.tsx    (iOS / Android only)
-└─ README.md                    (how to run, how to regenerate)
+│  ├─ main.ts                   (react-vite; addons: docs, a11y, designs, mcp; telemetry off)
+│  ├─ preview.tsx               (imports tokens + styles; toolbars named after Figma collections and modes)
+│  ├─ preview-head.html         (web font)
+│  └─ manager.ts                (brand title = Figma file name)
+└─ src/
+   ├─ tokens/tokens.css, tokens.ts   (generated: tools/tokens_to_css.py)
+   ├─ styles/text-styles.css         (Figma text styles as classes: "sm/Semi Bold" -> .ts-sm-semi-bold)
+   ├─ styles/effects.css             (Figma effect styles: --shadow-*, --focus-ring*)
+   ├─ styles/components.css          (component styles, var(--...) only)
+   ├─ lib/Icon.tsx                   (the file's icon set, color = currentColor)
+   ├─ components/<Group>.tsx         (replicas grouped like the Figma ⭐ groups; props = Figma names)
+   ├─ stories/<Group>/<Name>.stories.tsx  (generated: tools/storybook_stories.py)
+   └─ foundations/*.mdx + Foundations.tsx (Introduction, Colors, Typography, Spacing, Radius, Shadows, Icons; live from tokens.ts)
 ```
+Also in the Root: `.claude/launch.json` (preview entry) and `.mcp.json` (Storybook MCP, project scope).
 
 Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input / Text`, `Navigation/Button`, `Data Display/Badge`. Sidebar order: Foundations, Form Elements, Navigation, Data Display, Patterns. Inside a group, order by tier (Atoms, Molecules, Organisms).
 
@@ -73,7 +78,9 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
    - Visuals match the Light and Dark screenshots in `references/screens/`. Use only token variables.
    - Interactive states (Hover, Focus, Pressed, Disabled) also work for real (CSS :hover/:focus-visible), and the `State` control forces them for review.
    - `parameters.design = { type: "figma", url: "<Figma link to the component set>" }` and an "Open in Figma" link at the top of the MDX.
-   - MDX usage text comes from the Component_Skill: tier, exact use cases, when not to use, dependencies, tokens used, accessibility.
+   - Usage docs: `tools/storybook_stories.py` writes tier, use, nests, known Figma gaps and the Figma link into each story's docs description from the registry. Add longer "when not to use" guidance to the registry `use` field or an MDX page.
+   - Read exact specs first with a read-only `figma_execute` walk (layout, padding, gap, radius, fills/strokes as variable names, text style names, effect styles) of each component set, then write the replica. Screenshots in `references/screens/` are the visual check.
+   - Generate the stories: `python tools/storybook_stories.py <folder>` (Playground, one story per value of the main variant property, an "All variants" grid, and an interactive "In use" example when `component-map.json` has one).
 6. **Mobile (iOS / Android).** Wrap stories in `DeviceFrame` (iOS 393x852, Android 412x915 by default) with the platform's system font stack, safe areas and status bar. iOS: HIG semantic names and Dynamic Type sizes from tokens. Android: md.sys tokens and M3 elevation from tokens.
 7. **Verify.**
    - `npm run build-storybook` passes with no errors.

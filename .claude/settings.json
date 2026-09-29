@@ -83,6 +83,15 @@
             "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_absolute_paths.py\""
           }
         ]
+      },
+      {
+        "matcher": "mcp__figma-console__figma_execute|mcp__figma-console__figma_execute_across_files|mcp__.*figma.*__use_figma",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_figma.py\""
+          }
+        ]
       }
     ],
     "PostToolUse": [

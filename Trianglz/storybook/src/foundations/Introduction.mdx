@@ -1,0 +1,28 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Introduction" />
+
+# Trianglz - Web Design System
+
+Living documentation of the Figma file [Trianglz - Web Design System](https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System). Figma is the source of truth; this Storybook lets developers browse every component, try its variants and properties, read when to use it, and jump back to Figma.
+
+**Documentation, not production code.** The components here are faithful visual replicas built only on the design tokens. Copy the names, tokens and behaviour into your own codebase.
+
+## Names match Figma exactly
+- Sidebar groups = Figma page groups: Foundations (⭐Setup), Form Elements, Navigation, Data display.
+- Story titles = Figma component set names (`Input / Text`, `Tabs / Item — Pill`).
+- Controls = Figma variant and property names, with the same spelling and case (`State`, `Show optional`, `Leading icon`).
+- Tokens = Figma variable names. CSS variables follow one rule: lowercase, `/` and spaces become `-` (`color/btn/Primary/bg 2` → `--color-btn-primary-bg-2`).
+
+## Modes
+Use the toolbar: **Semantic** switches Light / Dark, **Mode** switches Desktop / iPad / Mobile (the Typography and Spacing collections). The names are the Figma mode names.
+
+## For AI agents
+While Storybook runs, the MCP endpoint is `http://localhost:6006/mcp` (Storybook MCP addon). Agents can list components, read these docs and props, and preview stories before building UI.
+
+## Regenerate after Figma changes
+```
+python tools/tokens_to_css.py Trianglz        # tokens from data/tokens.json
+python tools/storybook_stories.py Trianglz    # stories from data/component-registry.json
+python tools/storybook_parity.py Trianglz     # names still match Figma?
+```

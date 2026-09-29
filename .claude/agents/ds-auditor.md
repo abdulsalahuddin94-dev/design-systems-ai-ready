@@ -16,7 +16,7 @@ If something is missing, audit the whole open file and say what you assumed.
 ## Before auditing
 1. `figma_get_status`: confirm the Desktop Bridge is connected and which file is open. If not connected, stop and report that.
 2. Load the `audit-design-system` skill if it is available.
-3. Read `memory/MEMORY.md`, the platform Main Skill, the project's `Foundation_Skill/SKILL.md`, the relevant Component_Skill and `data/rules.json` (thresholds: contrast, touch targets, spacing base, radius usage).
+3. Read `memory/MEMORY.md`, the platform Main Skill, the project's `Foundation_Skill/SKILL.md`, the relevant Component_Skill and `data/rules.json` (thresholds: contrast, touch targets, spacing base, radius usage; `off_limits` = the prohibitions you check; `data/component-registry.json > slots` = what each swap/slot may contain).
 
 ## Checklist (build mode)
 Report each line as a number, never "looks fine":
@@ -32,6 +32,8 @@ Report each line as a number, never "looks fine":
 10. Naming: components, variants and properties follow the Main Skill; nodes found by name.
 11. Group placement: foundation in ⭐Setup, inputs in ⭐Form Elements, actions/navigation in ⭐Navigation, information display in ⭐Data Display.
 12. Docs pages linked, not static: ➜ Colors swatches bound to variables, ➜ Typography samples use text styles bound to Typography variables.
+13. **Off-limits**: for every rule in `data/rules.json > off_limits.rules`, report its `id` with a violation count (target 0) using its `check` (and `patterns` for default names). List `known_violations` separately as accepted template debt.
+14. **Slots**: every instance inside a component or screen uses the swap/slot listed in `component-registry.json > slots` with an accepted component; count detached or wrong-slot content (target 0).
 
 Screenshot every variant you flag, in Light and Dark, with `figma_capture_screenshot`.
 

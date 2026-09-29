@@ -1,0 +1,21 @@
+/* Figma effect styles (Trianglz - Web Design System, read 2026-09-30).
+   Effect styles are not Figma variables, so they live here instead of tokens.css.
+   Variable name = "--" + Figma style name. Focus rings use the focus token instead of the
+   hardcoded #3B82F6 in Figma (listed in Foundation_Skill gaps). */
+:root {
+  --shadow-none: none;
+  --shadow-2xs: 0 1px 0 0 rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 0.1), 0 1px 3px 0 rgb(0 0 0 / 0.1);
+  --shadow-md: 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 4px 6px -4px rgb(0 0 0 / 0.1), 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 8px 10px -6px rgb(0 0 0 / 0.1), 0 20px 25px -5px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --inset-shadow-2xs: inset 0 1px 0 0 rgb(0 0 0 / 0.05);
+  --inset-shadow-xs: inset 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --inset-shadow-sm: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+  /* inputs: inset 2px focus color + soft shadow */
+  --focus-ring: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1), inset 0 0 0 1px var(--color-border-focus);
+  /* buttons and controls: 2px gap in the page background + 2px focus color */
+  --focus-ring-offset: 0 0 0 2px var(--color-bg-primary), 0 0 0 4px var(--color-border-focus);
+}

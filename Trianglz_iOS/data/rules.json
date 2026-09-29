@@ -352,5 +352,140 @@
       "Component fixes are in Component_Skills/*/references/gaps.md (Mode=Light|Dark variants to remove, RadioButton value \"Status4\", duplicate RadioButton set, SF Symbol text glyphs to replace with Icon instances).",
       "Build an Icon/<Name> set (SF Symbols style) and swap glyphs."
     ]
+  },
+  "off_limits": {
+    "note": "Single list of prohibitions. ds-auditor reports each id with a count; hooks enforce the ones marked hook:.",
+    "original_template_file_keys": {
+      "7qsOqckanKwGDbkljD3rb9": "Trianglz - Web Design System",
+      "q5nQHGEGzZ94WN0wilJwLW": "Trianglz - IOS Design System",
+      "JUs2c8IO6ybFcGRZjcQzr9": "Trianglz - Android M3 x Design System"
+    },
+    "rules": [
+      {
+        "id": "no-component-specific-tokens",
+        "rule": "Do not create component-specific tokens (e.g. color/btn/*, button-padding) unless the user asks. Components use Semantic tokens.",
+        "check": "variable names in Semantic collections must not start with a component name (btn, button, input, card, chip, tab, badge...)",
+        "enforced_by": [
+          "ds-auditor"
+        ],
+        "exception": "the user explicitly asks for a component token layer"
+      },
+      {
+        "id": "no-hardcoded-values",
+        "rule": "No raw hex outside Primitives and no raw px/pt/dp for padding, gap, radius or font values in components and screens.",
+        "check": "0 unbound fills/strokes/padding/gap/radius/text values; tokens.json > recolor_readiness.ready = true",
+        "enforced_by": [
+          "ds-auditor",
+          "tools/fix_tokens.py"
+        ]
+      },
+      {
+        "id": "originals-untouched",
+        "rule": "Never edit the original Trianglz template files. Duplicate them and work in the copy.",
+        "check": "no write operation targets an original file key",
+        "enforced_by": [
+          "hook:guard_figma.py (asks the user)",
+          "ds-auditor"
+        ],
+        "exception": "the user explicitly asks for a change in the original (e.g. deleting a leftover page)"
+      },
+      {
+        "id": "no-detach",
+        "rule": "Never detach an instance. Use instance swaps, slots and exposed properties; if a needed swap is missing, fix the component.",
+        "check": "0 detached instances; no detachInstance() in scripts",
+        "enforced_by": [
+          "hook:guard_figma.py (blocks)",
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-default-names",
+        "rule": "No default layer or property names: Frame 12, Group 5, Rectangle 3, Vector, Property 1, Variant5, Component 1, trailing ' 2' copies.",
+        "check": "0 layers or properties matching the default-name patterns",
+        "patterns": [
+          "^Frame \\d+$",
+          "^Group \\d+$",
+          "^Rectangle \\d+$",
+          "^Ellipse \\d+$",
+          "^Vector( \\d+)?$",
+          "^Property \\d+$",
+          "^Variant\\d+$",
+          "^Component \\d+$",
+          " \\d+$"
+        ],
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "docs-in-setup",
+        "rule": "Foundation documentation pages (colors, typography, spacing, radius, shadows, grid, icons) live only in the ⭐Setup group; component docs sit on their own ➜ page inside their ⭐ group.",
+        "check": "no foundation doc frame outside ⭐Setup pages",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-remote-assets",
+        "rule": "No remote (library) variables, styles or components inside the DS file.",
+        "check": "0 remote variables/styles/components",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-dark-duplicates",
+        "rule": "No Mode=Light|Dark variants and no duplicated dark component sets; dark is the Semantic mode on the frame.",
+        "check": "0 variant properties named Mode with Light/Dark values",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "real-icons-only",
+        "rule": "Icons are Icon/* instances (SF Symbols style), never private-use text glyphs with swap properties; no drawn vectors, text glyphs or empty placeholders.",
+        "check": "every icon is an instance of the local icon set",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-color-styles",
+        "rule": "Color lives in variables only; no color (paint) styles.",
+        "check": "0 local paint styles",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "recolor-keeps-names",
+        "rule": "A recolor changes Primitive values only; never rename, delete or recreate Primitives during a recolor.",
+        "enforced_by": [
+          "tools/recolor.py"
+        ]
+      },
+      {
+        "id": "no-auto-install",
+        "rule": "Never install tools, packages, MCP servers or plugins on the user's behalf; show the steps and let the user do it.",
+        "enforced_by": [
+          "settings.json ask rules",
+          "Design_System_Intake_Skill preflight"
+        ]
+      },
+      {
+        "id": "no-push",
+        "rule": "Never push, create a remote repository or publish a Figma library without the user's explicit request.",
+        "enforced_by": [
+          "settings.json ask rules"
+        ]
+      },
+      {
+        "id": "relative-paths",
+        "rule": "No absolute machine paths in skills, briefs, data or memory; paths are relative to the Root.",
+        "enforced_by": [
+          "hook:block_absolute_paths.py"
+        ]
+      }
+    ]
   }
 }

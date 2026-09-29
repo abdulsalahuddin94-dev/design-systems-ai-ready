@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "trianglz-web-storybook",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "Trianglz/storybook", "run", "storybook", "--", "--no-open"],
+      "port": 6006
+    }
+  ]
+}

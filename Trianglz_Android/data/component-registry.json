@@ -15,7 +15,8 @@
    "icons": 141,
    "text_styles": 30,
    "effect_styles": 10
-  }
+  },
+  "slots_extracted_at": "2026-09-30"
  },
  "pages": [
   "Cover",
@@ -85,7 +86,8 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 30,
-   "use": "Multi-select; error types for validation."
+   "use": "Multi-select; error types for validation.",
+   "slots": []
   },
   {
    "name": "Radio buttons",
@@ -109,7 +111,8 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 10,
-   "use": "Single choice from a short list."
+   "use": "Single choice from a short list.",
+   "slots": []
   },
   {
    "name": "Switch",
@@ -137,7 +140,8 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 20,
-   "use": "Immediate on/off setting."
+   "use": "Immediate on/off setting.",
+   "slots": []
   },
   {
    "name": "Text field",
@@ -181,7 +185,8 @@
    "use": "Text entry. Filled for dense forms, Outlined for low emphasis.",
    "nests": [
     "Icon"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Search bar",
@@ -206,7 +211,8 @@
     "Show leading icon": "BOOLEAN"
    },
    "variant_count": 6,
-   "use": "Entry point to search."
+   "use": "Entry point to search.",
+   "slots": []
   },
   {
    "name": "Search docked layout",
@@ -230,7 +236,8 @@
    "nests": [
     "Search bar",
     "List item"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Search full-screen layout",
@@ -254,7 +261,8 @@
    "nests": [
     "Search bar",
     "List item"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Search docked layout (baseline)",
@@ -273,7 +281,8 @@
     "Show list items": "BOOLEAN"
    },
    "variant_count": 2,
-   "use": "Baseline (pre-Expressive) docked search."
+   "use": "Baseline (pre-Expressive) docked search.",
+   "slots": []
   },
   {
    "name": "Search full-screen layout (baseline)",
@@ -292,7 +301,8 @@
     "Show list items": "BOOLEAN"
    },
    "variant_count": 2,
-   "use": "Baseline full-screen search."
+   "use": "Baseline full-screen search.",
+   "slots": []
   },
   {
    "name": "Input date picker",
@@ -312,7 +322,8 @@
     "Show clear button": "BOOLEAN"
    },
    "variant_count": 2,
-   "use": "Typed date entry."
+   "use": "Typed date entry.",
+   "slots": []
   },
   {
    "name": "Modal date picker",
@@ -339,7 +350,8 @@
     ".Building Blocks/Local M3 calendar cell",
     ".Building Blocks/Year",
     ".Building Blocks/Menu button"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Docked input date picker [desktop]",
@@ -357,7 +369,8 @@
     "Show Clear button": "BOOLEAN"
    },
    "variant_count": 3,
-   "use": "Dropdown calendar under a field (large screens)."
+   "use": "Dropdown calendar under a field (large screens).",
+   "slots": []
   },
   {
    "name": "Dial picker",
@@ -378,7 +391,8 @@
     "Headline": "TEXT"
    },
    "variant_count": 4,
-   "use": "Clock-dial time picker."
+   "use": "Clock-dial time picker.",
+   "slots": []
   },
   {
    "name": "Keyboard picker",
@@ -395,7 +409,8 @@
     "Headline": "TEXT"
    },
    "variant_count": 2,
-   "use": "Typed time entry."
+   "use": "Typed time entry.",
+   "slots": []
   },
   {
    "name": "Linear-determinate progress indicator",
@@ -422,7 +437,8 @@
    },
    "properties": {},
    "variant_count": 24,
-   "use": "Known progress, linear."
+   "use": "Known progress, linear.",
+   "slots": []
   },
   {
    "name": "Linear-indeterminate progress indicator",
@@ -446,7 +462,8 @@
    },
    "properties": {},
    "variant_count": 12,
-   "use": "Unknown progress, linear."
+   "use": "Unknown progress, linear.",
+   "slots": []
   },
   {
    "name": "Circular-determinate progress indicator",
@@ -473,7 +490,8 @@
    },
    "properties": {},
    "variant_count": 24,
-   "use": "Known progress, circular."
+   "use": "Known progress, circular.",
+   "slots": []
   },
   {
    "name": "Circular-indeterminate progress indicator",
@@ -498,7 +516,8 @@
     "Show track": "BOOLEAN"
    },
    "variant_count": 8,
-   "use": "Unknown progress, circular."
+   "use": "Unknown progress, circular.",
+   "slots": []
   },
   {
    "name": "Loading indicator",
@@ -522,7 +541,8 @@
    },
    "properties": {},
    "variant_count": 14,
-   "use": "Expressive shape-morph loader for short waits."
+   "use": "Expressive shape-morph loader for short waits.",
+   "slots": []
   },
   {
    "name": "Standard slider",
@@ -560,7 +580,16 @@
     "Show icon": "BOOLEAN"
    },
    "variant_count": 120,
-   "use": "Pick a value on a range."
+   "use": "Pick a value on a range.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "volume_up",
+     "rule": "shown when Show icon = true (Large/XLarge sizes)"
+    }
+   ]
   },
   {
    "name": "Centered slider",
@@ -596,7 +625,8 @@
     "Show stops": "BOOLEAN"
    },
    "variant_count": 120,
-   "use": "Value around a center (e.g. balance)."
+   "use": "Value around a center (e.g. balance).",
+   "slots": []
   },
   {
    "name": "Range slider",
@@ -631,7 +661,8 @@
     "Show stops": "BOOLEAN"
    },
    "variant_count": 60,
-   "use": "Pick a min-max range."
+   "use": "Pick a min-max range.",
+   "slots": []
   },
   {
    "name": "Button",
@@ -665,7 +696,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 50,
-   "use": "Filled button: the one primary action on a screen."
+   "use": "Filled button: the one primary action on a screen.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Button - tonal",
@@ -699,7 +739,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 50,
-   "use": "Secondary emphasis between filled and outlined."
+   "use": "Secondary emphasis between filled and outlined.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Button - outline",
@@ -736,6 +785,15 @@
    "use": "Medium emphasis, secondary actions.",
    "issues": [
     "State value typo \"Presssed\""
+   ],
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
    ]
   },
   {
@@ -770,7 +828,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 50,
-   "use": "Needs separation from a patterned background."
+   "use": "Needs separation from a patterned background.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Button - text",
@@ -804,7 +871,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 50,
-   "use": "Lowest emphasis (dialogs, cards)."
+   "use": "Lowest emphasis (dialogs, cards).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Toggle button",
@@ -843,7 +919,23 @@
     "Icon (selected)": "INSTANCE_SWAP"
    },
    "variant_count": 100,
-   "use": "Button that stays selected (on/off)."
+   "use": "Button that stays selected (on/off).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Toggle button - tonal",
@@ -882,7 +974,23 @@
     "Icon (selected)": "INSTANCE_SWAP"
    },
    "variant_count": 100,
-   "use": "Button that stays selected (on/off)."
+   "use": "Button that stays selected (on/off).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Toggle button - outline",
@@ -921,7 +1029,23 @@
     "Icon (selected)": "INSTANCE_SWAP"
    },
    "variant_count": 100,
-   "use": "Button that stays selected (on/off)."
+   "use": "Button that stays selected (on/off).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Toggle button - elevated",
@@ -960,7 +1084,23 @@
     "Icon (selected)": "INSTANCE_SWAP"
    },
    "variant_count": 100,
-   "use": "Button that stays selected (on/off)."
+   "use": "Button that stays selected (on/off).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Icon button",
@@ -997,7 +1137,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 150,
-   "use": "Compact icon-only action."
+   "use": "Compact icon-only action.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Icon button - standard",
@@ -1034,7 +1183,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 150,
-   "use": "Compact icon-only action."
+   "use": "Compact icon-only action.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Icon button - tonal",
@@ -1071,7 +1229,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 150,
-   "use": "Compact icon-only action."
+   "use": "Compact icon-only action.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Icon button - outline",
@@ -1108,7 +1275,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 150,
-   "use": "Compact icon-only action."
+   "use": "Compact icon-only action.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Icon button togglable",
@@ -1150,7 +1326,23 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 300,
-   "use": "Icon action with a selected state (favorite, bookmark)."
+   "use": "Icon action with a selected state (favorite, bookmark).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Icon button togglable - tonal",
@@ -1192,7 +1384,23 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 300,
-   "use": "Icon action with a selected state (favorite, bookmark)."
+   "use": "Icon action with a selected state (favorite, bookmark).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Icon button togglable - outline",
@@ -1234,7 +1442,23 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 300,
-   "use": "Icon action with a selected state (favorite, bookmark)."
+   "use": "Icon action with a selected state (favorite, bookmark).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "Icon button togglable - standard",
@@ -1276,7 +1500,23 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 300,
-   "use": "Icon action with a selected state (favorite, bookmark)."
+   "use": "Icon action with a selected state (favorite, bookmark).",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars",
+     "rule": "shown when Show icon = true"
+    },
+    {
+     "property": "Icon (selected)",
+     "kind": "instance_swap",
+     "accepts": "the _filled version of the Icon symbol",
+     "default": "stars_filled",
+     "rule": "shown when Selected = True"
+    }
+   ]
   },
   {
    "name": "FAB",
@@ -1309,7 +1549,16 @@
     "Icon": "INSTANCE_SWAP"
    },
    "variant_count": 72,
-   "use": "The screen's most important action, floating."
+   "use": "The screen's most important action, floating.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "Extended FAB",
@@ -1343,7 +1592,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 72,
-   "use": "FAB with a label for clarity."
+   "use": "FAB with a label for clarity.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show icon = true"
+    }
+   ]
   },
   {
    "name": "FAB menu",
@@ -1370,7 +1628,8 @@
    "use": "FAB that opens 2-6 related actions.",
    "nests": [
     ".Building Blocks/FAB Menu/*"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Standard button group",
@@ -1409,7 +1668,8 @@
    "nests": [
     "Button",
     "Icon button"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Connected button group",
@@ -1438,7 +1698,8 @@
    "use": "Segmented choice with connected shapes (Expressive).",
    "nests": [
     "Building Blocks/Button group/Connected segments/*"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Segmented button",
@@ -1464,7 +1725,8 @@
    "use": "Select among 2-5 options or views.",
    "nests": [
     "Building Blocks/Segmented button/*"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Split button",
@@ -1508,7 +1770,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 180,
-   "use": "Main action + menu of related actions."
+   "use": "Main action + menu of related actions.",
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars_filled",
+     "rule": "shown when Show leading icon = true"
+    }
+   ]
   },
   {
    "name": "App bar",
@@ -1540,6 +1811,14 @@
    "nests": [
     ".Building Blocks/App bar/Content/*",
     "Icon button"
+   ],
+   "slots": [
+    {
+     "property": "Image",
+     "kind": "instance_swap",
+     "accepts": "an image thumbnail component (Small-image configuration)",
+     "default": ".Building Blocks/App bar/Content/Thumbnail"
+    }
    ]
   },
   {
@@ -1559,7 +1838,8 @@
     "Show FAB": "BOOLEAN"
    },
    "variant_count": 4,
-   "use": "Bottom actions + FAB (being replaced by Toolbar in Expressive)."
+   "use": "Bottom actions + FAB (being replaced by Toolbar in Expressive).",
+   "slots": []
   },
   {
    "name": "Menu",
@@ -1589,6 +1869,23 @@
    "nests": [
     "Menu item/Standard",
     "Menu item/Vibrant"
+   ],
+   "slots": [
+    {
+     "property": "List 1 content",
+     "kind": "slot",
+     "accepts": "Menu item/Standard or Menu item/Vibrant rows (match Theme)"
+    },
+    {
+     "property": "List 2 content",
+     "kind": "slot",
+     "accepts": "Menu item/Standard or Menu item/Vibrant rows (match Theme)"
+    },
+    {
+     "property": "List 3 content",
+     "kind": "slot",
+     "accepts": "Menu item/Standard or Menu item/Vibrant rows (match Theme)"
+    }
    ]
   },
   {
@@ -1610,7 +1907,8 @@
    "use": "Baseline menu.",
    "nests": [
     "Building Blocks/Menu list item"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Menu item/Standard",
@@ -1639,7 +1937,14 @@
     "Content": "SLOT"
    },
    "variant_count": 11,
-   "use": "One row in a Menu."
+   "use": "One row in a Menu.",
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "text content (.Building Blocks/Content Type=Text) or a custom row"
+    }
+   ]
   },
   {
    "name": "Menu item/Vibrant",
@@ -1668,7 +1973,14 @@
     "Content": "SLOT"
    },
    "variant_count": 11,
-   "use": "Menu row, vibrant theme."
+   "use": "Menu row, vibrant theme.",
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "text content (.Building Blocks/Content Type=Text) or a custom row"
+    }
+   ]
   },
   {
    "name": "Navigation Bar: Horizontal items",
@@ -1688,7 +2000,8 @@
    "use": "Bottom navigation, compact windows, 3-5 destinations.",
    "nests": [
     "Building Blocks/Navigation bars/Horizontal nav item"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Navigation Bar: Vertical items",
@@ -1707,7 +2020,8 @@
    "use": "Bottom navigation with stacked icon + label.",
    "nests": [
     "Building Blocks/Navigation bars/Vertical nav item"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Navigation Rail",
@@ -1735,6 +2049,14 @@
    "use": "Side navigation, medium windows.",
    "nests": [
     "Building Blocks/Navigation rail/Vertical nav item"
+   ],
+   "slots": [
+    {
+     "property": "Segments",
+     "kind": "slot",
+     "accepts": "Building Blocks/Navigation rail/Vertical nav item x 3-6",
+     "issue": "preferred value is remote"
+    }
    ]
   },
   {
@@ -1767,6 +2089,14 @@
    "use": "Expanded side navigation, expanded windows.",
    "nests": [
     "Building Blocks/Navigation rail/Horizontal nav item"
+   ],
+   "slots": [
+    {
+     "property": "Segments",
+     "kind": "slot",
+     "accepts": "Building Blocks/Navigation rail/Horizontal nav item x 3-6",
+     "issue": "preferred value is remote"
+    }
    ]
   },
   {
@@ -1797,6 +2127,20 @@
    "nests": [
     "Building Blocks/Standard/*",
     "Building Blocks/Vibrant/*"
+   ],
+   "slots": [
+    {
+     "property": "Content (standard)",
+     "kind": "slot",
+     "accepts": "Building Blocks/Standard/{Icon button, Icon button toggleable, Button toggleable}",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Content (vibrant)",
+     "kind": "slot",
+     "accepts": "Building Blocks/Vibrant/{...}",
+     "issue": "preferred values are remote"
+    }
    ]
   },
   {
@@ -1827,6 +2171,14 @@
    "nests": [
     "Primary tabs/*",
     "Secondary tabs/*"
+   ],
+   "slots": [
+    {
+     "property": "Tab group",
+     "kind": "slot",
+     "accepts": "Primary tabs/* or Secondary tabs/* items (match Style and Layout)",
+     "issue": "preferred values are remote"
+    }
    ]
   },
   {
@@ -1853,7 +2205,15 @@
     "Label text": "TEXT"
    },
    "variant_count": 8,
-   "use": "One tab item."
+   "use": "One tab item.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars"
+    }
+   ]
   },
   {
    "name": "Primary tabs/Icon only",
@@ -1878,7 +2238,15 @@
     "Icon": "INSTANCE_SWAP"
    },
    "variant_count": 8,
-   "use": "One tab item."
+   "use": "One tab item.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars"
+    }
+   ]
   },
   {
    "name": "Primary tabs/Label only",
@@ -1903,7 +2271,8 @@
     "Label text": "TEXT"
    },
    "variant_count": 8,
-   "use": "One tab item."
+   "use": "One tab item.",
+   "slots": []
   },
   {
    "name": "Secondary tabs/Label only",
@@ -1928,7 +2297,8 @@
     "Label text": "TEXT"
    },
    "variant_count": 8,
-   "use": "One tab item."
+   "use": "One tab item.",
+   "slots": []
   },
   {
    "name": "Secondary tabs/Icon and label",
@@ -1954,7 +2324,15 @@
     "Label text": "TEXT"
    },
    "variant_count": 8,
-   "use": "One tab item."
+   "use": "One tab item.",
+   "slots": [
+    {
+     "property": "Icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component)",
+     "default": "stars"
+    }
+   ]
   },
   {
    "name": "Stacked card",
@@ -1983,7 +2361,21 @@
     "Content": "SLOT"
    },
    "variant_count": 6,
-   "use": "Content and actions about one subject, vertical."
+   "use": "Content and actions about one subject, vertical.",
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "card body built from DS components"
+    },
+    {
+     "property": "Slot swap",
+     "kind": "instance_swap",
+     "accepts": "a media or content component for the Slot layout",
+     "default": "Shared Building Blocks/Slot-component",
+     "issue": "default points to a shared building block; confirm it is local"
+    }
+   ]
   },
   {
    "name": "Horizontal card",
@@ -2008,7 +2400,20 @@
     "Content": "SLOT"
    },
    "variant_count": 6,
-   "use": "Compact card with media beside text."
+   "use": "Compact card with media beside text.",
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "card body built from DS components"
+    },
+    {
+     "property": "Slot swap",
+     "kind": "instance_swap",
+     "accepts": "a media or content component",
+     "default": "Shared Building Blocks/Slot-component"
+    }
+   ]
   },
   {
    "name": "Basic dialog",
@@ -2031,6 +2436,13 @@
    "use": "Interrupting decision or information.",
    "nests": [
     "Button - text"
+   ],
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "dialog body (text, List item, form fields)"
+    }
    ]
   },
   {
@@ -2053,6 +2465,13 @@
    "use": "Choose from a list in a dialog.",
    "nests": [
     "List item"
+   ],
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "List item rows"
+    }
    ]
   },
   {
@@ -2075,6 +2494,13 @@
    "use": "Long list in a dialog.",
    "nests": [
     "List item"
+   ],
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "List item rows (scrollable)"
+    }
    ]
   },
   {
@@ -2093,7 +2519,8 @@
     "Letter": "TEXT"
    },
    "variant_count": 3,
-   "use": "Person or entity image / monogram."
+   "use": "Person or entity image / monogram.",
+   "slots": []
   },
   {
    "name": "Badges",
@@ -2110,7 +2537,8 @@
     "Badge label": "TEXT"
    },
    "variant_count": 2,
-   "use": "Count or status dot on icons/nav items."
+   "use": "Count or status dot on icons/nav items.",
+   "slots": []
   },
   {
    "name": "Carousel",
@@ -2140,7 +2568,44 @@
     "Show 5th item": "BOOLEAN"
    },
    "variant_count": 10,
-   "use": "Browse a collection of visual items."
+   "use": "Browse a collection of visual items.",
+   "slots": [
+    {
+     "property": "Item 1",
+     "kind": "instance_swap",
+     "accepts": "Building blocks/Multi-ratio items (16:9, 4:3, 1:1, 3:4, 9:16)",
+     "default": "16:9",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Item 2",
+     "kind": "instance_swap",
+     "accepts": "Building blocks/Multi-ratio items (16:9, 4:3, 1:1, 3:4, 9:16)",
+     "default": "4:3",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Item 3",
+     "kind": "instance_swap",
+     "accepts": "Building blocks/Multi-ratio items (16:9, 4:3, 1:1, 3:4, 9:16)",
+     "default": "1:1",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Item 4",
+     "kind": "instance_swap",
+     "accepts": "Building blocks/Multi-ratio items (16:9, 4:3, 1:1, 3:4, 9:16)",
+     "default": "3:4",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Item 5",
+     "kind": "instance_swap",
+     "accepts": "Building blocks/Multi-ratio items (16:9, 4:3, 1:1, 3:4, 9:16)",
+     "default": "9:16",
+     "issue": "preferred values are remote"
+    }
+   ]
   },
   {
    "name": "Carousel - Full screen",
@@ -2157,7 +2622,8 @@
    },
    "properties": {},
    "variant_count": 1,
-   "use": "Full-screen immersive carousel."
+   "use": "Full-screen immersive carousel.",
+   "slots": []
   },
   {
    "name": "Assistive chip",
@@ -2192,7 +2658,28 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 48,
-   "use": "Smart suggested action."
+   "use": "Smart suggested action.",
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component) at 18dp",
+     "default": "local_taxi"
+    },
+    {
+     "property": "Branded icon",
+     "kind": "instance_swap",
+     "accepts": "a brand logo component",
+     "default": ".Building Blocks/Colourful logo",
+     "issue": "preferred value is remote"
+    },
+    {
+     "property": "Favicon",
+     "kind": "instance_swap",
+     "accepts": "a site favicon component",
+     "default": ".Building Blocks/Favicon"
+    }
+   ]
   },
   {
    "name": "Filter chip",
@@ -2232,7 +2719,21 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 96,
-   "use": "Filter content (multi-select)."
+   "use": "Filter content (multi-select).",
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component) at 18dp",
+     "default": "local_taxi"
+    },
+    {
+     "property": "Trailing icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component) at 18dp (usually arrow_drop_down)",
+     "default": "arrow_drop_down"
+    }
+   ]
   },
   {
    "name": "Input chip",
@@ -2270,6 +2771,20 @@
    "use": "User-entered item (tag, contact).",
    "issues": [
     "lowercase false|true values"
+   ],
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component) at 18dp",
+     "default": "local_taxi"
+    },
+    {
+     "property": "Avatar",
+     "kind": "instance_swap",
+     "accepts": "Generic avatar",
+     "default": "Generic avatar"
+    }
    ]
   },
   {
@@ -2305,7 +2820,16 @@
     "Show focus indicator": "BOOLEAN"
    },
    "variant_count": 48,
-   "use": "Dynamic suggestion (e.g. reply)."
+   "use": "Dynamic suggestion (e.g. reply).",
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "any Material Symbol on ➜  Icons (24dp; color from the component) at 18dp",
+     "default": "local_taxi",
+     "rule": "shown when Show icon = True"
+    }
+   ]
   },
   {
    "name": "Chip groups",
@@ -2332,7 +2856,8 @@
     "Input chip",
     "Assistive chip",
     "Suggestion chip"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Horizontal",
@@ -2352,7 +2877,8 @@
    "use": "Horizontal divider.",
    "issues": [
     "generic \"Property 1\"; set name should be Divider / Horizontal"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Vertical",
@@ -2371,7 +2897,8 @@
    "use": "Vertical divider.",
    "issues": [
     "generic \"Property 1\""
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "List item",
@@ -2408,6 +2935,13 @@
     "Building blocks/Leading element",
     "Building blocks/Trailing element",
     "Building blocks/Content"
+   ],
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "Building blocks/Content (Text) or a custom block; leading/trailing via Building blocks/Leading element and Trailing element"
+    }
    ]
   },
   {
@@ -2436,7 +2970,8 @@
    "use": "Vertical group of list items.",
    "nests": [
     "List item"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "List item - Accordion ",
@@ -2454,7 +2989,8 @@
    "use": "Expandable list row.",
    "issues": [
     "trailing space in name"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "List Item - Swipe",
@@ -2471,7 +3007,8 @@
    },
    "properties": {},
    "variant_count": 4,
-   "use": "List row with swipe actions."
+   "use": "List row with swipe actions.",
+   "slots": []
   },
   {
    "name": "List item/List Item: 0 Density (baseline)",
@@ -2520,7 +3057,21 @@
     "Swap divider type": "INSTANCE_SWAP"
    },
    "variant_count": 238,
-   "use": "Baseline list row."
+   "use": "Baseline list row.",
+   "slots": [
+    {
+     "property": "State-layer",
+     "kind": "instance_swap",
+     "accepts": "Building Blocks/state-layer/* (enabled, hovered, focused, pressed, dragged)",
+     "default": "Building Blocks/state-layer/1. enabled"
+    },
+    {
+     "property": "Swap divider type",
+     "kind": "instance_swap",
+     "accepts": "Horizontal (Full-width, Inset, Middle-inset)",
+     "default": "Horizontal/Full-width"
+    }
+   ]
   },
   {
    "name": "List item/List Item: -2 Density (baseline)",
@@ -2569,7 +3120,21 @@
     "Swap divider type": "INSTANCE_SWAP"
    },
    "variant_count": 217,
-   "use": "Baseline list row."
+   "use": "Baseline list row.",
+   "slots": [
+    {
+     "property": "State-layer",
+     "kind": "instance_swap",
+     "accepts": "Building Blocks/state-layer/* (enabled, hovered, focused, pressed, dragged)",
+     "default": "Building Blocks/state-layer/1. enabled"
+    },
+    {
+     "property": "Swap divider type",
+     "kind": "instance_swap",
+     "accepts": "Horizontal (Full-width, Inset, Middle-inset)",
+     "default": "Horizontal/Full-width"
+    }
+   ]
   },
   {
    "name": "List item/List Item: -4 Density (baseline)",
@@ -2618,7 +3183,21 @@
     "Swap divider type": "INSTANCE_SWAP"
    },
    "variant_count": 197,
-   "use": "Baseline list row."
+   "use": "Baseline list row.",
+   "slots": [
+    {
+     "property": "State-layer",
+     "kind": "instance_swap",
+     "accepts": "Building Blocks/state-layer/* (enabled, hovered, focused, pressed, dragged)",
+     "default": "Building Blocks/state-layer/1. enabled"
+    },
+    {
+     "property": "Swap divider type",
+     "kind": "instance_swap",
+     "accepts": "Horizontal (Full-width, Inset, Middle-inset)",
+     "default": "Horizontal/Full-width"
+    }
+   ]
   },
   {
    "name": "Full Lists",
@@ -2637,7 +3216,8 @@
    "use": "Baseline full lists.",
    "issues": [
     "generic \"Property 1\""
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Shape Set",
@@ -2685,7 +3265,8 @@
    },
    "properties": {},
    "variant_count": 35,
-   "use": "M3 Expressive shapes for avatars, image masks, loaders."
+   "use": "M3 Expressive shapes for avatars, image masks, loaders.",
+   "slots": []
   },
   {
    "name": "Bottom sheet",
@@ -2703,7 +3284,14 @@
     "Content": "SLOT"
    },
    "variant_count": 2,
-   "use": "Secondary content anchored to the bottom."
+   "use": "Secondary content anchored to the bottom.",
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "sheet body built from DS components"
+    }
+   ]
   },
   {
    "name": "Side Sheet",
@@ -2726,7 +3314,14 @@
     "Content": "SLOT"
    },
    "variant_count": 4,
-   "use": "Secondary content on the side (medium+ windows)."
+   "use": "Secondary content on the side (medium+ windows).",
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "sheet body built from DS components"
+    }
+   ]
   },
   {
    "name": "Snackbar",
@@ -2755,7 +3350,8 @@
    "use": "Brief message about a process, with optional action.",
    "issues": [
     "one variant property has an empty name"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Plain Tooltip",
@@ -2772,7 +3368,8 @@
     "Supporting text": "TEXT"
    },
    "variant_count": 2,
-   "use": "Short label for an icon or control."
+   "use": "Short label for an icon or control.",
+   "slots": []
   },
   {
    "name": "Rich Tooltip",
@@ -2782,7 +3379,8 @@
    "variants": {},
    "properties": {},
    "variant_count": 1,
-   "use": "Tooltip with title, text and action."
+   "use": "Tooltip with title, text and action.",
+   "slots": []
   },
   {
    "name": "Keyboard",
@@ -2804,7 +3402,8 @@
    },
    "properties": {},
    "variant_count": 12,
-   "use": "System keyboard for mockups only."
+   "use": "System keyboard for mockups only.",
+   "slots": []
   },
   {
    "name": "Building Blocks/status-bar",
@@ -2814,7 +3413,8 @@
    "variants": {},
    "properties": {},
    "variant_count": 1,
-   "use": "System bar for mockups."
+   "use": "System bar for mockups.",
+   "slots": []
   },
   {
    "name": "Building Blocks/navigation",
@@ -2824,7 +3424,8 @@
    "variants": {},
    "properties": {},
    "variant_count": 1,
-   "use": "System bar for mockups."
+   "use": "System bar for mockups.",
+   "slots": []
   },
   {
    "name": "Scrim",
@@ -2834,7 +3435,8 @@
    "variants": {},
    "properties": {},
    "variant_count": 1,
-   "use": "Dimming layer behind modals."
+   "use": "Dimming layer behind modals.",
+   "slots": []
   },
   {
    "name": "Focus indicator",
@@ -2844,7 +3446,8 @@
    "variants": {},
    "properties": {},
    "variant_count": 1,
-   "use": "3dp focus outline used by every interactive component."
+   "use": "3dp focus outline used by every interactive component.",
+   "slots": []
   }
  ],
  "building_blocks": {
@@ -3161,5 +3764,14 @@
    "level": 5
   }
  ],
- "gaps": "See Component_Skills/*/references/gaps.md"
+ "gaps": "See Component_Skills/*/references/gaps.md",
+ "slots": {
+  "kinds": {
+   "instance_swap": "swap the nested instance with setProperties({<prop>: componentId}); never detach",
+   "slot": "Figma slot: place the listed components inside; never draw content",
+   "fixed_nested": "nested instance with no swap property (a gap when it is an icon); set it through the nested instance, never detach",
+   "text_glyph": "icon drawn as a text character (a gap)"
+  },
+  "rule": "Screens and Storybook controls must use these slots exactly. A needed swap that is missing is a component fix, not a reason to detach."
+ }
 }

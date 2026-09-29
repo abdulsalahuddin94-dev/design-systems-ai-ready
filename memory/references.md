@@ -20,3 +20,5 @@ Each folder has `Foundation_Skill/` and `Component_Skills/{Form_Elements,Navigat
 Open items:
 - `data/` files were built from the skill reference files, not a live export (`needs_resync: true`). Re-export with figma-console `figma_export_tokens` when the file is open in the Desktop Bridge (token-extractor subagent).
 - `gaps.md` in each skill is the refactor backlog for the Trianglz files.
+
+Storybook (Web proof, 2026-09-30): `Trianglz/storybook/` (Storybook 10.6, React + Vite). Run `npm --prefix Trianglz/storybook run storybook` or the `trianglz-web-storybook` preview; MCP at `http://localhost:6006/mcp` (registered in `.mcp.json`). Generators: `tools/tokens_to_css.py`, `tools/storybook_stories.py`, `tools/storybook_parity.py`.

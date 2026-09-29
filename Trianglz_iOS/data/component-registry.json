@@ -14,7 +14,8 @@
    "standalone_components": 7,
    "text_styles": 22,
    "effect_styles": 0
-  }
+  },
+  "slots_extracted_at": "2026-09-30"
  },
  "pages": [
   "Cover",
@@ -90,6 +91,24 @@
    "issues": [
     "emoji property names",
     "lowercase value \"filled\""
+   ],
+   "slots": [
+    {
+     "property": "⮑ 🔄 iconLeft",
+     "kind": "instance_swap",
+     "accepts": "an icon component (SF Symbols style, 17-24pt)",
+     "default": "View Icon",
+     "rule": "shown when 👁️ IconLeft = true",
+     "issue": "default and preferred values point to a remote Apple-kit icon; switch to the local Icon set"
+    },
+    {
+     "property": "⮑ 🔄 iconRight",
+     "kind": "instance_swap",
+     "accepts": "an icon component",
+     "default": "View Icon",
+     "rule": "shown when 👁️ IconRight = true",
+     "issue": "remote default"
+    }
    ]
   },
   {
@@ -110,7 +129,8 @@
     "Text": "TEXT"
    },
    "variant_count": 5,
-   "use": "Multi-select in brand forms (iOS prefers checkmarks in lists)."
+   "use": "Multi-select in brand forms (iOS prefers checkmarks in lists).",
+   "slots": []
   },
   {
    "name": "RadioButton",
@@ -133,7 +153,8 @@
    "issues": [
     "value \"Status4\" = disabled selected",
     "duplicate set also on ➜ Checkbox"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Toggle - Switch",
@@ -158,7 +179,8 @@
     "Show AX Label": "BOOLEAN"
    },
    "variant_count": 8,
-   "use": "Immediate on/off setting."
+   "use": "Immediate on/off setting.",
+   "slots": []
   },
   {
    "name": "Date and time - Pickers",
@@ -182,6 +204,13 @@
     "_Day",
     "_Week",
     "Date and time - Collapsed"
+   ],
+   "slots": [
+    {
+     "property": "(calendar)",
+     "kind": "fixed_nested",
+     "accepts": "_Day, _Week"
+    }
    ]
   },
   {
@@ -203,7 +232,8 @@
     "Show time": "BOOLEAN"
    },
    "variant_count": 2,
-   "use": "Compact date/time trigger pills."
+   "use": "Compact date/time trigger pills.",
+   "slots": []
   },
   {
    "name": "Toolbar - Top - iPhone",
@@ -231,6 +261,20 @@
     "_Back Bar Button Item",
     "_Title - Large Title",
     "_Title - Body"
+   ],
+   "slots": [
+    {
+     "property": "Leading",
+     "kind": "slot",
+     "accepts": "_Buttons - Top (Back, Symbol, Text, Button Group) or _Back Bar Button Item",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Trailing",
+     "kind": "slot",
+     "accepts": "_Buttons - Top (Symbol, Symbol - Prominent, Text, Button Group)",
+     "issue": "preferred values are remote"
+    }
    ]
   },
   {
@@ -258,6 +302,20 @@
     "_Button - Bottom",
     "_Search - Bottom",
     "_Page Dots"
+   ],
+   "slots": [
+    {
+     "property": "Buttons Leading",
+     "kind": "slot",
+     "accepts": "_Button - Bottom (Symbol, Symbol - Prominent, Text, Button Group)",
+     "issue": "preferred values are remote"
+    },
+    {
+     "property": "Buttons Trailing",
+     "kind": "slot",
+     "accepts": "_Button - Bottom",
+     "issue": "preferred values are remote"
+    }
    ]
   },
   {
@@ -288,6 +346,14 @@
    "nests": [
     "_Tab Bar Button - iPhone",
     "_Tab Bar Button - iPhone - Search"
+   ],
+   "slots": [
+    {
+     "property": "(tabs)",
+     "kind": "fixed_nested",
+     "accepts": "_Tab Bar Button - iPhone x Tabs (Symbol TEXT + Label TEXT)",
+     "issue": "tab icons are text glyphs"
+    }
    ]
   },
   {
@@ -328,6 +394,15 @@
    "use": "Buttons inside content (not bars). Prominent = primary action.",
    "issues": [
     "icons are SF Symbol text glyphs (Symbol TEXT prop), not Icon instances"
+   ],
+   "slots": [
+    {
+     "property": "Symbol",
+     "kind": "text_glyph",
+     "accepts": "an SF Symbol character",
+     "default": "􀊄",
+     "issue": "icon is a private-use text glyph; replace with an INSTANCE_SWAP Icon property"
+    }
    ]
   },
   {
@@ -356,7 +431,8 @@
    },
    "properties": {},
    "variant_count": 24,
-   "use": "iOS 26 glass buttons floating over content."
+   "use": "iOS 26 glass buttons floating over content.",
+   "slots": []
   },
   {
    "name": "Button - Liquid Glass - Symbol",
@@ -379,7 +455,15 @@
    },
    "properties": {},
    "variant_count": 8,
-   "use": "Icon-only glass button."
+   "use": "Icon-only glass button.",
+   "slots": [
+    {
+     "property": "(symbol)",
+     "kind": "fixed_nested",
+     "accepts": "akar-icons:check",
+     "issue": "fixed icon; expose an Icon swap"
+    }
+   ]
   },
   {
    "name": "Alert",
@@ -404,6 +488,14 @@
    "nests": [
     "_Buttons",
     "Text Field"
+   ],
+   "slots": [
+    {
+     "property": "Actions",
+     "kind": "slot",
+     "accepts": "_Buttons (Role Default, Cancel, Destructive); 2 side by side or up to 3 stacked",
+     "issue": "preferred values are remote"
+    }
    ]
   },
   {
@@ -421,6 +513,13 @@
    "use": "Choice of actions related to the current context.",
    "nests": [
     "_Buttons"
+   ],
+   "slots": [
+    {
+     "property": "(actions)",
+     "kind": "fixed_nested",
+     "accepts": "_Buttons (Role Default, Destructive, Cancel)"
+    }
    ]
   },
   {
@@ -445,7 +544,15 @@
     "Menubar": "SLOT"
    },
    "variant_count": 4,
-   "use": "iPad status/menu bar for mockups."
+   "use": "iPad status/menu bar for mockups.",
+   "slots": [
+    {
+     "property": "Menubar",
+     "kind": "slot",
+     "accepts": "_Menu bar item",
+     "issue": "remote preferred value"
+    }
+   ]
   },
   {
    "name": "Sheet - iPhone",
@@ -469,6 +576,13 @@
    "nests": [
     "Grabber",
     "Overlay"
+   ],
+   "slots": [
+    {
+     "property": "Content",
+     "kind": "slot",
+     "accepts": "any screen content built from DS components (lists, forms); top bar is Toolbar - Top - iPhone"
+    }
    ]
   },
   {
@@ -487,7 +601,8 @@
    "use": "Sheet drag handle.",
    "issues": [
     "Mode=Light|Dark variant instead of Semantic mode"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Face ID",
@@ -502,7 +617,8 @@
    },
    "properties": {},
    "variant_count": 2,
-   "use": "Biometric authentication feedback."
+   "use": "Biometric authentication feedback.",
+   "slots": []
   },
   {
    "name": "Progress Bar - Determinate Linear",
@@ -529,7 +645,8 @@
     "Label": "TEXT"
    },
    "variant_count": 11,
-   "use": "Known-duration progress."
+   "use": "Known-duration progress.",
+   "slots": []
   },
   {
    "name": "Progress Bar - Indeterminate Circular (\"Spinner\")",
@@ -548,7 +665,8 @@
     "Label": "TEXT"
    },
    "variant_count": 3,
-   "use": "Unknown-duration loading."
+   "use": "Unknown-duration loading.",
+   "slots": []
   },
   {
    "name": "Activity View - iPhone",
@@ -572,6 +690,13 @@
    ],
    "issues": [
     "Mode variant"
+   ],
+   "slots": [
+    {
+     "property": "(sections)",
+     "kind": "fixed_nested",
+     "accepts": "_Header, _Contact, _Actions, _Action, _Close Button"
+    }
    ]
   },
   {
@@ -590,7 +715,8 @@
    "use": "Share popover on iPad.",
    "issues": [
     "Mode variant"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Context Menu",
@@ -609,7 +735,14 @@
    },
    "properties": {},
    "variant_count": 4,
-   "use": "Long-press menu of actions for an item."
+   "use": "Long-press menu of actions for an item.",
+   "slots": [
+    {
+     "property": "(items)",
+     "kind": "fixed_nested",
+     "accepts": "Menu Items, Menu Items - Submenus, Quick Action, Separator (Apple kit parts)"
+    }
+   ]
   },
   {
    "name": "Keyboard",
@@ -636,7 +769,8 @@
    "use": "System keyboard for mockups only (not a product component).",
    "issues": [
     "two sets named Keyboard"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Component 1",
@@ -654,7 +788,8 @@
    "use": "Unnamed icon toggle.",
    "issues": [
     "generic names"
-   ]
+   ],
+   "slots": []
   }
  ],
  "building_blocks": {
@@ -864,5 +999,14 @@
   }
  ],
  "effect_styles": [],
- "gaps": "See Component_Skills/*/references/gaps.md"
+ "gaps": "See Component_Skills/*/references/gaps.md",
+ "slots": {
+  "kinds": {
+   "instance_swap": "swap the nested instance with setProperties({<prop>: componentId}); never detach",
+   "slot": "Figma slot: place the listed components inside; never draw content",
+   "fixed_nested": "nested instance with no swap property (a gap when it is an icon); set it through the nested instance, never detach",
+   "text_glyph": "icon drawn as a text character (a gap)"
+  },
+  "rule": "Screens and Storybook controls must use these slots exactly. A needed swap that is missing is a component fix, not a reason to detach."
+ }
 }

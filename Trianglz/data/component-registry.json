@@ -16,7 +16,8 @@
    "text_styles": 40,
    "effect_styles": 13,
    "grid_styles": 3
-  }
+  },
+  "slots_extracted_at": "2026-09-30"
  },
  "pages": [
   "Cover",
@@ -67,7 +68,8 @@
    },
    "properties": {},
    "variant_count": 7,
-   "use": "One OTP digit cell (60x60). Building block of OTP / Field and Stepper; never alone."
+   "use": "One OTP digit cell (60x60). Building block of OTP / Field and Stepper; never alone.",
+   "slots": []
   },
   {
    "name": "OTP / Field",
@@ -101,6 +103,14 @@
    ],
    "issues": [
     "generic property names Label2 / Hint2"
+   ],
+   "slots": [
+    {
+     "property": "(cells)",
+     "kind": "fixed_nested",
+     "accepts": "OTP / Cell x 6",
+     "rule": "state of each cell follows the field state"
+    }
    ]
   },
   {
@@ -120,6 +130,13 @@
    "nests": [
     "Button (Link, sm, Icon=Only)",
     "OTP / Cell"
+   ],
+   "slots": [
+    {
+     "property": "(decrease / increase)",
+     "kind": "fixed_nested",
+     "accepts": "Button (Type=Link, Size=sm, Icon=Only) with Icon/Minus and Icon/Add; value in OTP / Cell"
+    }
    ]
   },
   {
@@ -156,6 +173,23 @@
    ],
    "issues": [
     "no Success state; Show Payment method icon / Show link belong to other variants"
+   ],
+   "slots": [
+    {
+     "property": "(trailing icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Chevron Down (Select trigger) or any Icon/*",
+     "default": "Icon/Chevron Down",
+     "rule": "visible when Show icon = true",
+     "issue": "expose as INSTANCE_SWAP"
+    },
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info",
+     "rule": "visible when Show tooltip = true"
+    }
    ]
   },
   {
@@ -189,6 +223,14 @@
    "use": "URL input with a fixed 'http://' prefix.",
    "nests": [
     "Icon"
+   ],
+   "slots": [
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
    ]
   },
   {
@@ -221,6 +263,20 @@
    "use": "Card number input with a card-brand badge. Payment forms only.",
    "nests": [
     "Icon"
+   ],
+   "slots": [
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    },
+    {
+     "property": "(card brand)",
+     "kind": "fixed_nested",
+     "accepts": "card-brand badge",
+     "rule": "visible when Show Payment method icon = true"
+    }
    ]
   },
   {
@@ -250,6 +306,20 @@
     "Icon/Upload",
     "Icon/File",
     "Icon/Delete"
+   ],
+   "slots": [
+    {
+     "property": "(upload icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Upload",
+     "default": "Icon/Upload"
+    },
+    {
+     "property": "(help icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
    ]
   },
   {
@@ -274,6 +344,14 @@
    ],
    "issues": [
     "no text property for the placeholder"
+   ],
+   "slots": [
+    {
+     "property": "(search icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Search",
+     "default": "Icon/Search"
+    }
    ]
   },
   {
@@ -295,7 +373,22 @@
     "Leading icon": "INSTANCE_SWAP"
    },
    "variant_count": 4,
-   "use": "One option row for Menu / Select."
+   "use": "One option row for Menu / Select.",
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "Icon/* (➜ Icons, 24px, Lucide style; color from color/icon/*)",
+     "default": "Icon/User",
+     "rule": "shown when Show leading icon = true"
+    },
+    {
+     "property": "(check mark)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Check",
+     "rule": "appears on Selected"
+    }
+   ]
   },
   {
    "name": "Menu",
@@ -308,6 +401,14 @@
    "use": "List of Menu / Item for dropdowns.",
    "nests": [
     "Menu / Item"
+   ],
+   "slots": [
+    {
+     "property": "(items)",
+     "kind": "fixed_nested",
+     "accepts": "Menu / Item",
+     "rule": "add or remove Menu / Item instances; never draw rows"
+    }
    ]
   },
   {
@@ -327,6 +428,18 @@
    "nests": [
     "Input / Text",
     "Menu"
+   ],
+   "slots": [
+    {
+     "property": "(trigger)",
+     "kind": "fixed_nested",
+     "accepts": "Input / Text with Show icon = true"
+    },
+    {
+     "property": "(options)",
+     "kind": "fixed_nested",
+     "accepts": "Menu"
+    }
    ]
   },
   {
@@ -353,7 +466,15 @@
     "Error message": "TEXT"
    },
    "variant_count": 6,
-   "use": "Multi-line input (114px) for descriptions, notes, messages."
+   "use": "Multi-line input (114px) for descriptions, notes, messages.",
+   "slots": [
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
+   ]
   },
   {
    "name": "Checkbox",
@@ -378,7 +499,8 @@
     "Show text": "BOOLEAN"
    },
    "variant_count": 9,
-   "use": "Multi-select, consent, 'select all' (Indeterminate)."
+   "use": "Multi-select, consent, 'select all' (Indeterminate).",
+   "slots": []
   },
   {
    "name": "Toggle",
@@ -406,7 +528,8 @@
    "use": "Settings that apply immediately.",
    "issues": [
     "generic property Label2"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Radio",
@@ -429,7 +552,8 @@
     "Text": "TEXT"
    },
    "variant_count": 8,
-   "use": "One choice among 2-5 visible options."
+   "use": "One choice among 2-5 visible options.",
+   "slots": []
   },
   {
    "name": "Button",
@@ -472,6 +596,16 @@
    ],
    "issues": [
     "no Pressed/Loading state; no TEXT property for the label or INSTANCE_SWAP for icons"
+   ],
+   "slots": [
+    {
+     "property": "(leading / trailing icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/* (➜ Icons, 24px, Lucide style; color from color/icon/*)",
+     "default": "Icon/Add, Icon/Chevron Right, Icon/Upload",
+     "rule": "icon position comes from the Icon variant (Left, Right, Only)",
+     "issue": "no INSTANCE_SWAP property: expose Leading icon / Trailing icon swaps"
+    }
    ]
   },
   {
@@ -495,7 +629,8 @@
    },
    "properties": {},
    "variant_count": 9,
-   "use": "Pagination cell; Active = current page."
+   "use": "Pagination cell; Active = current page.",
+   "slots": []
   },
   {
    "name": "Tabs / Item — Underline",
@@ -518,7 +653,8 @@
    "use": "Switch sibling sections of a page.",
    "issues": [
     "no Label text property"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Tabs / Item — Pill",
@@ -541,7 +677,8 @@
    "use": "Compact view switcher inside cards or toolbars.",
    "issues": [
     "no Label text property"
-   ]
+   ],
+   "slots": []
   },
   {
    "name": "Breadcrumb / Item",
@@ -559,7 +696,8 @@
     "Label": "TEXT"
    },
    "variant_count": 3,
-   "use": "One breadcrumb link."
+   "use": "One breadcrumb link.",
+   "slots": []
   },
   {
    "name": "Breadcrumb",
@@ -573,6 +711,13 @@
    "nests": [
     "Breadcrumb / Item",
     "Icon/Chevron Right"
+   ],
+   "slots": [
+    {
+     "property": "(items)",
+     "kind": "fixed_nested",
+     "accepts": "Breadcrumb / Item, separated by Icon/Chevron Right"
+    }
    ]
   },
   {
@@ -595,7 +740,8 @@
    },
    "properties": {},
    "variant_count": 12,
-   "use": "Photo when available, Initials otherwise, Icon for anonymous."
+   "use": "Photo when available, Initials otherwise, Icon for anonymous.",
+   "slots": []
   },
   {
    "name": "Avatar Upload",
@@ -615,6 +761,13 @@
    "nests": [
     "Avatar",
     "Button (Icon=Only, Icon/Edit)"
+   ],
+   "slots": [
+    {
+     "property": "(edit button)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Edit on a round button"
+    }
    ]
   },
   {
@@ -639,7 +792,8 @@
     "Text (large)": "TEXT"
    },
    "variant_count": 8,
-   "use": "Small for 1-3 words, Large for 1-2 sentences."
+   "use": "Small for 1-3 words, Large for 1-2 sentences.",
+   "slots": []
   },
   {
    "name": "Alert",
@@ -665,6 +819,20 @@
    ],
    "issues": [
     "no Title/Message text properties"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info, Icon/Warning, Icon/Alert Circle, Icon/Check Circle by Status",
+     "default": "Icon/Info"
+    },
+    {
+     "property": "(close)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Close",
+     "rule": "visible when Show close = true"
+    }
    ]
   },
   {
@@ -688,6 +856,14 @@
    ],
    "issues": [
     "no Label text property"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
    ]
   },
   {
@@ -713,6 +889,19 @@
    "nests": [
     "Icon",
     "Button (Link, Icon=Only)"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/* by Status",
+     "default": "Icon/Info"
+    },
+    {
+     "property": "(close)",
+     "kind": "fixed_nested",
+     "accepts": "Button (Link, Icon=Only) + Icon/Close"
+    }
    ]
   },
   {
@@ -738,6 +927,23 @@
    "nests": [
     "Icon",
     "Button x2"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Check Circle, Icon/Info, Icon/Warning, Icon/Alert Circle by Status"
+    },
+    {
+     "property": "(actions)",
+     "kind": "fixed_nested",
+     "accepts": "Button Type=Outline (Cancel) + Button Type=Filled or Danger (confirm)"
+    },
+    {
+     "property": "(close)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Close"
+    }
    ]
   }
  ],
@@ -840,5 +1046,14 @@
   "Grid/iPad 768",
   "Grid/Mobile 375"
  ],
- "gaps": "See Component_Skills/*/references/gaps.md"
+ "gaps": "See Component_Skills/*/references/gaps.md",
+ "slots": {
+  "kinds": {
+   "instance_swap": "swap the nested instance with setProperties({<prop>: componentId}); never detach",
+   "slot": "Figma slot: place the listed components inside; never draw content",
+   "fixed_nested": "nested instance with no swap property (a gap when it is an icon); set it through the nested instance, never detach",
+   "text_glyph": "icon drawn as a text character (a gap)"
+  },
+  "rule": "Screens and Storybook controls must use these slots exactly. A needed swap that is missing is a component fix, not a reason to detach."
+ }
 }

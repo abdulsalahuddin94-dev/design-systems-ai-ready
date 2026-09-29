@@ -25,3 +25,6 @@ __pycache__/
 
 # Hook state
 .claude/.state/
+
+# Browser automation output
+.playwright-mcp/
