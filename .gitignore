@@ -22,3 +22,6 @@ desktop.ini
 # Python
 __pycache__/
 *.pyc
+
+# Hook state
+.claude/.state/
