@@ -4,9 +4,9 @@
 
 | Platform | Figma file | Skills in this repo |
 |---|---|---|
-| Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9 | `Trianglz/` |
-| iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW | `Trianglz_iOS/` |
-| Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9 | `Trianglz_Android/` |
+| Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System | `Trianglz/` |
+| iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System | `Trianglz_iOS/` |
+| Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System | `Trianglz_Android/` |
 
 How to use a template:
 1. Open the link and choose **Duplicate** (the copy lands in your drafts).
