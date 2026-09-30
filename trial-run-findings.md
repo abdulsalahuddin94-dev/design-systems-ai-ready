@@ -89,3 +89,9 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 28. **No Photo avatar without an image source.** The Web inventory requires Avatar Type Photo, but there is no approved image asset or image tool step in the workflow, so only Initials and Icon were built.
    Fix: add a placeholder photo asset to the Root (licensed) or tell the builder to ask the user for one at the Components step.
+
+29. **Sidebar needs a Nav Item that the inventory does not list.** Web skill section 6 lists Sidebar as an organism but no Nav Item atom/molecule, and no ⭐Navigation page for Top Bar/Sidebar. Following the golden rule, Nav Item was built first and a new page `➜ Navigation Bars` was added.
+   Fix: add Nav Item (molecule: Icon + label + Badge) and a `➜ Navigation Bars` page to the Web skill file structure and inventory.
+
+30. **`resize()` silently switches auto-layout sizing to FIXED.** Several components set `primaryAxisSizingMode/counterAxisSizingMode = 'AUTO'` and then called `resize()`, which made Toast/Modal heights fixed and cut text. Had to reset sizing to AUTO afterwards. figma-use mentions it (rule 12c), but the project's component recipes do not.
+   Fix: add to the Web skill build notes: call resize() first, then set sizing modes.
