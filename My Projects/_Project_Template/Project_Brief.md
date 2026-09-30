@@ -67,6 +67,8 @@ Registry: `status.json > figma` (register Design files with `python tools/projec
 - Last library publish:
 
 ## Checkpoints
+Status is `Ready for review` until the user replies; only the user's approval sets `Approved` (agents never write Approved, Passed or Completed).
+
 | Checkpoint | Status | Date |
 |---|---|---|
 | Foundation | | |

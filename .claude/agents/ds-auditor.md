@@ -45,6 +45,7 @@ Abdul's rule: every Design file is audited for real use of the design system.
 - Every fill, stroke, text, spacing, radius and effect is bound to a **library** variable or style; count raw values, local variables and variables used for the wrong purpose (e.g. a `bg/*` token on text, a `border/*` token as a fill).
 - Instances are on the latest library version (`library_updates_accepted`) and use the swaps and slots in `component-registry.json > slots`.
 - Screen sizes follow Design_System_Intake_Skill section 7d.
+- **Fidelity (section 7f), as numbers:** run `tools/check_screens.figma.js` (set its `SCOPE`) and report placeholder texts left, sibling instances sharing one text, layers overflowing the screen, squashed instances, bars that are not full-bleed, and raw fill / padding / gap on screen frames (target 0 each). Compare the instance counts with the screen spec in `audits/*-screen-spec-*.md`. Capture every screen and put it next to its source image; list each visible difference (order, text, count, icon, size, color, pinned bar). A screen with any fidelity issue or no side-by-side capture does not pass; never write "passed" from instance counts alone.
 Write the report to `<folder>/audits/<date>-screens-<design file name>.md` and return the numbers; the caller logs it in `CHANGELOG.md`.
 
 ## Drift mode (scheduled / weekly)
