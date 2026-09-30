@@ -5,7 +5,7 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 ## Status (2026-09-30)
 
-43 of 44 fixed in the Root workflow (intake, Main Skills, Storybook skill, project template, agents, hooks, tools); 1 skipped for Abdul's decision (42). Trianglz templates and ClinicSoft's Figma files were not touched.
+44 of 44 fixed in the Root workflow (intake, Main Skills, Storybook skill, project template, agents, hooks, tools); 42 decided by Abdul (Radio up to 6), one Figma description left to update. Trianglz templates and ClinicSoft's Figma files were not touched.
 New since the trial (Abdul, 2026-09-30): Design file audit after every screen build or change (intake 7d, Main Skills, AGENTS.md, ds-auditor screens mode).
 
 ## Findings
@@ -176,7 +176,7 @@ New since the trial (Abdul, 2026-09-30): Design file audit after every screen bu
    Status: **Fixed (2026-09-30)** Already added during the trial (intake section 7d, memory/decisions.md).
 
 42. **Radio vs Select option count conflict.** Radio's description allows groups of 2 to 6, Select / Dropdown's says use Radio for 2 to 5 (found by docs-writer). Needs one number in both Figma descriptions and the skills.
-   Status: **Skipped (2026-09-30)** Needs Abdul's decision (Radio group limit vs Select: 5 or 6 options). Asked in the thread; the number then goes into both Figma descriptions and the skills.
+   Status: **Fixed (2026-09-30)** Abdul chose 6: Radio for 2 to 6, Select for 7 or more. Web skill, memory/decisions.md and ClinicSoft skills/registry updated. Open: the Select / Dropdown description in ClinicSoft's Figma DS file still says 2 to 5 (Figma files were out of scope), listed in ClinicSoft gaps.md.
 
 43. **Both screenshot causes are real.** After pinning the target (finding 39), captures still timed out once the user moved to another Figma tab. Exports need the pinned file AND that file visible in Figma. The final ds-auditor also could not capture live and had to use saved PNGs.
    Fix: in the screens step, ask the user once to keep the Design file as the front tab until the Screens checkpoint.

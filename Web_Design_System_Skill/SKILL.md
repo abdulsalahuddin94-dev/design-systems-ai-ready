@@ -171,7 +171,7 @@ Recolor procedure (when the user asks to change a color):
 | Atom | Button | Type Filled, Outline, Pill, Link, **Danger** · Size xs 32, sm 36, base 40, lg 48, xl 56 · State Default, Hover, Pressed, Focus, Disabled, Loading (150 variants) · icons via `Show Leading Icon` / `Show Trailing Icon` booleans + swaps, not a variant |
 | Atom | Icon Button | icon-only buttons: Type x Size x State as Button, one Icon swap, accessible label in the description |
 | Atom | Divider | Orientation Horizontal / Vertical · optional label (`Show Label` + Label text, e.g. "or") · bound to `border/default` |
-| Atom | Checkbox, Radio | Unchecked, Checked, (Indeterminate), Hover, Focus, Error, Disabled (+ checked variants) |
+| Atom | Checkbox, Radio | Unchecked, Checked, (Indeterminate), Hover, Focus, Error, Disabled (+ checked variants) · Radio groups hold 2 to 6 options; 7 or more -> Select / Dropdown (same number in both descriptions) |
 | Atom | Toggle | On/Off x Default, Hover, Focus, Disabled |
 | Atom | Badge | Info, Success, Warning, Error, Neutral · optional icon · sm/md |
 | Atom | Avatar | Photo, Initials, Icon · 24, 32, 40, 60, 100 · optional status dot. Photo needs a sample image the user supplies (intake section 8); until then build Initials and Icon and list Photo as open |

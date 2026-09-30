@@ -20,6 +20,9 @@ updated: 2026-09-30
 - Never build a complex component or screen if its sub-components do not exist yet; build the missing lower tier first as separate main components.
 - Before building: state the tier, check dependencies, post the atomic structure map, expose nested booleans, text and instance swaps up the hierarchy.
 
+## Radio vs Select (Abdul, 2026-09-30)
+- Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.
+
 ## Design file audit (Abdul, 2026-09-30)
 - Every time screens are built or changed in a Design file, run audit-design-system (ds-auditor, screens mode) on that file to confirm it uses the DS (library components, variables, styles; no raw values, detached instances or misused variables). Save the report in the project's `audits/` and log it in `CHANGELOG.md`.
 
