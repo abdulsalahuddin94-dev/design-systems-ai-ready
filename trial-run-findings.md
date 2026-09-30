@@ -83,3 +83,9 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 26. **The Button variant matrix is 600 variants as written.** Web skill section 6 says Button = Type (5) × Size (5) × Icon (None/Left/Right/Only) × State (6), while section 6 also says "keep variant matrices sane" and figma-generate-library caps matrices at ~30. Built as Type × Size × State (150) with Show Leading/Trailing Icon booleans and swaps, and icon-only as a separate Icon Button.
    Fix: state this split in the required inventory table.
+
+27. **Text and swap property defaults overwrite per-variant content.** Binding a TEXT or INSTANCE_SWAP property resets every variant to the property default, so a variant-specific label or icon (Menu Item Danger "Delete", Badge status words, Danger icon) is lost. The skills do not say how to handle it.
+   Fix: in the Web skill component conventions, say to pick defaults that suit all variants, or leave a variant-specific layer unbound (like the Button Loading spinner) and document it.
+
+28. **No Photo avatar without an image source.** The Web inventory requires Avatar Type Photo, but there is no approved image asset or image tool step in the workflow, so only Initials and Icon were built.
+   Fix: add a placeholder photo asset to the Root (licensed) or tell the builder to ask the user for one at the Components step.
