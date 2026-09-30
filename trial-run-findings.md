@@ -107,3 +107,21 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 34. **The components audit found real defects the build scan missed** (invisible Hover because border/input and border/strong aliased the same gray/500, a faint Outline border at 2.66:1, missing states, unexposed text). Foundation-level token choices only showed up at component level.
    Fix: in generate/foundation checks, require that paired state tokens (input vs strong, default vs hover) alias different steps, and add action/*/border pairs to contrast_pairs by default.
+
+35. **Greenfield never asks about screens.** Section 8 says Greenfield DS-only paths use checkpoints 1 and 2 "unless the user asks for screens", but no intake question offers screens, so a new user never learns the Screens phase exists. Asked the user directly after the Components checkpoint.
+   Fix: add intake question 0.8 "Do you also want example screens built from the DS (e.g. login, list, detail)? Yes after components / No".
+
+36. **Storybook "Later" has no end.** The brief records "Later" and the intake asks again after Components; after a second "Later" there is no rule for when to ask next (the SessionStart hook only lists projects with unsynced changelog entries).
+   Fix: record "Later" with a trigger (e.g. "ask when screens are approved" or "next session") and have the hook mention projects with Storybook = Later.
+
+37. **Screens in a separate Design file need a published library, and nothing in Greenfield says so up front.** The user opened a new Design file for the Login screen; `teamLibrary` showed no libraries because the DS had never been published (publishing cannot be done from the plugin). The rule now in CLAUDE.md (status.json > figma, ask to publish) covered it, but the intake Greenfield path and the Components checkpoint never mention publishing, so the user only learns it when screens start.
+   Fix: at the Components checkpoint, ask the user to publish the library (and save `last_publish` in status.json); in the screens question, say screens go in a Design file that must enable the library.
+
+38. **status.json design_files has no helper.** Registering the Design file meant hand-editing JSON (name, url, file_key, role, library flags); `project_status.py` only reads it.
+   Fix: add `python tools/project_status.py <folder> --add-design-file <url> [--name ...]`.
+
+39. **Exports hang in a Figma file that is not the visible tab.** With both the DS file and the Design file connected, every `exportAsync` / `figma_capture_screenshot` in the Design file timed out (even a single text node), while structural reads worked. Screens could not be screenshot-verified until the user brought that tab to the front.
+   Fix: in intake 0b / the screens step, tell the user to keep the file being worked on as the active Figma tab, and have the builder retry once after asking.
+
+40. **docs-writer died on a rate limit mid-run** and left the skills half-written (Foundation, Form Elements, Navigation done; Data Display, registry, screen templates missing), with no marker of what was finished. Resumed it with SendMessage.
+   Fix: have docs-writer write a `data/docs-progress.json` checklist as it goes so a resumed run (or a new session) knows what is left.
