@@ -77,3 +77,9 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 24. **ds-auditor cannot verify bindings.** Its tool list has no `figma_execute`, and the REST-based tools (styles, file data, parity) failed on an expired Figma token, so it could not read text style, icon stroke or frame padding bindings (3 checks "not verified"). The built-in `figma_audit_design_system_report` also reported "0 variables" for a file with 200. The builder had to close the gaps.
    Fix: give ds-auditor a read-only `figma_execute` (the hook can block write APIs) and ship a binding-check snippet; tell users in intake 0b that the Figma token must be valid for REST-based tools.
+
+25. **`focus-ring-offset` does not render as specified.** The Web skill defines it as spread drop shadows, but Figma only draws spread on a frame that clips content and has a fill. Button Focus variants needed `clipsContent = true`, and Outline/Link Focus needed a `color/bg/primary` fill, before the ring showed.
+   Fix: add this to Web skill section 4 (focus-ring-offset) and to the Button recipe.
+
+26. **The Button variant matrix is 600 variants as written.** Web skill section 6 says Button = Type (5) × Size (5) × Icon (None/Left/Right/Only) × State (6), while section 6 also says "keep variant matrices sane" and figma-generate-library caps matrices at ~30. Built as Type × Size × State (150) with Show Leading/Trailing Icon booleans and swaps, and icon-only as a separate Icon Button.
+   Fix: state this split in the required inventory table.
