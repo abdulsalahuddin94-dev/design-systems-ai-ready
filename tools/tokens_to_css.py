@@ -36,7 +36,14 @@ def css_value(var, value, names):
     if isinstance(value, dict) and "alias" in value:
         target = names.get(value["alias"])
         return f"var({target})" if target else None
-    if var["type"] == "dimension" and isinstance(value, (int, float)):
+    scopes = var.get("scopes") or []
+    if var["type"] == "number" and isinstance(value, (int, float)) and "OPACITY" in scopes:
+        # Figma stores opacity as 0-100
+        return f"{round(value / 100 if value > 1 else value, 3):g}"
+    if var["type"] == "number" and isinstance(value, (int, float)) and "FONT_WEIGHT" in scopes:
+        return f"{value:g}"
+    if var["type"] in ("dimension", "number") and isinstance(value, (int, float)):
+        # Figma FLOAT variables (sizes, spacing, radius, line height, letter spacing) are px
         return f"{round(value, 3):g}px"
     if var["type"] == "string" and re.sub(r"[\s-]", "", str(value)).lower() in FONT_WEIGHTS:
         return str(FONT_WEIGHTS[re.sub(r"[\s-]", "", str(value)).lower()])

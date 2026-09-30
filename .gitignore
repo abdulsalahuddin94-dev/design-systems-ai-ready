@@ -33,3 +33,6 @@ __pycache__/
 My Projects/*
 !My Projects/_Project_Template/
 !My Projects/README.md
+
+# Storybook cache when a project Storybook is started from the Root (clinicsoft-web-storybook preview)
+node_modules/

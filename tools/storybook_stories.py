@@ -29,6 +29,22 @@ def js(value):
     return json.dumps(value, ensure_ascii=False)
 
 
+def read_usage(folder):
+    """'- Use:' and '- Do not use:' lines per '## <Component>' in Component_Skills/*/references/components.md."""
+    out = {}
+    for f in (folder / "Component_Skills").glob("*/references/components.md"):
+        current = None
+        for line in f.read_text(encoding="utf-8").splitlines():
+            if line.startswith("## "):
+                current = line[3:].strip()
+                out.setdefault(current, {})
+            elif current and line.startswith("- Use:"):
+                out[current]["use"] = line[len("- Use:"):].strip()
+            elif current and line.startswith("- Do not use:"):
+                out[current]["dont"] = line[len("- Do not use:"):].strip()
+    return out
+
+
 def main():
     if len(sys.argv) < 2:
         print(__doc__)
@@ -40,6 +56,12 @@ def main():
     links = {}
     if (sb / "figma-links.json").exists():
         links = json.loads((sb / "figma-links.json").read_text(encoding="utf-8"))
+    # optional: live Figma read (full description + property defaults) and the Component_Skills use cases
+    live = {}
+    live_path = folder / "data" / "source" / "components-live.json"
+    if live_path.exists():
+        live = {c["name"]: c for c in json.loads(live_path.read_text(encoding="utf-8")).get("components", [])}
+    usage = read_usage(folder)
     out_root = sb / "src" / "stories"
     written, missing = [], []
 
@@ -60,9 +82,13 @@ def main():
         for key, values in variants.items():
             arg_types[key] = {"control": "select" if len(values) > 4 else "inline-radio", "options": values,
                               "description": f"Figma variant property `{key}`", "table": {"category": "Figma variants"}}
-            args[key] = "Default" if "Default" in values else values[0]
+            d = live.get(name, {}).get("properties", {}).get(key, {}).get("default")
+            args[key] = d if d in values else ("Default" if "Default" in values else values[0])
         uses_icons = False
         for key, kind in props.items():
+            d = live.get(name, {}).get("properties", {}).get(key, {}).get("default")
+            if d is not None:
+                args[key] = d
             if kind == "BOOLEAN":
                 arg_types[key] = {"control": "boolean", "description": "Figma boolean property", "table": {"category": "Figma properties"}}
             elif kind == "TEXT":
@@ -71,13 +97,26 @@ def main():
                 uses_icons = True
                 arg_types[key] = {"control": "select", "options": "__ICONS__", "description": "Figma instance swap (Icon component)", "table": {"category": "Figma properties"}}
 
+        # show the Figma default in the Controls table
+        for key, value in args.items():
+            if key in arg_types:
+                arg_types[key]["table"]["defaultValue"] = {"summary": json.dumps(value, ensure_ascii=False) if not isinstance(value, str) else value}
+
         doc = [f"**Figma:** `{name}` on page `{c.get('page', '')}` ({group}). [Open in Figma]({url})", "",
                f"**Tier:** {c.get('tier', '')}", "", f"**Use:** {c.get('use', '')}"]
+        desc = live.get(name, {}).get("description", "")
+        if desc:
+            doc += ["", "**Figma description:**", ""] + [f"> {line}" + "  " for line in desc.splitlines() if line.strip()]
+        u = usage.get(name, {})
+        if u.get("use"):
+            doc += ["", "**When to use:** " + u["use"]]
+        if u.get("dont"):
+            doc += ["", "**When not to use:** " + u["dont"]]
         if c.get("nests"):
             doc += ["", "**Built from:** " + ", ".join(f"`{n}`" for n in c["nests"])]
         if c.get("issues"):
             doc += ["", "**Known Figma gaps (see gaps.md):** " + "; ".join(c["issues"])]
-        doc += ["", "Controls use the Figma variant and property names exactly. Switch Light/Dark and Desktop/iPad/Mobile from the toolbar."]
+        doc += ["", "Controls use the Figma variant and property names exactly. Switch the Figma modes (Semantic theme, Desktop/iPad/Mobile) from the toolbar."]
 
         imports = sorted({exp, *m.get("example_imports", [])})
         at_src = json.dumps(arg_types, ensure_ascii=False, indent=2).replace('"__ICONS__"', "iconNames")
@@ -122,6 +161,15 @@ def main():
                     sid += "_"
                 used.add(sid)
                 lines.append(f"export const {sid}: Story = {{ name: {js(v)}, args: {{ {js(first)}: {js(v)} }} }};")
+
+            # one story per State value too, when State is not the first axis
+            if "State" in variants and first != "State":
+                for v in variants["State"]:
+                    sid = "State" + ident(v)
+                    while sid in used:
+                        sid += "_"
+                    used.add(sid)
+                    lines.append(f"export const {sid}: Story = {{ name: {js('State=' + v)}, args: {{ \"State\": {js(v)} }} }};")
 
             # matrix of every value (two axes when the map asks for it)
             axes = m.get("matrix") or [first]
