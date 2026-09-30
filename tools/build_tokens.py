@@ -109,7 +109,8 @@ def main(folder):
         if len(steps) < 5:
             continue
         order = sorted(steps, key=int)
-        b = rc['base_step'] if rc['base_step'] in steps else order[len(order) // 2]
+        b = rc.get('base_steps', {}).get(fam.split('::')[-1], rc['base_step'])  # per-ramp override
+        b = b if b in steps else order[len(order) // 2]
         hexes = {s: steps[s][1] for s in order}
         ramps[fam] = {'variables': {s: steps[s][0] for s in order}, 'values': hexes,
                       'base_step': b, 'base_hex': hexes[b], 'order': order,

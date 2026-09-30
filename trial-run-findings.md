@@ -51,3 +51,26 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 15. **The new user did not recognise the Intake Summary as a question.** After the summary block they asked "what approval you waiting for". The summary reads like a report; the "Is this correct?" line at the end gets lost under a code block and extra notes.
    Fix: lead the summary message with the question ("Before I touch Figma, please confirm this plan: Yes, start / Change something"), then the block, and keep the notes after it to one line.
+
+16. **Required Figma skills target a disconnected tool.** figma-use and figma-generate-library are written for the official `use_figma` tool (the official Figma MCP failed to connect here), while the work runs through figma-console `figma_execute`. Helpers those skills teach (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "TypeError: not a function".
+   Fix: add a short "Using these skills with figma-console" note to the Web/iOS/Android Main Skills: use figma_execute, plain `createFrame` + `layoutMode`, no helper APIs.
+
+17. **figma-generate-library's page skeleton and ceremony conflict with the project layout.** It prescribes Cover, Getting Started, Foundations, Components pages and a "Phase N Checklist" post per phase; the project uses the Trianglz layout (⭐Setup, ⭐ groups, ➜ pages) and a thread status checklist.
+   Fix: say in the Main Skills that the Trianglz page layout and the intake checkpoints override the generic skill's skeleton and reporting.
+
+18. **`figma_export_tokens` returned 0 tokens** for a file with 200 variables (even after `figma_get_variables refreshCache`), so Fix on create step 1 could not run as written. Workaround: export through `figma_execute` into the same DTCG shape.
+   Fix: ship that export snippet as `tools/export_variables.figma.js` and name it as the fallback in intake 7b and tools/README.
+
+19. **build_tokens.py assumed one base step for every ramp.** A brand color that lands on step 600 was recorded with base 500, which breaks recolor. Fixed: `config.json > ramp.base_steps` per-ramp override (Trianglz output unchanged).
+
+20. **No generator for a new project's ramps.** The tools only read exports; a Greenfield build has to hand-write the ramp math, Semantic mapping and contrast pre-check. Written for this trial as `ClinicSoft/data/source/generate_foundation.py`.
+   Fix: move it to `tools/new_foundation.py <folder> --brand <hex> --modes Dark` and call it from intake 3d.
+
+21. **Trianglz typography shrinks body text to 14px on iPad/Mobile.** Web skill copies "iPad/Mobile shrink from sm up", which conflicts with the 16px minimum body text that ui-ux-pro-max and the healthcare direction ask for. Kept 16px on every mode for ClinicSoft.
+   Fix: make the Web skill's default keep xs-lg fixed across modes and compress only xl and up.
+
+22. **better-icons `color` parameter corrupts Lucide SVGs.** Passing `color` injects `fill="#000000"` into stroke-only paths and circles, which would render filled shapes. Used the raw path data with `fill="none"` instead.
+   Fix: in Main Skill section 5, say to fetch Lucide icons without the `color` parameter.
+
+23. **The Figma file cannot be renamed from the plugin.** Intake says the file is named `<Project> Design System`, but figma_execute cannot rename a file; the user has to do it.
+   Fix: add it to the user's to-do list at the Foundation checkpoint.
