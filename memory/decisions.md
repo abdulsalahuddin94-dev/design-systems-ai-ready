@@ -29,6 +29,9 @@ updated: 2026-09-30
 ## Multi-screen flows (Abdul, 2026-09-30)
 - Flow gap analysis table first (existing vs missing components, tier + atomic map), approved before any build; missing components built in the DS file only; missing tokens proposed and approved; publish, Accept updates, verify; screens one by one from library instances with a Design file audit after each; changelog + Storybook question. Screens needing no new component may be built while waiting for publish. Details: Design_System_Intake_Skill section 7e.
 
+## Scenario C: imperfect DS + Design file (Abdul, 2026-09-30)
+- Variable Map first (every variable: scopes, modes, alias, usage in DS components, confidence; references first; ask only on low confidence), approved; DS fixes: safe ones (descriptions, high-confidence scopes, typo renames, missing states) as Fix on create, anything that changes live screens (values, aliases, contrast, low-confidence scopes, merges/deletes) after approval; then publish; Design file audited screen by screen with a proposed fix per issue; raw values: near-miss -> nearest token, repeated -> propose Primitive + Semantic (approval, DS, publish, bind), one-off -> nearest scale step, unsure -> needs decision; screens fixed only after the report is approved, keeping existing sizes; changelog, publish, Accept updates. Details: Design_System_Intake_Skill section 7.
+
 ## Screen sizes (Abdul, 2026-09-30)
 - Screens are Mobile 375px and Desktop 1440px wide. Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 / 1440. Details: Design_System_Intake_Skill section 7d.
 

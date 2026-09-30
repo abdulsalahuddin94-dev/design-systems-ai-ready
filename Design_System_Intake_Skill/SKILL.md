@@ -1,6 +1,6 @@
 ---
 name: design-system-intake
-description: Main entry skill for every use of "Design systems Ai Ready". Runs first, before any other skill or Figma call. Interviews the user one question at a time (in English) to collect the project basics, platform, and whether the work is Greenfield or Brownfield, then routes to the right path (new DS, screens without a DS, live product without Figma, DS with unlinked screens), loads the matching platform Main Skill (Web_Design_System_Skill, iOS_Design_System_Skill, Android_Design_System_Skill), enforces the approval checkpoints (Foundation, Components, Screens) and always ends by writing the project skills and running the final audit.
+description: Main entry skill for every use of "Design systems Ai Ready". Runs first, before any other skill or Figma call. Interviews the user one question at a time (in English) to collect the project basics, platform, and whether the work is Greenfield or Brownfield, then routes to the right path (new DS, screens without a DS, live product without Figma, imperfect DS with a Design file that follows it partly or not at all, Scenario C), loads the matching platform Main Skill (Web_Design_System_Skill, iOS_Design_System_Skill, Android_Design_System_Skill), enforces the approval checkpoints (Foundation, Components, Screens) and always ends by writing the project skills and running the final audit.
 ---
 
 # Design System Intake (Main Skill - runs first, every time)
@@ -115,7 +115,7 @@ Platform rules (never mix):
 | # | Question | Next |
 |---|---|---|
 | 2.1 | "Is this a new product with nothing designed yet (Greenfield), or does something already exist (Brownfield)? Greenfield / Brownfield" | Greenfield -> section 4. Brownfield -> 2.2 |
-| 2.2 | "What already exists? 1) Screens in Figma or screenshots, but no design system / 2) A live product in code, with no Figma at all / 3) A design system exists, but the screens are not linked to it" | 1 -> section 5. 2 -> section 6. 3 -> section 7 |
+| 2.2 | "What already exists? 1) Screens in Figma or screenshots, but no design system / 2) A live product in code, with no Figma at all / 3) A design system exists (possibly imperfect), and the screens follow it only partly or not at all" | 1 -> section 5. 2 -> section 6. 3 -> section 7 |
 
 ### Decision tree
 
@@ -136,7 +136,7 @@ Intake basics 0.0-0.2 -> Platform (1.1-1.4) -> load platform Main Skill(s) -> ba
       └─ Brownfield (2.2)
          ├─ Type 1: screens, no DS  -> register the Design file as the source -> open it -> extract (frames or screenshots) -> merge approval -> "<Project> Design System" file -> build -> publish -> link the Design file to the library -> rebuild screens
          ├─ Type 2: live code, no Figma -> repo/path -> extract tokens from code -> "<Project>" + "<Project> Design System" files -> build -> rebuild screens per module
-         └─ Type 3: DS + unlinked screens -> Scenario C: audit -> relink screens
+         └─ Type 3: imperfect DS + Design file -> Scenario C: Variable Map -> fix DS + publish -> audit screens -> approve report -> fix screens -> log + Accept updates
 Every path from an existing file: Fix on create (section 7b)
 Every path: linked Figma files, publish and file check (section 7c)
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
@@ -218,20 +218,63 @@ This path runs in the **reverse direction**: the Design file (the existing scree
 6. Ask the user to publish the library and enable it in '<Project>'.
 7. **Rebuild the screens** in '<Project>', **one page per module** (e.g. `Auth`, `Dashboard`, `Settings`), assembled only from DS components and variables. Offer figma-code-connect mapping afterwards.
 
-## 7. Step 6 - Brownfield type 3: DS exists, screens unlinked (Scenario C)
+## 7. Step 6 - Brownfield type 3: imperfect DS + Design file (Scenario C)
 
-1. Ask: "Please share the design system Figma link and the screens Figma link (all Design files, each with a name)." Register them in `status.json > figma` (section 7c).
-2. Study the DS (⭐Setup first, then component groups, screenshots light and dark) and run audit-design-system on the DS itself, then run **Fix on create** (section 7b) on the DS before touching the screens.
-3. **Audit the screens**: hardcoded hex / fonts / spacing / radius, detached or local components, missing components, local overrides. Report per page with counts.
-4. Ask: "Relink everything automatically where there is an exact or near match (recommended) / Review each page with me first"
-5. **Relink**: replace hardcoded values with DS variables and styles, detached copies with DS instances; build any missing components in the DS first (by tier). Document when to use each component.
-6. Re-run the audit and report the before / after numbers.
+Use this path when a design system already exists but is not AI-ready (missing scopes, unclear names, no descriptions, gaps) and one or more Design files follow it only partially or not at all. Six steps, in order. Nothing in the Design files is changed before step 5, and nothing new is added to the DS without Abdul's approval. Load audit-design-system for steps 3 and 6, and figma-use + figma-generate-library for DS changes.
+
+**Before step 1:** ask "Please share the design system Figma link and the link of every Design file (each with a name)." Register them in `status.json > figma` (section 7c). Then ask: "Do you have any reference for the tokens: developer token files, docs, a Storybook, a style guide? Share them if so." Any reference found is read first and wins over inference.
+
+### Step 1 - Understand the DS (Variable Map)
+1. Study the DS file (⭐Setup or its foundation pages first, then component groups; screenshot every variant in each mode).
+2. Read **every variable**: collection, modes, scopes, value per mode (Light / Dark), alias target (which Primitive it points to), description, and **where it is used** inside the DS components (which component, which layer, which property: fill, stroke, text, gap, radius...). Export them first (section 7b step 1) so the data is in `data/source/`.
+3. Infer each variable's purpose from, in this order: the user's references, its name and group, its scopes, where DS components use it, and its values across modes.
+4. Write the **Variable Map** to `<Project folder>/audits/<date>-variable-map.md`, one row per variable:
+
+   | Variable | Collection / modes | Value (Light / Dark) | Alias | Scopes | Used in (component > layer > property) | Inferred usage | Confidence |
+   |---|---|---|---|---|---|---|---|
+
+   Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
+5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, grouped in one message: "What is `<name>` for? <what I found>. My guess: <guess>." Record the answers in the map and in `docs/decisions.md`. Abdul approves the Variable Map before step 2.
+
+### Step 2 - Fix the DS itself (after approval)
+1. Propose the DS fixes as one list: missing or wrong **scopes** (from the approved map, e.g. a border color scoped to STROKE_COLOR only), **descriptions** for every variable (its usage from the map) and every component (Purpose, Usage Rules, Accessibility), bad names (section 7b renames), failing contrast pairs, and **gaps** (missing tokens, states or components the Design files will need). Gaps are flagged, never filled silently.
+2. Apply the fixes in the DS file only (section 7b steps 2-4), split by risk, because this DS is already used by live Design files:
+   - **Fix on create, without asking** (nothing visible changes in the screens): descriptions for variables and components, scopes for **high-confidence** variables, typo / spacing / case renames (bindings are kept), missing states added to components.
+   - **Approval first** (can change how existing screens look or break bindings): any change to a value or alias (including contrast fixes), scopes for medium / low-confidence variables, merging or deleting variables or components, renaming a variable to a different meaning.
+   Show both lists together; the first is already applied, the second waits for Abdul's yes.
+3. Run audit-design-system on the DS, then ask Abdul to **publish** the library (section 7c) and wait for his confirmation.
+
+### Step 3 - Audit the Design file, screen by screen
+Run audit-design-system (ds-auditor, `screens` mode) on each Design file, one screen at a time. Per screen, find:
+- **Raw values:** hardcoded hex colors, px spacing / radius / sizes, fonts and text properties not using a text style.
+- **Misused variables:** a variable used against its scope or its Variable Map purpose (e.g. a border color used as a fill, a text color on a background, a spacing token used as a radius).
+- **Detached instances** and local copies of DS components; hand-drawn elements that match a DS component.
+- **Frames without Auto Layout** and **default layer names** (Frame 124, Rectangle 23).
+
+Write the report to `<Project folder>/audits/<date>-screens-<file>.md`: per screen, one row per issue with the layer, the current value, the problem and a **proposed fix** (the variable, style or component to use, following step 4). Show totals per screen and per issue type.
+
+### Step 4 - Raw values with no matching Semantic variable
+For each raw value the report cannot map directly, decide by this rule and write the decision in the report:
+- **Near-miss of an existing token** (e.g. `#1B74E9` next to `color/action/primary` `#1A73E8`, 15px next to `space/4` 16px) -> use the nearest token.
+- **Repeated new value** (the same value used on several screens or many layers, with a clear purpose) -> propose a **new Primitive + Semantic** pair (name, value per mode, Primitive it aliases, scope). Never added without Abdul's approval; once approved it is added in the DS file, the library is published, then the screens are bound to it.
+- **One-off off-scale value** (e.g. 13px gap, 7px radius) -> snap to the nearest step of the scale.
+- **Unsure** -> mark `needs decision` and ask Abdul.
+
+### Step 5 - Fix the screens (after the report is approved)
+1. Abdul approves the report (and any new tokens from step 4). Add approved tokens to the DS file first, publish (section 7c), and have Abdul run **Accept updates** in the Design file before binding.
+2. Fix **screen by screen**: bind raw values to variables and styles, replace misused variables, swap detached copies and hand-drawn parts for library instances, add Auto Layout, rename default layers. Missing components are built in the DS file first (by tier, section 7e step 2), never in the Design file.
+3. On any ambiguous case not decided in the report, stop and ask Abdul before changing it.
+4. **Keep the existing screen sizes** (section 7d Brownfield exception).
+5. Re-run the Design file audit after each screen and report the before / after numbers.
+
+### Step 6 - Log, publish, update every Design file
+Append the `CHANGELOG.md` entry (Variable Map, DS fixes, tokens added, screens fixed, audit numbers, `Storybook synced: no`), run `tools/project_status.py`, make sure the last DS change is published (section 7c), and list every linked Design file that still needs **Accept updates**; mark each one as Abdul confirms it. Then ask about the Storybook update.
 
 ---
 
 ## 7b. Fix on create (Abdul's rule: every problem found while setting up a project gets fixed)
 
-Runs automatically, without asking, whenever a project starts from an existing file: a duplicated Trianglz template (3a-2), an existing AI-ready DS (3a), a DS with unlinked screens (Step 6), and as the last foundation step of every new build. Work only in the project's own copy, never in an original template.
+Runs automatically, without asking, whenever a project starts from an existing file: a duplicated Trianglz template (3a-2), an existing AI-ready DS (3a), and as the last foundation step of every new build. Work only in the project's own copy, never in an original template.
 1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `My Projects/<Project>/data/source/figma-variables.dtcg.json`. If it returns 0 tokens (seen for a file with 200 variables, even after `figma_get_variables refreshCache`), run `tools/export_variables.figma.js` with `figma_execute` instead and save its returned JSON to the same file (same DTCG shape). Copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py "My Projects/<Project>"`. For a Web project, set `rules.json > components.required_states_interactive` to the Web Main Skill table (Pressed and Loading are required on Button only), and add the `action/*/border` pairs to `contrast_pairs` (Web skill section 3).
 2. Run `python tools/fix_tokens.py "My Projects/<Project>"`. It builds `data/fixes/<date>-fix-plan.json` and a `.figma.js` script that:
    - normalizes hand-picked palette tones to true tones (Android, `known_fixes.normalize_tones`);
