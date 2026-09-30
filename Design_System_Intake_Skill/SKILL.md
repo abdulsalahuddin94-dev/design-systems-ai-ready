@@ -20,6 +20,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 - If the user only asks to **change a color** in an existing DS, skip the intake questions: run the Recolor procedure in the platform Main Skill (section 3b) with `tools/recolor.py`.
 - After the last intake question, post a short **Intake Summary** (section 9) and get a "yes" before any Figma work.
 - Record every answer in `[Project folder]\Project_Brief.md` as you go, so a later session never re-asks.
+- `[Project folder]` is always `My Projects\<Project>` (plus the platform suffix, section 10). Projects never live in the Root; the Root holds only the workflow (Main Skills, rules, hooks, tools).
 - All paths are relative to the Root. Never write absolute machine paths (like `D:\...`) into skills or briefs.
 - Refer to Figma nodes by **name** (pages, component sets, variables, styles). Node IDs are only valid in the file they came from.
 
@@ -60,13 +61,19 @@ Also recommended (not blocking): the official Figma MCP and the skills figma-use
 
 ## 1. Step 0 - Intake basics
 
-Ask in this order:
+First pick the project (always, before 0.1):
+
+| # | Question (send exactly) | Notes |
+|---|---|---|
+| 0.0 | "Which project should I work on? <one line per folder in My Projects> / Start a new project" | List the folders in `My Projects\` (skip `_Project_Template` and `README.md`). If there are none, say so and go straight to 0.1. Existing project: read its `Project_Brief.md`, say in one line what is already answered, and ask only what is missing (or continue from its Status). New project: continue with 0.1. |
+
+Then ask in this order:
 
 | # | Question (send exactly) | Notes |
 |---|---|---|
 | 0.1 | "What is the project name?" | Used for folder and Figma file names. Keep the user's spelling; replace spaces with `_` only in folder names. |
 | 0.2 | "Please share the Figma links for this project (design file, design system file, or the Figma project folder). Reply 'none' if there are none yet." | Store each link with its role. |
-| 0.3 | "What is the local folder path for this project? (Default: <Root>\<Project>)" | Create the folder structure in section 10 if missing. |
+| 0.3 | "What is the local folder path for this project? (Default: My Projects\<Project>)" | Create the folder by copying `My Projects\_Project_Template\` (never edit the template itself), replace `<Project>` in its files, and add the platform suffix (section 10) once Step 1 is answered. Keep intake answers in the conversation until the folder exists, then write `Project_Brief.md`. |
 | 0.4 | "Which color modes do you need? Light only / Light and Dark (recommended) / Dark only" | Sets Semantic modes. |
 | 0.5 | "Do you need Arabic / RTL support? Yes / No" | If Yes: mirrored layouts, RTL auto layout checks, directional icons (arrows, chevrons, back) get mirrored variants, Arabic font pairing, and text styles tested with Arabic copy. |
 | 0.6 | "Which fonts should the system use? Name the Latin font and, if RTL is needed, the Arabic font. Reply 'default' to use the platform default." | Defaults: Web = Poppins (org default) or the brand font; iOS = SF Pro; Android = Roboto / Roboto Flex. Arabic default pairing: IBM Plex Sans Arabic (Web/Android), SF Arabic (iOS). Confirm the fonts are installed / available in Figma. |
@@ -203,8 +210,8 @@ Colors are built **recolor-ready** (platform Main Skill section 3b): full shade 
 ## 7b. Fix on create (Abdul's rule: every problem found while setting up a project gets fixed)
 
 Runs automatically, without asking, whenever a project starts from an existing file: a duplicated Trianglz template (3a-2), an existing AI-ready DS (3a), a DS with unlinked screens (Step 6), and as the last foundation step of every new build. Work only in the project's own copy, never in an original template.
-1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `<Project>/data/source/`, copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py <Project>`.
-2. Run `python tools/fix_tokens.py <Project>`. It builds `data/fixes/<date>-fix-plan.json` and a `.figma.js` script that:
+1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `My Projects/<Project>/data/source/`, copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py "My Projects/<Project>"`.
+2. Run `python tools/fix_tokens.py "My Projects/<Project>"`. It builds `data/fixes/<date>-fix-plan.json` and a `.figma.js` script that:
    - normalizes hand-picked palette tones to true tones (Android, `known_fixes.normalize_tones`);
    - recomputes derived tokens (M3 state layers, surface tints) from their role colors;
    - re-points aliases that point to other libraries (`known_fixes.alias_fixes`);
@@ -213,7 +220,7 @@ Runs automatically, without asking, whenever a project starts from an existing f
 3. Apply the script with figma_execute in the project's DS file, re-export, and re-run `build_tokens.py` and `fix_tokens.py` until the plan is empty and `recolor_readiness.ready` is true.
 4. Fix the component-level items listed in the plan's `needs_a_person` and in each `references/gaps.md` (missing states, `Property 1` / `Status4` names, `Mode=Light|Dark` variants, text glyph icons, unwired properties, missing text/instance-swap properties), lowest tier first, in the same file.
 5. Run audit-design-system (or the ds-auditor agent) and screenshot the affected pages in Light and Dark.
-6. Log every fix in `<Project>/docs/decisions.md` and show the before/after summary at the Foundation checkpoint (section 8). The fixes are already applied at that point; the user reviews them, they are not asked for permission first.
+6. Log every fix in `My Projects/<Project>/docs/decisions.md` and show the before/after summary at the Foundation checkpoint (section 8). The fixes are already applied at that point; the user reviews them, they are not asked for permission first.
 
 ## 8. Step 7 - Approval checkpoints (every path)
 
@@ -262,26 +269,30 @@ Ask: "Is this correct? Yes, start / Change something"
 ├─ Web_Design_System_Skill\SKILL.md
 ├─ iOS_Design_System_Skill\SKILL.md
 ├─ Android_Design_System_Skill\SKILL.md
-└─ <Project>\                               (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (shared cross-platform look)
-   ├─ Project_Brief.md                      (intake answers, links, decisions)
-   ├─ Inputs\
-   │  ├─ Brand\                             (brand book PDF, logo, images, mood board)
-   │  ├─ Inspiration\                       (reference screenshots, links)
-   │  ├─ Screens\                           (screenshots of existing UI)
-   │  ├─ Extracted_Tokens.md                (Brownfield types 1 and 2)
-   │  └─ Code_Inventory.md                  (Brownfield type 2)
-   ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
-   ├─ docs\decisions.md                     (why each decision was made; recolor log)
-   ├─ audits\                              (ds-auditor reports)
-   ├─ storybook\                           (optional live Storybook, section 12)
-   ├─ Foundation_Skill\SKILL.md + references\ (variables.md, gaps.md, screens\)
-   └─ Component_Skills\
-      ├─ Form_Elements_Skill\               (anything the user enters data with)
-      ├─ Navigation_Skill\                  (actions, buttons, links, tabs, anything that moves between places)
-      └─ Data_Display_Skill\                (anything that displays information)
-         each: SKILL.md + references\ (components.md, gaps.md, screens\)
+└─ My Projects\                            (every project; README.md explains how to add one)
+   ├─ _Project_Template\                   (copied for each new project, never edited per project)
+   └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (shared cross-platform look)
+      ├─ Project_Brief.md                      (intake answers, links, decisions)
+      ├─ Inputs\
+      │  ├─ Brand\                             (brand book PDF, logo, images, mood board)
+      │  ├─ Inspiration\                       (reference screenshots, links)
+      │  ├─ Screens\                           (screenshots of existing UI)
+      │  ├─ Extracted_Tokens.md                (Brownfield types 1 and 2)
+      │  └─ Code_Inventory.md                  (Brownfield type 2)
+      ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
+      ├─ docs\decisions.md                     (why each decision was made; recolor log)
+      ├─ audits\                              (ds-auditor reports)
+      ├─ storybook\                           (optional live Storybook, section 12)
+      ├─ Foundation_Skill\SKILL.md + references\ (variables.md, gaps.md, screens\)
+      └─ Component_Skills\
+         ├─ Form_Elements_Skill\               (anything the user enters data with)
+         ├─ Navigation_Skill\                  (actions, buttons, links, tabs, anything that moves between places)
+         └─ Data_Display_Skill\                (anything that displays information)
+            each: SKILL.md + references\ (components.md, gaps.md, screens\)
 ```
 
+- New project folders are copies of `My Projects\_Project_Template\`. Each can become its own private Git repo, separate from the workflow repo (see `My Projects\README.md`); never create or push one without asking.
+- Root tools take the project folder relative to the Root, quoted: `python tools/build_tokens.py "My Projects/<Project>"`.
 - One folder per platform: "Both" creates `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set.
 - Group routing for new components and pages (Figma and skills): foundations -> ⭐Setup / Foundation_Skill; data entry -> ⭐Form Elements; actions and navigation -> ⭐Navigation; information display -> ⭐Data Display. Create a new `➜` page in the matching group when no page fits.
 - Figma file names: `<Project> Design System` for the library, `<Project>` for screens. Page structure follows the platform Main Skill (Cover, ⭐Setup, ⭐ groups with ➜ topic pages).
@@ -296,7 +307,7 @@ Ask: "Is this correct? Yes, start / Change something"
    - `Foundation_Skill`: variables (names, values per mode, scopes, code syntax), styles, grids, icon rules, direction decisions from the intake.
    - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies.
    - `gaps.md` in each: anything left open.
-   - The JSON knowledge base in `<Project>/data/`: export variables and run `python tools/build_tokens.py <Project>` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the Trianglz reference versions as the starting shape) and `docs/decisions.md`.
+   - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the Trianglz reference versions as the starting shape) and `docs/decisions.md`.
    - Check `tokens.json > recolor_readiness.ready` is true.
 4. Update `Project_Brief.md` with the final state and links, and save the key facts to memory.
 5. Reply to the user with the audit result, the skill paths and what is left.

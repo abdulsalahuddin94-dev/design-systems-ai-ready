@@ -1,6 +1,6 @@
 ---
 name: web-design-system-builder
-description: Main skill for building a new Web design system in Figma from scratch (Scenario A) or from existing UI (Scenario B). Defines the file structure, build order, token architecture, style, icon and component conventions, required states per component, and the mistakes to avoid - learned from studying the Trianglz Web Design System. Load it with figma-use and figma-generate-library before creating anything; save the project's own skills under [Root]\[Project]\.
+description: Main skill for building a new Web design system in Figma from scratch (Scenario A) or from existing UI (Scenario B). Defines the file structure, build order, token architecture, style, icon and component conventions, required states per component, and the mistakes to avoid - learned from studying the Trianglz Web Design System. Load it with figma-use and figma-generate-library before creating anything; save the project's own skills under [Root]\My Projects\[Project]\.
 ---
 
 # Web Design System Builder (Main Skill)

@@ -34,7 +34,7 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 ## Use
 Open the folder in Claude Code and say what you want, or run `/design-system-intake`. Claude checks the Figma bridge, asks one question at a time, then builds with approval checkpoints (Foundation, Components, Screens) and finishes with the project's skills and an audit.
 
-Project work is saved in `<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/` next to the Main Skills.
+Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, each a copy of `My Projects/_Project_Template/`. See `My Projects/README.md`.
 
 ## Claude toolkit (in `.claude/`)
 

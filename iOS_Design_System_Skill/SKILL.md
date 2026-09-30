@@ -1,6 +1,6 @@
 ---
 name: ios-design-system-builder
-description: Main skill for building a new iOS design system in Figma from scratch (Scenario A), from existing iOS UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Apple HIG token architecture (iOS semantic color roles, text styles with Dynamic Type, pt spacing, continuous radius, Liquid Glass materials), SF Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the Trianglz iOS Design System. Independent from the Web and Android skills. Load with figma-use, figma-generate-library and figma-swiftui before creating anything; save the project's skills under [Root]\[Project]_iOS\.
+description: Main skill for building a new iOS design system in Figma from scratch (Scenario A), from existing iOS UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Apple HIG token architecture (iOS semantic color roles, text styles with Dynamic Type, pt spacing, continuous radius, Liquid Glass materials), SF Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the Trianglz iOS Design System. Independent from the Web and Android skills. Load with figma-use, figma-generate-library and figma-swiftui before creating anything; save the project's skills under [Root]\My Projects\[Project]_iOS\.
 ---
 
 # iOS Design System Builder (Main Skill)

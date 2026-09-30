@@ -36,7 +36,7 @@ Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Tria
 ## Rules
 - The full list of prohibitions is `data/rules.json > off_limits` in each DS folder (read it before any build). ds-auditor checks every rule; `.claude/hooks/guard_figma.py` blocks detaching and asks before writing to an original Trianglz template. What each instance swap or slot accepts is in `data/component-registry.json > slots`.
 - All paths are relative to this folder. Never write absolute machine paths into skills.
-- Each project lives in `<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, with `Project_Brief.md`, `Inputs/`, `Foundation_Skill/` and `Component_Skills/`.
+- Each project lives in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, copied from `My Projects/_Project_Template/` (`Project_Brief.md`, `Inputs/`, `Foundation_Skill/`, `Component_Skills/`). Intake first lists `My Projects/` and asks which project to work on or whether to start a new one. The Root holds only the workflow. `ClinicSoft/` stays in the Root until the trial run finishes, then moves to `My Projects/`.
 - Platforms are independent: nothing is shared or merged between Web, iOS and Android.
 - Find Figma nodes by name. Node IDs in the Trianglz skills are valid in the original files only.
 - Build order: Primitives, Semantics (Light/Dark), Spacing/Radius/Typography variables, styles, icons, components (Atoms, Molecules, Organisms, Patterns), linked docs, audit, project skills.
