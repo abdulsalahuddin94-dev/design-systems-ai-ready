@@ -14,6 +14,7 @@ Every design system project lives here, one folder per project. The workflow its
 - `Inputs/Brand`, `Inputs/Inspiration`, `Inputs/Screens`: drop brand books, references and screenshots here before intake.
 - `Foundation_Skill/` and `Component_Skills/` (`Form_Elements_Skill`, `Navigation_Skill`, `Data_Display_Skill`): empty stubs, filled at the end of the build.
 - `data/`, `docs/`, `audits/`: knowledge base, decision log, audit reports.
+- `status.json > figma`: the project's one Design System file and its list of Design files (name, URL, file key). Claude checks the open file against it before touching Figma.
 - `CHANGELOG.md` and `status.json`: every Figma change adds a dated entry marked `Storybook synced: no`. At the start of each session Claude reads these (not Figma) and asks whether to open the Figma plugin and update Storybook for projects with unsynced changes. `python tools/project_status.py` lists them; `--mark-synced` after a Storybook update.
 
 Never edit `_Project_Template/` for a single project; change it only when the template itself should change for every future project.

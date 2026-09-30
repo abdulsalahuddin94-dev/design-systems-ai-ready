@@ -73,7 +73,7 @@ Then ask in this order:
 | # | Question (send exactly) | Notes |
 |---|---|---|
 | 0.1 | "What is the project name?" | Used for folder and Figma file names. Keep the user's spelling; replace spaces with `_` only in folder names. |
-| 0.2 | "Please share the Figma links for this project (design file, design system file, or the Figma project folder). Reply 'none' if there are none yet." | Store each link with its role. |
+| 0.2 | "Please share the Figma links for this project: the Design System file (one) and every Design file with screens (give each a name, e.g. Web App, Admin Dashboard). Reply 'none' if there are none yet." | Record them in `status.json > figma` (section 7c): one `design_system` and a `design_files` list with name, URL and file key (the part after `/design/` or `/file/`). Asked once; later sessions read `status.json`. |
 | 0.3 | "What is the local folder path for this project? (Default: My Projects\<Project>)" | Create the folder by copying `My Projects\_Project_Template\` (never edit the template itself), replace `<Project>` in its files, and add the platform suffix (section 10) once Step 1 is answered. Keep intake answers in the conversation until the folder exists, then write `Project_Brief.md`. |
 | 0.4 | "Which color modes do you need? Light only / Light and Dark (recommended) / Dark only" | Sets Semantic modes. |
 | 0.5 | "Do you need Arabic / RTL support? Yes / No" | If Yes: mirrored layouts, RTL auto layout checks, directional icons (arrows, chevrons, back) get mirrored variants, Arabic font pairing, and text styles tested with Arabic copy. |
@@ -125,10 +125,11 @@ Intake basics (0.1-0.6)
       │  │     │  └─ empty -> ask industry (3.4) -> derive style
       │  │     └─ Build per platform Main Skill build order
       └─ Brownfield (2.2)
-         ├─ Type 1: screens, no DS  -> extract -> merge approval -> "<Project> Design System" file -> build -> publish/link -> rebuild screens
+         ├─ Type 1: screens, no DS  -> register the Design file as the source -> open it -> extract (frames or screenshots) -> merge approval -> "<Project> Design System" file -> build -> publish -> link the Design file to the library -> rebuild screens
          ├─ Type 2: live code, no Figma -> repo/path -> extract tokens from code -> "<Project>" + "<Project> Design System" files -> build -> rebuild screens per module
          └─ Type 3: DS + unlinked screens -> Scenario C: audit -> relink screens
 Every path from an existing file: Fix on create (section 7b)
+Every path: linked Figma files, publish and file check (section 7c)
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
 Every path ends: write project skills + final audit (section 11)
 Optional (0.7 = Yes): Storybook after the Components checkpoint (section 12)
@@ -178,12 +179,18 @@ Colors are built **recolor-ready** (platform Main Skill section 3b): full shade 
 
 ## 5. Step 4 - Brownfield type 1: screens exist, no DS
 
-1. Ask: "Please share the Figma link of the screens, or put the screenshots in <Project folder>\Inputs\Screens\ and tell me when ready."
-2. **Read the screens** via Figma MCP / figma-console (layers) or from screenshots. Extract every color, font family / size / weight / line height, spacing value, radius, shadow, and recurring UI pattern (buttons, inputs, cards, nav...). Save the raw inventory to `[Project folder]\Inputs\Extracted_Tokens.md` with usage counts.
+This path runs in the **reverse direction**: the Design file (the existing screens) is the source, and the Design System file is built from it.
+1. Ask: "Please share the Figma link of the Design file with the screens (or put screenshots in <Project folder>\Inputs\Screens\). Are the screens designed Figma frames, screenshots placed in Figma, or both?"
+   Register it in `status.json > figma.design_files` with `role: source` and `content: frames | screenshots | mixed`.
+   Then ask the user to open that Design file and the plugin (Desktop Bridge), and confirm the connected file key matches the registered one (section 7c) before reading anything.
+2. **Read the screens** from the Design file:
+   - Designed frames: read the layers (fills, strokes, text properties, auto layout gaps and padding, corner radius, effects) and find repeated elements (same structure or local components used many times) as component candidates.
+   - Screenshots (images inside Figma or in `Inputs\Screens\`): export or view them and extract visually (colors by sampling, type sizes and weights by measuring, spacing and radius by measuring, repeated UI patterns).
+   Read-only: never edit the source Design file during extraction. Extract every color, font family / size / weight / line height, spacing value, radius, shadow, and recurring UI pattern (buttons, inputs, cards, nav...). Save the raw inventory to `[Project folder]\Inputs\Extracted_Tokens.md` with usage counts.
 3. **Merge approval**: show a summary of near-duplicate values (e.g. `#1A73E8` x42 and `#1B74E9` x3 -> merge to one; spacing 15/16 -> 16; radius 7/8 -> 8; font sizes 13/14 -> 14). Ask: "Here are the near-duplicates I suggest merging. Approve all (recommended) / Approve with changes (tell me which) / Keep all as they are"
 4. Ask: "Please create a new Figma design file named '<Project> Design System' in the same Figma project folder as the screens, and send me its link." (Do not create it yourself unless the user asks.)
 5. **Build the DS** in that file per the platform Main Skill: Primitives from the merged colors (nearest color per value plus full shade scales 50-950), Semantics, spacing / radius / typography variables, text and effect styles, icons, then the component groups from the recurring patterns (Atoms -> Patterns).
-6. Ask the user to **publish** the library ("Please publish '<Project> Design System' as a library and enable it in the design file. Tell me when done.") and verify the design file sees it.
+6. Register the new DS file in `status.json > figma.design_system`. Ask the user to **publish** the library ("Please publish '<Project> Design System' as a library and enable it in the design file. Tell me when done."), then open the Design file and verify it sees the library (section 7c). The source Design file now becomes a normal `role: screens` file linked to the library.
 7. **Map the screens**: list every screen and, per screen, which elements map to which DS component / variable, and what is missing. Show the map for approval.
 8. **Rebuild the screens properly on the DS** (like the PMO-MVP-New project sync work): section by section with DS instances and variables only, no hardcoded values or detached components, keeping the original layout and content. Load figma-generate-design + figma-use + ui-ux-pro-max. Keep the old screens on an `Archive` page until the user approves the new ones.
 
@@ -192,14 +199,14 @@ Colors are built **recolor-ready** (platform Main Skill section 3b): full shade 
 1. Ask: "Please share the GitHub repository link and/or the local code path of the product."
 2. **Extract tokens from the code first**: `tailwind.config.*`, CSS variables, theme files (`theme.ts`, `colors.ts`, SCSS variables), iOS `Assets.xcassets` / Color and Font extensions, Android `colors.xml`, `themes.xml`, `Theme.kt` / `Color.kt` / `Type.kt`, Flutter `ThemeData`. Also list the existing components and screens / routes grouped by module. Save to `[Project folder]\Inputs\Extracted_Tokens.md` and `Inputs\Code_Inventory.md`.
 3. Show the merge summary of near-duplicates (same as type 1, step 3) and get approval. If the code has no tokens, ask for screenshots of the live product and extract from them.
-4. Ask: "Please create two Figma design files in the same Figma project folder: '<Project>' (screens) and '<Project> Design System' (library). Send me both links."
+4. Ask: "Please create two Figma design files in the same Figma project folder: '<Project>' (screens) and '<Project> Design System' (library). Send me both links." Register both in `status.json > figma` (section 7c).
 5. **Build the full DS** per the platform Main Skill, matching the code token names where they are sensible (and noting the mapping for Code Connect).
 6. Ask the user to publish the library and enable it in '<Project>'.
 7. **Rebuild the screens** in '<Project>', **one page per module** (e.g. `Auth`, `Dashboard`, `Settings`), assembled only from DS components and variables. Offer figma-code-connect mapping afterwards.
 
 ## 7. Step 6 - Brownfield type 3: DS exists, screens unlinked (Scenario C)
 
-1. Ask: "Please share the design system Figma link and the screens Figma link."
+1. Ask: "Please share the design system Figma link and the screens Figma link (all Design files, each with a name)." Register them in `status.json > figma` (section 7c).
 2. Study the DS (⭐Setup first, then component groups, screenshots light and dark) and run audit-design-system on the DS itself, then run **Fix on create** (section 7b) on the DS before touching the screens.
 3. **Audit the screens**: hardcoded hex / fonts / spacing / radius, detached or local components, missing components, local overrides. Report per page with counts.
 4. Ask: "Relink everything automatically where there is an exact or near match (recommended) / Review each page with me first"
@@ -222,6 +229,25 @@ Runs automatically, without asking, whenever a project starts from an existing f
 4. Fix the component-level items listed in the plan's `needs_a_person` and in each `references/gaps.md` (missing states, `Property 1` / `Status4` names, `Mode=Light|Dark` variants, text glyph icons, unwired properties, missing text/instance-swap properties), lowest tier first, in the same file.
 5. Run audit-design-system (or the ds-auditor agent) and screenshot the affected pages in Light and Dark.
 6. Log every fix in `My Projects/<Project>/docs/decisions.md` and show the before/after summary at the Foundation checkpoint (section 8). The fixes are already applied at that point; the user reviews them, they are not asked for permission first.
+
+## 7c. Linked Figma files: registry, publish and file check (every path)
+
+Each project has **one Design System file** and a **list of Design files** (screens), stored in `[Project folder]\status.json > figma`:
+- `design_system`: name, url, file_key, last_publish.
+- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false).
+- The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
+
+**After any change to the DS file** (variables, styles, components):
+1. Ask: "Please publish the '<DS name>' library (Assets > Library > Publish). Tell me when done."
+2. When confirmed, set `design_system.last_publish` to today, set every design file's `library_updates_accepted` to false, and log it in `CHANGELOG.md` (`Library published: yes`).
+3. List the linked Design files that still need the update: "These files need Accept updates for the library: <names>. Tell me which ones you updated." Set each confirmed file to true and record it in the same changelog entry.
+
+**Before any Figma work (the file check):**
+1. Screen work with more than one Design file: ask "Which Design file should I work on? <names>".
+2. Ask the user to open that file (or the DS file for DS work) in Figma Desktop and start the plugin (Desktop Bridge).
+3. When connected, read the connected file's key (figma_get_status / figma_list_open_files) and compare it with `status.json`. It must be the file registered for this project and the role you need.
+4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
+5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date): **stop, touch nothing**, and tell the user what is connected and what was expected.
 
 ## 8. Step 7 - Approval checkpoints (every path)
 

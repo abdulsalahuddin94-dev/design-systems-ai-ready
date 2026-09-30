@@ -9,4 +9,6 @@ Entry format:
 - Storybook synced: no
 - Changed: <components, variables or styles added, changed or removed>
 - Figma file: <name>
+- Library published: <yes / no> (DS changes only)
+- Design files updated (Accept updates): <name: yes / no, one per linked Design file>
 ```

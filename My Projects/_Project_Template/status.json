@@ -4,5 +4,15 @@
   "last_change": null,
   "unsynced_entries": 0,
   "unsynced_since": null,
-  "last_storybook_sync": null
+  "last_storybook_sync": null,
+  "figma": {
+    "design_system": {
+      "name": null,
+      "url": null,
+      "file_key": null,
+      "last_publish": null
+    },
+    "design_files": []
+  },
+  "_figma_help": "One design_system file per project. design_files is a list of {name, url, file_key, role: screens|source, content: frames|screenshots|mixed, library_updates_accepted: true|false}. file_key is the part of the URL after /design/ or /file/."
 }

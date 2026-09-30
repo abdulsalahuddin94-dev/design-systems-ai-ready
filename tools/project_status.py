@@ -77,6 +77,21 @@ def pending():
     return out
 
 
+def library_pending():
+    """Design files that have not accepted the latest library publish: [(rel_path, [file names])]."""
+    out = []
+    for f in projects():
+        path = f / "status.json"
+        if not path.exists():
+            continue
+        files = json.loads(path.read_text(encoding="utf-8")).get("figma", {}).get("design_files", [])
+        names = [d.get("name") or d.get("file_key") for d in files
+                 if d.get("role", "screens") == "screens" and d.get("library_updates_accepted") is False]
+        if names:
+            out.append((f.relative_to(ROOT).as_posix(), names))
+    return out
+
+
 def main(args):
     if args:
         folder = ROOT / args[0]
@@ -89,6 +104,8 @@ def main(args):
     for rel, status, unsynced in rows:
         titles = "; ".join(f"{e['date']} {e['title']}" for e in unsynced)
         print(f"{rel}: {len(unsynced)} change(s) not in Storybook ({titles})")
+    for rel, names in library_pending():
+        print(f"{rel}: Design files still need Accept updates for the library: {', '.join(names)}")
     return 0
 
 

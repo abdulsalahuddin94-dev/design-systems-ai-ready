@@ -27,17 +27,21 @@ def unsynced_projects():
         sys.path.insert(0, str(ROOT / "tools"))
         import project_status
         rows = project_status.pending()
+        libs = project_status.library_pending()
     except Exception:
         return ""
+    lib_text = "".join(f"- `{rel}`: Design files still need Accept updates for the library: {', '.join(n)}. "
+                       "Remind the user and update `status.json` when they confirm.\n" for rel, n in libs)
     if not rows:
-        return ""
+        return lib_text
     lines = [f"- `{rel}`: {len(u)} change(s) since {s['unsynced_since']} not in Storybook"
              + ("" if s["has_storybook"] else " (no Storybook yet)") for rel, s, u in rows]
     return ("Projects with Figma changes not yet in Storybook (from CHANGELOG.md, Figma not read):\n"
             + "\n".join(lines)
             + "\nIn your FIRST reply, list these in one line each and ask the user whether to open the Figma "
             "plugin (Desktop Bridge) now and update the Storybook for them. After an update run "
-            "`python tools/project_status.py \"<folder>\" --mark-synced`.\n")
+            "`python tools/project_status.py \"<folder>\" --mark-synced`.\n"
+            + lib_text)
 
 
 def main():
