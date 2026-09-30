@@ -25,6 +25,3 @@ Tools in the Root take the project folder relative to the Root, in quotes becaus
 
 ## Git (optional)
 Each project folder can become its own private GitHub repo, separate from the workflow repo, so a client's work can be shared without the workflow. To do that, run `git init` inside the project folder and add `My Projects/<Project>/` to the Root `.gitignore`. Nothing is created or pushed automatically.
-
-## Pending move
-`ClinicSoft/` still sits in the Root because the full workflow trial run is building it. Move it to `My Projects/ClinicSoft/` after that trial finishes (and update the paths in its `Project_Brief.md`).
