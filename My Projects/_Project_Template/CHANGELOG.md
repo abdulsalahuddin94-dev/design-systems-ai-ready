@@ -7,6 +7,7 @@ Entry format:
 ```
 ## YYYY-MM-DD - <what, e.g. Components: Button, Input Field>
 - Storybook synced: no
+- Tool: <Claude Code / Codex / Cursor / Antigravity / ...>
 - Changed: <components, variables or styles added, changed or removed>
 - Figma file: <name>
 - Library published: <yes / no> (DS changes only)

@@ -14,6 +14,12 @@ Shared facts and Abdul's standing decisions (read before any work; update the ma
 @memory/MEMORY.md
 @memory/decisions.md
 
+## Handoff from other tools (check at session start)
+Other tools (Codex, Cursor, Antigravity...) may work here between Claude sessions; they follow `AGENTS.md`, log each change in the project's `CHANGELOG.md` with a `Tool:` line and commit with a `[Tool]` prefix. At the start of every session:
+1. Read `git log` since the last Claude commit and the `CHANGELOG.md` of each project in `My Projects/` for entries from other tools.
+2. If there are any, tell the user in one line what was done and by which tool, then run the ds-auditor (audit-design-system) on that work before building on it, and fix or report what it finds.
+3. Uncommitted changes from another tool: ask the user before committing or discarding them.
+
 ## Always start here
 Before any other work, load and follow `Design_System_Intake_Skill/SKILL.md`.
 It checks the Figma tools first (figma-console-mcp or figma-cli with the Desktop Bridge connected), then asks the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
