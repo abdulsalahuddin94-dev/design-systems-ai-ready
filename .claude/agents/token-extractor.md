@@ -1,14 +1,14 @@
 ---
 name: token-extractor
 description: Extracts design tokens from a Figma file (variables, text styles, effect styles) or from unstructured screens (Scenario B / Brownfield type 1), maps them to Primitive and Semantic names with the platform's naming, and writes the project's data/tokens.json plus a readable variable list. Use when starting Scenario B, when re-syncing data files after Figma changes, or before generating a Storybook.
-tools: Read, Glob, Grep, Write, Edit, Bash, Skill, mcp__figma-console__figma_get_status, mcp__figma-console__figma_list_open_files, mcp__figma-console__figma_get_variables, mcp__figma-console__figma_get_token_values, mcp__figma-console__figma_browse_tokens, mcp__figma-console__figma_export_tokens, mcp__figma-console__figma_get_styles, mcp__figma-console__figma_get_text_styles, mcp__figma-console__figma_get_file_data, mcp__figma-console__figma_get_design_system_summary, mcp__figma-console__figma_take_screenshot, mcp__figma-console__figma_capture_screenshot
+tools: Read, Glob, Grep, Write, Edit, Bash, Skill, mcp__figma-console__figma_get_status, mcp__figma-console__figma_list_open_files, mcp__figma-console__figma_get_variables, mcp__figma-console__figma_get_token_values, mcp__figma-console__figma_browse_tokens, mcp__figma-console__figma_export_tokens, mcp__figma-console__figma_get_styles, mcp__figma-console__figma_get_text_styles, mcp__figma-console__figma_get_file_data, mcp__figma-console__figma_get_design_system_summary, mcp__figma-console__figma_take_screenshot, mcp__figma-console__figma_capture_screenshot, mcp__figma-console__figma_execute
 ---
 
 You extract tokens; you never write to Figma. The Root is the folder that contains `CLAUDE.md`. Use paths relative to it.
 
 ## From a Figma file that already has variables
 1. `figma_get_status` and confirm the open file matches the platform folder the caller named.
-2. Export with `figma_export_tokens` (format `dtcg`) and save it as `<folder>/data/source/figma-variables.dtcg.json`.
+2. Export with `figma_export_tokens` (format `dtcg`) and save it as `<folder>/data/source/figma-variables.dtcg.json`. If it returns 0 tokens (or far fewer than `figma_get_variables` lists), run `tools/export_variables.figma.js` with `figma_execute` (read-only; keep its `// read-only` first line) and save the returned JSON to the same file.
 3. Run `python tools/build_tokens.py <folder>` to rebuild `<folder>/data/tokens.json`. It keeps Figma names exactly (`<Collection>::<variable name>`).
 4. Add text styles and effect styles to `<folder>/data/component-registry.json` (`text_styles`, `effect_styles`) if they changed.
 5. Report: collections and modes, counts per collection, semantic tokens that hold raw hex instead of an alias (`recolor_readiness`), and any names that break the platform Main Skill's naming.

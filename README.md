@@ -48,7 +48,7 @@ Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Pro
 None of them can edit Figma; they only have read tools.
 
 **Hooks** (`.claude/settings.json`, scripts in `.claude/hooks/`, need Python 3 on PATH).
-- *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and asks you whether to run it, update it from Figma or skip it. The same hook is the daily Storybook check (there is no separate scheduled question): it reads each project's `CHANGELOG.md` and `status.json` (never Figma, which may be closed), lists projects whose Figma changes are not yet in Storybook and Design files that still need Accept updates for the library, and asks whether to open the Figma plugin and update. Silent when everything is synced.
+- *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and mentions it in one line; it asks about the project first and about Storybook later (intake 0.7, or when you pick a project with pending Storybook work). The same hook is the daily Storybook check (there is no separate scheduled question): it reads each project's `CHANGELOG.md` and `status.json` (never Figma, which may be closed), lists projects whose Figma changes are not yet in Storybook and Design files that still need Accept updates for the library, and projects whose Storybook plan is Later; Claude asks whether to open the Figma plugin and update when you pick that project. Silent when everything is synced.
 - *Block absolute paths*: any write to a repo file that contains a machine path like `D:\Work\...` or `/Users/...` is stopped, so the folder keeps working on any computer.
 - *Audit reminder*: after Claude changes Figma, the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor or a Figma audit tool clears the reminder.
 
@@ -71,7 +71,7 @@ Needs **Node.js 18+** (`node --version`). Then:
 
 Updates: `git pull` in the repo, then `npm install` again if `package.json` changed, and restart `npm run storybook`.
 
-**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (already in `.mcp.json` for Claude Code; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and asks you whether to run it, update it from Figma or skip it: Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
+**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (already in `.mcp.json` for Claude Code; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and mentions it (it asks about your project first): Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
 
 ## Live Storybook (optional)
 

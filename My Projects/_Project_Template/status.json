@@ -1,6 +1,8 @@
 {
   "project": "<Project>",
   "has_storybook": false,
+  "storybook_plan": null,
+  "storybook_ask_at": null,
   "last_change": null,
   "unsynced_entries": 0,
   "unsynced_since": null,
@@ -14,5 +16,6 @@
     },
     "design_files": []
   },
-  "_figma_help": "One design_system file per project. design_files is a list of {name, url, file_key, role: screens|source, content: frames|screenshots|mixed, library_updates_accepted: true|false}. file_key is the part of the URL after /design/ or /file/."
+  "_figma_help": "One design_system file per project. design_files is a list of {name, url, file_key, role: screens|source, content: frames|screenshots|mixed, library_updates_accepted: true|false}. file_key is the part of the URL after /design/ or /file/.",
+  "_storybook_help": "storybook_plan: yes | later | no (intake 0.7). storybook_ask_at when later: components-approved | screens-approved | next-session. Register Design files with: python tools/project_status.py \"<folder>\" --add-design-file <url> --name \"<name>\"."
 }

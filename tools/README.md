@@ -9,10 +9,15 @@ Python 3, standard library only. Run from the Root.
 | `recolor.py <folder> --ramp "<ramp>" --base "#hex"` | Regenerates the whole ramp from a new base color, recomputes derived tokens, re-checks contrast in every mode and writes `data/recolor/<date>-<ramp>.json` plus a `.figma.js` script for figma_execute. Add `--write-tokens` after the Figma update to store the new values. |
 | `fix_tokens.py <folder>` | Finds and fixes token problems (hand-picked M3 tones, stale state layers, aliases to other libraries, contrast failures, bad names) and writes `data/fixes/<date>-fix-plan.json` plus a `.figma.js` script. Used by the intake's Fix on create step. Lists what still needs a person (component fixes). |
 | `ds_color.py` | Color math used by both (OKLCH, CIELAB L*, WCAG contrast, ramp curves). |
+| `new_foundation.py <folder> --brand "#hex" --modes Light,Dark` | Greenfield foundation (intake 3d): brand ramp with a stored curve (base step picked by lightness), gray/status ramps, the Semantic mapping per mode (single-mode systems supported), every contrast pair (including `action/*/border`) and the paired-token check (hover/strong/focus tokens must alias different steps). Writes `data/source/foundation-spec.json`; exits 1 on any failure. `--check-only` prints only the brand contrast pre-check (intake 3.3). |
+| `export_variables.figma.js` | Paste into figma-console `figma_execute` when `figma_export_tokens` returns 0 tokens. Returns the same DTCG JSON; save it as `data/source/figma-variables.dtcg.json`. Read-only. |
+| `check_bindings.figma.js` | Paste into `figma_execute` (read-only): per component set, unbound fills/strokes/padding/gap/radius, text without a style, and property coverage per variant (properties some variants lost after cloning). Used by ds-auditor. |
+| `project_status.py [<folder>] [--mark-synced] [--add-design-file <url> --name "<name>"]` | Storybook sync status from each project's `CHANGELOG.md`, Design files needing Accept updates, projects whose Storybook plan is Later; `--add-design-file` registers a Design file in `status.json > figma`. |
+| `tokens_to_css.py`, `storybook_stories.py`, `storybook_parity.py` | Storybook generators and the Figma name check (Storybook_Design_System_Skill section 5). |
 
 ## Refresh tokens from Figma
 1. Open the DS file in Figma Desktop with the Desktop Bridge plugin running.
-2. Export with figma-console `figma_export_tokens` (format `dtcg`, colorFormat `hex8`, strategy `replace`) to `<folder>/data/source/figma-variables.dtcg.json`.
+2. Export with figma-console `figma_export_tokens` (format `dtcg`, colorFormat `hex8`, strategy `replace`) to `<folder>/data/source/figma-variables.dtcg.json`. If it returns 0 tokens, run `tools/export_variables.figma.js` with `figma_execute` and save its result to the same file.
 3. Make sure `<folder>/data/source/config.json` maps each collection id to its name and role (`primitive`, `semantic`, `brand-alias`, `typography`, `spacing`, `radius`).
 4. `python tools/build_tokens.py <folder>`.
 

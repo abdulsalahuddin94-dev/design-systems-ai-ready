@@ -20,6 +20,9 @@ updated: 2026-09-30
 - Never build a complex component or screen if its sub-components do not exist yet; build the missing lower tier first as separate main components.
 - Before building: state the tier, check dependencies, post the atomic structure map, expose nested booleans, text and instance swaps up the hierarchy.
 
+## Design file audit (Abdul, 2026-09-30)
+- Every time screens are built or changed in a Design file, run audit-design-system (ds-auditor, screens mode) on that file to confirm it uses the DS (library components, variables, styles; no raw values, detached instances or misused variables). Save the report in the project's `audits/` and log it in `CHANGELOG.md`.
+
 ## Screen sizes (Abdul, 2026-09-30)
 - Screens are Mobile 375px and Desktop 1440px wide. Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 / 1440. Details: Design_System_Intake_Skill section 7d.
 
@@ -53,6 +56,7 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Storybook is documentation, not production code, for Web and mobile alike. Default: React + Storybook for all platforms; mobile components styled to look like their iOS/Android counterparts.
 - Component, variant, property and token names in Storybook must match Figma exactly.
 - Optional intake step; skill `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
+- First reply (Abdul, 2026-09-30, ClinicSoft trial): the Storybook is mentioned in one line only; the first question is about the project. Storybook questions come at intake 0.7, when a project with pending Storybook work is picked, or on request. A "Later" answer always gets a trigger (`status.json > storybook_ask_at`).
 - Sync tracking (Abdul, 2026-09-30): each project has `CHANGELOG.md` (dated Figma changes, `Storybook synced: yes/no`) and `status.json`. Every Figma change session appends an entry; the daily check reads only these files (the Figma plugin is not always running) and asks Abdul whether to open the plugin and update Storybook for projects with unsynced changes. Tool: `tools/project_status.py`. The SessionStart hook is the only daily check; no scheduled chat question (Abdul, 2026-09-30).
 - Multi-tool handoff (Abdul, 2026-09-30): Codex, Cursor and Antigravity can work in this repo through `AGENTS.md` (with its own figma-console-mcp setup). They log every change in the project's `CHANGELOG.md` with a `Tool:` line and commit with a `[Tool]` prefix. Claude reads git log and changelogs at session start and audits their work before continuing.
 - GitHub backup of the workflow repo: only after the ClinicSoft trial run is confirmed correct, and only when Abdul says so.

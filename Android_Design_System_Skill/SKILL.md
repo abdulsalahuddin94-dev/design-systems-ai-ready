@@ -10,6 +10,8 @@ It is the Google Material 3 (Expressive) Design Kit re-themed with Trianglz pale
 Platform: Android, Material Design 3 Expressive, Jetpack Compose, dp / sp.
 Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
+**Tools and generic skills (figma-console).** Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. Call `resize()` before setting auto layout sizing to AUTO/HUG (resize resets it to FIXED), and re-apply `componentPropertyReferences` after cloning a variant. The Trianglz page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton and its per-phase checklist posts.
+
 **Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz_Android/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
 
 ---
@@ -162,6 +164,7 @@ Recolor procedure (when the user asks to change a color):
 
 ## 7. Theming and adaptivity
 - Dark mode = `m3` Dark mode on the frame; contrast modes as extra modes; dynamic color (Material You) documented as a runtime option.
+- **Single-mode systems** (intake 0.4 = Light only or Dark only): the Semantic collection has one mode named after the answer (`Light` or `Dark`). Every "Light and Dark" requirement in this skill, the intake checkpoints, the audits, the docs pages and the Storybook quality bar means "each mode the project has": no second preview frame, one swatch frame per collection, screenshots in that mode only, contrast checked against that mode's surfaces only.
 - Adaptive layout: Compact -> Navigation bar; Medium -> Navigation rail; Expanded+ -> Expanded rail / two panes; grids per window class.
 
 ## 8. Documentation pages (linked, never static)
@@ -180,6 +183,10 @@ Recolor procedure (when the user asks to change a color):
 8. Shape collection underused - radii raw; FAB bound to a remote corner variable.
 9. Duplicate icon names without `_filled`; no dark previews; baseline and expressive generations mixed without deprecation notes; research board inside the DS file.
 
+## Screens (Design files)
+- Screens are built only from the published DS library, section by section (figma-generate-design + figma-use + ui-ux-pro-max), at the sizes in Design_System_Intake_Skill section 7d.
+- **Design file audit (Abdul's rule, every time screens are built or changed):** run audit-design-system (ds-auditor, `screens` mode) on that Design file to confirm it really uses the DS: library components only (no local copies, detached instances or hand-drawn parts), library variables and styles only (no raw values, no variables used for the wrong purpose), latest library version. Fix what it finds, save the report in `<Project folder>/audits/`, and log the result in `CHANGELOG.md` (`Design file audit: <numbers>, report <path>`).
+
 ## 10. Final QA checklist
 - [ ] 0 remote variables, styles and components; 0 raw fills/strokes/padding/gap/radius/effects.
 - [ ] Palettes HCT-generated; schemes follow M3 tones; contrast modes if required.
@@ -187,7 +194,7 @@ Recolor procedure (when the user asks to change a color):
 - [ ] State layers = alias + opacity; disabled per M3 recipe; focus indicator on every interactive component.
 - [ ] Typescale local and bound (size, line height, tracking, weight); Shape and Spacing bound everywhere.
 - [ ] Icons local Material Symbols instances with swap properties.
-- [ ] Targets >= 48dp; contrast text >= 4.5:1, UI >= 3:1 in Light and Dark.
+- [ ] Targets >= 48dp; contrast text >= 4.5:1, UI >= 3:1 in each mode the project has.
 - [ ] Light and Dark preview frames per family; Color/Typography/Shape docs linked.
 - [ ] Screenshot every variant (light + dark) and compare with the description.
 - [ ] Save a version after each phase; write Foundation_Skill and Component_Skills per group.

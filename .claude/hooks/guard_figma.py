@@ -3,6 +3,8 @@
 - no-detach: blocks scripts that call detachInstance().
 - originals-untouched: asks the user before any write script runs in an original Trianglz
   template (file keys come from every */data/rules.json > off_limits.original_template_file_keys).
+- read-only: denies write APIs in scripts that start with "// read-only" or run inside a read-only
+  agent (ds-auditor, token-extractor, docs-writer), so auditors can use figma_execute safely.
 Reads the rules at run time, so editing rules.json changes what is enforced.
 """
 import json
@@ -14,6 +16,12 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 WRITE = re.compile(r"\.(remove|setValueForMode|setBoundVariable|setProperties|appendChild|insertChild|resize|swapComponent)\s*\(|"
                    r"\.(name|fills|strokes|characters|cornerRadius|itemSpacing|description)\s*=[^=]|"
                    r"figma\.(create\w+|variables\.create\w+)\s*\(")
+
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from audit_reminder import WRITE as ANY_WRITE  # noqa: E402  (broad write-API pattern)
+
+READ_ONLY_AGENTS = {"ds-auditor", "token-extractor", "docs-writer"}
 
 
 def originals():
@@ -44,6 +52,11 @@ def main():
     if "detachInstance(" in code:
         return decide("deny", "off_limits no-detach: never detach instances. Use instance swaps, slots or exposed "
                               "properties (component-registry.json > slots); if a swap is missing, fix the component.")
+    readonly = code.lstrip().startswith("// read-only") or data.get("agent_type") in READ_ONLY_AGENTS
+    if readonly and ANY_WRITE.search(code):
+        return decide("deny", "read-only script: this script is marked '// read-only' (or runs in a read-only agent "
+                              "such as ds-auditor) but calls a write API. Auditors never edit Figma; report the "
+                              "issue to the caller instead.")
     keys = originals()
     targets = [k for k in [ti.get("fileKey")] + list(ti.get("fileKeys") or []) if k]
     hit = [keys[k] for k in targets if k in keys]

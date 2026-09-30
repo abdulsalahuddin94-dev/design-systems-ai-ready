@@ -14,6 +14,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 ## 0. Interview rules
 
 - Ask **one question per message**, in English, and wait for the answer. Never send a list of questions at once.
+- **The first reply asks about the project, never about Storybook.** The SessionStart notice (Storybook exists, projects with unsynced changes) is passed on as one informational line at most. Storybook questions come at 0.7 for a new project, or right after 0.0 when the user picks an existing project that has unsynced changelog entries or a `later` Storybook plan whose trigger was reached.
 - Use the exact questions below. Offer options on short lines, mark the recommended one, and accept free text.
 - Skip a question when the user already answered it (in this conversation, in the project folder's `Project_Brief.md`, or in memory). Say what you reused in one line.
 - If the user says "you decide", pick the recommended option, say which, and continue.
@@ -36,7 +37,9 @@ Check the Figma tooling first. Figma work needs **one** of these, plus the Figma
 Checks, in order:
 1. Look for figma-console-mcp tools in this session (search for `figma_get_status`). If present, call `figma_get_status` and confirm the **Desktop Bridge** shows as connected (active WebSocket transport).
 2. If not present, look for figma-cli: a `figma-cli` folder in the user's home directory or a `figma-cli` command on the PATH, and confirm it reports a connection to Figma Desktop.
-3. If one of them is installed and connected -> say which one in one line and continue to Step 0 basics.
+3. If one of them is installed and connected -> say which one in one line and continue to Step 0 basics. Remember the name and key of the connected file: question 0.2 uses it.
+   - **Stale servers:** if `figma_get_status` lists `otherInstances` (other figma-console-mcp servers on ports 9223-9228 from old sessions), tell the user in one line that the Desktop Bridge plugin talks to only one server at a time and can end up connected to an old session. Show the cleanup: close old Claude Code sessions, or end the stale `figma-console-mcp` node processes (Windows: Task Manager > Details > node.exe with `figma-console-mcp` in the command line; macOS/Linux: `pkill -f figma-console-mcp`), then re-run the plugin. Do not kill processes yourself.
+   - **Figma token:** the REST-based tools (`figma_get_styles`, `figma_get_file_data`, `figma_check_design_parity`, library reads) need a valid `FIGMA_ACCESS_TOKEN`. If one fails with an auth or expired-token error, tell the user in one line to create a new token and update the MCP config (install step 2-3); plugin-based tools (`figma_execute`, screenshots) keep working meanwhile.
 4. If neither is installed, or the Desktop Bridge is not connected -> **stop**. Do not ask intake questions yet. Show the matching install steps below and ask: "Tell me when the tools are installed and connected, and I will check again."
 
 **Never install anything yourself.** The user installs and connects the tools; you only check and show the steps. The user creates the Figma token themselves; never ask them to paste it into the chat.
@@ -66,23 +69,30 @@ First pick the project (always, before 0.1):
 
 | # | Question (send exactly) | Notes |
 |---|---|---|
-| 0.0 | "Which project should I work on? <one line per folder in My Projects> / Start a new project" | List the folders in `My Projects\` (skip `_Project_Template` and `README.md`). If there are none, say so and go straight to 0.1. Existing project: read its `Project_Brief.md`, say in one line what is already answered, and ask only what is missing (or continue from its Status). New project: continue with 0.1. |
+| 0.0 | "Which project should I work on? <one line per folder in My Projects> / Start a new project" | List the folders in `My Projects\` (skip `_Project_Template` and `README.md`). If there are none, say so and go straight to 0.1. Existing project: read its `Project_Brief.md` and `status.json`, say in one line what is already answered, and ask only what is missing (or continue from its Status). If it has unsynced changelog entries, ask then whether to update its Storybook (open the DS file and the Desktop Bridge first). New project: continue with 0.1. |
 
-Then ask in this order:
+Then ask in this order: **0.1, 0.2, then the platform (Step 1, questions 1.1-1.4), then 0.3-0.8.** The platform comes early because the folder name (section 10) and the default fonts depend on it.
+Until the project folder exists (0.3), keep the answers in the conversation; right after 0.3, write them all into `Project_Brief.md` (copied from the template) and keep it updated from then on.
 
 | # | Question (send exactly) | Notes |
 |---|---|---|
 | 0.1 | "What is the project name?" | Used for folder and Figma file names. Keep the user's spelling; replace spaces with `_` only in folder names. |
-| 0.2 | "Please share the Figma links for this project: the Design System file (one) and every Design file with screens (give each a name, e.g. Web App, Admin Dashboard). Reply 'none' if there are none yet." | Record them in `status.json > figma` (section 7c): one `design_system` and a `design_files` list with name, URL and file key (the part after `/design/` or `/file/`). Asked once; later sessions read `status.json`. |
-| 0.3 | "What is the local folder path for this project? (Default: My Projects\<Project>)" | Create the folder by copying `My Projects\_Project_Template\` (never edit the template itself), replace `<Project>` in its files, and add the platform suffix (section 10) once Step 1 is answered. Keep intake answers in the conversation until the folder exists, then write `Project_Brief.md`. |
-| 0.4 | "Which color modes do you need? Light only / Light and Dark (recommended) / Dark only" | Sets Semantic modes. |
+| 0.2 | If preflight saw a connected file: "Figma is connected to '<file name>'. Is this the Design System file for <Project>? Yes / No, it is a scratch file. Then share any other Figma links for this project: every Design file with screens (give each a name, e.g. Web App, Admin Dashboard), or 'none'." Otherwise: "Please share the Figma links for this project: the Design System file (one) and every Design file with screens (give each a name, e.g. Web App, Admin Dashboard). Reply 'none' if there are none yet." | Record them in `status.json > figma` (section 7c): one `design_system` and a `design_files` list with name, URL and file key (the part after `/design/` or `/file/`). A connected file the user confirms is registered as the `design_system` (its key from `figma_get_status`; ask for its link). Asked once; later sessions read `status.json`. |
+
+**Now ask Step 1 (platform, section 2), then continue here:**
+
+| # | Question (send exactly) | Notes |
+|---|---|---|
+| 0.3 | "What is the local folder for this project? (Default: My Projects\<Project folder>)" where `<Project folder>` already carries the platform suffix (section 10), e.g. `My Projects\ClinicSoft` (Web), `My Projects\ClinicSoft_iOS`. | Store the answer **relative to the Root** (e.g. `My Projects/ClinicSoft/`), even when the user replies with a full machine path; never write the absolute path (a hook blocks it). Create the folder by copying `My Projects\_Project_Template\` (never edit the template itself), replace `<Project>` in its files, then write every answer so far into `Project_Brief.md`. |
+| 0.4 | "Which color modes do you need? Light only / Light and Dark (recommended) / Dark only" | Sets Semantic modes. One mode only (Light only, Dark only): follow "Single-mode systems" in the platform Main Skill. |
 | 0.5 | "Do you need Arabic / RTL support? Yes / No" | If Yes: mirrored layouts, RTL auto layout checks, directional icons (arrows, chevrons, back) get mirrored variants, Arabic font pairing, and text styles tested with Arabic copy. |
-| 0.6 | "Which fonts should the system use? Name the Latin font and, if RTL is needed, the Arabic font. Reply 'default' to use the platform default." | Defaults: Web = Poppins (org default) or the brand font; iOS = SF Pro; Android = Roboto / Roboto Flex. Arabic default pairing: IBM Plex Sans Arabic (Web/Android), SF Arabic (iOS). Confirm the fonts are installed / available in Figma. |
-| 0.7 | "Do you also want a live Storybook for developers (browse components, try variants and properties, read use cases, link back to Figma)? Yes, after components (recommended when developers will use the DS) / Later / No" | Optional. Yes -> run section 12 after the Components checkpoint. Default stack for every platform: React + Storybook. iOS and Android projects get a web Storybook (React + CSS) styled like the native components. Record the answer in `Project_Brief.md`. |
+| 0.6 | "Which fonts should the system use? Name the Latin font and, if RTL is needed, the Arabic font. Reply 'default' to use <platform default>." | Say the one default for the chosen platform in the question: Web = Poppins (org default) or the brand font; iOS = SF Pro; Android = Roboto / Roboto Flex. Arabic default pairing: IBM Plex Sans Arabic (Web/Android), SF Arabic (iOS). Confirm the fonts are installed / available in Figma (a read-only `figma_execute` of `figma.listAvailableFontsAsync()` is fine). |
+| 0.7 | "Do you also want a live Storybook for developers (browse components, try variants and properties, read use cases, link back to Figma)? Yes, after components (recommended when developers will use the DS) / Later / No" | Optional. Yes -> run section 12 after the Components checkpoint. Default stack for every platform: React + Storybook. iOS and Android projects get a web Storybook (React + CSS) styled like the native components. Record the answer in `Project_Brief.md` and in `status.json > storybook_plan` (`yes`, `later`, `no`). **Later** always gets a trigger in `status.json > storybook_ask_at` (default `components-approved`; after a second "Later", `screens-approved`; after a third, `next-session`). Ask again when that point is reached; the SessionStart hook lists projects whose plan is `later`. |
+| 0.8 | "Do you also want example screens built from the design system (e.g. login, list, detail)? Yes, after components (recommended) / No, design system only" | Yes -> the Screens phase and checkpoint 3 run. Screens are built in a separate Design file (`<Project>`) that uses the published DS library, so the user will be asked to publish the library at the Components checkpoint (section 8). Skip for Brownfield paths that already rebuild screens. |
 
 ---
 
-## 2. Step 1 - Platform
+## 2. Step 1 - Platform (asked right after 0.2)
 
 | # | Question | Next |
 |---|---|---|
@@ -111,8 +121,7 @@ Platform rules (never mix):
 
 ```
 Tools preflight (0b) -> figma-console-mcp or figma-cli connected? No -> stop, show install steps
-Intake basics (0.1-0.6)
-└─ Platform (1.1-1.4) -> load platform Main Skill(s)
+Intake basics 0.0-0.2 -> Platform (1.1-1.4) -> load platform Main Skill(s) -> basics 0.3-0.8
    └─ Greenfield or Brownfield? (2.1)
       ├─ Greenfield
       │  ├─ Existing AI-ready DS (Figma DS + .md skills)? (3.1)
@@ -132,6 +141,7 @@ Every path from an existing file: Fix on create (section 7b)
 Every path: linked Figma files, publish and file check (section 7c)
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
 Every path ends: write project skills + final audit (section 11)
+Optional (0.8 = Yes): screens in a Design file after the Components checkpoint (publish first, section 8)
 Optional (0.7 = Yes): Storybook after the Components checkpoint (section 12)
 ```
 
@@ -162,14 +172,18 @@ Look in `[Project folder]\Inputs\Brand\` (PDF brand book, logo, images, mood boa
 - Files found -> extract brand colors (dominant + accent + neutrals), build hue ramps 50-950 around each, map to Semantics per the platform naming, check contrast (text >= 4.5:1, UI >= 3:1, Light and Dark). Show the palette and the Semantic mapping for approval.
 - Folder empty -> Question 3.3: "I found no brand files. What is the primary / brand color (hex)? Add a secondary color too if you have one."
   If the user has none, ask: "Should I propose a palette based on the industry? Yes / No"
+- **Brand contrast pre-check (right after the brand color is known):** run `python tools/new_foundation.py "<Project folder>" --brand "#hex" --modes <modes> --check-only` (or `ds_color.contrast`) and show the brand color against white, black and each mode's base surface. It decides how every filled button looks: e.g. `#299B48` + white text = 3.57:1, fails 4.5:1, so filled buttons need dark text or a darker brand step. Put the result and the chosen fix in the Intake Summary's Direction line.
 
 ### 3c. Design direction from the inspiration folder
 Look in `[Project folder]\Inputs\Inspiration\` (screenshots, links, Dribbble shots, competitor apps).
 Derive and write down: corner style (sharp 0-4 / soft 6-12 / rounded 16+ / pill), density (compact / comfortable / spacious), elevation (flat / subtle shadows / layered), border use, type personality (geometric / humanist / grotesk), icon weight (outline / filled, stroke 1.5 / 2), imagery and illustration style.
 - Folder empty -> Question 3.4: "I found no inspiration files. Which industry is the product in? (e.g. fintech, healthcare, e-commerce, education, government, SaaS)"
-  Derive a style from the industry (use ui-ux-pro-max and Impeccable for the direction; avoid generic AI-looking UI), then show it as a one-screen direction summary for approval.
+  Derive a style from the industry (use ui-ux-pro-max and Impeccable for the direction; avoid generic AI-looking UI). From ui-ux-pro-max take only the **style**, the **anti-patterns** and the **color mood** (e.g. a dark-palette hint); ignore its landing-page patterns (hero, scroll journeys, CTA placement) and its font pairing. Intake answers always win: fonts (0.6), modes (0.4), brand color (3.3) and RTL (0.5) are never overridden by a skill's suggestion.
+  Do not ask for a separate approval: the direction goes into the Intake Summary (section 9), which is approved once.
 
 ### 3d. Build
+**Which Figma file:** use the connected file if the user confirmed it at 0.2 as this project's DS file and it is empty; otherwise ask: "Please create a new Figma design file named '<Project> Design System' and send me its link." Register it in `status.json > figma.design_system`. A plugin cannot rename a file: if the connected file has another name, add "Rename the file to '<Project> Design System'" to the user's to-do list at the Foundation checkpoint.
+**Foundation generator:** `python tools/new_foundation.py "<Project folder>" --brand "#hex" --modes <Light,Dark | Light | Dark>` writes `data/source/foundation-spec.json` (ramps from the brand color with stored curves, the Semantic mapping per mode, the paired-token check and every contrast pair). Fix every failure it prints (re-point the Semantic alias to another step), then build the Primitives and Semantics in Figma from the spec.
 Follow the platform Main Skill build order exactly:
 1. Primitives -> 2. Semantics (Light / Dark) -> 3. Spacing, Radius, Typography variables -> 4. Text and effect styles -> 5. Icons -> 6. Components: Atoms -> Molecules -> Organisms -> Patterns -> 7. Linked documentation pages -> 8. Audit + project skills.
 Before each component: state its tier, post its atomic structure map, check dependencies exist, build missing lower tiers first.
@@ -218,7 +232,7 @@ This path runs in the **reverse direction**: the Design file (the existing scree
 ## 7b. Fix on create (Abdul's rule: every problem found while setting up a project gets fixed)
 
 Runs automatically, without asking, whenever a project starts from an existing file: a duplicated Trianglz template (3a-2), an existing AI-ready DS (3a), a DS with unlinked screens (Step 6), and as the last foundation step of every new build. Work only in the project's own copy, never in an original template.
-1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `My Projects/<Project>/data/source/`, copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py "My Projects/<Project>"`.
+1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `My Projects/<Project>/data/source/figma-variables.dtcg.json`. If it returns 0 tokens (seen for a file with 200 variables, even after `figma_get_variables refreshCache`), run `tools/export_variables.figma.js` with `figma_execute` instead and save its returned JSON to the same file (same DTCG shape). Copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py "My Projects/<Project>"`. For a Web project, set `rules.json > components.required_states_interactive` to the Web Main Skill table (Pressed and Loading are required on Button only), and add the `action/*/border` pairs to `contrast_pairs` (Web skill section 3).
 2. Run `python tools/fix_tokens.py "My Projects/<Project>"`. It builds `data/fixes/<date>-fix-plan.json` and a `.figma.js` script that:
    - normalizes hand-picked palette tones to true tones (Android, `known_fixes.normalize_tones`);
    - recomputes derived tokens (M3 state layers, surface tints) from their role colors;
@@ -248,8 +262,12 @@ Each project has **one Design System file** and a **list of Design files** (scre
 3. When connected, read the connected file's key (figma_get_status / figma_list_open_files) and compare it with `status.json`. It must be the file registered for this project and the role you need.
 4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
 5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date): **stop, touch nothing**, and tell the user what is connected and what was expected.
+6. **Two or more files connected** (e.g. the DS file and a Design file): the Desktop Bridge "active file" follows the user's focus, so node ids from one file get looked up in the other. Before any write or screenshot, pin the target with `figma_navigate` (`lock: true`) and re-pin after switching files.
+7. **Screenshots and exports** (`exportAsync`, `figma_capture_screenshot`) also need the target file to be the **visible tab** in Figma Desktop; in a background tab they time out while structural reads still work. Before screen work, ask once: "Please keep '<file name>' as the front tab in Figma until the Screens checkpoint." If a capture times out, ask the user to bring the file to the front, then retry.
 
 ## 7d. Screen sizes (Abdul's rule, every path that builds screens)
+
+**Design file audit (Abdul's rule, every time screens are built or changed):** run audit-design-system (ds-auditor, `screens` mode) on that Design file to confirm it really uses the DS: library components only (no local copies, detached instances or hand-drawn parts), library variables and styles only (no raw values, no variables used for the wrong purpose), latest library version. Fix what it finds, save the report in `<Project folder>/audits/`, and log the result in `CHANGELOG.md` (`Design file audit: <numbers>, report <path>`).
 
 - Screens are always **Mobile 375px** and **Desktop 1440px** wide.
 - **Brownfield exception:** keep the sizes of the screens that are already designed in the file, so they are not broken.
@@ -257,21 +275,26 @@ Each project has **one Design System file** and a **list of Design files** (scre
 
 ## 8. Step 7 - Approval checkpoints (every path)
 
-Stop and ask for approval at each checkpoint. Show screenshots (light and dark) and a short summary, never just a statement.
+Stop and ask for approval at each checkpoint. Show screenshots of each mode the project has (Light and Dark, or the single mode) and a short summary, never just a statement.
 
 | Checkpoint | Show | Question |
 |---|---|---|
-| **1. Foundation** | Colors (Primitives + Semantics, Light/Dark), typography scale, spacing, radius, shadows, icons, contrast results | "Foundation is ready. Approve and move to components / Request changes" |
-| **2. Components** | Every component set per group, all variants and states, light and dark previews | "Components are ready. Approve and move to screens / Request changes" |
-| **3. Screens** | Every rebuilt or new screen, light and dark, audit result | "Screens are ready. Approve / Request changes" |
+| **1. Foundation** | Colors (Primitives + Semantics, per mode), typography scale, spacing, radius, shadows, icons, contrast results, Fix on create before/after, **user to-do list** (e.g. rename the Figma file to '<Project> Design System', which a plugin cannot do) | "Foundation is ready. Approve and move to components / Request changes" |
+| **2. Components** | Every component set per group, all variants and states, per-mode previews; anything left out and why (e.g. Avatar Photo when no photo was supplied) | "Components are ready. Approve and move to screens / Request changes". If screens will follow (0.8 = Yes) or Storybook is due, add in the same message: "Before screens, please publish '<Project> Design System' as a library (Assets > Library > Publish) and tell me when done. Screens go in a separate Design file that must enable this library." Save `design_system.last_publish` in `status.json` when confirmed. |
+| **3. Screens** | Every rebuilt or new screen, per mode, and the Design file audit result (section 7d) | "Screens are ready. Approve / Request changes" |
 
 - Do not start the next phase before the user approves the current one.
 - Save a Figma version in history after each approved checkpoint.
-- Paths with no screens (Greenfield DS only) use checkpoints 1 and 2 only, unless the user asks for screens.
+- Paths with no screens (0.8 = No) use checkpoints 1 and 2 only; if the user asks for screens later, ask 0.8's publish step first.
+- **Avatar Photo** and any other image content: there is no approved image asset in the Root. At the Components step ask once: "Avatar Photo needs a sample photo you are allowed to use. Share one, or I build Initials and Icon only for now." Never pull random photos from the web.
 
 ---
 
 ## 9. Intake Summary (post before any Figma work)
+
+One approval covers the whole plan, including the design direction (3.4 is not approved separately). Lead the message with the question, then the block, then at most one line of notes:
+
+"Before I touch Figma, please confirm this plan: **Yes, start / Change something**"
 
 ```
 Project: <name>            Local folder: <path>
@@ -280,10 +303,11 @@ Platform: <Web / iOS / Android / Both / Flutter / RN> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>
-Storybook: <Yes after components / Later / No>
+Direction: <style, corner/density/elevation, brand contrast result and fix>
+Screens: <Yes after components (Design file, needs published library) / No>
+Storybook: <Yes after components / Later (ask at: <trigger>) / No>
 Next step: <first action>
 ```
-Ask: "Is this correct? Yes, start / Change something"
 
 ---
 
@@ -336,9 +360,9 @@ Ask: "Is this correct? Yes, start / Change something"
 
 ## 11. Step 8 - Always finish with skills and the final audit
 
-1. Run **audit-design-system** on the DS and on every screen built or relinked: 0 remote variables/styles, 0 raw values, 0 detached components, every property wired, contrast passing in Light and Dark. Fix and re-run until clean, then report the numbers.
-2. Screenshot every variant (light and dark) into the skills' `references\screens\`.
-3. Write / update the project skills:
+1. Run **audit-design-system** on the DS and on every Design file whose screens were built or relinked (section 7d rule): 0 remote variables/styles, 0 raw values, 0 detached components, every property wired, contrast passing in Light and Dark. Fix and re-run until clean, then report the numbers.
+2. Screenshot every variant (each mode the project has) into the skills' `references\screens\`.
+3. Write / update the project skills (usually through the docs-writer agent, which keeps `data/docs-progress.json` so a run cut off by a rate limit can resume where it stopped):
    - `Foundation_Skill`: variables (names, values per mode, scopes, code syntax), styles, grids, icon rules, direction decisions from the intake.
    - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies.
    - `gaps.md` in each: anything left open.
@@ -351,7 +375,7 @@ Ask: "Is this correct? Yes, start / Change something"
 
 ## 12. Step 9 (optional) - Live Storybook
 
-Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever the user asks later).
+Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever the user asks later). When 0.7 = Later, ask again at the trigger in `status.json > storybook_ask_at` and move the trigger forward on each new "Later" (0.7 notes).
 1. Load `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
 2. Make sure `data/tokens.json` and `data/component-registry.json` reflect the live Figma file (token-extractor subagent if they need a resync).
 3. Ask before installing any Node package; show the exact commands.

@@ -16,5 +16,8 @@ You document design systems so another AI agent can build UI from them without o
 ## What every component entry must have
 Tier (Atom, Molecule, Organism, Pattern), variants and values, properties (type and default), exact use cases, when not to use (and what to use instead), nested dependencies, tokens used, accessibility notes, and Light and Dark screenshots of every variant saved under `references/screens/` (Abdul's rule: structure alone is not enough).
 
+## Progress file (resume safely)
+Write `<folder>/data/docs-progress.json` before the first file and update it after every file you finish: `{"started": "<date>", "items": [{"file": "Foundation_Skill/SKILL.md", "status": "done"}, {"file": "Component_Skills/Data_Display_Skill/SKILL.md", "status": "todo"}, ...]}` covering every skill, reference, `component-registry.json` and `screen-templates.json` you plan to write. When you start and the file exists with `todo` items, continue from the first `todo` instead of starting over. Set `"finished": "<date>"` when all items are done. A run cut off by a rate limit (or a new session) reads this file to know what is left.
+
 ## Style
 Plain English, short sentences, tables for variants and properties. Use Figma names exactly. Never write absolute machine paths or node IDs without saying which file they belong to. Keep anything unresolved in `gaps.md`, not in the main text.

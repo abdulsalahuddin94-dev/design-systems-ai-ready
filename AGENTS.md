@@ -2,14 +2,14 @@
 
 Instructions for any AI coding tool or agent working in this repo (Codex, Cursor, Antigravity, Copilot, Gemini, Windsurf, ...). Claude Code reads `CLAUDE.md`; this file mirrors it for every other tool. `GEMINI.md`, `.cursor/rules/storybook.mdc` and `.github/copilot-instructions.md` point here.
 
-## ⚠️ This repo has a live Storybook: ask the user about it first
+## This repo has a live Storybook (mention it; ask about the project first)
 The design system is documented in a runnable Storybook: every Figma component with its variants, properties, use cases and tokens, with names identical to Figma.
 
 - Location: `Trianglz/storybook/` (Trianglz Web Design System). Other projects get their own `<project folder>/storybook/`.
-- **At the start of every session, tell the user in one line that this repo has a Storybook and ask: "Do you want me to run the Storybook, update it from Figma, or skip it for now?"** Also run `python tools/project_status.py` and mention any project whose Figma changes are not yet in Storybook, or whose Design files still need Accept updates for the library. (Claude Code gets this from a hook; other tools must run it themselves.)
+- **At the start of every session, mention in one line that this repo has a Storybook (information only, no question).** The first question is about the project (intake 0.0). Also run `python tools/project_status.py` and mention any project whose Figma changes are not yet in Storybook, whose Storybook plan is Later, or whose Design files still need Accept updates for the library. Ask about updating a project's Storybook when the user picks that project, at intake 0.7, or when the user asks. (Claude Code gets this from a hook; other tools must run it themselves.)
 - Run it: `cd Trianglz/storybook`, `npm install` (first time; ask the user before installing), `npm run storybook`, open http://localhost:6006. Needs Node.js 18+.
 - MCP: while it runs, the Storybook MCP server is at `http://localhost:6006/mcp` (already listed in `.mcp.json`). Use it to list components and read their docs and props before building any UI.
-- Update it from Figma: follow `Storybook_Design_System_Skill/SKILL.md` (tokens: `python tools/tokens_to_css.py <folder>`, stories: `python tools/storybook_stories.py <folder>`, name check: `python tools/storybook_parity.py <folder>`), then `python tools/project_status.py "<folder>" --mark-synced`.
+- Update it from Figma: follow `Storybook_Design_System_Skill/SKILL.md` section 5; first ask the user to open the project's DS file with the Desktop Bridge plugin (tokens: `python tools/tokens_to_css.py <folder>`, stories: `python tools/storybook_stories.py <folder>`, name check: `python tools/storybook_parity.py <folder>`), then `python tools/project_status.py "<folder>" --mark-synced`.
 - Storybook is documentation, not production code. Keep component, variant, property and token names exactly as in Figma.
 
 ## What this repo is
@@ -43,7 +43,8 @@ Several tools may work on the same project. Claude Code picks up after them from
    - read `Design_System_Intake_Skill/SKILL.md`, the platform Main Skill and the project's `Project_Brief.md` before starting;
    - the audit checklist is in `.claude/agents/ds-auditor.md` (run it yourself if you can; Claude Code re-runs it when it takes over);
    - never write absolute machine paths into files; never detach components; ask before writing to an original Trianglz template.
-4. Note anything unfinished or uncertain in the changelog entry, so the next tool does not have to guess.
+4. **Design file audit (Abdul's rule):** every time you build or change screens in a Design file, audit that file for real use of the design system (checklist: `.claude/agents/ds-auditor.md` > Screens mode): library components only, no detached or hand-drawn parts, library variables and styles only, no raw values or misused variables. Save the report in `<Project folder>/audits/<date>-screens-<file>.md` and add `Design file audit: <numbers>, report <path>` to the changelog entry.
+5. Note anything unfinished or uncertain in the changelog entry, so the next tool does not have to guess.
 
 ## Figma setup for other tools (figma-console-mcp)
 Every tool needs its own figma-console-mcp entry plus the Figma Desktop plugin (Desktop Bridge) running in the open file. Use a Figma personal access token (scopes: File content Read, File versions Read, Variables Read, Comments Read and write). Keep the token in your user config, never in this repo. Source: https://github.com/southleft/figma-console-mcp

@@ -49,6 +49,8 @@
       "Bash(npm --version)",
       "Bash(python --version)",
       "Bash(python tools/build_tokens.py:*)",
+      "Bash(python tools/new_foundation.py:*)",
+      "Bash(python tools/project_status.py:*)",
       "Bash(npm run storybook:*)",
       "Bash(npm run build-storybook:*)"
     ],

@@ -10,6 +10,8 @@ Copy its **structure**. Do **not** copy its mistakes: every item in section 9 mu
 Platform: Web, Tailwind conventions (scale names, breakpoints, hover/focus/active states).
 Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
+**Tools and generic skills (figma-console).** Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. The Trianglz page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton (Cover / Getting Started / Foundations / Components) and its per-phase checklist posts; report progress in the thread's status checklist instead.
+
 **Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
 
 ---
@@ -28,7 +30,7 @@ Cover
 ➜ Icons
 -----
 ⭐Form Elements
-➜ Input Fields and Dropdown      (Input / Text, URL, Card Number, Select / Dropdown, Menu, OTP, Stepper, Upload Field, Search)
+➜ Input Fields and Dropdown      (Input / Text, URL, Card Number, Select / Dropdown, OTP, Stepper, Upload Field, Search)
 ➜ Text Area
 ➜ Checkboxes
 ➜ Toggles
@@ -37,10 +39,13 @@ Cover
 ⭐Navigation
 ➜ Buttons & Links
 ➜ Pagination, Tabs & Breadcrumb
+➜ Menus                          (Menu / Item, Menu: actions, per memory/decisions.md group placement)
+➜ Navigation Bars                (Nav Item, Top Bar, Sidebar)
 -----
 ⭐Data Display
 ➜ Avatars & Upload Image
 ➜ Tooltips
+➜ Dividers
 ➜ Banners, Badges & Toasts
 ➜ Popups
 ➜ Favicon
@@ -58,7 +63,7 @@ Create a new `➜` page inside the matching group when no existing page fits, an
 
 - `⭐` pages are empty group headers; `➜` pages hold one topic; separators are empty pages.
 - No stray spaces or typos in page names.
-- On each component page: one documentation frame per component family (title in `2xl/Semi Bold`, short description, the component set inside). Next to it a **dark preview frame** with `Semantic` mode = Dark containing **instances** of the light master (never a duplicate component set).
+- On each component page: one documentation frame per component family (title in `2xl/Semi Bold`, short description, the component set inside). Next to it a **dark preview frame** with `Semantic` mode = Dark containing **instances** of the light master (never a duplicate component set). Single-mode systems skip the preview frame (section 7).
 - Popups and every other family also get a documentation frame (no loose sets on the page).
 
 ## 2. Build order (each layer only uses the layers before it)
@@ -91,13 +96,16 @@ Before each component: state its tier, list dependencies, build missing lower ti
 | action (buttons) | `action/{primary,secondary,danger}/{bg,bg-hover,bg-active,text,border}` | per role |
 
 - Status UI (alerts, badges, toasts) uses `bg/{status}`, `text/{status}`, `border/{status}`, `icon/{status}` - never button tokens.
+- **Paired state tokens alias different steps:** `border/input` vs `border/strong` (Hover), `bg/brand` vs `bg/brand-hover` vs `bg/brand-active`, `action/*/bg` vs `bg-hover` vs `bg-active`, `border/default` vs `border/focus`. Two roles on the same step make the state invisible (the ClinicSoft trial had an invisible input Hover). `tools/new_foundation.py` checks this.
+- `data/rules.json > contrast_pairs` always includes the `action/{primary,secondary,danger}/border` pairs against `bg/primary` and `bg/secondary` (>= 3:1), so a faint Outline border fails at foundation level, not at component level.
 - Contrast targets decided at token level: `text/muted` and `text/placeholder` >= 4.5:1 on `bg/primary` (gray-500 light, gray-400 dark); `border/input` >= 3:1 (gray-400/500); status text on status bg >= 4.5:1 (use 700 shades for warning/success text).
 - **Every variable** gets explicit scopes (never ALL_SCOPES), WEB code syntax `var(--color-text-primary)`, and a description.
 
 ### Typography (modes Desktop / iPad / Mobile)
 - `font-family/base` (Poppins by default for this org, or the brand font), `font-weight/{regular,medium,semibold,bold}` (FONT_STYLE scope).
 - `font-size/{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl}` (FONT_SIZE), `line-height/{same keys}` (LINE_HEIGHT), `letter-spacing/{same keys}` (LETTER_SPACING).
-- Trianglz values: sizes 12/14/16/18/20/24/28/32/40/48 (Desktop), iPad/Mobile shrink from sm up; line heights 16/20/24/28/28/32/36/40/48/60; tracking +0.2, 0, 0, -0.2, -0.2, -0.4, -0.6, -0.8, -1, -1.2.
+- Trianglz values: sizes 12/14/16/18/20/24/28/32/40/48 (Desktop); line heights 16/20/24/28/28/32/36/40/48/60; tracking +0.2, 0, 0, -0.2, -0.2, -0.4, -0.6, -0.8, -1, -1.2.
+- **Responsive rule (default for new systems):** `xs` to `lg` (12-18) stay the same on Desktop, iPad and Mobile, so body text never drops below 16px; only `xl` and up compress on iPad/Mobile. (Trianglz shrinks from `sm` up, which puts body text at 14px on mobile; do not copy that.)
 
 ### Spacing (modes Desktop / iPad / Mobile) - `space/{0,1,2,3,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,48,56,64}` = n x 4px on Desktop; 0-4 fixed across modes, 5+ compress on iPad/Mobile. Scopes GAP (+ WIDTH_HEIGHT).
 ### Radius (1 mode) - `radius/{none 0, sm 2, base 4, md 6, lg 8, xl 12, 2xl 16, 3xl 24, full 9999}` with usage descriptions (base default, lg inputs/cards, xl panels, 2xl modals, full pills/avatars).
@@ -128,12 +136,14 @@ Recolor procedure (when the user asks to change a color):
 
 - **Text styles**: `{size}/{weight}` (40 styles: 10 sizes x Regular, Medium, Semi Bold, Bold). Bind font family, weight, size, **line height and letter spacing** to variables. Description: `14px / 20px / 500 · Tailwind text-sm font-medium` - must match the real values.
 - **Effect styles** (exact Tailwind): `shadow-2xs, shadow-xs, shadow-sm, shadow-md, shadow-lg, shadow-xl, shadow-2xl, inset-shadow-2xs/xs/sm`, plus `focus-ring` (inputs: inset 2px `border/focus`) and `focus-ring-offset` (buttons/controls: 2px bg gap + 4px focus ring). Use raw colors in effect styles (binding effect colors to variables made plugin exports hang).
+- **focus-ring-offset renders only on a clipping, filled frame.** It is built from spread drop shadows, and Figma draws spread only when the frame has `clipsContent = true` and a fill. Set both on every Focus variant that uses it (Button Focus variants need `clipsContent = true`; transparent types such as Outline and Link need a `color/bg/primary` fill in Focus), then screenshot to confirm the ring shows.
 - **Grid styles**: `Grid/Desktop 1440` 12 col / 80 margin / 24 gutter, `Grid/iPad 768` 8 / 32 / 16, `Grid/Mobile 375` 4 / 16 / 16.
 - No color styles (color = variables only).
 
 ## 5. Icons
 
 - One component per icon, named `Icon/<Name>` in Title Case (Icon/Chevron Down, Icon/Close, Icon/Search, Icon/Info, Icon/Alert Circle, Icon/Warning, Icon/Check, Icon/Check Circle, Icon/Add, Icon/Minus, Icon/Edit, Icon/Delete, Icon/Upload, Icon/File, Icon/User, Icon/Arrow Left/Right...). 24x24, one consistent set (Lucide for Web by default; Solar Linear if the brand uses it).
+- Fetch Lucide icons (better-icons or Iconify) **without the `color` parameter**: it injects `fill="#000000"` into stroke-only paths and circles, which renders filled shapes. Use the raw SVG, keep `fill="none"` and bind the stroke to the icon token.
 - Fill/stroke bound to `color/icon/default`; recolor instances with other `color/icon/*` tokens.
 - Components **only** use Icon instances (never drawn vectors or text glyphs like ← →), exposed through INSTANCE_SWAP properties (leading/trailing icon on buttons, inputs, menu items, list items).
 
@@ -147,27 +157,39 @@ Recolor procedure (when the user asks to change a color):
 - Auto layout everywhere; instances set to Fill container in forms.
 - Disabled = the component's own look at `opacity/disabled` (never recolor all types the same).
 - Molecules/organisms nest atom instances and expose nested properties (`isExposedInstance`).
-- Keep variant matrices sane: Button uses Type x Size x Icon x State; don't create a variant per icon.
+- Keep variant matrices sane: Button is **Type x Size x State** (5 x 5 x 6 = 150) with `Show Leading Icon` / `Show Trailing Icon` booleans and icon swaps; icon-only buttons are a separate **Icon Button** set. Never a variant per icon.
+- **Property defaults overwrite variant content.** Binding a TEXT or INSTANCE_SWAP property resets that layer in every variant to the property default, so a variant-specific label or icon (Menu Item Danger "Delete", Badge status words, a Danger icon) is lost. Pick a default that suits every variant, or leave the variant-specific layer unbound (like the Button Loading spinner) and say so in the component description.
+- **After cloning a variant inside a set** (to add a state), re-apply `componentPropertyReferences` on the clone's layers: clones silently lose their links to TEXT/BOOLEAN/INSTANCE_SWAP properties, and the dead-property scan still shows 0 because other variants use the property. Check property coverage per variant with `tools/check_bindings.figma.js`.
+
+### Build notes (Plugin API)
+- **`resize()` resets auto layout sizing to FIXED.** Call `resize()` first, then set `primaryAxisSizingMode` / `counterAxisSizingMode` (or `layoutSizingHorizontal/Vertical`) back to AUTO/HUG. Otherwise Toasts, Modals and other hug-height frames get a fixed height and cut text.
+- Screenshot every set after building it; structure reads miss invisible states and cut text.
 
 ### Required inventory and states (Web)
 | Tier | Component | Required variants / states |
 |---|---|---|
-| Atom | Button | Type Filled, Outline, Pill, Link, **Danger** · Size xs 32, sm 36, base 40, lg 48, xl 56 · Icon None/Left/Right/Only · State Default, Hover, Pressed, Focus, Disabled, Loading |
+| Atom | Button | Type Filled, Outline, Pill, Link, **Danger** · Size xs 32, sm 36, base 40, lg 48, xl 56 · State Default, Hover, Pressed, Focus, Disabled, Loading (150 variants) · icons via `Show Leading Icon` / `Show Trailing Icon` booleans + swaps, not a variant |
+| Atom | Icon Button | icon-only buttons: Type x Size x State as Button, one Icon swap, accessible label in the description |
+| Atom | Divider | Orientation Horizontal / Vertical · optional label (`Show Label` + Label text, e.g. "or") · bound to `border/default` |
 | Atom | Checkbox, Radio | Unchecked, Checked, (Indeterminate), Hover, Focus, Error, Disabled (+ checked variants) |
 | Atom | Toggle | On/Off x Default, Hover, Focus, Disabled |
 | Atom | Badge | Info, Success, Warning, Error, Neutral · optional icon · sm/md |
-| Atom | Avatar | Photo, Initials, Icon · 24, 32, 40, 60, 100 · optional status dot |
+| Atom | Avatar | Photo, Initials, Icon · 24, 32, 40, 60, 100 · optional status dot. Photo needs a sample image the user supplies (intake section 8); until then build Initials and Icon and list Photo as open |
 | Atom | Tooltip | Arrow Up/Down/Left/Right · Small/Large (dark and light style) |
 | Atom | Tabs / Item, Pagination / Item, Breadcrumb / Item, Menu / Item, OTP / Cell | Default, Hover, Active/Selected/Current, Focus, Disabled |
 | Molecule | Input / Text (+ URL, Card Number, Password, Date, Phone) | Default, Hover, Focus, Filled, Error, Success, Disabled · label, optional, tooltip, hint, error |
 | Molecule | Textarea, Search, Upload Field, OTP / Field, Stepper | same state set where applicable; Stepper uses Button instances |
 | Molecule | Alert, Toast, Menu, Tab bar, Pagination bar, Breadcrumb, Avatar Upload | Status variants; built from atoms |
-| Organism | Select / Dropdown, Confirmation Popup / Modal, Top bar, Sidebar | open/closed; exposed nested props |
+| Molecule | Nav Item | Icon + Label + optional Badge · Default, Hover, Active, Focus, Disabled · built before Sidebar and Top Bar (⭐Navigation > ➜ Navigation Bars) |
+| Organism | Select / Dropdown, Confirmation Popup / Modal, Top bar, Sidebar | open/closed; exposed nested props; Top bar and Sidebar nest Nav Item |
+
+Required states follow this table, not a blanket rule: Pressed and Loading are required on Button (and Icon Button) only; other interactive atoms need Default, Hover, Focus, Disabled (+ Selected/Error where listed). Keep the project's `data/rules.json > components.required_states_interactive` in line with this table.
 
 Hint text sits between label and field; error text below the field (12px), same in every input.
 
 ## 7. Theming and responsive
 - Dark mode = switch the `Semantic` mode on the frame. No duplicate dark components.
+- **Single-mode systems** (intake 0.4 = Light only or Dark only): the Semantic collection has one mode named after the answer (`Light` or `Dark`). Every "Light and Dark" requirement in this skill, the intake checkpoints, the audits, the docs pages and the Storybook quality bar means "each mode the project has": no dark preview frames, one swatch frame per collection on ➜ Colors, screenshots in that mode only, and contrast checked against that mode's surfaces only. For Dark only, the Dark mode is the master.
 - Responsive = switch Typography/Spacing modes (Desktop/iPad/Mobile) + grid style.
 
 ## 8. Documentation pages (linked, never static)
@@ -193,11 +215,15 @@ Hint text sits between label and field; error text below the field (12px), same 
 15. Component using a different font (Inter) than the system font.
 16. Missing components: danger button, dropdown menu, toast, breadcrumb, password/date fields, navbar/sidebar.
 
+## Screens (Design files)
+- Screens are built only from the published DS library, section by section (figma-generate-design + figma-use + ui-ux-pro-max), at the sizes in Design_System_Intake_Skill section 7d.
+- **Design file audit (Abdul's rule, every time screens are built or changed):** run audit-design-system (ds-auditor, `screens` mode) on that Design file to confirm it really uses the DS: library components only (no local copies, detached instances or hand-drawn parts), library variables and styles only (no raw values, no variables used for the wrong purpose), latest library version. Fix what it finds, save the report in `<Project folder>/audits/`, and log the result in `CHANGELOG.md` (`Design file audit: <numbers>, report <path>`).
+
 ## 10. Final QA checklist (run before handing over)
 - [ ] 0 remote variables/styles; 0 raw fills/strokes/padding/gap/radius in components.
 - [ ] Every variable: scope, code syntax, description. Every set: description, Title Case properties, wired props.
 - [ ] Every component has Hover/Focus/Disabled (+ Error/Success where relevant); focus visible (focus-ring styles).
-- [ ] Contrast: text >= 4.5:1, UI boundaries >= 3:1, in Light and Dark.
+- [ ] Contrast: text >= 4.5:1, UI boundaries >= 3:1, in each mode (Light and Dark, or the single mode).
 - [ ] Icons are instances with swap properties; icon colors from `color/icon/*`.
 - [ ] Dark previews are instances in Dark-mode frames; Colors/Typography docs linked.
 - [ ] Screenshot every variant (light + dark) and compare against the description.

@@ -5,6 +5,9 @@ Usage (from the Root):
   python tools/project_status.py "My Projects/<Project>"   refresh that project's status.json
   python tools/project_status.py "My Projects/<Project>" --mark-synced
                                                            mark every entry "Storybook synced: yes" (after a Storybook update)
+  python tools/project_status.py "My Projects/<Project>" --add-design-file <figma url> --name "Web App"
+                             [--role screens|source] [--content frames|screenshots|mixed]
+                                                           register (or update, by file key) a Design file in status.json > figma
 
 CHANGELOG.md format (newest first):
   ## 2026-09-30 - Components: Button, Input Field
@@ -92,9 +95,60 @@ def library_pending():
     return out
 
 
+def storybook_later():
+    """Projects whose Storybook plan is Later: [(rel_path, ask_at)]."""
+    out = []
+    for f in projects():
+        path = f / "status.json"
+        if not path.exists():
+            continue
+        st = json.loads(path.read_text(encoding="utf-8"))
+        if str(st.get("storybook_plan") or "").lower() == "later":
+            out.append((f.relative_to(ROOT).as_posix(), st.get("storybook_ask_at") or "next-session"))
+    return out
+
+
+def file_key(url):
+    m = re.search(r"/(?:design|file|proto|board)/([A-Za-z0-9]+)", url)
+    if not m:
+        raise SystemExit(f"No Figma file key in {url!r} (expected .../design/<key>/...)")
+    return m.group(1)
+
+
+def opt(args, name, default=None):
+    return args[args.index(name) + 1] if name in args and args.index(name) + 1 < len(args) else default
+
+
+def add_design_file(folder, args):
+    url = opt(args, "--add-design-file")
+    if not url:
+        raise SystemExit("--add-design-file needs a Figma URL")
+    key = file_key(url)
+    path = folder / "status.json"
+    status = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    files = status.setdefault("figma", {}).setdefault("design_files", [])
+    entry = next((d for d in files if d.get("file_key") == key), None)
+    if entry is None:
+        entry = {"library_updates_accepted": False}
+        files.append(entry)
+    entry.update({
+        "name": opt(args, "--name", entry.get("name") or key),
+        "url": url.split("?")[0],
+        "file_key": key,
+        "role": opt(args, "--role", entry.get("role", "screens")),
+        "content": opt(args, "--content", entry.get("content", "frames")),
+    })
+    path.write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+    return write_status(folder)
+
+
 def main(args):
     if args:
         folder = ROOT / args[0]
+        if "--add-design-file" in args:
+            status, _ = add_design_file(folder, args)
+            print(json.dumps(status.get("figma", {}), indent=2))
+            return 0
         status, unsynced = mark_synced(folder) if "--mark-synced" in args else write_status(folder)
         print(json.dumps(status, indent=2))
         return 0
@@ -106,6 +160,8 @@ def main(args):
         print(f"{rel}: {len(unsynced)} change(s) not in Storybook ({titles})")
     for rel, names in library_pending():
         print(f"{rel}: Design files still need Accept updates for the library: {', '.join(names)}")
+    for rel, when in storybook_later():
+        print(f"{rel}: Storybook plan is Later (ask again at: {when})")
     return 0
 
 

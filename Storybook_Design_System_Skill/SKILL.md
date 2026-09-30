@@ -24,7 +24,7 @@ Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma is the source of
    - The left sidebar navigates Foundations and every component group, in the same order as the Figma ⭐ groups.
    - Each component page shows its Figma component description and its use cases (when to use, when not to).
    - Every property in Figma's right panel (variants, booleans, text, instance swaps) is a control with the same name and the Figma default.
-   - Every variant and state can be seen, in Light and Dark (an "All variants" story plus one story per state).
+   - Every variant and state can be seen in each mode the project has (Light and Dark, or its single mode; an "All variants" story plus one story per state).
    - The component description is always written during the build: in Figma (the component's description / Component documentation) and in Storybook, with the same text.
 
 ---
@@ -106,6 +106,16 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
 ## 5. Keeping it in sync
 
 - Figma changes -> token-extractor re-exports `data/` -> rerun `tools/tokens_to_css.py` -> parity check lists stories to update.
+
+### "Update from Figma" procedure
+Tell the user up front which file to open: "Please open '<DS file name>' in Figma Desktop and run the Desktop Bridge plugin in it." The file is the project's `status.json > figma.design_system` (Trianglz Web: the key in `memory/references.md`). Then:
+1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original Trianglz template may be read freely; writing to it is guarded by `guard_figma.py` and never needed here.
+2. **Tokens:** run the token-extractor agent (writes `data/source/` and `data/tokens.json`; fallback export: `tools/export_variables.figma.js`).
+3. `python tools/tokens_to_css.py "<folder>"` (regenerates `storybook/src/tokens/*`).
+4. `python tools/storybook_stories.py "<folder>"` (stories from `data/component-registry.json`; refresh the registry with docs-writer first if components changed).
+5. `python tools/storybook_parity.py "<folder>"` (names must match Figma exactly; fix every mismatch).
+6. `npm --prefix "<folder>/storybook" run build-storybook`, then a visual check of the changed components in each mode against the Figma screenshots.
+7. `python tools/project_status.py "<folder>" --mark-synced`.
 - Never edit `src/tokens/*` by hand; they are generated.
 - A rename in Figma is a rename in Storybook (same day), because names must match.
 
