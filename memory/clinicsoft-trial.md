@@ -13,3 +13,4 @@ updated: 2026-09-30
 - Approved checkpoints (Figma versions): Foundation, Components (33 components, 434 variants), Screens (Login Desktop 1440 + Mobile 375).
 - Open items: `My Projects/ClinicSoft/data/build-state.md` > Next; audits in `My Projects/ClinicSoft/audits/`.
 - Workflow problems found during the run: `trial-run-findings.md` in the Root (44 entries), to fix the skills afterwards.
+- Storybook (2026-09-30): built in `My Projects/ClinicSoft/storybook/` (port 6007, preview `clinicsoft-web-storybook`, MCP `clinicsoft-web-storybook` in `.mcp.json`), 33 working components, parity 33/33; the ClinicSoft folder now has its own local git repo (no remote).
