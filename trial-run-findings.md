@@ -95,3 +95,15 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 30. **`resize()` silently switches auto-layout sizing to FIXED.** Several components set `primaryAxisSizingMode/counterAxisSizingMode = 'AUTO'` and then called `resize()`, which made Toast/Modal heights fixed and cut text. Had to reset sizing to AUTO afterwards. figma-use mentions it (rule 12c), but the project's component recipes do not.
    Fix: add to the Web skill build notes: call resize() first, then set sizing modes.
+
+31. **Cloning a variant inside a set drops its component property references.** New states added by cloning (Upload Focus, Select Success...) lost their Label/Digit links silently; the dead-property scan still showed 0 because other variants used the property. Needed a per-variant coverage check and a re-link pass.
+   Fix: add a "property coverage per variant" check to ds-auditor and a note in the Web skill: after cloning a variant, re-apply `componentPropertyReferences`.
+
+32. **Menu placement rules conflict.** Web skill section 1 puts Menu on the ⭐Form Elements page "Input Fields and Dropdown", while memory/decisions.md (group placement) says actions go to ⭐Navigation. Followed Abdul's rule: new page `➜ Menus` under ⭐Navigation.
+   Fix: update the Web skill page list to match decisions.md.
+
+33. **Pressed state rule conflict.** rules.json says Pressed is required on every interactive component; Web skill section 6 only requires it for Button. Kept the Web skill.
+   Fix: align rules.json `required_states_interactive` with the Web skill table.
+
+34. **The components audit found real defects the build scan missed** (invisible Hover because border/input and border/strong aliased the same gray/500, a faint Outline border at 2.66:1, missing states, unexposed text). Foundation-level token choices only showed up at component level.
+   Fix: in generate/foundation checks, require that paired state tokens (input vs strong, default vs hover) alias different steps, and add action/*/border pairs to contrast_pairs by default.
