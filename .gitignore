@@ -28,3 +28,8 @@ __pycache__/
 
 # Browser automation output
 .playwright-mcp/
+
+# Projects are separate private repos; only the template and README belong to the workflow repo
+My Projects/*
+!My Projects/_Project_Template/
+!My Projects/README.md
