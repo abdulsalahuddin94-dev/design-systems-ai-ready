@@ -74,3 +74,6 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 
 23. **The Figma file cannot be renamed from the plugin.** Intake says the file is named `<Project> Design System`, but figma_execute cannot rename a file; the user has to do it.
    Fix: add it to the user's to-do list at the Foundation checkpoint.
+
+24. **ds-auditor cannot verify bindings.** Its tool list has no `figma_execute`, and the REST-based tools (styles, file data, parity) failed on an expired Figma token, so it could not read text style, icon stroke or frame padding bindings (3 checks "not verified"). The built-in `figma_audit_design_system_report` also reported "0 variables" for a file with 200. The builder had to close the gaps.
+   Fix: give ds-auditor a read-only `figma_execute` (the hook can block write APIs) and ship a binding-check snippet; tell users in intake 0b that the Figma token must be valid for REST-based tools.
