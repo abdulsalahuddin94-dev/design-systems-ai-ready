@@ -19,9 +19,11 @@ Order asked: 0.0-0.2, then Platform 1.1-1.4, then 0.3-0.8, then Path.
 | # | Question | Answer |
 |---|---|---|
 | 1.1 | Web / Mobile | |
-| 1.2 | iOS / Android / Both / Cross-platform | |
-| 1.3 | Framework and look (cross-platform only) | |
-| 1.4 | Shared base (React Native only) | |
+| 1.2 | iOS / Android / Both | |
+| 1.3 | Both: Native / Cross-platform (one shared design) | |
+| 1.4 | Native: shared Brand Foundation file (Yes / No) | |
+| 1.5 | Cross-platform: framework (Flutter / React Native) and base (Material 3 / Apple HIG / Custom) | |
+| - | Sibling platform folder (Both + Native) | |
 | - | Main Skill(s) loaded | |
 
 ## Path
@@ -48,7 +50,7 @@ Order asked: 0.0-0.2, then Platform 1.1-1.4, then 0.3-0.8, then Path.
 ```
 Project: <name>            Local folder: <path>
 Figma: <links and roles>
-Platform: <Web / iOS / Android / Both / Flutter / RN> -> Main Skill(s): <names>
+Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base)> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>

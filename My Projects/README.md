@@ -5,7 +5,8 @@ Every design system project lives here, one folder per project. The workflow its
 ## Start a new project
 - Easiest: open the Root in Claude Code and say what you want (or run `/design-system-intake`). Intake lists the folders here, asks which project to work on or whether to start a new one, and creates the new folder from `_Project_Template/` for you.
 - By hand: duplicate `_Project_Template/` and rename the copy after the project, with the platform suffix:
-  - `<Project>/` Web, `<Project>_iOS/`, `<Project>_Android/`, `<Project>_Mobile/` (shared cross-platform look).
+  - `<Project>/` Web, `<Project>_iOS/`, `<Project>_Android/`, `<Project>_Mobile/` (Both, cross-platform: one shared design).
+  - Both + Native: `<Project>_iOS/` and `<Project>_Android/` (each linked only to its own DS), plus `<Project>_Brand/` when the optional Brand Foundation (Primitives only) is used.
   - Use `_` instead of spaces in folder names.
   - Replace `<Project>` in `Project_Brief.md`, `docs/decisions.md` and the skill stubs.
 

@@ -16,6 +16,14 @@ Node IDs quoted in the Trianglz skills are valid in the original Trianglz file o
 
 ---
 
+## 0. Both + Native projects (Abdul, 2026-09-30)
+
+When intake 1.3 answers **Native** for Both, this skill builds only the Android half: `<Project> Android Design System` in `My Projects/<Project>_Android/`, with `md.sys.color` roles, the M3 type scale, state layers, elevation levels, Material Symbols and dp/sp units. The iOS half is a separate system built with `iOS_Design_System_Skill` in `<Project>_iOS/`; never reuse its names, files or components.
+- Optional Brand Foundation (`<Project> Brand Foundation`, Primitives only): copy its Primitives into this file's local tonal palettes / Primitives collection (same values), never enable it as a library. A brand change goes into the Brand Foundation first, then `tools/recolor.py` on this folder.
+- The Android Design file (`<Project> Android`) enables only the Android DS library. The file check rejects the iOS library in it.
+- `status.json`: `mobile_setup: native`, `sibling_project: My Projects/<Project>_iOS/`, `figma.brand_foundation` when used.
+- **Cross-platform** (Flutter / React Native, one shared design): one DS and one Design file in `<Project>_Mobile/`; this skill is the base when intake 1.5 chose Material 3 or a custom brand UI.
+
 ## 1. File structure (pages, in this order)
 
 ```

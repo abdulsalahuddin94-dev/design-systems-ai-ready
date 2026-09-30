@@ -71,7 +71,7 @@ First pick the project (always, before 0.1):
 |---|---|---|
 | 0.0 | "Which project should I work on? <one line per folder in My Projects> / Start a new project" | List the folders in `My Projects\` (skip `_Project_Template` and `README.md`). If there are none, say so and go straight to 0.1. Existing project: read its `Project_Brief.md` and `status.json`, say in one line what is already answered, and ask only what is missing (or continue from its Status). If it has unsynced changelog entries, ask then whether to update its Storybook (open the DS file and the Desktop Bridge first). New project: continue with 0.1. |
 
-Then ask in this order: **0.1, 0.2, then the platform (Step 1, questions 1.1-1.4), then 0.3-0.8.** The platform comes early because the folder name (section 10) and the default fonts depend on it.
+Then ask in this order: **0.1, 0.2, then the platform (Step 1, questions 1.1-1.5), then 0.3-0.8.** The platform comes early because the folder name (section 10) and the default fonts depend on it.
 Until the project folder exists (0.3), keep the answers in the conversation; right after 0.3, write them all into `Project_Brief.md` (copied from the template) and keep it updated from then on.
 
 | # | Question (send exactly) | Notes |
@@ -97,15 +97,31 @@ Until the project folder exists (0.3), keep the answers in the conversation; rig
 | # | Question | Next |
 |---|---|---|
 | 1.1 | "Which platform is this design system for? Web / Mobile" | Web -> load `Web_Design_System_Skill`. Mobile -> 1.2 |
-| 1.2 | "Which mobile platform? iOS / Android / Both (native iOS and Android) / Cross-platform (Flutter or React Native)" | iOS -> `iOS_Design_System_Skill`. Android -> `Android_Design_System_Skill`. Both -> both skills, two independent systems. Cross-platform -> 1.3 |
-| 1.3 | "Which framework, and should the app look native on each platform or share one brand look? Flutter shared / React Native shared / Native look on each platform" | Native look -> treat as **Both**. Flutter shared -> `Android_Design_System_Skill` as the base (Flutter widgets are Material 3). React Native shared -> ask 1.4. |
-| 1.4 | "Which base should the shared look follow? Material 3 (recommended for one codebase) / Apple HIG" | Load the matching Main Skill as the base. |
+| 1.2 | "Which mobile platform? iOS / Android / Both" | iOS -> `iOS_Design_System_Skill`. Android -> `Android_Design_System_Skill`. Both -> 1.3 |
+| 1.3 | "Native, or cross-platform with one shared design (Flutter/React Native custom UI)? Native (two systems, each app looks native) / Cross-platform (one shared design)" | Native -> 1.4. Cross-platform -> 1.5. See "Both: native or cross-platform" below. |
+| 1.4 | Native only: "Do you want a shared Brand Foundation file (brand Primitives only: color ramps, font families, raw values) that both systems copy from? Yes (recommended when one brand drives both apps) / No" | Yes -> create `<Project> Brand Foundation` (Primitives only). Then load **both** `iOS_Design_System_Skill` and `Android_Design_System_Skill`, two independent systems. |
+| 1.5 | Cross-platform only: "Which framework, and which base should the shared design follow? Flutter / React Native, then Material 3 (recommended for one codebase) / Apple HIG / Custom brand UI on a Material 3 structure" | Load the matching Main Skill as the base (Material 3 or custom -> `Android_Design_System_Skill`; Apple HIG -> `iOS_Design_System_Skill`). One DS, one Design file, folder `<Project>_Mobile\`. |
+
+### Both: native or cross-platform (Abdul, 2026-09-30)
+
+| | **Native** | **Cross-platform (Flutter / React Native custom UI)** |
+|---|---|---|
+| Figma DS files | `<Project> iOS Design System` (HIG names such as System Background and Label, Dynamic Type, SF Symbols, pt) **and** `<Project> Android Design System` (`md.sys.color`, M3 type scale, state layers, elevation levels, Material Symbols, dp) | One `<Project> Design System` |
+| Brand Foundation | Optional `<Project> Brand Foundation` file: Primitives only (no Semantics, styles or components) | Not needed: the one DS holds the Primitives |
+| Design files | `<Project> iOS` linked **only** to the iOS DS, `<Project> Android` linked **only** to the Android DS | One `<Project>` Design file |
+| Local folders | `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set and `status.json` (plus `<Project>_Brand\` when the Brand Foundation exists) | One `<Project>_Mobile\` |
+| Main Skills | Both, run one after the other; each checkpoint is shown per platform | The base chosen at 1.5 |
+
+Native rules:
+- The Brand Foundation is the only thing the two systems have in common, and only as a source of values. Each platform DS **copies** its Primitives into its own local collection (never consumes them as remote library variables, so the audit's 0 remote variables still holds) and builds its own platform Semantics on top. A brand color change goes into the Brand Foundation first, then `tools/recolor.py` runs on each platform folder.
+- An iOS Design file never enables the Android library and vice versa. The file check (section 7c) rejects a cross-link.
+- Record the choice in each folder's `status.json`: `mobile_setup` (`native` / `cross-platform`), `sibling_project` (the other platform folder) and `figma.brand_foundation` (name, url, file_key, or null).
 
 Platform rules (never mix):
 - **Web** = Tailwind conventions, web breakpoints (Desktop 1440 / iPad 768 / Mobile 375), Hover / Focus / Active states, Lucide icons.
 - **iOS** = Apple HIG, Dynamic Type, iOS semantic names (System Background, Label...), SF Symbols style icons, pt units.
 - **Android** = Material Design 3, `md.sys.color` tokens, state layers, elevation levels, Material Symbols, dp units.
-- Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" means two full systems.
+- Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system.
 - After choosing, load the platform Main Skill **and** its required skills (figma-use + figma-generate-library; figma-swiftui for iOS; figma-code-connect when mapping to code). Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
 
 ---
@@ -121,7 +137,7 @@ Platform rules (never mix):
 
 ```
 Tools preflight (0b) -> figma-console-mcp or figma-cli connected? No -> stop, show install steps
-Intake basics 0.0-0.2 -> Platform (1.1-1.4) -> load platform Main Skill(s) -> basics 0.3-0.8
+Intake basics 0.0-0.2 -> Platform (1.1-1.5) -> load platform Main Skill(s) -> basics 0.3-0.8
    └─ Greenfield or Brownfield? (2.1)
       ├─ Greenfield
       │  ├─ Existing AI-ready DS (Figma DS + .md skills)? (3.1)
@@ -292,6 +308,7 @@ Runs automatically, without asking, whenever a project starts from an existing f
 Each project has **one Design System file** and a **list of Design files** (screens), stored in `[Project folder]\status.json > figma`:
 - `design_system`: name, url, file_key, last_publish.
 - `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false).
+- `brand_foundation` (Both + Native only, optional): name, url, file_key of `<Project> Brand Foundation`; the same entry is stored in the iOS and the Android folder. It is a value source only, never enabled as a library in a Design file.
 - The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
 
 **After any change to the DS file** (variables, styles, components):
@@ -304,7 +321,7 @@ Each project has **one Design System file** and a **list of Design files** (scre
 2. Ask the user to open that file (or the DS file for DS work) in Figma Desktop and start the plugin (Desktop Bridge).
 3. When connected, read the connected file's key (figma_get_status / figma_list_open_files) and compare it with `status.json`. It must be the file registered for this project and the role you need.
 4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
-5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date): **stop, touch nothing**, and tell the user what is connected and what was expected.
+5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date, or in a Both + Native project an iOS Design file with the Android library enabled or the reverse): **stop, touch nothing**, and tell the user what is connected and what was expected.
 6. **Two or more files connected** (e.g. the DS file and a Design file): the Desktop Bridge "active file" follows the user's focus, so node ids from one file get looked up in the other. Before any write or screenshot, pin the target with `figma_navigate` (`lock: true`) and re-pin after switching files.
 7. **Screenshots and exports** (`exportAsync`, `figma_capture_screenshot`) also need the target file to be the **visible tab** in Figma Desktop; in a background tab they time out while structural reads still work. Before screen work, ask once: "Please keep '<file name>' as the front tab in Figma until the Screens checkpoint." If a capture times out, ask the user to bring the file to the front, then retry.
 
@@ -355,7 +372,7 @@ One approval covers the whole plan, including the design direction (3.4 is not a
 ```
 Project: <name>            Local folder: <path>
 Figma: <links and roles>
-Platform: <Web / iOS / Android / Both / Flutter / RN> -> Main Skill(s): <names>
+Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base)> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>
@@ -384,7 +401,7 @@ Next step: <first action>
 ├─ Android_Design_System_Skill\SKILL.md
 └─ My Projects\                            (every project; README.md explains how to add one)
    ├─ _Project_Template\                   (copied for each new project, never edited per project)
-   └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (shared cross-platform look)
+   └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (Both, cross-platform) | <Project>_Brand\ (Both native, optional Brand Foundation)
       ├─ Project_Brief.md                      (intake answers, links, decisions)
       ├─ CHANGELOG.md                          (dated Figma changes, each marked Storybook synced yes/no)
       ├─ status.json                           (last change, unsynced count, last Storybook sync; tools/project_status.py)
@@ -408,9 +425,9 @@ Next step: <first action>
 
 - New project folders are copies of `My Projects\_Project_Template\`. Each can become its own private Git repo, separate from the workflow repo (see `My Projects\README.md`); never create or push one without asking.
 - Root tools take the project folder relative to the Root, quoted: `python tools/build_tokens.py "My Projects/<Project>"`.
-- One folder per platform: "Both" creates `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set.
+- One folder per platform: "Both" + Native creates `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set (and `<Project>_Brand\` with `Project_Brief.md`, `status.json` and `data\tokens.json` Primitives when the Brand Foundation is chosen). "Both" + Cross-platform creates one `<Project>_Mobile\`.
 - Group routing for new components and pages (Figma and skills): foundations -> ⭐Setup / Foundation_Skill; data entry -> ⭐Form Elements; actions and navigation -> ⭐Navigation; information display -> ⭐Data Display. Create a new `➜` page in the matching group when no page fits.
-- Figma file names: `<Project> Design System` for the library, `<Project>` for screens. Page structure follows the platform Main Skill (Cover, ⭐Setup, ⭐ groups with ➜ topic pages).
+- Figma file names: `<Project> Design System` for the library, `<Project>` for screens. Both + Native: `<Project> iOS Design System`, `<Project> Android Design System`, `<Project> iOS`, `<Project> Android`, optional `<Project> Brand Foundation`. Page structure follows the platform Main Skill (Cover, ⭐Setup, ⭐ groups with ➜ topic pages).
 
 ---
 

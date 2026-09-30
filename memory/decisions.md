@@ -47,6 +47,7 @@ Follow the Trianglz page layout: Cover, ⭐Setup, then ⭐ groups with ➜ topic
 
 ## Platforms
 Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (Material 3, md.sys tokens). Each platform is fully independent: separate folders, skills, data and Storybook; nothing shared or merged.
+- Mobile "Both" (Abdul, 2026-09-30): ask "Native, or cross-platform with one shared design (Flutter/React Native custom UI)?" (intake 1.3). Native -> optional shared `<Project> Brand Foundation` file (Primitives only; each DS copies them locally, never consumes it as a library) + separate iOS DS (HIG names, Dynamic Type, SF Symbols) + separate Android DS (md.sys.color, M3 type, state layers, elevation, Material Symbols) + separate iOS and Android Design files, each linked only to its own DS. Cross-platform -> one DS + one Design file (`<Project>_Mobile/`). Recorded in `status.json > mobile_setup, sibling_project, figma.brand_foundation`.
 
 ## Quality and verification
 - Screenshot every variant in Light and Dark, not structure only (structure missed opacity-based disabled states, dashed borders, variant meanings).
