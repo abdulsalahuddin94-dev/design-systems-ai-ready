@@ -48,7 +48,7 @@ Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Pro
 None of them can edit Figma; they only have read tools.
 
 **Hooks** (`.claude/settings.json`, scripts in `.claude/hooks/`, need Python 3 on PATH).
-- *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and asks you whether to run it, update it from Figma or skip it.
+- *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and asks you whether to run it, update it from Figma or skip it. The same hook is the daily Storybook check (there is no separate scheduled question): it reads each project's `CHANGELOG.md` and `status.json` (never Figma, which may be closed), lists projects whose Figma changes are not yet in Storybook and Design files that still need Accept updates for the library, and asks whether to open the Figma plugin and update. Silent when everything is synced.
 - *Block absolute paths*: any write to a repo file that contains a machine path like `D:\Work\...` or `/Users/...` is stopped, so the folder keeps working on any computer.
 - *Audit reminder*: after Claude changes Figma, the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor or a Figma audit tool clears the reminder.
 
