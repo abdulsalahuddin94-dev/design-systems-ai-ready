@@ -2,7 +2,8 @@
 
 Finds every <folder>/storybook/package.json, reports whether its packages are installed and
 whether Storybook is already running on port 6006, and asks Claude to raise it with the user in
-its first reply. Output is JSON additionalContext (added to the session, not shown as an error).
+its first reply. Also runs the daily Storybook check (tools/project_status.py): projects whose
+CHANGELOG.md has entries marked "Storybook synced: no". Output is JSON additionalContext (added to the session, not shown as an error).
 """
 import json
 import pathlib
@@ -20,9 +21,32 @@ def running(port=6006):
         return False
 
 
+def unsynced_projects():
+    """Daily Storybook check: read each project's CHANGELOG.md only (Figma may be closed)."""
+    try:
+        sys.path.insert(0, str(ROOT / "tools"))
+        import project_status
+        rows = project_status.pending()
+    except Exception:
+        return ""
+    if not rows:
+        return ""
+    lines = [f"- `{rel}`: {len(u)} change(s) since {s['unsynced_since']} not in Storybook"
+             + ("" if s["has_storybook"] else " (no Storybook yet)") for rel, s, u in rows]
+    return ("Projects with Figma changes not yet in Storybook (from CHANGELOG.md, Figma not read):\n"
+            + "\n".join(lines)
+            + "\nIn your FIRST reply, list these in one line each and ask the user whether to open the Figma "
+            "plugin (Desktop Bridge) now and update the Storybook for them. After an update run "
+            "`python tools/project_status.py \"<folder>\" --mark-synced`.\n")
+
+
 def main():
     books = sorted(p.parent for p in ROOT.glob("*/storybook/package.json"))
+    books += sorted(p.parent for p in ROOT.glob("My Projects/*/storybook/package.json"))
+    pending = unsynced_projects()
     if not books:
+        if pending:
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": pending}}))
         return 0
     lines = []
     for b in books:
@@ -44,7 +68,8 @@ def main():
         + "In your FIRST reply, tell the user in one short line that this repo has a Storybook and ask: "
         "\"Do you want me to run the Storybook, update it from Figma, or skip it for now?\" "
         "Run `npm install` only after the user says yes. Details: README.md > Storybook and "
-        "Storybook_Design_System_Skill/SKILL.md."
+        "Storybook_Design_System_Skill/SKILL.md.\n"
+        + pending
     )
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": text}}))
     return 0

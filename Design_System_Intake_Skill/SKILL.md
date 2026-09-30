@@ -21,6 +21,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 - After the last intake question, post a short **Intake Summary** (section 9) and get a "yes" before any Figma work.
 - Record every answer in `[Project folder]\Project_Brief.md` as you go, so a later session never re-asks.
 - `[Project folder]` is always `My Projects\<Project>` (plus the platform suffix, section 10). Projects never live in the Root; the Root holds only the workflow (Main Skills, rules, hooks, tools).
+- **Changelog (every Figma change):** every session that builds or changes anything in the project's Figma file appends one dated entry to the project's `CHANGELOG.md` (what was added, changed or removed) with `Storybook synced: no`, then runs `python tools/project_status.py "My Projects/<Project>"` to refresh `status.json`. A Storybook update marks the entries synced with `--mark-synced`. The daily check (SessionStart hook) reads only these files, never Figma, and asks the user whether to open the Figma plugin and update Storybook for projects with unsynced entries.
 - All paths are relative to the Root. Never write absolute machine paths (like `D:\...`) into skills or briefs.
 - Refer to Figma nodes by **name** (pages, component sets, variables, styles). Node IDs are only valid in the file they came from.
 
@@ -273,6 +274,8 @@ Ask: "Is this correct? Yes, start / Change something"
    ├─ _Project_Template\                   (copied for each new project, never edited per project)
    └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (shared cross-platform look)
       ├─ Project_Brief.md                      (intake answers, links, decisions)
+      ├─ CHANGELOG.md                          (dated Figma changes, each marked Storybook synced yes/no)
+      ├─ status.json                           (last change, unsynced count, last Storybook sync; tools/project_status.py)
       ├─ Inputs\
       │  ├─ Brand\                             (brand book PDF, logo, images, mood board)
       │  ├─ Inspiration\                       (reference screenshots, links)
@@ -309,7 +312,7 @@ Ask: "Is this correct? Yes, start / Change something"
    - `gaps.md` in each: anything left open.
    - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the Trianglz reference versions as the starting shape) and `docs/decisions.md`.
    - Check `tokens.json > recolor_readiness.ready` is true.
-4. Update `Project_Brief.md` with the final state and links, and save the key facts to memory.
+4. Update `Project_Brief.md` with the final state and links, add the `CHANGELOG.md` entry (`Storybook synced: no`), refresh `status.json` with `tools/project_status.py`, and save the key facts to memory.
 5. Reply to the user with the audit result, the skill paths and what is left.
 
 ---
@@ -324,4 +327,4 @@ Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever th
    - Meet the Storybook quality bar (principle 8): working components, sidebar navigation, Figma description and use case per component, every Figma property as a control, all states in Light and Dark. Write each component description in Figma and in Storybook during the build.
 4. Build the Storybook in `<platform folder>/storybook/`, one per platform, with names that match Figma exactly.
 5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder.
-6. Record the path, run command and MCP status in `Project_Brief.md`.
+6. Record the path, run command and MCP status in `Project_Brief.md`, then mark the changelog synced: `python tools/project_status.py "My Projects/<Project>" --mark-synced`.

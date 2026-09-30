@@ -31,6 +31,8 @@ Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma is the source of
 
 ## 2. Inputs
 
+What to update: the project's `CHANGELOG.md` entries marked `Storybook synced: no` (list them with `python tools/project_status.py`). After the update is verified, run `python tools/project_status.py "<platform folder>" --mark-synced`.
+
 From the platform folder (`My Projects/<Project>/`, `<Project>_iOS/`, `<Project>_Android/`, or a Trianglz reference folder):
 - `data/tokens.json`: every variable with its Figma name (`<Collection>::<name>`), per-mode values and aliases.
 - `data/component-registry.json`: components with group, page, tier, variants, properties, use, nests; text and effect styles; icons.
