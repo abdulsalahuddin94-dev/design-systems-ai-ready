@@ -45,21 +45,25 @@ async function checkScreen(screen) {
     const key = (inst.parent ? inst.parent.id : '') + '|' + comp;
     (groups[key] = groups[key] || []).push(texts.join(' / '));
 
-    if (main && inst.width < main.width * 0.8) r.squashed.push(comp + ': ' + Math.round(inst.width) + ' wide, component ' + Math.round(main.width));
+    // Hug-width instances (chips, buttons) are meant to be narrower than the sample text in the main component.
+    if (main && inst.layoutSizingHorizontal !== 'HUG' && inst.width < main.width * 0.8) r.squashed.push(comp + ': ' + Math.round(inst.width) + ' wide, component ' + Math.round(main.width));
 
     const lower = comp.toLowerCase();
     if (BAR_WORDS.some((w) => lower.includes(w)) && inst.width < screen.width - 1) r.bars.push(comp + ': ' + Math.round(inst.width) + ' wide, screen ' + Math.round(screen.width) + ' (not full-bleed)');
   }
   for (const [key, list] of Object.entries(groups)) {
-    if (list.length > 1 && new Set(list).size === 1) r.repeatedTexts.push(key.split('|')[1] + ' x' + list.length + ': all "' + list[0].slice(0, 40) + '"');
+    if (list.length > 1 && list[0] !== '' && new Set(list).size === 1) r.repeatedTexts.push(key.split('|')[1] + ' x' + list.length + ': all "' + list[0].slice(0, 40) + '"');
   }
 
   screen.findAll((n) => n.visible !== false && (n.type === 'FRAME' || n.type === 'INSTANCE' || n.type === 'GROUP')).forEach((n) => {
     const b = box(n);
     if (!b) return;
     const out = b.x < sb.x - 1 || b.y < sb.y - 1 || b.x + b.width > sb.x + sb.width + 1 || b.y + b.height > sb.y + sb.height + 1;
-    const parentScrolls = n.parent && n.parent.overflowDirection && n.parent.overflowDirection !== 'NONE';
-    if (out && !parentScrolls) r.overflow.push(n.name + ' (' + Math.round(b.width) + 'x' + Math.round(b.height) + ')');
+    // A layer inside a clipping or scrolling container (e.g. a horizontal rail that clips at the screen edge) is intended.
+    let clipped = false; for (let p = n.parent; p && p !== screen; p = p.parent) { if (p.clipsContent || (p.overflowDirection && p.overflowDirection !== 'NONE')) { clipped = true; break; } }
+    // Content that only runs past the bottom of a clipping screen is scroll content (the viewport cuts it), not overflow.
+    const belowOnly = screen.clipsContent && b.x >= sb.x - 1 && b.x + b.width <= sb.x + sb.width + 1 && b.y >= sb.y - 1;
+    if (out && !clipped && !belowOnly) r.overflow.push(n.name + ' (' + Math.round(b.width) + 'x' + Math.round(b.height) + ')');
   });
   r.overflow = r.overflow.slice(0, 20);
   r.issues = r.placeholders.length + r.repeatedTexts.length + r.overflow.length + r.squashed.length + r.bars.length + r.unboundFrame.length;
