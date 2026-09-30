@@ -15,7 +15,8 @@ const SCOPE = 'page';
 
 const PLACEHOLDERS = ['label', 'filter', 'title', 'track title', 'subtitle', 'text', 'button', 'placeholder',
   'artist · album', 'supporting text', 'headline', 'body', 'lorem ipsum', 'item', 'tab', 'chip', 'name'];
-const BAR_WORDS = ['app bar', 'top bar', 'navigation bar', 'bottom navigation', 'tab bar', 'mini player', 'status bar', 'toolbar', 'button docked'];
+// Floating bars (e.g. an inset mini player) are not listed: their width comes from the screen spec.
+const BAR_WORDS = ['app bar', 'top bar', 'navigation bar', 'bottom navigation', 'tab bar', 'status bar', 'toolbar', 'button docked'];
 const PAD = ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'itemSpacing'];
 
 function box(n) { return n.absoluteBoundingBox || { x: n.x, y: n.y, width: n.width, height: n.height }; }
