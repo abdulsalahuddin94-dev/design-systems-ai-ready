@@ -130,3 +130,9 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
 41. **Screen-size rule was missing.** Abdul added it during the trial: screens are always Mobile 375 and Desktop 1440; Brownfield keeps the sizes of designed screens, but screenshots do not count. Added as Design_System_Intake_Skill section 7d and to memory/decisions.md. The Login was built at 1440 and a 375 Mobile version was added.
 
 42. **Radio vs Select option count conflict.** Radio's description allows groups of 2 to 6, Select / Dropdown's says use Radio for 2 to 5 (found by docs-writer). Needs one number in both Figma descriptions and the skills.
+
+43. **Both screenshot causes are real.** After pinning the target (finding 39), captures still timed out once the user moved to another Figma tab. Exports need the pinned file AND that file visible in Figma. The final ds-auditor also could not capture live and had to use saved PNGs.
+   Fix: in the screens step, ask the user once to keep the Design file as the front tab until the Screens checkpoint.
+
+44. **No Divider component.** The Login "or" divider was drawn by hand; the Web inventory has no Divider atom, so the final audit flagged it and it was removed. Adding a component now would need a DS change and a new publish.
+   Fix: add Divider (Horizontal / Vertical, with optional label) to the Web required inventory.
