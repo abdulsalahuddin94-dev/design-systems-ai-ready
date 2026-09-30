@@ -26,6 +26,9 @@ updated: 2026-09-30
 ## Design file audit (Abdul, 2026-09-30)
 - Every time screens are built or changed in a Design file, run audit-design-system (ds-auditor, screens mode) on that file to confirm it uses the DS (library components, variables, styles; no raw values, detached instances or misused variables). Save the report in the project's `audits/` and log it in `CHANGELOG.md`.
 
+## Multi-screen flows (Abdul, 2026-09-30)
+- Flow gap analysis table first (existing vs missing components, tier + atomic map), approved before any build; missing components built in the DS file only; missing tokens proposed and approved; publish, Accept updates, verify; screens one by one from library instances with a Design file audit after each; changelog + Storybook question. Screens needing no new component may be built while waiting for publish. Details: Design_System_Intake_Skill section 7e.
+
 ## Screen sizes (Abdul, 2026-09-30)
 - Screens are Mobile 375px and Desktop 1440px wide. Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 / 1440. Details: Design_System_Intake_Skill section 7d.
 

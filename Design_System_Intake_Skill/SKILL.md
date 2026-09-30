@@ -273,6 +273,19 @@ Each project has **one Design System file** and a **list of Design files** (scre
 - **Brownfield exception:** keep the sizes of the screens that are already designed in the file, so they are not broken.
 - If the existing "screens" are only screenshots (images, not designed frames), they do not set the size: use 375 / 1440.
 
+## 7e. Multi-screen flows (Abdul's rule, every request for a flow of two or more screens)
+
+A flow (e.g. sign-up, checkout, booking) always runs in this order. Load figma-generate-design + figma-use + ui-ux-pro-max for the screens, and figma-generate-library + figma-use for any new component.
+
+1. **Flow gap analysis first (no build yet).** Split every screen of the flow into sections (e.g. Top Bar, Form, Summary, Button Docked). Produce **one table** for the whole flow: screen, section, element, the DS component that covers it (existing) or `missing`. For each missing component give its tier (Atom / Molecule / Organism) and its atomic structure map (which existing atoms and variables it is built from). Save it in `<Project folder>/audits/<date>-flow-<name>.md` and show it. **Abdul approves the table before anything is built.**
+2. **Build the missing components in the DS file, never in the Design file.** Lower tier first, only from existing variables, styles and atoms (Atomic Design golden rule). Each one gets its Figma description (Purpose, Usage Rules, Accessibility), an entry in its group's Component_Skill and `data/component-registry.json`, and an audit (ds-auditor). If a component needs a token that does not exist, **propose it (name, value, Primitive it aliases) and wait for approval**; never add it silently.
+3. **Publish and update the Design file.** Ask Abdul to publish the library (section 7c) and wait for his confirmation. Then he runs Accept updates in the Design file; open it, run the file check (section 7c) and **verify the new components appear** in its library before using them.
+4. **Build the screens one by one** from library instances and variables only (no local copies, detached instances or raw values), section by section, at the sizes in section 7d (375 / 1440; Brownfield keeps existing sizes). **Audit the Design file after each screen** (ds-auditor, `screens` mode) and fix before the next screen.
+5. **Log and ask.** Append the entry to `CHANGELOG.md` (components added, library published, Design files updated, Design file audits) with `Storybook synced: no`, run `tools/project_status.py`, then ask whether to update the Storybook now or later.
+
+- Screens that need **no new component** may be built while waiting for the Publish confirmation; screens that use a new component wait for step 3.
+- The Screens checkpoint (section 8) shows the whole flow, per mode, with the audit results.
+
 ## 8. Step 7 - Approval checkpoints (every path)
 
 Stop and ask for approval at each checkpoint. Show screenshots of each mode the project has (Light and Dark, or the single mode) and a short summary, never just a statement.
