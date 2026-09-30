@@ -1,0 +1,15 @@
+---
+name: clinicsoft-trial
+description: ClinicSoft, the end-to-end trial project (Web, Dark only) - where it lives, its Figma files and what is left
+type: project
+updated: 2026-09-30
+---
+
+# ClinicSoft (trial run, 2026-09-30)
+
+- First full run of the workflow (intake, Foundation, Components, Screens, final audit). Web, Dark only, Poppins, brand `#299B48`, healthcare, Greenfield. Storybook: Later.
+- Folder: `ClinicSoft/` in the Root for now; it moves to `My Projects/ClinicSoft/` after the trial (do not move it without Abdul's word).
+- Figma: DS library "NEW PROJECT Design system" (`m0G6wKSbVhgqWutfmt7vFU`, to be renamed "ClinicSoft Design System"); Design file "NEW PROJECT Design File" (`7ZCVrtHY1pw7yMeKPL6A7O`, page Auth). Registered in `ClinicSoft/status.json`.
+- Approved checkpoints (Figma versions): Foundation, Components (33 components, 434 variants), Screens (Login Desktop 1440 + Mobile 375).
+- Open items: `ClinicSoft/data/build-state.md` > Next; audits in `ClinicSoft/audits/`.
+- Workflow problems found during the run: `trial-run-findings.md` in the Root (44 entries), to fix the skills afterwards.

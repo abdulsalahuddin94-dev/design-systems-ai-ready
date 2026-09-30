@@ -5,3 +5,4 @@ One fact per file; update a file instead of adding a duplicate. Relative paths o
 
 - [Standing decisions](decisions.md) — intake first, build order, atomic tiers, group placement, platforms independent, never install, Storybook direction
 - [Trianglz references](references.md) — Figma file keys, skill and data folders, open resync items
+- [ClinicSoft trial](clinicsoft-trial.md) — trial project folder, Figma files, approved checkpoints, open items
