@@ -121,7 +121,12 @@ Each entry: where it happened, what was unclear or broken, suggested fix.
    Fix: add `python tools/project_status.py <folder> --add-design-file <url> [--name ...]`.
 
 39. **Exports hang in a Figma file that is not the visible tab.** With both the DS file and the Design file connected, every `exportAsync` / `figma_capture_screenshot` in the Design file timed out (even a single text node), while structural reads worked. Screens could not be screenshot-verified until the user brought that tab to the front.
-   Fix: in intake 0b / the screens step, tell the user to keep the file being worked on as the active Figma tab, and have the builder retry once after asking.
+   Update: the real cause was the Desktop Bridge "active file", which follows the user's focus between connected files, so node ids from one file were looked up in the other. `figma_navigate` with `lock: true` pinned the Design file and screenshots worked again.
+   Fix: whenever two files are connected, pin the target with `figma_navigate(lock: true)` before any write or screenshot, and note it in intake 7c.
 
 40. **docs-writer died on a rate limit mid-run** and left the skills half-written (Foundation, Form Elements, Navigation done; Data Display, registry, screen templates missing), with no marker of what was finished. Resumed it with SendMessage.
    Fix: have docs-writer write a `data/docs-progress.json` checklist as it goes so a resumed run (or a new session) knows what is left.
+
+41. **Screen-size rule was missing.** Abdul added it during the trial: screens are always Mobile 375 and Desktop 1440; Brownfield keeps the sizes of designed screens, but screenshots do not count. Added as Design_System_Intake_Skill section 7d and to memory/decisions.md. The Login was built at 1440 and a 375 Mobile version was added.
+
+42. **Radio vs Select option count conflict.** Radio's description allows groups of 2 to 6, Select / Dropdown's says use Radio for 2 to 5 (found by docs-writer). Needs one number in both Figma descriptions and the skills.

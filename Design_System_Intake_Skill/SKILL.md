@@ -249,6 +249,12 @@ Each project has **one Design System file** and a **list of Design files** (scre
 4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
 5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date): **stop, touch nothing**, and tell the user what is connected and what was expected.
 
+## 7d. Screen sizes (Abdul's rule, every path that builds screens)
+
+- Screens are always **Mobile 375px** and **Desktop 1440px** wide.
+- **Brownfield exception:** keep the sizes of the screens that are already designed in the file, so they are not broken.
+- If the existing "screens" are only screenshots (images, not designed frames), they do not set the size: use 375 / 1440.
+
 ## 8. Step 7 - Approval checkpoints (every path)
 
 Stop and ask for approval at each checkpoint. Show screenshots (light and dark) and a short summary, never just a statement.

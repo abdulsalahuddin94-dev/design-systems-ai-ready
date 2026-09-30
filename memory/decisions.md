@@ -20,6 +20,9 @@ updated: 2026-09-30
 - Never build a complex component or screen if its sub-components do not exist yet; build the missing lower tier first as separate main components.
 - Before building: state the tier, check dependencies, post the atomic structure map, expose nested booleans, text and instance swaps up the hierarchy.
 
+## Screen sizes (Abdul, 2026-09-30)
+- Screens are Mobile 375px and Desktop 1440px wide. Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 / 1440. Details: Design_System_Intake_Skill section 7d.
+
 ## Group placement (Figma pages and skill files)
 - Foundations -> ⭐Setup / Foundation_Skill.
 - Anything the user enters data with -> ⭐Form Elements / Form_Elements_Skill.
