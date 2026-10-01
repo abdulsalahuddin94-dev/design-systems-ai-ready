@@ -1,6 +1,6 @@
 ---
 name: trianglz-android-foundation
-description: Use before building, extending, auditing or coding anything with the Trianglz Android Material 3 Design System (Figma file JUs2c8IO6ybFcGRZjcQzr9, "Trianglz - Android M3 x Design System"). Defines the ⭐Setup foundations - m3 color schemes (md.sys.color) on tonal Palettes, state layers, surfaces, Google Sans Flex type scale, Shape corner scale, M3 elevation styles, window-size-class grids, Material Symbols icons and utilities - plus file structure, build order, M3 naming and the rules for new tokens and components. Android only; independent from the Web and iOS skills. Load it with any Trianglz_Android Component_Skills.
+description: Use before building, extending, auditing or coding anything with the Trianglz Android Material 3 Design System (Figma file JUs2c8IO6ybFcGRZjcQzr9, "Trianglz - Android M3 x Design System"). Defines the ⭐Setup foundations - m3 color schemes (md.sys.color) on tonal Palettes, state layers, surfaces, Google Sans Flex type scale, Shape corner scale, M3 elevation styles, window-size-class grids, Material Symbols icons and utilities - plus file structure, build order, M3 naming and the rules for new tokens and components. Android only; independent from the Web and iOS skills. Load it with any Reference_Library/Trianglz/Android Component_Skills.
 ---
 
 # Trianglz Android M3 DS - Foundation

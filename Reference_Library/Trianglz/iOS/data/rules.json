@@ -2,7 +2,7 @@
   "meta": {
     "platform": "iOS",
     "applies_to": "Trianglz - IOS Design System and every new iOS DS built from iOS_Design_System_Skill",
-    "source": "iOS_Design_System_Skill/SKILL.md + Trianglz_iOS/Foundation_Skill (2026-09-29), Apple HIG",
+    "source": "iOS_Design_System_Skill/SKILL.md + Reference_Library/Trianglz/iOS/Foundation_Skill (2026-09-29), Apple HIG",
     "units": "pt"
   },
   "accessibility": {
@@ -250,10 +250,10 @@
     },
     "steps": [
       "Find the ramp in tokens.json > ramps (brand ramps sit under Color / Primitive::⭐ Brand Palette/...).",
-      "Run: python tools/recolor.py Trianglz_iOS --ramp <ramp> --base <#hex>",
+      "Run: python tools/recolor.py Reference_Library/Trianglz/iOS --ramp <ramp> --base <#hex>",
       "Review the contrast report (Light and Dark). Fix failures by re-pointing the Semantic alias to another step.",
       "Apply the generated script with figma_execute (sets values into the same Primitive variables by name).",
-      "Re-export variables and run python tools/build_tokens.py Trianglz_iOS so tokens.json matches Figma.",
+      "Re-export variables and run python tools/build_tokens.py Reference_Library/Trianglz/iOS so tokens.json matches Figma.",
       "Screenshot ➜ Colors System pages and every component page in Light and Dark.",
       "Log the change in docs/decisions.md."
     ],

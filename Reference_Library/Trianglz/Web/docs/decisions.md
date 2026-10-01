@@ -5,7 +5,7 @@ A log of why the system is built the way it is. Add a dated entry for every deci
 ## 2026-09-30 - JSON knowledge base
 - **What:** `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json`.
 - **Source:** pulled read-only from the Figma file through the Desktop Bridge (re-synced 2026-09-30; the first draft was built from the skill notes).
-- **How to refresh:** export variables with figma-console `figma_export_tokens` (format dtcg) into `data/source/figma-variables.dtcg.json`, then run `python tools/build_tokens.py Trianglz`.
+- **How to refresh:** export variables with figma-console `figma_export_tokens` (format dtcg) into `data/source/figma-variables.dtcg.json`, then run `python tools/build_tokens.py Reference_Library/Trianglz/Web`.
 - **The live file is ahead of the study notes:** components already use the refactored names (Input / Text, OTP / Cell, Radio, Menu / Item, Select / Dropdown, Breadcrumb, Toast, Button Type=Danger), 42 local `Icon/*` components, `color/icon/*` and `color/border/input` tokens, `alpha/black-50|70` primitives, 13 effect styles and 3 grid styles. Where the component skills disagree, trust `data/component-registry.json`.
 
 ## 2026-09-30 - Recolor-ready rule

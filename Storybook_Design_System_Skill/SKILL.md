@@ -46,7 +46,7 @@ If `data/` says `needs_resync: true` and the Figma file is open in the Desktop B
 
 ## 3. Output layout
 
-Reference build: the default Web reference's Storybook (`references.json`, today `Trianglz/storybook/`, 28 component sets, 2026-09-30). Copy its structure.
+Reference build: the default Web reference's Storybook (`references.json`, today `Reference_Library/Trianglz/Web/storybook/`, 28 component sets, 2026-09-30). Copy its structure.
 
 ```
 <platform folder>/storybook/

@@ -2,7 +2,7 @@
   "meta": {
     "platform": "Web",
     "applies_to": "Trianglz - Web Design System and every new Web DS built from Web_Design_System_Skill",
-    "source": "Web_Design_System_Skill/SKILL.md + Trianglz/Foundation_Skill (2026-09-29)",
+    "source": "Web_Design_System_Skill/SKILL.md + Reference_Library/Trianglz/Web/Foundation_Skill (2026-09-29)",
     "units": "px"
   },
   "accessibility": {
@@ -161,10 +161,10 @@
     },
     "steps": [
       "Identify the ramp(s) to change in tokens.json > ramps (brand is usually blue; check which Semantic tokens alias it).",
-      "Run: python tools/recolor.py Trianglz --ramp <ramp> --base <#hex>  (writes data/recolor/<date>-<ramp>.json and a Figma script).",
+      "Run: python tools/recolor.py Reference_Library/Trianglz/Web --ramp <ramp> --base <#hex>  (writes data/recolor/<date>-<ramp>.json and a Figma script).",
       "Review the contrast report; if a pair fails, pick a darker/lighter step in the Semantic alias (never a raw hex).",
       "Apply the script with figma_execute: it sets the new values into the SAME Primitive variables by name (names never change).",
-      "Re-run: python tools/build_tokens.py Trianglz after re-exporting variables (or python tools/recolor.py ... --write-tokens) so tokens.json matches Figma.",
+      "Re-run: python tools/build_tokens.py Reference_Library/Trianglz/Web after re-exporting variables (or python tools/recolor.py ... --write-tokens) so tokens.json matches Figma.",
       "Screenshot ➜ Colors and every component page in Light and Dark; compare against the previous screenshots.",
       "Log the change in docs/decisions.md."
     ],

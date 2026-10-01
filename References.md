@@ -8,9 +8,9 @@ Current entries (from `references.json`):
 
 | Entry | Platform | Figma file | Study folder |
 |---|---|---|---|
-| Trianglz - Web Design System | Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System | `Trianglz/` |
-| Trianglz - IOS Design System | iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System | `Trianglz_iOS/` |
-| Trianglz - Android M3 x Design System | Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System | `Trianglz_Android/` |
+| Trianglz - Web Design System | Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System | `Reference_Library/Trianglz/Web/` |
+| Trianglz - IOS Design System | iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System | `Reference_Library/Trianglz/iOS/` |
+| Trianglz - Android M3 x Design System | Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System | `Reference_Library/Trianglz/Android/` |
 
 How to start from a reference template:
 1. Open the link and choose **Duplicate** (the copy lands in your drafts).

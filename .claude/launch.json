@@ -6,7 +6,7 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "--prefix",
-        "Trianglz/storybook",
+        "Reference_Library/Trianglz/Web/storybook",
         "run",
         "storybook",
         "--",

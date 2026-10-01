@@ -1,6 +1,6 @@
 ---
 name: trianglz-ios-foundation
-description: Use before building, extending, auditing or coding anything with the Trianglz iOS Design System (Figma file q5nQHGEGzZ94WN0wilJwLW, "Trianglz - IOS Design System"). Defines the ⭐Setup foundations - collections (Typography, Spacing, Color Primitive/Semantic/Brand, Radius), the 22 Apple text styles, layout grid, icons, app icon and keyboards - plus the file structure, build order, iOS naming and the rules for new tokens and components. iOS only; independent from the Web and Android skills. Load it together with any Trianglz_iOS Component_Skills.
+description: Use before building, extending, auditing or coding anything with the Trianglz iOS Design System (Figma file q5nQHGEGzZ94WN0wilJwLW, "Trianglz - IOS Design System"). Defines the ⭐Setup foundations - collections (Typography, Spacing, Color Primitive/Semantic/Brand, Radius), the 22 Apple text styles, layout grid, icons, app icon and keyboards - plus the file structure, build order, iOS naming and the rules for new tokens and components. iOS only; independent from the Web and Android skills. Load it together with any Reference_Library/Trianglz/iOS Component_Skills.
 ---
 
 # Trianglz iOS DS - Foundation

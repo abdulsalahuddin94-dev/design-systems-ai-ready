@@ -14,7 +14,7 @@ Or from Claude in the Root folder: start the `trianglz-web-storybook` preview (`
 | Path | Content | Edit? |
 |---|---|---|
 | `src/tokens/` | CSS variables + token table from `../data/tokens.json` | generated (`npm run tokens`) |
-| `src/stories/` | one stories file per Figma component set, from `../data/component-registry.json` | generated (`python ../../tools/storybook_stories.py Trianglz` from the Root) |
+| `src/stories/` | one stories file per Figma component set, from `../data/component-registry.json` | generated (`python tools/storybook_stories.py Reference_Library/Trianglz/Web` from the Root) |
 | `src/components/` | React replicas, grouped by Figma group; props = Figma names | by hand |
 | `src/styles/text-styles.css` | the 40 Figma text styles as classes (`sm/Semi Bold` -> `.ts-sm-semi-bold`) | by hand |
 | `src/styles/effects.css` | Figma effect styles (shadows, focus rings) | by hand, from Figma |
@@ -23,4 +23,4 @@ Or from Claude in the Root folder: start the `trianglz-web-storybook` preview (`
 | `figma-links.json` | Figma node ids for "Open in Figma" links (original file only) | re-export after duplicating |
 
 ## After Figma changes
-From the Root: `python tools/tokens_to_css.py Trianglz`, `python tools/storybook_stories.py Trianglz`, `python tools/storybook_parity.py Trianglz`, then update the replica in `src/components/` if the visuals changed.
+From the Root: `python tools/tokens_to_css.py Reference_Library/Trianglz/Web`, `python tools/storybook_stories.py Reference_Library/Trianglz/Web`, `python tools/storybook_parity.py Reference_Library/Trianglz/Web`, then update the replica in `src/components/` if the visuals changed.

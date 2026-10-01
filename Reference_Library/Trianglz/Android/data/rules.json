@@ -2,7 +2,7 @@
   "meta": {
     "platform": "Android",
     "applies_to": "Trianglz - Android M3 x Design System and every new Android DS built from Android_Design_System_Skill",
-    "source": "Android_Design_System_Skill/SKILL.md + Trianglz_Android/Foundation_Skill (2026-09-29), Material Design 3",
+    "source": "Android_Design_System_Skill/SKILL.md + Reference_Library/Trianglz/Android/Foundation_Skill (2026-09-29), Material Design 3",
     "units": "dp (sp for text)"
   },
   "accessibility": {
@@ -334,11 +334,11 @@
     },
     "steps": [
       "Find the palette in tokens.json > ramps (e.g. Palettes::Palettes/Regal Navy is the primary palette).",
-      "Run: python tools/recolor.py Trianglz_Android --ramp <palette> --base <#hex>  (the new key color maps to tone 40).",
+      "Run: python tools/recolor.py Reference_Library/Trianglz/Android --ramp <palette> --base <#hex>  (the new key color maps to tone 40).",
       "The script also regenerates every derived token (State Layers/*, Surfaces/Surface Tint *) from its role color and opacity.",
       "Review the contrast report (Light and Dark).",
       "Apply the generated script with figma_execute (same variable names, values only).",
-      "Re-export variables and run python tools/build_tokens.py Trianglz_Android.",
+      "Re-export variables and run python tools/build_tokens.py Reference_Library/Trianglz/Android.",
       "Screenshot ➜ Color Palette and every component page in Light and Dark.",
       "Log the change in docs/decisions.md."
     ],

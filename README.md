@@ -60,7 +60,7 @@ None of them can edit Figma; they only have read tools.
 
 ## Storybook for the team (run it on your machine)
 
-The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: the default Web reference (`references.json`, today `Trianglz/storybook/`).
+The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: the default Web reference (`references.json`, today `Reference_Library/Trianglz/Web/storybook/`).
 
 Needs **Node.js 18+** (`node --version`). Then:
 1. `git clone <repo URL>` (private repo; ask for access).

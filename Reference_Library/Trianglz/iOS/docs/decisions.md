@@ -5,7 +5,7 @@ A log of why the system is built the way it is. Add a dated entry for every deci
 ## 2026-09-30 - JSON knowledge base
 - **What:** `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json`, pulled read-only from the Figma file through the Desktop Bridge. `data/source/` keeps the raw export.
 - **Why:** agents read exact values from JSON instead of interpreting prose. The skills point here instead of repeating numbers.
-- **How to refresh:** export variables with figma-console `figma_export_tokens` (format dtcg) into `data/source/figma-variables.dtcg.json`, then run `python tools/build_tokens.py Trianglz_iOS`.
+- **How to refresh:** export variables with figma-console `figma_export_tokens` (format dtcg) into `data/source/figma-variables.dtcg.json`, then run `python tools/build_tokens.py Reference_Library/Trianglz/iOS`.
 
 ## 2026-09-30 - Recolor-ready rule
 - **What:** a color change edits only `Color / Primitive` values. `Color / Brand` and `Color / Semantic` alias them, so every component follows. Shades regenerate from the new base with the ramp's captured OKLCH curve (`tools/recolor.py`, method `oklch`).
