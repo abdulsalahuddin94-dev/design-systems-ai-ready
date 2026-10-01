@@ -181,7 +181,7 @@ Intake basics 0.0-0.2 -> Platform (1.1-1.5) -> load platform Main Skill(s) -> ba
       ├─ Greenfield
       │  ├─ Existing AI-ready DS (Figma DS + .md skills)? (3.1)
       │  │  ├─ Yes -> read files -> quick audit -> fix gaps -> work from it
-      │  │  ├─ Start from a Trianglz template (3.2) -> user duplicates Web/iOS/Android template -> rebrand -> fix known gaps
+      │  │  ├─ Start from a reference template (3.2) -> pick an entry from references.json -> user duplicates it -> rebrand -> fix known gaps
       │  │  └─ No
       │  │     ├─ Brand folder has files? -> derive Primitives/Semantics
       │  │     │  └─ empty -> ask brand color (3.3)

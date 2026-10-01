@@ -1,20 +1,20 @@
 ---
 name: android-design-system-builder
-description: Main skill for building a new Android design system in Figma from scratch (Scenario A), from existing Android UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Material Design 3 token architecture (tonal palettes, md.sys.color schemes, state layers, md.sys.typescale, md.sys.shape, elevation levels, window size classes), Material Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the Trianglz Android M3 Design System. Independent from the Web and iOS skills. Load with figma-use and figma-generate-library before creating anything; save the project's skills under [Root]\My Projects\[Project]_Android\.
+description: Main skill for building a new Android design system in Figma from scratch (Scenario A), from existing Android UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Material Design 3 token architecture (tonal palettes, md.sys.color schemes, state layers, md.sys.typescale, md.sys.shape, elevation levels, window size classes), Material Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the default Android reference design system (`references.json`). Independent from the Web and iOS skills. Load with figma-use and figma-generate-library before creating anything; save the project's skills under [Root]\My Projects\[Project]_Android\.
 ---
 
 # Android Design System Builder (Main Skill)
 
-Reference implementation studied: **Trianglz - Android M3 x Design System** (`Trianglz_Android/` in the Root; Figma template link in `References.md`).
-It is the Google Material 3 (Expressive) Design Kit re-themed with Trianglz palettes. Copy its **structure, M3 component coverage and property conventions**. Do **not** copy its mistakes (section 9).
+Reference implementation studied: the platform's default entry in `references.json` (`default.android`; its folder, Figma link and name are there; human list in `References.md`). Other companies' Android systems can be added as entries; when the project picked one (`status.json > reference`), use that entry's folder instead. Today the default is the only Android entry, and section 9 below was learned from it.
+It is the Google Material 3 (Expressive) Design Kit re-themed with the company's own palettes. Copy its **structure, M3 component coverage and property conventions**. Do **not** copy its mistakes (section 9).
 Platform: Android, Material Design 3 Expressive, Jetpack Compose, dp / sp.
-Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
+Node IDs quoted in a reference entry's skills are valid in that entry's original file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
 **Questions.** Every question with options in this skill (component scope, approvals, publish and Accept updates confirmations, recolor or token proposals) is an AskUserQuestion choice (`Ask (choice)` / `Ask (multi)`, Intake section 0); typed answers go in its Other field.
 
-**Tools and generic skills (figma-console).** The Figma tool (Desktop Bridge or FigCli) is picked in Intake section 0b (`status.json > figma.tool`), which also says when to suggest the other one. Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. Call `resize()` before setting auto layout sizing to AUTO/HUG (resize resets it to FIXED), and re-apply `componentPropertyReferences` after cloning a variant. The Trianglz page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton and its per-phase checklist posts.
+**Tools and generic skills (figma-console).** The Figma tool (Desktop Bridge or FigCli) is picked in Intake section 0b (`status.json > figma.tool`), which also says when to suggest the other one. Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. Call `resize()` before setting auto layout sizing to AUTO/HUG (resize resets it to FIXED), and re-apply `componentPropertyReferences` after cloning a variant. The reference page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton and its per-phase checklist posts.
 
-**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz_Android/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
+**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in the default Android entry's `data/` (`references.json`, today `Reference_Library/Trianglz/Android/data/`). Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
 
 ---
 
@@ -138,7 +138,7 @@ Recolor procedure (when the user asks to change a color):
 6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
 7. Log it in `docs/decisions.md`.
 
-**Fix on create:** when a DS starts from an existing file or a Trianglz template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
+**Fix on create:** when a DS starts from an existing file or a reference template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
 
 ## 4. Styles
 - **Text styles** `{role}/{size}` and `{role}/{size}-emphasized` (30), all properties bound to **local** typescale variables. Description `16sp / 24sp / 400 / +0.5 · MaterialTheme.typography.bodyLarge`.
@@ -182,7 +182,7 @@ Recolor procedure (when the user asks to change a color):
 - ➜ Typography: every specimen uses its local style; table values from variables.
 - ➜ Shape: swatches bound to Shape variables (reference: unbound). ➜ Elevation: local styles, Dark frame on the local mode.
 
-## 9. Mistakes found in Trianglz Android - never repeat them
+## 9. Mistakes found in the default Android reference - never repeat them
 1. No spacing variables - every padding and gap raw.
 2. Typography sizes/line heights bound to **remote** M3 kit `Static/*` variables; display/headline raw; tracking 0; sizes off the M3 scale.
 3. ALL_SCOPES on palettes and schemes; no code syntax; almost no descriptions.

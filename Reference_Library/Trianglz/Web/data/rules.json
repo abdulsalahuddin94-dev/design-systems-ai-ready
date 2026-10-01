@@ -1,0 +1,476 @@
+{
+  "meta": {
+    "platform": "Web",
+    "applies_to": "Trianglz - Web Design System and every new Web DS built from Web_Design_System_Skill",
+    "source": "Web_Design_System_Skill/SKILL.md + Reference_Library/Trianglz/Web/Foundation_Skill (2026-09-29)",
+    "units": "px"
+  },
+  "accessibility": {
+    "contrast_min": {
+      "text": 4.5,
+      "large_text": 3.0,
+      "ui_boundary": 3.0,
+      "focus_indicator": 3.0
+    },
+    "large_text_definition": ">= 24px regular or >= 18.66px bold",
+    "touch_target_min": {
+      "hard_min": 24,
+      "recommended": 44
+    },
+    "focus": {
+      "style": "focus-ring (inputs: inset 2px color/border/focus) / focus-ring-offset (buttons: 2px gap + 4px ring)",
+      "required_on": "every interactive component"
+    },
+    "disabled_opacity": 0.5
+  },
+  "color": {
+    "semantic_must_alias_primitive": true,
+    "raw_hex_allowed_in": [
+      "Primitives"
+    ],
+    "no_color_styles": true,
+    "ramp_steps": [
+      "0",
+      "50",
+      "100",
+      "200",
+      "300",
+      "400",
+      "500",
+      "600",
+      "700",
+      "800",
+      "900",
+      "950"
+    ],
+    "ramp_base_step": "500",
+    "status_ui_uses": "color/{bg,text,border,icon}/{info,success,warning,error} - never button tokens"
+  },
+  "spacing": {
+    "base_unit": 4,
+    "scale_variable_prefix": "space/",
+    "rule": "every padding and gap bound to space/*; no raw values"
+  },
+  "radius": {
+    "variables": "radius/{none,sm,base,md,lg,xl,2xl,3xl,full}",
+    "usage": {
+      "base": "default, checkbox",
+      "lg": "inputs, cards, buttons",
+      "xl": "panels",
+      "2xl": "modals",
+      "full": "pills, avatars, toggles"
+    }
+  },
+  "typography": {
+    "font_family_variable": "Typography::Font Family/Font Family",
+    "text_style_naming": "{size}/{weight} e.g. sm/Medium",
+    "bind": [
+      "fontFamily",
+      "fontStyle",
+      "fontSize",
+      "lineHeight",
+      "letterSpacing"
+    ],
+    "modes": [
+      "Desktop",
+      "iPad",
+      "Mobile"
+    ]
+  },
+  "icons": {
+    "set": "Lucide",
+    "component_naming": "Icon/<Title Case Name>",
+    "frame_size": 24,
+    "sizes_allowed": [
+      16,
+      20,
+      24
+    ],
+    "stroke_width": 2,
+    "color_tokens": "color/icon/*",
+    "must_be_instance_swap": true
+  },
+  "breakpoints": {
+    "Desktop": {
+      "width": 1440,
+      "columns": 12,
+      "margin": 80,
+      "gutter": 24
+    },
+    "iPad": {
+      "width": 768,
+      "columns": 8,
+      "margin": 32,
+      "gutter": 16
+    },
+    "Mobile": {
+      "width": 375,
+      "columns": 4,
+      "margin": 16,
+      "gutter": 16
+    }
+  },
+  "components": {
+    "naming": "Family / Variant, Title Case properties and values",
+    "required_states_interactive": [
+      "Default",
+      "Hover",
+      "Focus",
+      "Pressed",
+      "Disabled"
+    ],
+    "required_states_inputs": [
+      "Default",
+      "Hover",
+      "Focus",
+      "Filled",
+      "Error",
+      "Success",
+      "Disabled"
+    ],
+    "button_sizes": {
+      "xs": 32,
+      "sm": 36,
+      "base": 40,
+      "lg": 48,
+      "xl": 56
+    },
+    "input_height": 40,
+    "dark_mode": "switch the Semantic mode on the frame; never duplicate components",
+    "bound": "fills, strokes, padding, gap, radius, text styles, effect styles: 100% bound, 0 remote"
+  },
+  "build_order": [
+    "Primitives",
+    "Semantic (Light/Dark)",
+    "Spacing, Radius, Typography variables",
+    "Text and effect styles",
+    "Icons",
+    "Atoms",
+    "Molecules",
+    "Organisms",
+    "Patterns",
+    "Linked documentation",
+    "Audit + project skills"
+  ],
+  "recolor": {
+    "principle": "A color change edits only Primitive values. Semantic tokens alias Primitives, and components use Semantic tokens, so they follow automatically.",
+    "generation": {
+      "method": "oklch",
+      "space": "OKLCH",
+      "curve": "each ramp keeps its captured lightness (L) per step and its chroma ratio to the base; hue moves to the new color; the base step becomes the exact new color and the lightness difference fades out toward both ends; chroma is reduced to fit sRGB"
+    },
+    "steps": [
+      "Identify the ramp(s) to change in tokens.json > ramps (brand is usually blue; check which Semantic tokens alias it).",
+      "Run: python tools/recolor.py Reference_Library/Trianglz/Web --ramp <ramp> --base <#hex>  (writes data/recolor/<date>-<ramp>.json and a Figma script).",
+      "Review the contrast report; if a pair fails, pick a darker/lighter step in the Semantic alias (never a raw hex).",
+      "Apply the script with figma_execute: it sets the new values into the SAME Primitive variables by name (names never change).",
+      "Re-run: python tools/build_tokens.py Reference_Library/Trianglz/Web after re-exporting variables (or python tools/recolor.py ... --write-tokens) so tokens.json matches Figma.",
+      "Screenshot ➜ Colors and every component page in Light and Dark; compare against the previous screenshots.",
+      "Log the change in docs/decisions.md."
+    ],
+    "never": [
+      "rename or delete Primitive variables during a recolor",
+      "put raw hex in Semantic tokens",
+      "recolor components directly",
+      "edit a single step by hand without regenerating the ramp"
+    ],
+    "derived_tokens": []
+  },
+  "contrast_pairs": [
+    {
+      "fg": "Semantic::color/text/primary",
+      "bg": "Semantic::color/bg/primary",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/secondary",
+      "bg": "Semantic::color/bg/primary",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/muted",
+      "bg": "Semantic::color/bg/primary",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/placeholder",
+      "bg": "Semantic::color/bg/primary",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/link",
+      "bg": "Semantic::color/bg/primary",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/error",
+      "bg": "Semantic::color/bg/error",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/success",
+      "bg": "Semantic::color/bg/success",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/warning",
+      "bg": "Semantic::color/bg/warning",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/text/info",
+      "bg": "Semantic::color/bg/info",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/btn/Primary/text 2",
+      "bg": "Semantic::color/btn/Primary/bg 2",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/btn/Primary/text 2",
+      "bg": "Semantic::color/btn/Primary/bg-hover 2",
+      "min": 4.5
+    },
+    {
+      "fg": "Semantic::color/border/focus",
+      "bg": "Semantic::color/bg/primary",
+      "min": 3.0
+    },
+    {
+      "fg": "Semantic::color/border/strong",
+      "bg": "Semantic::color/bg/primary",
+      "min": 3.0
+    }
+  ],
+  "contrast_fix": {
+    "prefer": "fg",
+    "why": "text and border tokens move first; backgrounds keep the layout look"
+  },
+  "known_fixes": {
+    "renames": [
+      {
+        "from": "Semantic::color/btn/Primary/bg 2",
+        "to": "color/btn/primary/bg"
+      },
+      {
+        "from": "Semantic::color/btn/Primary/bg-active 2",
+        "to": "color/btn/primary/bg-active"
+      },
+      {
+        "from": "Semantic::color/btn/Primary/bg-hover 2",
+        "to": "color/btn/primary/bg-hover"
+      },
+      {
+        "from": "Semantic::color/btn/Primary/border 2",
+        "to": "color/btn/primary/border"
+      },
+      {
+        "from": "Semantic::color/btn/Primary/text 2",
+        "to": "color/btn/primary/text"
+      },
+      {
+        "from": "Semantic::color/btn/Primary/Light",
+        "to": "color/btn/primary/light"
+      },
+      {
+        "from": "Semantic::color/btn/Info/bg",
+        "to": "color/btn/info/bg"
+      },
+      {
+        "from": "Semantic::color/btn/Info/bg-active",
+        "to": "color/btn/info/bg-active"
+      },
+      {
+        "from": "Semantic::color/btn/Info/bg-hover",
+        "to": "color/btn/info/bg-hover"
+      },
+      {
+        "from": "Semantic::color/btn/Info/border",
+        "to": "color/btn/info/border"
+      },
+      {
+        "from": "Semantic::color/btn/Info/light",
+        "to": "color/btn/info/light"
+      },
+      {
+        "from": "Semantic::color/btn/Info/text",
+        "to": "color/btn/info/text"
+      },
+      {
+        "from": "Semantic::color/btn/Neutral/bg-active",
+        "to": "color/btn/neutral/bg-active"
+      },
+      {
+        "from": "Semantic::color/btn/Neutral/bg-hover",
+        "to": "color/btn/neutral/bg-hover"
+      },
+      {
+        "from": "Semantic::color/btn/Neutral/text",
+        "to": "color/btn/neutral/text"
+      },
+      {
+        "from": "Semantic::color/btn/warning/Light",
+        "to": "color/btn/warning/light"
+      },
+      {
+        "from": "Semantic::color/border/Dark",
+        "to": "color/border/dark"
+      },
+      {
+        "from": "Primitives::black and white/white",
+        "to": "white"
+      },
+      {
+        "from": "Primitives::black and white/black",
+        "to": "black"
+      }
+    ],
+    "manual": [
+      "Component fixes are in Component_Skills/*/references/gaps.md (Button has no Pressed/Loading state or label/icon properties; Tabs, Badge and Alert lack text properties; generic Label2/Hint2 properties).",
+      "Page names: remove trailing/double spaces and fix \"➜ Paganation & Tabs\"."
+    ],
+    "group_renames": [
+      {
+        "from": "Primitives::Orange/",
+        "to": "orange/"
+      }
+    ]
+  },
+  "off_limits": {
+    "note": "Single list of prohibitions. ds-auditor reports each id with a count; hooks enforce the ones marked hook:.",
+    "original_template_file_keys": {
+      "7qsOqckanKwGDbkljD3rb9": "Trianglz - Web Design System",
+      "q5nQHGEGzZ94WN0wilJwLW": "Trianglz - IOS Design System",
+      "JUs2c8IO6ybFcGRZjcQzr9": "Trianglz - Android M3 x Design System"
+    },
+    "rules": [
+      {
+        "id": "no-component-specific-tokens",
+        "rule": "Do not create component-specific tokens (e.g. color/btn/*, button-padding) unless the user asks. Components use Semantic tokens.",
+        "check": "variable names in Semantic collections must not start with a component name (btn, button, input, card, chip, tab, badge...)",
+        "enforced_by": [
+          "ds-auditor"
+        ],
+        "exception": "the user explicitly asks for a component token layer",
+        "known_violations": "color/btn/* (Trianglz Web) exists; keep it in the template but do not add more"
+      },
+      {
+        "id": "no-hardcoded-values",
+        "rule": "No raw hex outside Primitives and no raw px/pt/dp for padding, gap, radius or font values in components and screens.",
+        "check": "0 unbound fills/strokes/padding/gap/radius/text values; tokens.json > recolor_readiness.ready = true",
+        "enforced_by": [
+          "ds-auditor",
+          "tools/fix_tokens.py"
+        ]
+      },
+      {
+        "id": "originals-untouched",
+        "rule": "Never edit the original Trianglz template files. Duplicate them and work in the copy.",
+        "check": "no write operation targets an original file key",
+        "enforced_by": [
+          "hook:guard_figma.py (asks the user)",
+          "ds-auditor"
+        ],
+        "exception": "the user explicitly asks for a change in the original (e.g. deleting a leftover page)"
+      },
+      {
+        "id": "no-detach",
+        "rule": "Never detach an instance. Use instance swaps, slots and exposed properties; if a needed swap is missing, fix the component.",
+        "check": "0 detached instances; no detachInstance() in scripts",
+        "enforced_by": [
+          "hook:guard_figma.py (blocks)",
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-default-names",
+        "rule": "No default layer or property names: Frame 12, Group 5, Rectangle 3, Vector, Property 1, Variant5, Component 1, trailing ' 2' copies.",
+        "check": "0 layers or properties matching the default-name patterns",
+        "patterns": [
+          "^Frame \\d+$",
+          "^Group \\d+$",
+          "^Rectangle \\d+$",
+          "^Ellipse \\d+$",
+          "^Vector( \\d+)?$",
+          "^Property \\d+$",
+          "^Variant\\d+$",
+          "^Component \\d+$",
+          " \\d+$"
+        ],
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "docs-in-setup",
+        "rule": "Foundation documentation pages (colors, typography, spacing, radius, shadows, grid, icons) live only in the ⭐Setup group; component docs sit on their own ➜ page inside their ⭐ group.",
+        "check": "no foundation doc frame outside ⭐Setup pages",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-remote-assets",
+        "rule": "No remote (library) variables, styles or components inside the DS file.",
+        "check": "0 remote variables/styles/components",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-dark-duplicates",
+        "rule": "No Mode=Light|Dark variants and no duplicated dark component sets; dark is the Semantic mode on the frame.",
+        "check": "0 variant properties named Mode with Light/Dark values",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "real-icons-only",
+        "rule": "Icons are Icon/* instances (Lucide style) with swap properties; no drawn vectors, text glyphs or empty placeholders.",
+        "check": "every icon is an instance of the local icon set",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "no-color-styles",
+        "rule": "Color lives in variables only; no color (paint) styles.",
+        "check": "0 local paint styles",
+        "enforced_by": [
+          "ds-auditor"
+        ]
+      },
+      {
+        "id": "recolor-keeps-names",
+        "rule": "A recolor changes Primitive values only; never rename, delete or recreate Primitives during a recolor.",
+        "enforced_by": [
+          "tools/recolor.py"
+        ]
+      },
+      {
+        "id": "no-auto-install",
+        "rule": "Never install tools, packages, MCP servers or plugins on the user's behalf; show the steps and let the user do it.",
+        "enforced_by": [
+          "settings.json ask rules",
+          "Design_System_Intake_Skill preflight"
+        ]
+      },
+      {
+        "id": "no-push",
+        "rule": "Never push, create a remote repository or publish a Figma library without the user's explicit request.",
+        "enforced_by": [
+          "settings.json ask rules"
+        ]
+      },
+      {
+        "id": "relative-paths",
+        "rule": "No absolute machine paths in skills, briefs, data or memory; paths are relative to the Root.",
+        "enforced_by": [
+          "hook:block_absolute_paths.py"
+        ]
+      }
+    ]
+  }
+}

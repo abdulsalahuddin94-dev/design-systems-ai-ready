@@ -48,8 +48,19 @@ def unsynced_projects():
             + lib_text + later_text)
 
 
+def reference_storybook():
+    """MCP name and port of the default Web reference's Storybook (references.json); no brand hardcoded."""
+    try:
+        refs = json.loads((ROOT / "references.json").read_text(encoding="utf-8"))
+        entry = next(e for e in refs["entries"] if e["id"] == refs["default"]["web"])
+        return entry["storybook"]["mcp_name"], int(entry["storybook"]["port"])
+    except Exception:
+        return "<project>-web-storybook", 6006
+
+
 def main():
     books = sorted(p.parent for p in ROOT.glob("*/storybook/package.json"))
+    books += sorted(p.parent for p in ROOT.glob("Reference_Library/*/*/storybook/package.json"))
     books += sorted(p.parent for p in ROOT.glob("My Projects/*/storybook/package.json"))
     pending = unsynced_projects()
     if not books:
@@ -61,18 +72,21 @@ def main():
         rel = b.relative_to(ROOT).as_posix()
         installed = (b / "node_modules").exists()
         lines.append(f"- `{rel}` ({'packages installed' if installed else 'packages NOT installed yet: needs `npm install`'})")
-    live = running()
+    name, port = reference_storybook()
+    live = running(port)
+    url = f"http://localhost:{port}"
     text = (
         "This design-system repo has a live Storybook (documentation of the Figma design system: every "
         "component with its variants, properties, use cases and tokens, names identical to Figma).\n"
         + "\n".join(lines)
         + "\n"
-        + ("Storybook is running now at http://localhost:6006 and its MCP server at http://localhost:6006/mcp "
-           "(registered in .mcp.json as `trianglz-web-storybook`). Use the MCP docs tools before building UI.\n"
+        + (f"Storybook is running now at {url} and its MCP server at {url}/mcp "
+           f"(`{name}`, registered on this machine only). Use the MCP docs tools before building UI.\n"
            if live else
            "Storybook is not running. Start it with `npm install` (first time, needs Node.js 18+) then "
-           "`npm run storybook` inside the folder above; it serves http://localhost:6006 and an MCP server at "
-           "http://localhost:6006/mcp (registered in .mcp.json).\n")
+           f"`npm run storybook` inside the folder above; it serves {url} and an MCP server at "
+           f"{url}/mcp (register it once per machine: "
+           f"`claude mcp add --transport http {name} {url}/mcp --scope local`).\n")
         + "In your first reply, mention in one short line that this repo has a Storybook, as information only: "
         "do not ask about it there. The first question is about the project (Design_System_Intake_Skill 0.0), "
         "unless the user asked for quick mode (/ds-quick, Design_System_Intake_Skill/steps/quick-mode.md). "

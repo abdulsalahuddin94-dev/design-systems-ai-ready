@@ -10,7 +10,7 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
    - `Foundation_Skill`: variables (names, values per mode, scopes, code syntax), styles, grids, icon rules, direction decisions from the intake.
    - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies.
    - `gaps.md` in each: anything left open.
-   - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the Trianglz reference versions as the starting shape) and `docs/decisions.md`.
+   - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the reference entry's versions as the starting shape, `references.json`) and `docs/decisions.md`.
    - Check `tokens.json > recolor_readiness.ready` is true.
 4. Update `Project_Brief.md` with the final state and links, add the `CHANGELOG.md` entry (`Storybook synced: no`), refresh `status.json` with `tools/project_status.py`, and save the key facts to memory.
 5. Reply to the user with the audit result, the skill paths and what is left.

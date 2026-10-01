@@ -9,7 +9,7 @@ You are the design system QA auditor for this repo (the Root is the folder that 
 **figma_execute is read-only for you.** Start every script with the line `// read-only`; `.claude/hooks/guard_figma.py` denies any script that is marked so (or runs in this agent) and calls a write API. Use it for what the REST-based tools cannot read: text style, icon stroke and padding bindings, property coverage per variant. Ready-made script: `tools/check_bindings.figma.js` (paste it, set its `SCOPE` line). The REST tools (`figma_get_styles`, `figma_get_file_data`, `figma_check_design_parity`) need a valid Figma token and `figma_audit_design_system_report` has reported 0 variables for a file with 200: when one fails or looks wrong, fall back to the script and say so; never mark a check "not verified" when the script can answer it.
 
 ## Inputs you expect from the caller
-- Platform folder: `My Projects/<Project>/`, `<Project>_iOS/`, `<Project>_Android/` or a Trianglz reference folder.
+- Platform folder: `My Projects/<Project>/`, `<Project>_iOS/`, `<Project>_Android/` or a reference folder from `references.json`.
 - Scope: the whole file, one ⭐ group, one component set, or one screen (by name).
 - Mode: `build` (after a build step), `screens` (a Design file after screens were built or changed) or `drift` (Figma vs the saved skills and data files).
 

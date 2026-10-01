@@ -1,6 +1,6 @@
 """Check that a Storybook uses exactly the Figma names from data/component-registry.json.
 
-Usage:  python tools/storybook_parity.py Trianglz
+Usage:  python tools/storybook_parity.py <DS folder>
 Reads   <folder>/data/component-registry.json and <folder>/storybook/src/components/**/*.stories.tsx
 Checks  - every registry component has a stories file whose title ends with the Figma name
         - every Figma variant and property name appears as an argTypes key (quoted, exact case)

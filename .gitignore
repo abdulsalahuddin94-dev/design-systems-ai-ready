@@ -12,6 +12,8 @@ desktop.ini
 
 # Local Claude settings and secrets
 .claude/settings.local.json
+# Project MCP servers are per machine (Storybook MCPs etc.), so a fresh clone prompts nothing. Template: .mcp.example.json
+.mcp.json
 .env
 *.env
 

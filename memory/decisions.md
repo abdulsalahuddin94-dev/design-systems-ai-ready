@@ -60,7 +60,10 @@ updated: 2026-09-30
 - A component skill documents only its own group; foundation and build rules live in Foundation_Skill.
 
 ## File structure
-Follow the Trianglz page layout: Cover, ⭐Setup, then ⭐ groups with ➜ topic pages. Foundation docs pages are always linked: ➜ Colors swatches bound to variables (Light/Dark frames use the matching mode), ➜ Typography samples use text styles bound to Typography variables.
+Follow the reference page layout (default Web entry in `references.json`): Cover, ⭐Setup, then ⭐ groups with ➜ topic pages. Foundation docs pages are always linked: ➜ Colors swatches bound to variables (Light/Dark frames use the matching mode), ➜ Typography samples use text styles bound to Typography variables.
+
+## Reference library (Abdul, 2026-10-01)
+- The studied design systems are a library, not one brand: `references.json` holds one entry per company and platform (Web, iOS, Android, cross-platform) with a per-platform default. Intake menus, README, skills and examples say "reference design system" and read names from the entry; no company name is hardcoded. Greenfield 3.1 offers "Start from a reference template" and lists the matching entries. Adding a company: `References.md`.
 
 ## Platforms
 Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (Material 3, md.sys tokens). Each platform is fully independent: separate folders, skills, data and Storybook; nothing shared or merged.
@@ -88,5 +91,6 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Multi-tool handoff (Abdul, 2026-09-30): Codex, Cursor and Antigravity can work in this repo through `AGENTS.md` (with its own figma-console-mcp setup). They log every change in the project's `CHANGELOG.md` with a `Tool:` line and commit with a `[Tool]` prefix. Claude reads git log and changelogs at session start and audits their work before continuing.
 - GitHub (2026-09-30): the workflow is pushed to the private repo abdulsalahuddin94-dev/design-systems-ai-ready (branch master). Each project in `My Projects/` is its own private repo and is git-ignored here, except `_Project_Template/` and `README.md`.
 - Linked Figma files (Abdul, 2026-09-30): `status.json > figma` holds one DS file and a list of named Design files with file keys. Before Figma work: pick the Design file if several, ask to open it and the plugin, verify the file key and that the library is enabled and current; mismatch -> stop and warn. After DS changes: ask to publish, log it, list Design files needing Accept updates. Brownfield without a DS: Design file (frames or screenshots) is the source for building the DS, then relinked to it.
-- Future iOS and Android projects: Storybook rendered as web (React + CSS) styled like the native components, as an interim choice (Abdul, 2026-09-30). Not built for the Trianglz iOS/Android references.
+- Storybook MCPs are per machine (Abdul, 2026-10-01): register each project's Storybook MCP with `claude mcp add ... --scope local`; the root `.mcp.json` is git-ignored (template `.mcp.example.json`) so a fresh clone is never prompted to enable servers.
+- Future iOS and Android projects: Storybook rendered as web (React + CSS) styled like the native components, as an interim choice (Abdul, 2026-09-30). Not built for the iOS/Android reference entries.
 - Quality bar for new Storybooks: working components, sidebar navigation across Foundations and components, Figma description and use case per component, every Figma property as a control, all states in Light and Dark; component descriptions are written during the build in Figma and in Storybook. Not yet applied to the Trianglz Web Storybook (Abdul paused that).

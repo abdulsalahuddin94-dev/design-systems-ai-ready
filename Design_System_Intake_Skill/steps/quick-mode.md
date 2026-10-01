@@ -8,7 +8,7 @@ For real projects that are already running: the user opens the workflow and asks
 
 **Skipped:** intake questions 0.1-0.8 and 2.x, the Intake Summary, the `My Projects/` folder and `Project_Brief.md`, phases and the Foundation / Components / Screens checkpoints, project skills (section 11), Storybook questions.
 
-**Kept (never skipped):** tools preflight (section 0b checks 1-5), the file check before any write, the rules in `memory/decisions.md`, atomic tiers, real icons, the guard hook on original Trianglz templates, the audit after every change, and no self-approval.
+**Kept (never skipped):** tools preflight (section 0b checks 1-5), the file check before any write, the rules in `memory/decisions.md`, atomic tiers, real icons, the guard hook on original reference templates, the audit after every change, and no self-approval.
 
 ### 13.1 Questions (only what is missing, one per message)
 

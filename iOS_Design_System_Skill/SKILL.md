@@ -1,20 +1,20 @@
 ---
 name: ios-design-system-builder
-description: Main skill for building a new iOS design system in Figma from scratch (Scenario A), from existing iOS UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Apple HIG token architecture (iOS semantic color roles, text styles with Dynamic Type, pt spacing, continuous radius, Liquid Glass materials), SF Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the Trianglz iOS Design System. Independent from the Web and Android skills. Load with figma-use, figma-generate-library and figma-swiftui before creating anything; save the project's skills under [Root]\My Projects\[Project]_iOS\.
+description: Main skill for building a new iOS design system in Figma from scratch (Scenario A), from existing iOS UI (Scenario B) or for an AI-ready refactor (Scenario C). Defines the file structure, build order, Apple HIG token architecture (iOS semantic color roles, text styles with Dynamic Type, pt spacing, continuous radius, Liquid Glass materials), SF Symbols icon rules, required components and states, and the mistakes to avoid - learned from studying the default iOS reference design system (`references.json`). Independent from the Web and Android skills. Load with figma-use, figma-generate-library and figma-swiftui before creating anything; save the project's skills under [Root]\My Projects\[Project]_iOS\.
 ---
 
 # iOS Design System Builder (Main Skill)
 
-Reference implementation studied: **Trianglz - IOS Design System** (`Trianglz_iOS/` in the Root; Figma template link in `References.md`).
+Reference implementation studied: the platform's default entry in `references.json` (`default.ios`; its folder, Figma link and name are there; human list in `References.md`). Other companies' iOS systems can be added as entries; when the project picked one (`status.json > reference`), use that entry's folder instead. Today the default is the only iOS entry, and section 9 below was learned from it.
 Copy its **structure and its Apple-aligned type scale**. Do **not** copy its mistakes (section 9): most of its components are unmodified Apple UI Kit copies bound to remote Apple variables.
 Platform: iOS / iPadOS 26, Apple Human Interface Guidelines, SF Pro, points (pt).
-Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
+Node IDs quoted in a reference entry's skills are valid in that entry's original file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
 **Questions.** Every question with options in this skill (component scope, approvals, publish and Accept updates confirmations, recolor or token proposals) is an AskUserQuestion choice (`Ask (choice)` / `Ask (multi)`, Intake section 0); typed answers go in its Other field.
 
-**Tools and generic skills (figma-console).** The Figma tool (Desktop Bridge or FigCli) is picked in Intake section 0b (`status.json > figma.tool`), which also says when to suggest the other one. Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. Call `resize()` before setting auto layout sizing to AUTO/HUG (resize resets it to FIXED), and re-apply `componentPropertyReferences` after cloning a variant. The Trianglz page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton and its per-phase checklist posts.
+**Tools and generic skills (figma-console).** The Figma tool (Desktop Bridge or FigCli) is picked in Intake section 0b (`status.json > figma.tool`), which also says when to suggest the other one. Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. Call `resize()` before setting auto layout sizing to AUTO/HUG (resize resets it to FIXED), and re-apply `componentPropertyReferences` after cloning a variant. The reference page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton and its per-phase checklist posts.
 
-**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz_iOS/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
+**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in the default iOS entry's `data/` (`references.json`, today `Reference_Library/Trianglz/iOS/data/`). Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
 
 ---
 
@@ -139,7 +139,7 @@ Recolor procedure (when the user asks to change a color):
 6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
 7. Log it in `docs/decisions.md`.
 
-**Fix on create:** when a DS starts from an existing file or a Trianglz template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
+**Fix on create:** when a DS starts from an existing file or a reference template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
 
 ## 4. Styles
 - **Text styles** `{Style}/{Regular|Emphasized}` (22), all properties bound (size, line height, tracking, weight, family). Description `17pt / 22pt / Semibold · SwiftUI .headline`.
@@ -183,7 +183,7 @@ Recolor procedure (when the user asks to change a color):
 - ➜ Typography: every sample uses its style; a Dynamic Type table from the real mode values.
 - Spacing, Radius, Materials pages show the real variables/styles (reference pages were static and wrong: xxl 48 vs 40, Full 999 vs 99).
 
-## 9. Mistakes found in Trianglz iOS - never repeat them
+## 9. Mistakes found in the default iOS reference - never repeat them
 1. Components copied from Apple's iOS 26 UI Kit still bound to **30 remote Apple variables** (`Labels/Primary`, `Fills/Tertiary`, `Accents/*`...) and remote text styles/components (Liquid Glass, Menu, _Buttons).
 2. Dark mode as `Mode=Light|Dark` variants and remote collection modes.
 3. SF Symbols drawn as **text glyphs**; almost no icon library (`Component 1`, `akar-icons:check`).

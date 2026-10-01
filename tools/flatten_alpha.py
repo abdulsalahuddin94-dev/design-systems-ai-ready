@@ -31,7 +31,7 @@ def flatten(color, alpha, bg):
 
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument('folder', help='DS folder with data/tokens.json (e.g. Trianglz or My Projects/<Project>)')
+    p.add_argument('folder', help='DS folder with data/tokens.json (e.g. a reference folder or My Projects/<Project>)')
     p.add_argument('--color', required=True, help='raw color, #RRGGBBAA or #RRGGBB with --alpha')
     p.add_argument('--alpha', type=float, help='layer/fill opacity 0..1 (multiplied with the hex alpha)')
     p.add_argument('--bg', action='append', required=True, help='token name, hex, or Mode=<token|hex>')

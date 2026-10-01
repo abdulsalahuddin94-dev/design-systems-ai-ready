@@ -1,0 +1,45 @@
+{
+  "$comment": "Reference library: studied design systems the workflow learns from and can start a project from. One entry per company and platform (web, ios, android, cross-platform). Add a company by adding entries; skills, intake and tools read this file instead of a brand name. How to add one: References.md.",
+  "default": {
+    "web": "trianglz-web",
+    "ios": "trianglz-ios",
+    "android": "trianglz-android",
+    "cross-platform": null
+  },
+  "entries": [
+    {
+      "id": "trianglz-web",
+      "company": "Trianglz",
+      "name": "Trianglz - Web Design System",
+      "platform": "web",
+      "folder": "Reference_Library/Trianglz/Web",
+      "figma_file_key": "7qsOqckanKwGDbkljD3rb9",
+      "figma_url": "https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System",
+      "status": "ready",
+      "storybook": { "folder": "Reference_Library/Trianglz/Web/storybook", "port": 6006, "mcp_name": "trianglz-web-storybook" },
+      "notes": "Page layout (Cover, Setup, groups with topic pages) is the default file structure for every platform."
+    },
+    {
+      "id": "trianglz-ios",
+      "company": "Trianglz",
+      "name": "Trianglz - IOS Design System",
+      "platform": "ios",
+      "folder": "Reference_Library/Trianglz/iOS",
+      "figma_file_key": "q5nQHGEGzZ94WN0wilJwLW",
+      "figma_url": "https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System",
+      "status": "ready",
+      "storybook": null
+    },
+    {
+      "id": "trianglz-android",
+      "company": "Trianglz",
+      "name": "Trianglz - Android M3 x Design System",
+      "platform": "android",
+      "folder": "Reference_Library/Trianglz/Android",
+      "figma_file_key": "JUs2c8IO6ybFcGRZjcQzr9",
+      "figma_url": "https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System",
+      "status": "ready",
+      "storybook": null
+    }
+  ]
+}
