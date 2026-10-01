@@ -17,6 +17,11 @@ updated: 2026-09-30
 - Trials cost 180-260M tokens per project session (one session of 470-650 turns, context up to 690K). Fixes, same quality gates: the intake is a router plus `Design_System_Intake_Skill/steps/` files loaded per step; Figma skills load at the first build step, not during the intake; one phase per session with a handoff in `Project_Brief.md` / `CHANGELOG.md` / `status.json`; variant screenshots, side-by-side fidelity captures and audits run in ds-auditor, which returns text and numbers; `tools/figma_helpers.figma.js` is pasted once per file per session so scripts stop redefining helpers; names and keys come from `data/*.json` before Figma reads. Details: Intake section 0c.
 - The design plugin (Asana, Jira, Linear, Notion, Slack, Intercom) is disabled for this folder in `.claude/settings.json`; stitch, pencil and the official figma MCP server are disabled by Abdul in `/mcp`.
 
+## Figma tool choice (Abdul, 2026-10-01)
+- Preflight detects installed tools before asking (`tools/figma_tools_check.py`). None -> `Figma_Tools/README.md`, help install in the same session after a yes. One -> use it, no question. Both -> intake 0.0t: "Figma Desktop Bridge (full build and audit with the Figma skills, catches everything) / FigCli (much faster, with about 20-30x fewer tokens for checks, extract and measure)", saved per file in `status.json > figma` (`design_system.tool`, each Design file's `tool`; `figma.tool` = default/fallback).
+- Switching any time, on any file, and mixed setups (FigCli on one file, Desktop Bridge on another) are allowed (Abdul, 2026-10-01). On a switch: re-check the connection and file, save + log it in `CHANGELOG.md`, reload helpers, regenerate the FigCli baseline (also after Desktop Bridge changes and each approved checkpoint). FigCli Safe mode verifies files by exact name with the user; no writes on a mismatch.
+- Before costly steps (full build, full audit, Brownfield extract, multi-screen builds), and only when both are installed, say in 2-3 lines which tool fits better and let the user pick. Tools live outside the Root (`<drive>:\Tools`) and are never copied into the repo. Trial numbers: FigCli check 4/5 defects, about 16 s and 300 tokens; Desktop Bridge audit 5/5, about 52 s and 6-10K tokens. The final audit-design-system stays mandatory.
+
 ## Build order (always)
 1. Primitives (raw values). 2. Semantic variables aliasing Primitives (Light/Dark). 3. Spacing, Radius, Typography variables. 4. Text and effect styles built from those variables. 5. Icons. 6. Components built only on those variables and styles: Atoms, Molecules, Organisms, Patterns. 7. Linked docs pages. 8. Audit. 9. Project skills.
 
@@ -66,7 +71,7 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Impeccable skills guide visual quality; Figma work goes through figma-use / figma-generate-library / figma-generate-design.
 
 ## Tooling and repo
-- Figma access through figma-console-mcp (Desktop Bridge) or figma-cli. Find nodes by name; node IDs are only valid in their original file.
+- Figma access through figma-console-mcp (Desktop Bridge) or figma-cli (FigCli, Safe mode only, never Yolo or Browser). Find nodes by name; node IDs are only valid in their original file.
 - Never install tools or packages on Abdul's behalf; show the steps or ask first.
 - Paths in skills, briefs, memory and data are relative to the Root. A hook blocks absolute machine paths.
 - Local git repo only; do not push or create a remote without asking.

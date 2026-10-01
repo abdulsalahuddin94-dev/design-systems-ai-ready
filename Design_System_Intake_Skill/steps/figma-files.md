@@ -5,8 +5,8 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 ## 7c. Linked Figma files: registry, publish and file check (every path)
 
 Each project has **one Design System file** and a **list of Design files** (screens), stored in `[Project folder]\status.json > figma`:
-- `design_system`: name, url, file_key, last_publish.
-- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false).
+- `design_system`: name, url, file_key, last_publish, tool (`desktop-bridge` / `figcli`, the tool last used on this file; Intake section 0b).
+- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false), tool (as above).
 - `brand_foundation` (Both + Native only, optional): name, url, file_key of `<Project> Brand Foundation`; the same entry is stored in the iOS and the Android folder. It is a value source only, never enabled as a library in a Design file.
 - The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
 
@@ -17,9 +17,12 @@ Each project has **one Design System file** and a **list of Design files** (scre
 
 **Before any Figma work (the file check):**
 1. Screen work with more than one Design file: ask "Which Design file should I work on? <names>".
-2. Ask the user to open that file (or the DS file for DS work) in Figma Desktop and start the plugin (Desktop Bridge).
-3. When connected, read the connected file's key (figma_get_status / figma_list_open_files) and compare it with `status.json`. It must be the file registered for this project and the role you need.
+2. Ask the user to open that file (or the DS file for DS work) in Figma Desktop and start the plugin of the tool saved for that file (Desktop Bridge or FigCli; Intake section 0b).
+3. When connected, verify the file with the tool in use. It must be the file registered for this project and the role you need.
+   - Desktop Bridge: read the file key (figma_get_status / figma_list_open_files) and compare it with `status.json`.
+   - FigCli (Safe mode cannot read the key): read the name (`node src/index.js eval "figma.root.name"`), compare it **exactly** with the `name` in `status.json`, and confirm it with the user. If another registered or known file has a similar name (an original and its copy, `NEW PROJECT Design File` and a duplicate), say so. If the name does not match, **write nothing**.
 4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
 5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date, or in a Both + Native project an iOS Design file with the Android library enabled or the reverse): **stop, touch nothing**, and tell the user what is connected and what was expected.
-6. **Two or more files connected** (e.g. the DS file and a Design file): the Desktop Bridge "active file" follows the user's focus, so node ids from one file get looked up in the other. Before any write or screenshot, pin the target with `figma_navigate` (`lock: true`) and re-pin after switching files.
-7. **Screenshots and exports** (`exportAsync`, `figma_capture_screenshot`) also need the target file to be the **visible tab** in Figma Desktop; in a background tab they time out while structural reads still work. Before screen work, ask once: "Please keep '<file name>' as the front tab in Figma until the Screens checkpoint." If a capture times out, ask the user to bring the file to the front, then retry.
+6. **Mixed tools** (FigCli on one file, Desktop Bridge on another) are allowed. Cross-file steps (publish, Accept updates, the library check in step 4) need both connections up; check each one with its own tool before starting.
+7. **Two or more files connected** (e.g. the DS file and a Design file): the Desktop Bridge "active file" follows the user's focus, so node ids from one file get looked up in the other. Before any write or screenshot, pin the target with `figma_navigate` (`lock: true`) and re-pin after switching files.
+8. **Screenshots and exports** (`exportAsync`, `figma_capture_screenshot`) also need the target file to be the **visible tab** in Figma Desktop; in a background tab they time out while structural reads still work. Before screen work, ask once: "Please keep '<file name>' as the front tab in Figma until the Screens checkpoint." If a capture times out, ask the user to bring the file to the front, then retry.

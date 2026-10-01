@@ -20,13 +20,13 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 ## Setup
 1. **Install Claude Code** and Node.js 18+ (`node --version`).
 2. **Install Figma Desktop** (the web app is not enough).
-3. **Install one Figma bridge** (you install it; Claude will not do it for you):
+3. **Install at least one Figma tool, ideally both** (full guide: `Figma_Tools/README.md`; check with `python tools/figma_tools_check.py`). With both installed, Claude asks which to use and suggests the cheaper one before costly steps:
    - **figma-console-mcp** (recommended): create a Figma personal access token (scopes: File content Read, File versions Read, Variables Read, Comments Read and write), then run
      ```
      claude mcp add figma-console -s user -e FIGMA_ACCESS_TOKEN=figd_YOUR_TOKEN_HERE -e ENABLE_MCP_APPS=true -- npx -y figma-console-mcp@latest
      ```
      In Figma Desktop: Plugins > Development > Import plugin from manifest..., pick `~/.figma-console-mcp/plugin/manifest.json`, and run the plugin in your file. Details: https://github.com/southleft/figma-console-mcp
-   - **or figma-cli**: download https://github.com/silships/figma-cli into your home folder, open Claude Code inside it and ask "Set up figma-cli and connect it to my Figma" (Safe mode recommended).
+   - **and/or FigCli (figma-cli)**: download https://github.com/silships/figma-cli into a `Tools` folder at a drive root (outside this folder), run `npm install` inside it, then `node src/index.js connect --safe` and open Plugins > Development > FigCli. Use **Safe mode only**, never Yolo or Browser (see `Figma_Tools/README.md`).
 4. **Recommended skills and connectors**: the official Figma MCP / Figma plugin (figma-use, figma-generate-library, figma-generate-design), audit-design-system, ui-ux-pro-max, Impeccable.
 5. **Get this folder**: clone the repository (or copy the folder) anywhere on your machine. Paths inside are relative, so any location works.
 6. **Templates (optional)**: duplicate the Trianglz file for your platform from `References.md` into your Figma workspace.

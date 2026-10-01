@@ -1,6 +1,6 @@
 # Install steps for the Figma tools
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when preflight (section 0b) finds no tool or no Desktop Bridge connection.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when preflight (section 0b) finds no tool installed or none connected. The full guide for new users (both tools, where to install, Safe mode, switching) is `Figma_Tools/README.md`.
 
 **figma-console-mcp install steps** (from its README):
 1. Prerequisites: Node.js 18+ (`node --version`), Figma Desktop (not the web app), an MCP client such as Claude Code.
@@ -11,8 +11,10 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 4. Desktop Bridge: in Figma Desktop go to Plugins > Development > Import plugin from manifest..., select `~/.figma-console-mcp/plugin/manifest.json`, then run the plugin inside the file you will work on. It connects over WebSocket.
 5. Restart the MCP client and say "Check Figma status"; it should show the Desktop Bridge connected.
 
-**figma-cli install steps** (from its README):
-1. Prerequisites: Figma Desktop installed and open, Claude Code (or Cursor), Node.js 18+.
-2. The user downloads the project: https://github.com/silships/figma-cli into a folder in their home directory.
-3. Inside that folder, the user asks Claude Code to "Set up figma-cli and connect it to my Figma" and follows its setup. It offers three connection modes: Yolo (patches Figma Desktop, default), Browser (Figma in Chromium) and Safe (official Figma plugin, no app changes). Recommend **Safe mode** for company machines.
-4. Done when figma-cli says it is connected.
+**figma-cli (FigCli) install steps** (details in `Figma_Tools/README.md`):
+1. Prerequisites: Figma Desktop installed and open, Node.js 18+.
+2. The user downloads https://github.com/silships/figma-cli into a `Tools` folder at a drive root (`<drive>:\Tools\figma-cli`), outside the Root.
+3. Inside that folder: `npm install` (with the user's yes; never `-g`). Check: `node src/index.js --version`.
+4. Connect in **Safe mode** only: `node src/index.js connect --safe`, then Plugins > Development > FigCli in Figma Desktop. Never Yolo (patches the app, opens debug port 9222) or Browser mode.
+5. Do not run `figma-cli init-agent` in the Root and do not install its Claude Code plugin.
+6. Done when `node src/index.js daemon status` reports it running and `python tools/figma_tools_check.py` lists it.

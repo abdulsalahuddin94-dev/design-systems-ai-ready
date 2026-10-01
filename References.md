@@ -19,5 +19,6 @@ Rules:
 - You need view access to the originals to duplicate them.
 
 ## Figma tooling
+Setup guide, which tool fits which step, Safe mode and switching: `Figma_Tools/README.md`.
 - figma-console-mcp: https://github.com/southleft/figma-console-mcp
 - figma-cli: https://github.com/silships/figma-cli

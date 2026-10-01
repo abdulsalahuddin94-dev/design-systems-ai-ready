@@ -30,21 +30,39 @@ Never touch Figma while this intake is running. Figma work starts only after the
 
 ## 0b. Step 0 - Tools preflight (runs before any question)
 
-Check the Figma tooling first. Figma work needs **one** of these, plus the Figma Desktop app open:
-- **figma-console-mcp** (https://github.com/southleft/figma-console-mcp) - MCP tools named `figma_*` (e.g. `figma_get_status`).
-- **figma-cli** (https://github.com/silships/figma-cli) - a local CLI that drives Figma Desktop.
+Figma work needs **one** of two tools, plus the Figma Desktop app open. Guide for new users (what each tool does, where to install, Safe mode, switching): `Figma_Tools/README.md`.
+- **Figma Desktop Bridge** (figma-console-mcp, https://github.com/southleft/figma-console-mcp): MCP tools named `figma_*`, plus the Desktop Bridge plugin running in the file.
+- **FigCli** (figma-cli, https://github.com/silships/figma-cli): a local CLI (`node src/index.js ...` inside its folder) with the FigCli plugin in **Safe mode** only.
 
-Checks, in order:
-1. Look for figma-console-mcp tools in this session (search for `figma_get_status`). If present, call `figma_get_status` and confirm the **Desktop Bridge** shows as connected (active WebSocket transport).
-2. If not present, look for figma-cli: a `figma-cli` folder in the user's home directory or a `figma-cli` command on the PATH, and confirm it reports a connection to Figma Desktop.
-3. If one of them is installed and connected -> say which one in one line and continue to Step 0 basics. Remember the name and key of the connected file: question 0.2 uses it.
+Checks, in order (detect first, ask later):
+1. **Installed?** Run `python tools/figma_tools_check.py` (read-only), and search this session for `figma_get_status`. Desktop Bridge counts as installed when the MCP server is configured; FigCli counts when its folder has `node_modules` and `--version` works. Say the result in one line.
+2. **None installed** -> **stop**. Do not ask intake questions yet. Point to `Figma_Tools/README.md`, explain that at least one tool is needed and that both is best, and offer to help install in this session. Run a command such as `npm install` inside the tool folder only after the user says yes. The user adds the MCP server and creates the Figma token themselves (`steps/preflight-install.md`). Recommend FigCli **Safe mode**, never Yolo or Browser mode. Then ask: "Tell me when the tools are installed, and I will check again."
+3. **One installed** -> no tool question. Say in one line which one was found and that you will use it; mention once that the other can be added later (`Figma_Tools/README.md`). Never offer a tool that is not installed.
+4. **Both installed** -> the tool is chosen **per file**. Ask question 0.0t right after 0.0 (the project pick), and again for each file that has no tool saved yet: "Which Figma tool should I use? Figma Desktop Bridge (full build and audit with the Figma skills, catches everything) (Recommended for builds) / FigCli (much faster, with about 20-30x fewer tokens for checks, extract and measure)". If that file's `tool` is saved in `status.json > figma` (`design_system.tool`, or the Design file entry's `tool`; older projects: `figma.tool` as the fallback) and that tool is still installed, skip the question and say in one line which tool you are reusing. Record the answer on that file entry (`desktop-bridge` or `figcli`) and in `figma.tool` as the default for files without one.
+5. **Connected?** Check the chosen tool before any Figma work:
+   - Desktop Bridge: call `figma_get_status` and confirm the bridge is connected (active WebSocket transport).
+   - FigCli: `node src/index.js daemon status` in its folder, then `node src/index.js eval "figma.root.name"` to read the file name. In Safe mode `fileKey` reads as undefined, so the file check (section 7c step 3) goes by exact name, confirmed with the user, and nothing is written on a mismatch.
+   - Not connected -> stop and show what to open: the plugin for that tool in Figma Desktop (Plugins > Development > Figma Desktop Bridge, or FigCli). Figma runs one plugin per file, so close the other tool's plugin first; FigCli talks to only one file, so close it in every other file.
+   - Connected -> say which tool and which file in one line and continue. Remember the name (and key, when available) of the connected file: question 0.2 uses it.
    - **Stale servers:** if `figma_get_status` lists `otherInstances` (other figma-console-mcp servers on ports 9223-9228 from old sessions), tell the user in one line that the Desktop Bridge plugin talks to only one server at a time and can end up connected to an old session. Show the cleanup: close old Claude Code sessions, or end the stale `figma-console-mcp` node processes (Windows: Task Manager > Details > node.exe with `figma-console-mcp` in the command line; macOS/Linux: `pkill -f figma-console-mcp`), then re-run the plugin. Do not kill processes yourself.
-   - **Figma token:** the REST-based tools (`figma_get_styles`, `figma_get_file_data`, `figma_check_design_parity`, library reads) need a valid `FIGMA_ACCESS_TOKEN`. If one fails with an auth or expired-token error, tell the user in one line to create a new token and update the MCP config (install step 2-3); plugin-based tools (`figma_execute`, screenshots) keep working meanwhile.
-4. If neither is installed, or the Desktop Bridge is not connected -> **stop**. Do not ask intake questions yet. Show the matching install steps below and ask: "Tell me when the tools are installed and connected, and I will check again."
+   - **Figma token:** the REST-based tools (`figma_get_styles`, `figma_get_file_data`, `figma_check_design_parity`, library reads) need a valid `FIGMA_ACCESS_TOKEN`. If one fails with an auth or expired-token error, tell the user in one line to create a new token and update the MCP config (install steps 2-3); plugin-based tools (`figma_execute`, screenshots) keep working meanwhile.
 
-**Never install anything yourself.** The user installs and connects the tools; you only check and show the steps. The user creates the Figma token themselves; never ask them to paste it into the chat.
+**Tool checkpoints (both tools installed only).** Before a large, time- or token-heavy step (full DS build, full component audit, Brownfield extract, Scenario C variable map, multi-screen builds, a Storybook update from Figma), tell the user in 2-3 lines which tool fits that step better and why, then ask: "Continue with <current> or switch to <other>?" When only one tool is installed, skip this and keep going.
+- FigCli is better for: full-file extract of tokens and structure, `snapshot` / `rules gen` / `check` regression gates (about 16 s and 300 tokens per file), `verify --measure` of screens (under 1 s and about 500 tokens per frame), and quick re-checks after a fix.
+- Desktop Bridge is better for: building variables, components and screens under the figma-use / figma-generate-library / figma-generate-design rules, the `tools/*.figma.js` scripts, screenshots of every variant in Light and Dark, and the final audit-design-system (it scans every variant; FigCli `check` reads strokes, padding and size from one sample variant per set).
+- Trial numbers (2026-10-01, ClinicSoft duplicate): FigCli check caught 4 of 5 planted defects (it missed a height change) in about 16 s and 300 tokens; the Desktop Bridge audit caught 5 of 5 in about 52 s and 6-10K tokens. The audit-design-system step at the end of every build stays mandatory whichever tool is chosen.
+- Mixed setups are fine (for example FigCli on the DS file for quick checks while the Desktop Bridge builds screens in a Design file). The default tip: builds through the Desktop Bridge, quick regression checks and `verify --measure` through FigCli, the final audit-design-system on the Desktop Bridge.
 
-Install steps for figma-console-mcp and figma-cli: `steps/preflight-install.md`.
+**Switching any time (Abdul, 2026-10-01).** The user can change tools at any point, on any file, mid-project or days later: they just say so. Nothing in Figma or in the project files belongs to one tool, so a switch never needs rework. On every switch:
+1. The user closes the old plugin in that file and opens the new one. Re-run check 5 and the file check (section 7c step 3) with the new tool.
+2. Save the new tool on that file entry in `status.json` (and `figma.tool`), and log it in that day's `CHANGELOG.md` entry (`Tool switch: <file>: <old> -> <new>`).
+3. Load `tools/figma_helpers.figma.js` again in the new tool before scripts that use `DS.*`.
+4. **FigCli baseline:** FigCli `check` compares the file with a saved snapshot (`snapshot` + `rules gen`). After any change made through the Desktop Bridge, after a switch, and after each approved checkpoint, regenerate the baseline before trusting the next `check`. Otherwise intended changes show up as drift.
+5. Same scripts in both tools: every `tools/*.figma.js` runs in the Desktop Bridge through `figma_execute` and in FigCli through `node src/index.js eval --file <script>` (tested with `check_bindings.figma.js`). Screenshots: `figma_capture_screenshot` or `node src/index.js verify "<node id>"`. Writes through FigCli `eval` may be blocked by Claude Code auto mode; the user allows the command or runs it.
+
+**Install only with a yes.** You check and show the steps. Run an install command only after the user agrees, and never `npm install -g`. The user creates the Figma token themselves; never ask them to paste it into the chat. Never run `figma-cli init-agent` in the Root (it writes its own `AGENTS.md`).
+
+Install steps: `Figma_Tools/README.md` (both tools) and `steps/preflight-install.md` (MCP client details).
 
 Also recommended (not blocking): the official Figma MCP and the skills figma-use, figma-generate-library, figma-generate-design, audit-design-system, ui-ux-pro-max. If one is missing, say so in one line and continue.
 
@@ -58,7 +76,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 
 | Section | File | Load when |
 |---|---|---|
-| 0b install steps | `steps/preflight-install.md` | preflight finds no tool or no Desktop Bridge |
+| 0b install steps | `steps/preflight-install.md`, `Figma_Tools/README.md` | preflight finds no tool installed or none connected |
 | 1.3-1.5 detail | `steps/both-native.md` | 1.2 = Both |
 | 4 (3a-3d) | `steps/greenfield.md` | 2.1 = Greenfield |
 | 5 | `steps/brownfield-1-screens.md` | 2.2 = 1 |
@@ -91,6 +109,7 @@ First pick the project (always, before 0.1):
 | # | Question (send exactly) | Notes |
 |---|---|---|
 | 0.0 | "Which project should I work on? <one line per folder in My Projects> / Start a new project" | List the folders in `My Projects\` (skip `_Project_Template` and `README.md`). If there are none, say so and go straight to 0.1. Existing project: read its `Project_Brief.md` and `status.json`, say in one line what is already answered, and ask only what is missing (or continue from its Status). If it has unsynced changelog entries, ask then whether to update its Storybook (open the DS file and the Desktop Bridge first). New project: continue with 0.1. |
+| 0.0t | Only when both Figma tools are installed (0b check 4) and the file has no saved `tool` (fallback `figma.tool`): "Which Figma tool should I use? Figma Desktop Bridge (full build and audit with the Figma skills, catches everything) (Recommended for builds) / FigCli (much faster, with about 20-30x fewer tokens for checks, extract and measure)" | Record the `tool` on that file entry in `status.json > figma` and in `figma.tool` (`desktop-bridge` / `figcli`; for a new project, once its folder exists in 0.1 and the files are registered in 0.2). The user can switch any time (0b, Switching any time). Then run 0b check 5 (connection) with that tool. One tool installed: skip, use it. |
 
 Then ask in this order: **0.1, 0.2, then the platform (Step 1, questions 1.1-1.5), then 0.3-0.8.** The platform comes early because the folder name (section 10) and the default fonts depend on it.
 Until the project folder exists (0.3), keep the answers in the conversation; right after 0.3, write them all into `Project_Brief.md` (copied from the template) and keep it updated from then on.
@@ -144,7 +163,7 @@ Platform rules (never mix):
 ### Decision tree
 
 ```
-Tools preflight (0b) -> figma-console-mcp or figma-cli connected? No -> stop, show install steps
+Tools preflight (0b) -> which tools are installed? None -> stop, Figma_Tools/README.md; both -> tool question 0.0t after 0.0; then connected? No -> stop
 Intake basics 0.0-0.2 -> Platform (1.1-1.5) -> load platform Main Skill(s) -> basics 0.3-0.8
    └─ Greenfield or Brownfield? (2.1)
       ├─ Greenfield
