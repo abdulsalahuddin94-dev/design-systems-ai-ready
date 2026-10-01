@@ -64,7 +64,7 @@ The design system is live in Storybook: browse every component, try its variants
 
 Needs **Node.js 18+** (`node --version`). Then:
 1. `git clone <repo URL>` (private repo; ask for access).
-2. `cd "<repo folder>/Trianglz/storybook"`
+2. `cd "<repo folder>/Reference_Library/Trianglz/Web/storybook"`
 3. `npm install` (first time only; `node_modules` is not in the repo).
 4. `npm run storybook`
 5. Open http://localhost:6006
