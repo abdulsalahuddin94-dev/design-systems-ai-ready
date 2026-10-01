@@ -12,7 +12,7 @@ description: Use when building, auditing or coding data-entry controls with the 
 **Load `../../Foundation_Skill/SKILL.md` first** (schemes, state layers, type scale, shape, file structure, build order, atomic rules).
 
 Scope: **⭐Form Elements** pages only: ➜ Date & Time Pickers, ➜ Checkbox, ➜ Radio, ➜ Search, ➜ Switch, ➜ Text Fields, ➜ Loading & progress, ➜ Sliders. Platform Android (M3 Expressive).
-Reference: `references/components.md`, `references/gaps.md`, `references/screens/` (to capture).
+Reference: `references/inventory.md` (every set and property, live 2026-10-01), `references/states.md` (what each state looks like and which token draws it, verified), `references/components.md`, `references/gaps.md`, `references/screens/` (Light + Dark of every public set).
 
 ## 1. Inventory
 
@@ -37,27 +37,27 @@ Reference: `references/components.md`, `references/gaps.md`, `references/screens
 ## 2. Text field (Molecule)
 
 Props: `Style` Filled | Outlined · `State` Enabled | Hovered | Focused | Error | Disabled · `Text configurations` Input text | Label text | Placeholder text · `Leading icon` / `Trailing icon` (variant booleans) · BOOLEAN `Show supporting text` · TEXT `Label text`, `Placeholder text`, `Input text`, `Supporting text`.
-Anatomy (Outlined Focused): 56dp field, radius 4 (Extra-small), stroke **3dp Schemes/Primary/Primary** (M3 focus = 2dp... here 3), state-layer padding 4/16, leading = `Icon button - standard` instance (48dp), content (label + input body/large), supporting text `body/small` On Surface Variant, padding 4/16.
-- Filled: Surface Container Highest fill, 1dp On Surface Variant bottom indicator (2dp Primary when focused), top corners 4.
+Anatomy (Outlined Focused): 56dp field, radius 4 (raw, = Extra-small), stroke **3dp Schemes/Primary/Primary** (M3 spec 2dp; the Filled indicator is also 3dp when focused or in error), state-layer padding 4/16, leading = `Icon button - standard` instance (48dp), content (label + input body/large), supporting text `body/small` On Surface Variant, padding 4/16.
+- Filled: Surface Container Highest fill, 1dp On Surface Variant bottom indicator (On Surface on hover, 3dp Primary when focused, 3dp Error in error), top corners 4.
 - Outlined: Outline 1dp border; Focused Primary; Error = Schemes/Error border + label + supporting text + error icon.
-- Disabled: On Surface at 38% / border 12%.
+- Disabled: On Surface 4% overlay on the field, field, indicator and supporting row at 38% opacity.
 When to use: Filled for most forms (stronger affordance), Outlined for dense or already-busy surfaces; don't mix in one form. Always show a floating label; placeholder only as extra hint. Supporting text for help or error message; character counter goes trailing in supporting row.
 
 ## 3. Selection controls (Atoms)
 
 - **Checkbox**: 48dp target, 40dp state layer (radius Full), 18dp container radius 2, Selected fill `Schemes/Primary/Primary` with `check_small` icon (On Primary). Types include **Error** versions (Error color). Use for multi-select and to confirm (terms). `Show focus indicator` boolean.
-- **Radio**: Selected True/False; 20dp ring Primary when selected, On Surface Variant when not. Single choice among 2-5 visible options; more options -> menu / list.
-- **Switch**: 52x32 track radius Full; Selected track Primary with On Primary handle (28dp, 24 when unselected... handle grows on press), optional check/close icon in the handle (`Icon=True`). Use for instant on/off settings. Unselected: Surface Container Highest track + Outline border.
+- **Radio**: Selected True/False; remote `radio_button_checked/unchecked` icon (24dp) in a 40dp container, Primary when selected, On Surface Variant when not; hover/focus layer Primary, press layer On Surface. Single choice among 2-6 visible options (Abdul's rule: 7+ -> menu / dropdown).
+- **Switch**: 52x32 track radius Full. Selected: Primary track, 24dp On Primary handle (Primary Container on hover/focus/press, 28dp on press). Unselected: **Surface Container** track (M3 spec says Highest) + 2dp Outline border, 16dp Outline handle (On Neutral Container on hover/focus, 28dp on press). `Icon=True` adds a check (selected) / close (unselected) icon and makes the unselected handle 24dp. Use for instant on/off settings.
 State layers: Hovered 8%, Focused 10% + focus ring, Pressed 10% (ripple), Disabled 38%.
 
 ## 4. Search
 
-- **Search bar** (56dp, radius Full, Surface Container High): leading icon (menu/back), `Placeholder text`, trailing icon(s) (`Show 1st/2nd trailing icon`), optional avatar. Use at the top of a screen as entry point.
+- **Search bar** (360x56, radius 28 raw, Surface Container High, placeholder body/large On Surface Variant): leading icon (menu/back), `Placeholder text`, trailing icon(s) (`Show 1st/2nd trailing icon`), optional avatar. Use at the top of a screen as entry point.
 - **Search full-screen layout** (Compact windows) and **docked layout** (Medium+), each with list items for suggestions (`Show list items`). Baseline versions are the older M3 look - prefer the non-baseline ones.
 
 ## 5. Sliders
 
-Standard (0-100), Centered (-50..+50) and Range. `Size` XSmall..XLarge (track 16-... per M3 Expressive), `Orientation` Horizontal/Vertical, `Show value indicator`, `Show stops`, `Show icon` + `Icon` swap (inset icon on large sizes). Use for choosing a value where precision is low (volume, brightness, price range). Pair with a text field when exact values matter.
+Standard (0-100), Centered (-50..+50) and Range. `Size` XSmall/Small/Medium/Large/XLarge = track 16/24/40/56/96dp with a 4dp Primary bar handle (44-108dp tall, 2dp while pressed); active track Primary, inactive Secondary Container; Pressed shows the Inverse Surface value pill, `Orientation` Horizontal/Vertical, `Show value indicator`, `Show stops`, `Show icon` + `Icon` swap (inset icon on large sizes). Use for choosing a value where precision is low (volume, brightness, price range). Pair with a text field when exact values matter.
 
 ## 6. Progress and loading
 
@@ -78,10 +78,46 @@ Colors: active Primary, track Secondary Container / Surface Container Highest, s
 |---|---|
 | Free text | Text field (Filled default) |
 | On/off, applies immediately | Switch |
-| One of 2-5 | Radio (or Segmented / Connected button group - Navigation) |
-| One of many | Menu / dropdown (Menu + Text field trailing `arrow_drop_down`), or list |
+| One of 2-6 | Radio (or Connected button group - Navigation) |
+| One of 7+ | Menu / dropdown (Menu + Text field trailing `arrow_drop_down`), or list |
 | Multi-select | Checkbox, or Filter chips (Data display) |
 | Value on a range | Slider |
 | Date / time | Modal date picker / Dial picker |
 | Search | Search bar -> full-screen (compact) / docked (medium+) |
 | Waiting | Loading indicator (short), Linear determinate (known) |
+
+## 9. Rules for AI agents
+
+**Always**
+- Instance the public set by name (section 1) and set real variant values; check `references/states.md` for what each state should look like.
+- Give every text field a real `Label text`, a useful `Supporting text` (format or limit) and turn `Show supporting text` off when there is nothing to say. Errors say what is wrong and how to fix it ("Enter a 10-digit phone number").
+- One form = one text field style (all Filled or all Outlined).
+- Selection controls sit inside a 48dp target; keep 8-16dp between stacked controls and put the label to the right in a List item when it is a settings row.
+- Swap remote kit icons/instances for the local ones with the same name when you build in a project copy (gaps 1).
+- Dark mode = switch the `m3` mode on the frame; never pick Dark colors by hand.
+
+**Never**
+- Detach a component to change color, radius or padding; never draw a field or control with plain frames.
+- Use the baseline search layouts in new work (use `Search full-screen layout` / `Search docked layout`).
+- Use a Switch in a form that needs Save; use a Checkbox there.
+- Show Error before the user has interacted or submitted.
+- Use Radio for one yes/no choice or Checkbox for mutually exclusive options.
+
+## 10. Jetpack Compose map (Material 3)
+
+| Figma | Compose |
+|---|---|
+| `Text field` Filled / Outlined | `TextField` / `OutlinedTextField` (`label`, `placeholder`, `supportingText`, `leadingIcon`, `trailingIcon`, `isError`, `enabled`) |
+| `Checkboxes` (Indeterminate) | `Checkbox` / `TriStateCheckbox`; Error types = `CheckboxDefaults.colors(...)` with `colorScheme.error` |
+| `Radio buttons` | `RadioButton` inside `Modifier.selectableGroup()` rows |
+| `Switch` (Icon=True) | `Switch(thumbContent = { Icon(...) })` |
+| `Search bar` / full-screen / docked | `SearchBar` / `DockedSearchBar` (+ `SearchBarDefaults.InputField`) |
+| `Standard` / `Range slider` (Centered = custom track) | `Slider` / `RangeSlider` (M3 Expressive sizes via `SliderDefaults.Track`) |
+| Linear / Circular progress (Wave) | `LinearProgressIndicator` / `CircularProgressIndicator` (`LinearWavyProgressIndicator`, `CircularWavyProgressIndicator`) |
+| `Loading indicator` (container) | `LoadingIndicator` / `ContainedLoadingIndicator` |
+| `Modal date picker`, `Input date picker`, `Docked ... [desktop]` | `DatePickerDialog` + `DatePicker` (`DisplayMode.Picker / Input`), `DateRangePicker` |
+| `Dial picker` / `Keyboard picker` | `TimePicker` / `TimeInput` |
+Colors come from `MaterialTheme.colorScheme.<role>` (the `Schemes/*` names in camelCase), text from `MaterialTheme.typography.<role><Size>` (`bodyLarge`, `labelLarge`...), shapes from `MaterialTheme.shapes`. Touch targets 48dp (`minimumInteractiveComponentSize`), TalkBack labels on icon-only controls (`contentDescription`), error text announced with `semantics { error(...) }`.
+
+## 11. Final check after using this skill
+Run audit-design-system on the result: every control is an instance of a public set above (no detached copies, no baseline sets), fills resolve to local `m3` Schemes, text uses local styles, no remote kit icons left in a project copy, and Light and Dark screenshots match `references/screens/`. Report anything that needed a workaround against `references/gaps.md`.

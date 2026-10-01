@@ -12,7 +12,7 @@ description: Use when building, auditing or coding information surfaces with the
 **Load `../../Foundation_Skill/SKILL.md` first** (schemes, state layers, type scale, shape, build order, atomic rules).
 
 Scope: **⭐Data display** pages only: ➜ Cards, ➜ Dialogs, ➜ Avatars, ➜ Badges, ➜ Carousel, ➜ Chips, ➜ Dividers, ➜ Lists, ➜ Shapes, ➜ Sheets, ➜ Snackbar, ➜ Tooltips. Platform Android (M3 Expressive).
-Reference: `references/components.md`, `references/gaps.md`, `references/screens/` (to capture).
+Reference: `references/inventory.md` (every set and property, live 2026-10-01), `references/states.md` (what each state looks like and which token draws it, verified), `references/components.md`, `references/gaps.md`, `references/screens/` (Light + Dark of every public set except Shapes and XR).
 
 ## 1. Inventory
 
@@ -35,7 +35,7 @@ Reference: `references/components.md`, `references/gaps.md`, `references/screens
 | List Item baseline (density 0 / -2 / -4) + Full Lists | 6251:12306 / 9650 / 7268 / 19565 | 238 / 217 / 197 / 3 | Molecule (older M3) |
 | **Shape Set** (expressive shapes) | 6264:19851 | 35 shapes (Circle, Pill, 4-leaf clover, cookies, Burst, Gem, Heart...) | Atom |
 | **Bottom sheet** / **Side Sheet** | 6259:31984 / 6259:31921 | 2 (Modal) / 4 (Type Standard, Modal x Show back) | Organism |
-| **Snackbar** | 6259:37768 | 10 = Configuration (Text only, Text & action, Text & longer action) x lines x close | Molecule |
+| **Snackbar** | 6259:37768 | 10 = Configuration (Text only, Text & action, Text & longer action) x `# of lines` (One line, Two lines) x Show close affordance | Molecule |
 | **Plain Tooltip** / **Rich Tooltip** | 6262:18531 / 6263:18853 | 2 / 1 | Molecule |
 
 ## 2. How to choose
@@ -57,16 +57,54 @@ Reference: `references/components.md`, `references/gaps.md`, `references/screens
 
 ## 3. Tokens (observed)
 
-- Cards: Outlined bg Surface + stroke Outline Variant radius 12 (Medium); Elevated uses `Elevation Light/1`; content padding 16, header padding 12/4/12/16.
+- Cards: Outlined bg Surface + stroke Outline Variant radius 12 (raw); Elevated Surface Container Low + remote `M3/Elevation Light/1`; Filled Surface Container Highest; content padding 16, header padding 12/4/12/16. All card texts use remote `M3/*` styles.
 - Dialog: Surface Container High, radius 28, padding 24, gap 16, actions row padding 20/24/20/8, divider optional, actions = `Button - text` (remote instances).
 - Snackbar: fill **remote** `Schemes/Inverse Surface`, text **remote** `M3/body/medium`, effect remote `M3/Elevation Light/3` (local equivalents exist), radius 4.
 - Badge: Error fill, On Error label (remote `M3/label/small`), radius Full, padding 0/4.
 - Avatar: Primary Container + On Primary Container placeholder, radius Full (40dp).
-- Tooltip: Inverse Surface + Inverse On Surface, body/small, padding 4/8, radius 4.
-- Chips: height 32, radius 8 (Small), label/large, 18dp icons (remote `check`, `arrow_drop_down`), Disabled container On Surface Variant 10%.
+- Tooltip: Inverse Surface + Inverse On Surface, body/small, padding 4/8, radius 4. Rich tooltip: Surface Container, radius 12, Elevation Light/2.
+- Lists: Selected item Secondary Container radius 16; dragged item lifts as Tertiary Container + Elevation 5; Segmented list = items on Surface with 2dp gaps.
+- Bottom sheet: Surface Container Low, top corners 28, drag handle 32x4 Outline, modal adds Scrim 32%.
+- Chips: height 32, radius 8 (raw), label/large, 18dp icons (remote `check`, `arrow_drop_down`, `close`); Outlined = 1dp Outline Variant stroke, Selected = Secondary Container + On Secondary Container, Disabled = stroke On Surface 10% + label 38% (Elevated Disabled: container On Surface Variant 10%).
 
 ## 4. M3 rules to keep
 - Touch target 48dp (chips 32 visual inside 48 target).
 - One snackbar at a time; don't put critical info only in a snackbar.
 - Dialogs: max 2 actions preferred (text buttons, confirm on the right), headline optional, no dismiss by scrim for destructive choices.
-- Lists: 56 (one-line), 72 (two-line), 88 (three-line) dp heights at density 0; keep leading element alignment consistent.
+- Lists: expressive List item heights 52 (one line), 64 (two lines), 80 (with overline); baseline density 0 = 56 / 72 / 88. Keep leading element alignment consistent.
+
+## 5. Rules for AI agents
+
+**Always**
+- Instance the public set by name and fill it with real content (real names, numbers, images); replace every `Slot-component` placeholder and the `mobile_check` / `stars` placeholder icons.
+- Cards: one style per grid or list; Elevated by default on plain surfaces, Outlined on busy or tinted surfaces, Filled for the lowest emphasis. The whole card can be one touch target, or it holds explicit actions, not both.
+- Lists: one-line for simple settings, two-line for title + detail; leading avatars for people, icons for actions/categories; trailing Switch for instant settings, Checkbox for multi-select, text for values.
+- Badges sit on the icon's top-end corner; numbers above 999 become "999+".
+- Snackbar at the bottom above the nav bar or FAB, one at a time, with at most one action.
+- Dialogs: headline as a question or clear statement, confirm action names the result ("Delete"), dismiss on the left.
+
+**Never**
+- Put critical errors only in a snackbar or tooltip; never put interactive content in a plain tooltip.
+- Mix chip types in one group; never use chips as primary navigation.
+- Use baseline list items (`List Item: 0/-2/-4 Density`, `Full Lists`) in new work.
+- Detach to restyle; switch `Style`, `Type`, `Configuration` instead.
+
+## 6. Jetpack Compose map
+
+| Figma | Compose |
+|---|---|
+| `Stacked card` / `Horizontal card` Outlined / Elevated / Filled | `OutlinedCard` / `ElevatedCard` / `Card` |
+| `Basic dialog`, `List dialog` | `AlertDialog` (`icon`, `title`, `text`, `confirmButton`, `dismissButton`), `BasicAlertDialog` for custom content |
+| `Generic avatar` | no M3 component; `Box(Modifier.clip(CircleShape).background(colorScheme.primaryContainer))` |
+| `Badges` Small / Large | `Badge()` / `Badge { Text("3") }` inside `BadgedBox` |
+| `Carousel` Multi-browse / Uncontained / Hero / Full screen | `HorizontalMultiBrowseCarousel` / `HorizontalUncontainedCarousel` / `HorizontalCenteredHeroCarousel` / `HorizontalPager` |
+| `Assistive` / `Filter` / `Input` / `Suggestion chip` | `AssistChip` / `FilterChip` / `InputChip` / `SuggestionChip` (`Elevated*` for Elevated style) |
+| `Horizontal` / `Vertical` divider | `HorizontalDivider` / `VerticalDivider` |
+| `List` / `List item` | `LazyColumn` of `ListItem` (`headlineContent`, `overlineContent`, `supportingContent`, `leadingContent`, `trailingContent`); segmented = `SegmentedListItem` style groups |
+| `Bottom sheet` (Modal) / `Side Sheet` | `ModalBottomSheet` / `BottomSheetScaffold`; side sheets = `ModalNavigationDrawer`-style custom layout |
+| `Snackbar` | `SnackbarHost` + `Snackbar` (`actionLabel`, `withDismissAction`) |
+| `Plain Tooltip` / `Rich Tooltip` | `PlainTooltip` / `RichTooltip` in `TooltipBox` |
+| `Shape Set` | `MaterialShapes` (`MaterialShapes.Cookie9Sided.toShape()`) |
+
+## 7. Final check after using this skill
+Run audit-design-system: every surface is an instance of a public set above, no baseline lists, placeholders replaced, no remote kit text styles or icons left in a project copy, and Light and Dark match `references/screens/`. Note workarounds in `references/gaps.md`.

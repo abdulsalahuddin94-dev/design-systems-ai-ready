@@ -67,7 +67,7 @@ Scopes: Primary and all scheme roles use ALL_SCOPES; Surface Tint and Background
 Values are **hard-coded colors with alpha**, and several no longer match their base role (e.g. `State Layers/Primary/*` = #002049 (RN-20) while Primary is RN-40 #193b6e; `On Surface` state = #12141d vs scheme N-10 ok; `Surface/Opacity-08` = #fcf8f9 is the Google baseline surface, not Trianglz N-100). Copied from the M3 baseline kit and partly re-tinted.
 
 ## m3 - Surfaces
-`Surfaces/Surface Tint 5% | 8% | 11% | 12% | 14%` = RN-40 (#193b6e) / RN-80 (dark) at those alphas (M3 elevation tint overlays, legacy M3 approach).
+`Surfaces/Surface Tint 5% | 8% | 11% | 12% | 14%` = raw #193b6e (Light, = RN-40) / raw **#abc7ff** (Dark, Google baseline, not RN-80) at those alphas (M3 elevation tint overlays, legacy M3 approach). Corrected 2026-10-01 from the live file.
 
 ## Font
 `Font-family` = "Google Sans Flex" (STRING, ALL_SCOPES). M3 baseline uses Roboto / Roboto Flex; Google Sans Flex is Google's brand font - check licensing for app use.

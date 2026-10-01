@@ -10,3 +10,11 @@
 6. **Med** - Group routing: Loading & progress indicators display status (Data display by the routing rule); keep here only if the team agrees.
 7. **Low** - No dark previews on these pages.
 8. **Screenshots** - captured 2026-09-29/30 in `references/screens/` (18 PNGs). Light: checkbox-all-variants, date-pickers, loading-indicators, progress-indicators, radio-all-variants, search, sliders-all-variants, switch-all-variants, text-fields-all-variants, time-pickers. Dark: checkbox-dark, date-time-pickers-dark, loading-progress-dark, radio-dark, search-dark, sliders-dark, switch-dark, text-fields-dark. Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. Dark sets were captured from a temporary page of instances with the Dark mode applied (page deleted afterwards).
+
+## Update 2026-10-01 (live re-study through FigCli, read-only)
+10. **Med** - Switch unselected track uses `Surface Container` (M3: Surface Container Highest); on Dark it nearly disappears into Surface Container surfaces.
+11. **Med** - Filled text field indicator is 3dp on focus and error (M3: 2dp); Outlined focus stroke 3dp (M3: 2dp).
+12. **Med** - Range slider `Value` options are `-50/0/+50` (copied from Centered); it nests a remote `.Building Blocks/Track dot`.
+13. **Med** - Calendar cell dates use remote `M3/body/large`; docked date picker Month/Year lists nest remote `List (baseline)`; search layouts nest remote `List item` with remote `Corner/Extra-small` radius; `Search bar` with avatar nests remote `Generic avatar` (local exists).
+14. **Low** - Radio uses remote `radio_button_checked/unchecked` icons; local Material Symbols set has no radio icons, so add them before swapping.
+15. Dark screenshots: every public set has one (see 8). Shapes, XR and baseline sets have Light only; new Dark captures need a duplicate file (a temporary Dark page is a write).

@@ -30,6 +30,6 @@
 | Shape Set | 6264:19851 | Shape x35 | | |
 | Side Sheet | 6259:31921 | Show actions, Headline text, Content; Type Standard/Modal; Show back | | Sheets: 32 local fills; 4 unstyled texts |
 | Bottom sheet | 6259:31984 | Show drag handle, Content; Modal | | |
-| Snackbar | 6259:37768 | Supporting text; Configuration x3; **unnamed property** (`# of lines`?) One line/Two lines; Show close affordance | 344x112 **remote** `Schemes/Inverse Surface`, remote `M3/body/medium`, remote `M3/Elevation Light/3`, radius 4; action = `.Building Blocks/Snackbar-action`, close 48 | Snackbar: 7 local / 6 remote fills |
+| Snackbar | 6259:37768 | Supporting text; Configuration x3; `# of lines` One line/Two lines; Show close affordance | 344x112 **remote** `Schemes/Inverse Surface`, remote `M3/body/medium`, remote `M3/Elevation Light/3`, radius 4; action = `.Building Blocks/Snackbar-action`, close 48 | Snackbar: 7 local / 6 remote fills |
 | Plain Tooltip | 6262:18531 | Supporting text; Type Single/Multi line | 108x24 Inverse Surface, body/small Inverse On Surface, padding 4/8, radius 4 | |
 | Rich Tooltip | 6263:18853 | Show Subhead, Subhead text, Supporting text, Show actions, Show secondary button | | |

@@ -12,7 +12,7 @@ description: Use when building, auditing or coding actions and navigation with t
 **Load `../../Foundation_Skill/SKILL.md` first** (schemes, state layers, type scale, shape, build order, atomic rules).
 
 Scope: **⭐Navigation** pages only: ➜ Buttons, ➜ App Bar, ➜ Menu, ➜ Navigation, ➜ Toolbar, ➜ Tabs. Platform Android (M3 Expressive, 2025).
-Reference: `references/components.md`, `references/gaps.md`, `references/screens/` (to capture).
+Reference: `references/inventory.md` (every set and property, live 2026-10-01), `references/states.md` (what each state looks like and which token draws it, verified), `references/components.md`, `references/gaps.md`, `references/screens/` (Light + Dark of every public set).
 
 ## 1. Inventory (public sets)
 
@@ -35,23 +35,23 @@ Reference: `references/components.md`, `references/gaps.md`, `references/screens
 
 | Emphasis | Component | Tokens | Use |
 |---|---|---|---|
-| Highest | FAB / Extended FAB | Primary/Secondary/Tertiary container (or solid), Elevation 3, radius Large-XL | the single main action of a screen (compose, create) |
+| Highest | FAB / Extended FAB | Primary/Secondary/Tertiary container (or solid), Elevation 3 (4 on hover), radius 16 / 20 / 28 for Default / Medium / Large, Extended FAB label title/medium | the single main action of a screen (compose, create) |
 | High | `Button` (filled) | Primary + On Primary | final/primary action (Save, Confirm) - one per view |
 | Medium-high | `Button - tonal` | Secondary Container + On Secondary Container | important but not primary (Next in flows) |
 | Medium | `Button - elevated` | Surface Container Low + Primary text, Elevation 1 | when the button sits on busy/patterned backgrounds |
-| Medium | `Button - outline` | Outline border + On Surface Variant/Primary text | secondary actions (Cancel, Back) |
+| Medium | `Button - outline` | 1dp **Outline Variant** border + On Surface Variant text | secondary actions (Cancel, Back) |
 | Low | `Button - text` | Primary text, no container | tertiary, dialog actions, inline |
 | Toggle | `Toggle button*` | Selected changes container/shape | on/off action with button look (bold, favorite) |
 | Icon only | `Icon button*` (standard, filled, tonal, outline) | same color logic | compact actions in bars, lists, cards |
 
-- Sizes (M3 Expressive): XSmall 32, Small 40, Medium 56, Large 96, XLarge 136 container heights; visual Small = 40dp inside a 48dp target. `Type` Round (Full radius) vs Square (Medium/Large corner, morphs on press).
+- Sizes (M3 Expressive): XSmall 32, Small 40, Medium 56, Large 96, XLarge 136 container heights; labels label/large (XSmall, Small), title/medium (Medium), headline/small (Large), headline/large (XLarge); XSmall/Small sit inside a 48dp target. `Type` Round (Full radius, **morphs to radius 8 when pressed**) vs Square. Toggles become radius 12 when Selected.
 - Anatomy: `Content` (container) > `State-layer` (padding 10/16 Small, gap 8) > optional `Icon` (INSTANCE_SWAP, `Show icon`) + `Label` (label/large). Disabled = container `State Layers/On Surface/Opacity-10`, content 38%.
 - Properties: `Label text`, `Show icon`, `Icon`, `Icon (selected)` (toggles), `Show focus indicator`.
 - Button groups: `Standard button group` (spaced, Filled/Tonal/Outline, Icon or Label) for related actions; `Connected button group` replaces segmented buttons for single/multi select (2-5 segments). `Split button` = main action + menu trigger.
 
 ## 3. Top of screen: App bar
 
-`App bar` Configuration: **Small** (default inner screens), **Small-centered** (brand/home), **Medium** / **Large** (collapsing headline for top-level screens), **Search** (search as the title), **Small-image** (avatar/logo). `Elevation` Flat (at rest) / On-scroll (Surface Container on scroll). Leading = navigation icon button (menu/back), up to 3 trailing actions (`Show 1st/2nd/3rd trailing action`), avatar optional. Title `title/large` (Small), headline sizes for Medium/Large.
+`App bar` Configuration: **Small** (default inner screens), **Small-centered** (brand/home), **Medium** / **Large** (collapsing headline for top-level screens), **Search** (search as the title), **Small-image** (avatar/logo). `Elevation` Flat (at rest, no fill - sits on the screen Surface) / On-scroll (Surface Container on scroll). Leading = navigation icon button (menu/back), up to 3 trailing actions (`Show 1st/2nd/3rd trailing action`), avatar optional. Title `title/large` (Small), headline sizes for Medium/Large.
 `Bottom app bar`: 1-4 action icons + optional FAB - use on compact screens for frequent actions (M3 Expressive prefers the docked/floating **Toolbar** instead).
 
 ## 4. Moving between destinations
@@ -61,10 +61,45 @@ Reference: `references/components.md`, `references/gaps.md`, `references/screens
 | Compact (phones) | `Navigation Bar: Horizontal items` 3-5 destinations (Vertical items = icon above label, the classic bottom nav) |
 | Medium (foldables, small tablets) | `Navigation Rail` (3-6 items, optional FAB + menu) |
 | Expanded+ | `Navigation Rail: Expanded` (Docked or Floating; replaces the navigation drawer in M3 Expressive) |
-Nav item: selected = pill `Secondary Container` + icon swaps to `Icon (selected)` (filled) + label On Secondary Container (label/medium); badge None/Small/Large. Don't use nav bars for actions; 3-5 destinations only.
+Nav item: selected = pill `Secondary Container` + icon swaps to `Icon (selected)` (filled); label label/medium in `Secondary` under the pill (vertical items) or `On Secondary Container` inside it (horizontal items); badge None/Small/Large. Don't use nav bars for actions; 3-5 destinations only.
 Tabs: group related content at the same level inside a screen. Primary tabs under the app bar (indicator Primary, label title/small); Secondary tabs inside content. Fixed for 2-4 tabs, Scrollable for more.
 Menus: temporary list of choices from a button, text field (dropdown) or long press. Standard (Surface Container) or Vibrant (Tertiary container) theme, groups with section labels, items with leading icon, trailing text/shortcut/badge, selected state.
 Toolbar: contextual actions for the current page; Floating (over content, Vibrant or Standard) or Docked (full-width bottom).
 
 ## 5. XR
 Sections "... for XR" hold Android XR spatial variants (XR App Bar, Navigation Rail/Bar, Toolbar, Dialog) with Surface container elevations. Use only for XR targets.
+
+## 6. Rules for AI agents
+
+**Always**
+- One filled `Button` (or one FAB) per view for the main action; pair it with `Button - outline` or `Button - text` for the alternative. Dialog actions are `Button - text`.
+- Pick the size by context: Small (40) in app content, Medium/Large only for hero or kiosk actions; keep one size per row.
+- Real labels in sentence case ("Save changes"), real Material Symbols icons through the `Icon` / `Icon (selected)` swaps, never the `stars` placeholder.
+- Navigation by window size: Navigation Bar (compact) -> Navigation Rail (medium) -> Navigation Rail: Expanded (expanded+). 3-5 destinations, labels always shown on the bar.
+- Tabs directly under the app bar (Primary) or inside content (Secondary); Fixed for 2-4, Scrollable for more.
+- Icon-only buttons get a content description; keep 48dp targets and 8dp between adjacent targets.
+
+**Never**
+- Use `Segmented button`, `Menu (baseline)`, baseline list items or `Bottom app bar` in new work (baseline / deprecated remote parts); use `Connected button group`, `Menu`, `Toolbar`.
+- Put two FABs on one screen, or a FAB on a dialog or sheet.
+- Use a navigation bar for actions, or tabs for navigation between unrelated screens.
+- Detach to change color or radius; switch `Type`, `Size`, `Color` instead.
+
+## 7. Jetpack Compose map (Material 3 Expressive)
+
+| Figma | Compose |
+|---|---|
+| `Button` / `- tonal` / `- elevated` / `- outline` / `- text` | `Button` / `FilledTonalButton` / `ElevatedButton` / `OutlinedButton` / `TextButton` (`ButtonDefaults.shapes()` for the press morph, sizes via `ButtonDefaults.*ContentPadding` / `MediumContainerHeight`...) |
+| `Toggle button*` | `ToggleButton` / `ElevatedToggleButton` / `TonalToggleButton` / `OutlinedToggleButton` |
+| `Icon button*` (+ togglable) | `IconButton`, `FilledIconButton`, `FilledTonalIconButton`, `OutlinedIconButton` (+ `*IconToggleButton`) |
+| `FAB` / `Extended FAB` / `FAB menu` | `FloatingActionButton` / `MediumFloatingActionButton` / `LargeFloatingActionButton`, `ExtendedFloatingActionButton`, `FloatingActionButtonMenu` |
+| `Connected button group` / `Standard button group` | `ButtonGroup` (connected: `ButtonGroupDefaults.ConnectedSpaceBetween`) |
+| `Split button` | `SplitButtonLayout` (`SplitButtonDefaults.LeadingButton` / `TrailingButton`) |
+| `App bar` Small / Small-centered / Medium / Large / Search | `TopAppBar` / `CenterAlignedTopAppBar` / `MediumFlexibleTopAppBar` / `LargeFlexibleTopAppBar` / `TopSearchBar` |
+| `Menu` / `Menu item` | `DropdownMenu` / `DropdownMenuItem` (groups: `DropdownMenuGroup`) |
+| `Navigation Bar` / `Navigation Rail` / `Rail: Expanded` | `NavigationBar` (`ShortNavigationBar`) / `NavigationRail` / `WideNavigationRail` (or `NavigationSuiteScaffold` to switch by window size) |
+| `Toolbar` Floating / Docked | `HorizontalFloatingToolbar` / `VerticalFloatingToolbar` / `FlexibleBottomAppBar` |
+| `Tabs` Primary / Secondary | `PrimaryTabRow` / `SecondaryTabRow` (`*ScrollableTabRow` for Scrollable) |
+
+## 8. Final check after using this skill
+Run audit-design-system: every action/navigation element is an instance of a public set above, no baseline or deprecated sets, no remote kit icons or `Icon button - standard` left in a project copy, one primary action per view, Light and Dark match `references/screens/`. Note workarounds in `references/gaps.md`.

@@ -21,6 +21,35 @@ Component skills: `Component_Skills/Form_Elements_Skill`, `Component_Skills/Navi
 
 ---
 
+## Update 2026-10-01 (live re-study through FigCli, read-only - overrides older details below)
+
+Every variable, style and component set was re-read from the open file with read-only scripts; each public set's states were traced layer by layer (fills, strokes, state layers, opacity, text and effect styles, radius bindings, nested instances), and the Light/Dark screenshots in the component skills were re-checked against them. Per-group results: `Component_Skills/*/references/inventory.md` (every set and property) and `references/states.md` (what each state looks like and which token draws it).
+
+Confirmed: 4 collections (`m3` 235 Light/Dark, `Palettes` 118, `Font` 1, `Shape` 10), 0 code syntax, 4 descriptions, all `m3` and `Palettes` variables ALL_SCOPES (Shape = CORNER_RADIUS); 30 text styles, 10 effect styles, 11 grid styles, 2 paint styles; 197 non-icon component sets/components + 141 icons. Scheme aliases in `references/variables.md` are correct.
+
+Corrections:
+- `Surfaces/Surface Tint 5..14%` are **raw** colors, not aliases: Light #193b6e (= RN-40), Dark **#abc7ff** (Google baseline, not RN-80 #9bb9f4).
+- State layers Dark values are Google baseline colors too (e.g. `State Layers/Primary/*` Dark #abc7ff, `On Surface/*` Dark #e5e2e2 vs scheme N-90 #eaecf0). Light `Primary/*` = #002049. Trianglz brand changes never reach them.
+- Text styles: title/large binds only remote letter spacing; title/medium, title/small, label/large, label/medium and all body styles bind remote font size + line height; label/small binds remote line height only; display/headline bind only `Font-family`.
+- Elevation effects use raw black 30% / 15% (not bound to `Schemes/Shadow`); Light and Dark sets are identical apart from layer order.
+
+The M3 recipe as this file draws it (verified on every public set):
+| State | How it is drawn |
+|---|---|
+| Enabled | container role + its On- role for content |
+| Hovered | `State-layer` frame filled `State Layers/<content role>/Opacity-08` |
+| Focused | same layer at `Opacity-10`; the 3dp ring is a separate `Show focus indicator` boolean (off by default) |
+| Pressed | layer `Opacity-08` + a `Ripple` vector at `Opacity-10`; Round buttons **morph** their container radius from Full to 8 (Small) - M3 Expressive shape morph |
+| Dragged | layer `Opacity-16` (cards, chips, list items) |
+| Disabled | two recipes exist: (a) container `State Layers/On Surface/Opacity-10` + `State-layer` frame at 38% opacity (filled, tonal, outline buttons, chips, switch); (b) whole component or content at 38% opacity (checkbox, radio, slider handle, list item content, menu leading/trailing). Text field: overlay On Surface 4% + field 38% |
+| Selected | stronger container (Primary, Secondary, Inverse Surface, Secondary Container or Tertiary Container) and, for toggles, a squarer radius (12) |
+
+Remote dependencies still inside public components (the file is not self-contained): icons (`stars`, `stars_filled`, `check_small`, `radio_button_checked`, `check`, `close`, `arrow_drop_down`, `keyboard_arrow_down/up`, `local_taxi`, `mobile_check`...), `Icon button - standard` (text field, search, app bar, dialogs, pickers, sheets, rail), `Button - text` (dialog and picker actions), `Generic avatar` (cards, search), `List item` and `List (baseline)` (search, list dialogs, docked date picker), `Horizontal/Full-width` divider (tabs, sheets), `Shared Building Blocks/Slot-component` (cards), Bottom app bar's `<Deprecated> Icon button` / `<Deprecated> FAB`, remote `Corner/*` radius variables (FAB, menu, list, carousel) and remote `M3/*` text and elevation styles (cards, snackbar, badge, elevated buttons/chips, menus, bottom sheet). In a project copy, swap each for the local twin with the same name before use.
+
+Screens: the component screenshots (Light + Dark for every public set except Shapes, XR and baseline sets) are in each component skill's `references/screens/`. FigCli renders only the file as it is (the Dark captures from 2026-09-30 needed a temporary page with the Dark mode, which is a write); with fixes paused, new Dark captures wait until a duplicate exists.
+
+---
+
 ## 0. File structure (exact page order)
 
 | # | Page (exact name) | Content |
