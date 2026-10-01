@@ -5,7 +5,7 @@ This folder builds, audits and scales AI-ready design systems (Web, iOS, Android
 ## Storybook (mention it, ask later)
 This repo has a live Storybook of the design system: `Trianglz/storybook/` (Web). In your first reply of every session, mention it in one line as information only; the first question is always about the project (intake 0.0). Ask about Storybook at intake 0.7 (new project), when the user picks a project with unsynced changes or a `later` Storybook plan, or when the user asks (Abdul's feedback from the ClinicSoft trial). A SessionStart hook (`.claude/hooks/storybook_notice.py`) says whether it is installed and running and which projects have pending Storybook work.
 - Run: `npm --prefix Trianglz/storybook install` (ask first), then `npm --prefix Trianglz/storybook run storybook` or the `trianglz-web-storybook` preview in `.claude/launch.json`. Opens http://localhost:6006.
-- MCP: `trianglz-web-storybook` in `.mcp.json` (http://localhost:6006/mcp, only while Storybook runs). Use it to read component docs and props before building UI.
+- MCP: `trianglz-web-storybook` (http://localhost:6006/mcp, only while Storybook runs), registered per machine with `claude mcp add --transport http trianglz-web-storybook http://localhost:6006/mcp --scope local`. Never commit MCP servers to a root `.mcp.json` (git-ignored; template `.mcp.example.json`). Use it to read component docs and props before building UI.
 - Update from Figma: `Storybook_Design_System_Skill/SKILL.md` section 5 (open the DS file with the Desktop Bridge first; for Trianglz Web that is the file key in `memory/references.md`).
 - Other AI tools get the same notice from `AGENTS.md`, `.cursor/rules/storybook.mdc`, `.github/copilot-instructions.md` and `GEMINI.md`.
 

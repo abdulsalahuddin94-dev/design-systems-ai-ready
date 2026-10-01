@@ -71,7 +71,7 @@ Needs **Node.js 18+** (`node --version`). Then:
 
 Updates: `git pull` in the repo, then `npm install` again if `package.json` changed, and restart `npm run storybook`.
 
-**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (already in `.mcp.json` for Claude Code; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and mentions it (it asks about your project first): Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
+**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (not committed, so a fresh clone prompts nothing; in Claude Code register it once with `claude mcp add --transport http trianglz-web-storybook http://localhost:6006/mcp --scope local`, or copy `.mcp.example.json` to `.mcp.json`, which is git-ignored; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and mentions it (it asks about your project first): Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
 
 ## Live Storybook (optional)
 

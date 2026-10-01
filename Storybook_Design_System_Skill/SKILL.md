@@ -68,7 +68,7 @@ Reference build: `Trianglz/storybook/` (Web, 28 component sets, 2026-09-30). Cop
    ├─ stories/<Group>/<Name>.stories.tsx  (generated: tools/storybook_stories.py)
    └─ foundations/*.mdx + Foundations.tsx (Introduction, Colors, Typography, Spacing, Radius, Shadows, Icons; live from tokens.ts)
 ```
-Also in the Root: `.claude/launch.json` (preview entry) and `.mcp.json` (Storybook MCP, project scope).
+Also in the Root: `.claude/launch.json` (preview entry). The Storybook MCP is registered per machine (local scope, step 8), never in a committed `.mcp.json`.
 
 Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input / Text`, `Navigation/Button`, `Data Display/Badge`. Sidebar order: Foundations, Form Elements, Navigation, Data Display, Patterns. Inside a group, order by tier (Atoms, Molecules, Organisms).
 
@@ -97,7 +97,7 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
    - Parity check: every registry component has a story file; every Figma variant and property appears in `argTypes` with the identical name (`python tools/storybook_parity.py <folder>`; report any mismatch).
    - Visual check: open the stories in the browser (Playwright or the browser pane) and compare Light and Dark with the Figma screenshots.
    - a11y addon: no contrast or role violations.
-8. **MCP.** With Storybook running, the addon serves an MCP endpoint at `http://localhost:6006/mcp`. Ask before registering it in this folder (Ask (choice): "Register it (Recommended)" / "Not now"): `claude mcp add --transport http storybook http://localhost:6006/mcp --scope project`. After that, agents can list components, read their docs and props, and preview stories before building UI.
+8. **MCP.** With Storybook running, the addon serves an MCP endpoint at `http://localhost:<port>/mcp`. Ask before registering it (Ask (choice): "Register it on this machine (Recommended)" / "Not now"): `claude mcp add --transport http <project>-<platform>-storybook http://localhost:<port>/mcp --scope local` (e.g. `clinicsoft-web-storybook`, port 6007). Local scope stays on this machine and out of git, so people who clone the repo are never prompted to enable it. Never use `--scope project` and never commit a root `.mcp.json` (it is git-ignored; `.mcp.example.json` is the template). Record the server name and port in `Project_Brief.md`. After that, agents can list components, read their docs and props, and preview stories before building UI.
 9. **GitHub (only when asked).** Push the Storybook with the repo and publish the static build (`storybook-static/`) with GitHub Pages or Chromatic. Never create a remote or push without the user's word.
 10. **Record.** Add the Storybook path, run command and MCP status to `Project_Brief.md` and the Foundation_Skill; the ds-auditor drift mode then also checks Storybook names against Figma.
 

@@ -68,11 +68,12 @@ def main():
         + "\n".join(lines)
         + "\n"
         + ("Storybook is running now at http://localhost:6006 and its MCP server at http://localhost:6006/mcp "
-           "(registered in .mcp.json as `trianglz-web-storybook`). Use the MCP docs tools before building UI.\n"
+           "(`trianglz-web-storybook`, registered on this machine only). Use the MCP docs tools before building UI.\n"
            if live else
            "Storybook is not running. Start it with `npm install` (first time, needs Node.js 18+) then "
            "`npm run storybook` inside the folder above; it serves http://localhost:6006 and an MCP server at "
-           "http://localhost:6006/mcp (registered in .mcp.json).\n")
+           "http://localhost:6006/mcp (register it once per machine: "
+           "`claude mcp add --transport http trianglz-web-storybook http://localhost:6006/mcp --scope local`).\n")
         + "In your first reply, mention in one short line that this repo has a Storybook, as information only: "
         "do not ask about it there. The first question is about the project (Design_System_Intake_Skill 0.0), "
         "unless the user asked for quick mode (/ds-quick, Design_System_Intake_Skill/steps/quick-mode.md). "
