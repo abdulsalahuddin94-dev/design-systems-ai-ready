@@ -12,7 +12,7 @@ description: Use when building, auditing or coding data-entry controls with the 
 **Load `../../Foundation_Skill/SKILL.md` first** (tokens, text styles, file structure, build order, atomic rules).
 
 Scope: **⭐Form Elements** pages only: ➜ Input Fields and Dropdown, ➜ Checkbox, ➜ Radio Buttons, ➜ Toggles, ➜ Date and Time Pickers, ➜ Toolbars & Search. Platform iOS (HIG).
-Reference: `references/components.md` (ids, anatomy, tokens per variant), `references/gaps.md` (audit), `references/screens/` (to capture, see gaps).
+Reference: `references/inventory.md` (every set and property, live 2026-10-01), `references/states.md` (what each state looks like and which token draws it, verified), `references/components.md`, `references/gaps.md`, `references/screens/` (Light + Dark).
 
 ## 1. Inventory
 
@@ -50,7 +50,7 @@ Anatomy: vertical stack (gap `spacnig/xxs` 4) = `wrapper` field (fill, 1pt borde
 | Default / filled | Backgrounds/Card | Borders/Default 1pt | Text/Secondary Text | Text/Primary Text | Text/Secondary Text |
 | Error / Default | Backgrounds/Card | Status/Danger/Danger Border 1pt | - | Text/Placeholder | Status/Danger/Danger Text |
 | Error / Focus | Backgrounds/Card | Danger Border 1.5pt | Danger Text | Text/Primary Text | Danger Text |
-| Disabled / * | **Backgrounds/Group** | Borders/Default | Text/Secondary Text | Text/Secondary Text | Text/Secondary Text |
+| Disabled / * | **Backgrounds/Group** | Borders/Default | - (placeholder) | Text/Placeholder | Text/Secondary Text (no dimming) |
 
 When to use: every single-line entry (name, email, password with `View`/`Hide` trailing icon, search-like filters inside forms). Use lg (56pt) as default for touch comfort; md only in dense forms (still >= 44pt).
 Error message goes in `✏️ Description` with Type=Error. Put the field label in `✏️ Title` (it shows as placeholder until focused - iOS style floating label, not a separate label above the field).
@@ -62,29 +62,29 @@ HIG notes: Apple's native text field is a borderless row in a grouped list (inse
 Checkbox `Status` = Default | Checked | Indeterminate | Disabled | `disabled (selected)` · TEXT `Text`.
 - 20x20 box, radius 4, 2pt stroke; label Footnote/Regular `Text/Primary Text`, gap 8.
 - Default: fill Backgrounds/Card, stroke Icon/Tertiary. Checked/Indeterminate: fill + stroke `Brand Primary`, checkmark vector stroke `Icon/On Brand` 1.75. Disabled: stroke Borders/Disabled, label Text/Disabled Text. Disabled selected: fill/stroke Icon/Disabled.
-RadioButton `Status` = Default | Checked | Disabled | **Status4** (= disabled selected) · TEXT `Text`. 20pt circle, 2pt ring, 10pt inner dot `Brand Primary`.
+RadioButton `Status` = Default | Checked | Disabled | **Status4** (= disabled selected) · TEXT `Text`. 20pt circle, 2pt ring, 10pt inner dot `Brand Primary`. Disabled radio is filled `Icon/On Brand` (white), so it shows as a white disc in Dark mode; disabled-selected checkbox/radio labels are not dimmed.
 
 HIG: iOS has **no native checkbox or radio**. Apple uses a checkmark accessory in list rows for single/multi selection, and switches for on/off. Use these only for brand forms (terms acceptance, multi-select in a web-like form) and give them a 44pt hit area (whole row tappable). Prefer list rows with checkmarks for settings-style choices.
 
 ## 4. Toggle - Switch (Atom, Apple kit)
 
 Properties: `State` = Idle | Pressed · `Is On` = True | False · `Is Enabled` = True | False · BOOLEAN `Show AX Label` (on/off accessibility glyphs).
-64x28 track (iOS 26 size), knob 38x24 white; Pressed shows the Liquid Glass knob (58x38, glass + inner shadows + specular). On = remote `Accents/Green`, Off = remote `Labels/Tertiary`; Disabled = 50% opacity.
+64x28 track (iOS 26 size), knob 38x24 raw white; Pressed shows the Liquid Glass knob (58x38, glass + inner shadows + specular). On = remote `Accents/Green`, Off = remote `Labels/Tertiary` at 30%; Disabled = 50% opacity.
 Use for immediate on/off settings (no Save button). Tint: Apple default green; switch to `Brand Primary` only if brand requires it (then bind a local token).
 
 ## 5. Date and time pickers (Apple kit)
 
-- `Date and time - Pickers` Style = **Compact** (inline row with date/time pills that open a popover) | **Inline** (full month calendar + time row, 370x377, `Backgrounds (Grouped)/Secondary`). Booleans `Show Date`, `Show Time`.
-- `Date and time - Collapsed`: the compact row (Month, Year, Time texts; State Default | Selected).
-- `_Day` states: Default | Current | Selected | Current and Selected | Null.
+- `Date and time - Collapsed` (204x34): the **compact row** in a form - date and time capsules (remote `Fills/Tertiary`); `State=Selected` = blue texts while the picker is open.
+- `Date and time - Pickers` Style = **Compact** (the calendar **popover** that opens from the collapsed row, on Liquid Glass Large, radius 13) | **Inline** (calendar embedded in content, 370x377, `Backgrounds (Grouped)/Secondary`). Booleans `Show Date`, `Show Time`. The Compact weekday header has a text bug (SUN MON WED THU FRI SAT SUN).
+- `_Day` states: Default | Current (blue text, 12% blue circle) | Selected (black circle) | Current and Selected (blue circle, white text) | Null. Tint is Apple `Accents/Blue`, not Brand Primary.
 Use Compact inside forms/list rows; Inline when choosing a date is the main task of the screen or sheet. No wheel picker component exists.
 
 ## 6. Toolbars and search (Apple kit)
 
-- **Toolbar - Top - iPhone** (navigation bar) `Style` = Default | Inline Large | Large Title | Title 2 Line | Title 2 Line Left; slots `Leading`, `Trailing`; BOOLEAN `Show Subtitle`. Use Large Title on top-level tab roots, Default (inline) on pushed screens.
+- **Toolbar - Top - iPhone** (navigation bar) `Style` = Default | Inline Large | Large Title | Title 2 Line | Title 2 Line Left; slots `Leading`, `Trailing`; BOOLEAN `Show Subtitle`. Use Large Title on top-level tab roots, Default (inline) on pushed screens. Its button groups are **remote** `_Buttons - Top` (the local set is unused), two with a raw white fill.
 - **Toolbar - Bottom - iPhone** `Type` = Buttons | Buttons + Page Dots | Search | Search with Focus | Search + Trailing Item | Search + Leading Item; slots `Buttons Leading`, `Buttons Trailing`. iOS 26 places search at the bottom on iPhone.
 - `_Search - Top/Bottom` State = Placeholder | Typing | Value (TEXT Value, Placeholder).
-- Bar buttons: `_Button - Text` / `_Button - Symbol` State = Default | Tinted | Selected | Disabled; Prominent versions = Default | Disabled; `_Back Bar Button Item` (Title, Show Title).
+- Bar buttons: `_Button - Text` / `_Button - Symbol` State = Default | Tinted (Brand Primary glyph) | Selected (Brand Primary capsule, white glyph) | Disabled; Prominent versions = Default | Disabled; `_Back Bar Button Item` (Title, Show Title). Containers `_Buttons - Top` (44pt) and `_Button - Bottom` (48pt) put them on a Liquid Glass Small capsule.
 These are organisms that really belong to navigation (see gaps); keep using them from this page until the file is reorganized.
 
 ## 7. Choosing a control (iOS)
@@ -93,8 +93,40 @@ These are organisms that really belong to navigation (see gaps); keep using them
 |---|---|
 | Free text | Input (lg) + correct keyboard |
 | On/off, applies immediately | Toggle - Switch |
-| One of 2-5 short options | (missing) segmented control -> build it; for now Radio in a list |
+| One of 2-6 options (Abdul's rule; 7+ -> menu) | (missing) segmented control -> build it; for now Radio in a list |
 | One of many | List row + checkmark, or a menu (Context Menu) |
 | Multi-select | List rows with checkmarks, or Checkbox in brand forms |
 | Date / time | Date and time - Pickers (Compact in forms, Inline in sheets) |
 | Search | `_Search - Bottom` inside Toolbar - Bottom (iPhone), `_Search - Top` in nav bar |
+
+## 8. Rules for AI agents
+
+**Always**
+- Instance the public set by name; check `references/states.md` for what each state should look like.
+- Input: real label in `✏️ Title`, helpful `✏️ Description` (or turn `👁️ Description` off), turn off `👁️ IconLeft/IconRight` unless the icon does something (show/hide password, clear). Size lg (56pt) by default. Pair every field with the right keyboard (➜ Keyboards: Email, URL, Number Pad, Numeric, Web Search).
+- Checkbox/Radio rows get a 44pt tall tappable row; prefer list rows with a checkmark for settings-style choices.
+- Search lives in the bottom toolbar on iPhone (iOS 26) and in the navigation bar on iPad.
+- Dark mode: switch `Color / Semantic` on the frame for Trianglz parts; for Apple-kit parts use the `Mode=Dark` variant until they are rebound (gaps).
+
+**Never**
+- Use a Toggle where the change needs Save; use Checkbox/Radio for settings that apply instantly.
+- Draw your own text field, switch or date picker; detach instances; place `_`-prefixed building blocks on their own.
+- Use the duplicate `RadioButton` on the ➜ Checkbox page; use the one on ➜ Radio Buttons.
+
+## 9. SwiftUI map
+
+| Figma | SwiftUI |
+|---|---|
+| `Input` (Default / Error / Disabled) | `TextField` / `SecureField` with a text field style matching the outlined card, `.focused`, `.disabled`; error text below |
+| `Checkbox` | `Toggle` with a custom `ToggleStyle` (no native checkbox on iOS) |
+| `RadioButton` | `Picker(selection:)` with `.pickerStyle(.inline)` in a `List`, or custom buttons |
+| `Toggle - Switch` | `Toggle` (`.tint(...)` only if the brand needs it) |
+| `Date and time - Collapsed` + `Pickers` Compact / Inline | `DatePicker(...).datePickerStyle(.compact)` / `.graphical` |
+| `Toolbar - Top - iPhone` | `.navigationTitle` + `.navigationBarTitleDisplayMode(.large / .inline)` + `.toolbar { ToolbarItem(placement: .topBarLeading / .topBarTrailing) }` |
+| `Toolbar - Bottom - iPhone` | `.toolbar { ToolbarItemGroup(placement: .bottomBar) }` |
+| `_Search - Top/Bottom` | `.searchable(text:)` (iOS 26 places it at the bottom on iPhone) |
+| `_Toolbar page control` | `TabView` with `.tabViewStyle(.page)` |
+Colors map to asset catalog colors named after the Semantic tokens (until code syntax exists), text to `.font(.body)`, `.callout`, `.footnote`, `.caption`... so Dynamic Type works.
+
+## 10. Final check after using this skill
+Run audit-design-system: every control is an instance of a public set above, Trianglz parts keep their local Semantic bindings, no new remote Apple variables were added, labels and placeholders are real, touch targets >= 44pt, and Light and Dark match `references/screens/`. Note workarounds in `references/gaps.md`.

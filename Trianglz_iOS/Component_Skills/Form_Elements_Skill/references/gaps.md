@@ -11,3 +11,11 @@
 7. **Med** - Touch targets: checkbox/radio 20pt with no 44pt hit area; Input md 45pt ok.
 8. **Low** - No component descriptions (Date pickers carry Apple's placeholder description).
 9. **Screenshots** - captured 2026-09-29/30 in `references/screens/` (14 PNGs). Light: checkbox-radio, date-time-pickers, input-all-variants, input-light, radio, toggle-all-variants, toolbars-search. Dark: checkbox-dark, date-time-pickers-dark, input-dark, input-dark-all-variants, radio-dark, toggle-dark, toolbars-search-dark. Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. Dark sets were captured from a temporary page of instances with the Dark mode applied (page deleted afterwards). In iOS, fills bound to remote Apple-kit variables do not follow the local Dark mode, which is itself a gap (see above); Apple-kit sets with a `Mode` variant show their own Dark variants.
+
+## Update 2026-10-01 (live re-study through FigCli, read-only)
+10. **High** - Disabled RadioButton fill is `Icon/On Brand` (white): a white disc on Dark backgrounds (visible in `screens/checkbox-dark.png`). Should be `Backgrounds/Card` like the checkbox.
+11. **Med** - Date picker Compact popover weekday header reads SUN MON WED THU FRI SAT SUN (text content shifted).
+12. **Med** - `Toolbar - Top - iPhone` and `_Button - Bottom` nest **remote** `_Buttons - Top`, `_Button - Text`, `_Button - Symbol`, `_Button - Text - Prominent` although local sets with the same names exist; two top button groups carry raw `#ffffff` fills; Selected bar buttons use raw `#ffffff` glyphs.
+13. **Med** - Apple-kit `Mode=Light|Dark` variants bind identical remote variables, so both variants look the same unless the remote collection mode is set on a parent.
+14. **Med** - Input Disabled keeps the normal placeholder and helper colors (only the field fill changes); no opacity or `Text/Disabled Text`.
+15. **Low** - Date pickers and `_Day` use Apple `Accents/Blue`, not `Brand Primary`.

@@ -21,6 +21,26 @@ Component skills: `Component_Skills/Form_Elements_Skill`, `Component_Skills/Navi
 
 ---
 
+## Update 2026-10-01 (live re-study through FigCli, read-only - overrides older details below)
+
+Every variable, style and component set was re-read from the open file with read-only scripts; each public set's states were traced layer by layer (fills, strokes, opacity, text styles, nested instances, remote vs local) and checked against the Light/Dark screenshots. Results: `references/inventory.md` (Setup sets: icons and the keyboard parts), `Component_Skills/*/references/inventory.md` and `states.md`.
+
+Confirmed: 6 collections - `Typography ` (30: 11 sizes, 11 line heights, 7 weights incl. Medium and italics, 1 family), `Spacing` (8, GAP scope only), `Color / Primitive` (83, Light/Dark identical, no scopes), `Color / Semantic` (39, Light/Dark), `Color / Brand` (2, ALL_SCOPES), `Raduis` (8); 22 text styles, **0 effect styles**, 1 grid style, 0 paint styles; 103 component sets/components (60 outside Setup).
+
+Corrections:
+- All 39 Semantic variables **have descriptions** (Typography, Spacing, Radius, Primitive and Brand have none). Semantic also has `Borders/Strong` (Gray 400 / 500) and `Backgrounds/Brand`; `Text/Tertiary Text` is Gray 500 in both modes.
+- Caption2 is **10/12** in the file; Apple HIG Caption 2 is 11/13 - treat it as a gap, not HIG.
+- Letter spacing: 19 of 22 text styles bind a remote tracking variable; Large Title (both) and Caption2/Regular use raw tracking. `Title1/Emphasized` has no font-family binding.
+- Spacing scope is GAP only, so padding pickers do not offer spacing tokens; the Input radius is bound to `spacnig/sm`.
+- Trianglz-built parts (Input, Checkbox, RadioButton, tab bar buttons, `_Label - Text`) bind local Semantic tokens; every Apple-kit part binds remote `Labels*`, `Fills*`, `Accents/*`, `Backgrounds*`, `Overlays/Default`, `Separators/*`, `Grays/*` and remote text styles. Their `Mode=Light|Dark` variants bind the **same** remote variables in both modes, so local Dark mode never reaches them.
+- Two tints coexist: `Brand Primary` (#3b82f6) on buttons, tabs, checkboxes, progress and toolbar Tinted/Selected states; Apple `Accents/Blue` on date pickers and alert Default buttons.
+- Icons: besides `Component 1`, `Search Icon` and `akar-icons:check`, the Input uses a `View Icon` instance; the glass symbol buttons (`_Label - Symbol - *`) use `akar-icons:check`, while toolbar, search, alert, activity and Face ID parts draw SF Symbols as text glyphs.
+- Component set with Figma errors: `_Button - Symbol Keyboard` (➜ Keyboards) has conflicting variants (its properties cannot be read).
+
+Screens: FigCli PNG export fails on this machine (same as the Desktop Bridge), so visual checks use the existing SVG-rendered screenshots; Liquid Glass and blur render flat in them. New Dark captures wait for a duplicate file (a temporary Dark page is a write).
+
+---
+
 ## 0. File structure (exact page order)
 
 | # | Page (exact name) | Content |

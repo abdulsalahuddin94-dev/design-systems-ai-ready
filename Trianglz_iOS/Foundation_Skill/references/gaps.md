@@ -35,3 +35,10 @@ Severity: High = breaks tokens/AI use, Med = inconsistency, Low = cleanup.
 
 ## Screenshots
 22. **Screenshots** - captured 2026-09-29/30 in `references/screens/` (24 PNGs). Light: app-icon-1024, brand-colors, colors-overview, icons, keyboards, layout-grid, primitive-blue, primitive-brand-palette, primitive-green, primitive-neutrals, primitive-neutrals-intro, primitive-orange, primitive-purple, primitive-red, primitive-yellow, radius, semantic-backgrounds, semantic-borders, semantic-overview, semantic-status, semantic-text, spacing, typography, typography-header. Dark: -. Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. Dark sets were captured from a temporary page of instances with the Dark mode applied (page deleted afterwards). In iOS, fills bound to remote Apple-kit variables do not follow the local Dark mode, which is itself a gap (see above); Apple-kit sets with a `Mode` variant show their own Dark variants.
+
+## Update 2026-10-01 (live re-study through FigCli, read-only)
+23. **Correction** - Semantic variables all have descriptions (gap 10 applies only to Typography, Spacing, Radius, Primitive, Brand).
+24. **Med** - Caption2 is 10/12 (HIG 11/13).
+25. **Med** - Two tints: `Brand Primary` on Trianglz parts and toolbar states, Apple `Accents/Blue` on date pickers and alert Default buttons; pick one tint and map the other.
+26. **Med** - `_Button - Symbol Keyboard` component set has conflicting variants (Figma "existing errors").
+27. **Low** - Typography has Medium and italic weight variables that no text style uses.

@@ -10,3 +10,9 @@
 6. **Med** - Group routing: Status bar / menu bar and Face ID are system chrome (belong to Setup/Utilities); Sheets and Context Menus are overlays; only Progress fits "data display" strictly.
 7. **Low** - Loose `Overlay` instance on ➜ Activity Views; Apple placeholder descriptions ("Guidelines / Feedback").
 8. **Screenshots** - captured 2026-09-29/30 in `references/screens/` (13 PNGs). Light: activity-views, bottom-sheets, context-menus, face-id, progress-indicators, status-menu-bars. Dark: activity-views-dark, bottom-sheets-dark, context-menus-dark, face-id-dark, progress-dark, progress-dark-examples, status-menu-bars-dark. Method: Figma PNG export hangs on this machine, so frames were exported as SVG through the Desktop Bridge and rendered locally with headless Chrome; Liquid Glass / background blur effects do not survive SVG export. Dark sets were captured from a temporary page of instances with the Dark mode applied (page deleted afterwards). In iOS, fills bound to remote Apple-kit variables do not follow the local Dark mode, which is itself a gap (see above); Apple-kit sets with a `Mode` variant show their own Dark variants.
+
+## Update 2026-10-01 (live re-study through FigCli, read-only)
+9. **Med** - `Sheet - iPhone` nests a **remote** `Toolbar - Top - iPhone` while the local set exists; Large (Stacked) uses a raw black 10% overlay.
+10. **Med** - Activity View `_Close Button` is a remote `_Buttons - Top`; the iPad version uses remote `Popovers (iPad Only)` and the remote `Popover Corner Radius` variable.
+11. **Med** - Progress Value 0% still draws a 6pt fill stub; spinner ticks are remote grey (`Labels/Secondary` 60%), not tinted.
+12. **Low** - Context Menu placeholder text is raw black 60%; `Grabber` Light/Dark variants bind the same remote variable.
