@@ -26,6 +26,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 - Skip a question when the user already answered it (in this conversation, in the project folder's `Project_Brief.md`, or in memory). Say what you reused in one line.
 - If the user says "you decide", pick the recommended option, say which, and continue.
 - If the user only asks to **change a color** in an existing DS, skip the intake questions: run the Recolor procedure in the platform Main Skill (section 3b) with `tools/recolor.py`.
+- **Quick mode (Abdul, 2026-10-01):** if the user runs `/ds-quick`, says "quick mode", or asks for one specific task on a live file (one component, an audit, one fix) and does not want a project set up, skip the intake questions and follow `steps/quick-mode.md`. Preflight (0b) and every rule still apply. If it is unclear, ask once with AskUserQuestion: "Quick task on this file / Full project setup".
 - After the last intake question, post a short **Intake Summary** (section 9) and get a "yes" before any Figma work.
 - Record every answer in `[Project folder]\Project_Brief.md` as you go, so a later session never re-asks.
 - `[Project folder]` is always `My Projects\<Project>` (plus the platform suffix, section 10). Projects never live in the Root; the Root holds only the workflow (Main Skills, rules, hooks, tools).
@@ -94,6 +95,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 | 7d, 7e, 7f | `steps/screens.md` | screens are built or changed |
 | 10 | `steps/folders.md` | question 0.3, or unsure where a file goes |
 | 11, 12 | `steps/finish.md` | end of a build, Storybook step |
+| 13 | `steps/quick-mode.md` | `/ds-quick`, or one task on a live file without a project setup (section 0) |
 
 - The platform Main Skill loads after 1.1 / 1.2. The Figma skills (figma-use, figma-generate-library, figma-generate-design, ui-ux-pro-max) load at the first Figma build step of a session, never during the intake questions; load each once per session.
 - Read the knowledge base before Figma: names, keys and values come from `data/tokens.json` and `data/component-registry.json`. Re-read Figma only for what the files do not hold, or when `CHANGELOG.md` shows a Figma change after the last export.
