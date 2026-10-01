@@ -48,7 +48,14 @@ Claude only installs after you say yes, and you can do it in the same session as
 - **Browser** runs Figma in a separate Chromium browser over the same open debugging port, outside the Figma Desktop app this workflow uses.
 - **Safe** uses an ordinary Figma development plugin and changes nothing in the app. All modes run the same commands.
 
-## Switching between the two
+## Switching any time
+- You can use either tool on any file at any time: mid-project, days later, or one tool per file (for example FigCli on the DS file and the Desktop Bridge on a Design file). Just tell Claude.
+- Claude saves the tool used on each file in the project's `status.json`, logs every switch in `CHANGELOG.md`, re-checks the connection and the file, and reloads its helper script.
+- Nothing in Figma or in the project files belongs to one tool, so switching never needs rework. The one thing that gets refreshed is FigCli's saved baseline (`snapshot` + `rules gen`): Claude regenerates it after a switch, after changes made through the Desktop Bridge, and after each approved checkpoint, so `check` does not report your own changes as drift.
+- File check: the Desktop Bridge confirms the file by its key. FigCli in Safe mode only knows the name, so Claude confirms the exact name with you and writes nothing if it does not match.
+- Steps that touch two files (publish, Accept updates, checking the library) need both files connected, each with its own tool.
+
+## Switching plugins in Figma
 - Both plugins show in Figma Desktop under Plugins > Development: **Figma Desktop Bridge** and **FigCli**.
 - Figma runs one plugin at a time per file, so only one tool is connected at a time. Close one plugin before you open the other.
 - FigCli talks to only **one** file. If FigCli is open in several files, close it everywhere except the file you work on.

@@ -22,7 +22,7 @@ Other tools (Codex, Cursor, Antigravity...) may work here between Claude session
 
 ## Always start here
 Before any other work, load and follow `Design_System_Intake_Skill/SKILL.md`.
-It checks which Figma tools are installed first (Figma Desktop Bridge = figma-console-mcp, FigCli = figma-cli in Safe mode; `python tools/figma_tools_check.py`). With both installed, it asks which one to use (saved in `status.json > figma.tool`) and suggests the better one before costly steps; new users get `Figma_Tools/README.md`. Then it asks the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
+It checks which Figma tools are installed first (Figma Desktop Bridge = figma-console-mcp, FigCli = figma-cli in Safe mode; `python tools/figma_tools_check.py`). With both installed, it asks which one to use per file (saved in `status.json > figma`), allows switching any time, and suggests the better one before costly steps; new users get `Figma_Tools/README.md`. Then it asks the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
 
 ## Main Skills (Root)
 | Skill | Use for |
