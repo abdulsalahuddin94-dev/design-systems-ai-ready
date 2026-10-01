@@ -8,7 +8,7 @@ updated: 2026-09-30
 # Standing decisions (Abdul)
 
 ## Entry flow
-- Every job starts with `Design_System_Intake_Skill/SKILL.md`: tools preflight, then one question per message in English, then the platform Main Skill. No Figma work before the Intake Summary gets a "yes".
+- Every job starts with `Design_System_Intake_Skill/SKILL.md`: tools preflight, then one question per message in English (fixed-option questions through the AskUserQuestion arrow-key menu, Abdul 2026-10-01), then the platform Main Skill. No Figma work before the Intake Summary gets a "yes".
 - Record answers in `My Projects/<Project>/Project_Brief.md` so later sessions never re-ask.
 - One workflow copy in the Root; every project lives in `My Projects/`, created from `My Projects/_Project_Template/`. Intake starts by asking which project or a new one (Abdul, 2026-09-30). Each project may later become its own private repo. ClinicSoft moved there after the trial run (2026-09-30).
 - Approval checkpoints in order: Foundation, Components, Screens. Show Light and Dark screenshots at each.
