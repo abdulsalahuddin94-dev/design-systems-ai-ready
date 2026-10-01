@@ -8,7 +8,8 @@ updated: 2026-09-30
 # Standing decisions (Abdul)
 
 ## Entry flow
-- Every job starts with `Design_System_Intake_Skill/SKILL.md`: tools preflight, then one question per message in English (fixed-option questions through the AskUserQuestion arrow-key menu, Abdul 2026-10-01), then the platform Main Skill. No Figma work before the Intake Summary gets a "yes".
+- Every job starts with `Design_System_Intake_Skill/SKILL.md`: tools preflight, then one question per message in English, then the platform Main Skill.
+- Choice questions everywhere (Abdul, 2026-10-01): every question the user answers by picking, in every skill, step, checkpoint, approval, confirmation and Scenario C decision, uses the AskUserQuestion arrow-key menu (`Ask (choice)` / `Ask (multi)` in the skills): recommended first, explanation in the description, typed answers through Other, `multiSelect` when several answers are valid. Names, links, paths and colors with no default stay typed. Other tools: numbered list. Rules: Intake section 0. No Figma work before the Intake Summary gets a "yes".
 - Record answers in `My Projects/<Project>/Project_Brief.md` so later sessions never re-ask.
 - One workflow copy in the Root; every project lives in `My Projects/`, created from `My Projects/_Project_Template/`. Intake starts by asking which project or a new one (Abdul, 2026-09-30). Each project may later become its own private repo. ClinicSoft moved there after the trial run (2026-09-30).
 - Quick mode (Abdul, 2026-10-01): one specific task on a live file (one component from a live site or captured frames, an audit, one fix) skips the intake questions, the `My Projects/` folder, checkpoints and project skills (`/ds-quick`, `Design_System_Intake_Skill/steps/quick-mode.md`). Preflight, the file check, these rules, atomic tiers, the audit and no self-approval still apply; captured frames are a reference, never the component.

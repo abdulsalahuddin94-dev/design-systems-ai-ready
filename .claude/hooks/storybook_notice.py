@@ -42,8 +42,8 @@ def unsynced_projects():
     return ("Projects with Figma changes not yet in Storybook (from CHANGELOG.md, Figma not read):\n"
             + "\n".join(lines)
             + "\nMention these in your first reply in one line each, without a question. When the user picks "
-            "one of these projects (intake 0.0), ask whether to open its DS file with the Figma plugin (Desktop "
-            "Bridge) and update its Storybook (Storybook_Design_System_Skill section 5). After an update run "
+            "one of these projects (intake 0.0), ask with AskUserQuestion (Update now / Later) whether to open its DS "
+            "file with the Figma plugin (Desktop Bridge) and update its Storybook (Storybook_Design_System_Skill section 5). After an update run "
             "`python tools/project_status.py \"<folder>\" --mark-synced`.\n"
             + lib_text + later_text)
 

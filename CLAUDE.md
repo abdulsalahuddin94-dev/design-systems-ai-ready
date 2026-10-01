@@ -18,11 +18,13 @@ Shared facts and Abdul's standing decisions (read before any work; update the ma
 Other tools (Codex, Cursor, Antigravity...) may work here between Claude sessions; they follow `AGENTS.md`, log each change in the project's `CHANGELOG.md` with a `Tool:` line and commit with a `[Tool]` prefix. At the start of every session:
 1. Read `git log` since the last Claude commit and the `CHANGELOG.md` of each project in `My Projects/` for entries from other tools.
 2. If there are any, tell the user in one line what was done and by which tool, then run the ds-auditor (audit-design-system) on that work before building on it, and fix or report what it finds.
-3. Uncommitted changes from another tool: ask the user before committing or discarding them.
+3. Uncommitted changes from another tool: ask the user before committing or discarding them (AskUserQuestion: "Audit, then commit (Recommended)" / "Leave them uncommitted" / "Discard them").
 
 ## Always start here
 Before any other work, load and follow `Design_System_Intake_Skill/SKILL.md`.
-It checks which Figma tools are installed first (Figma Desktop Bridge = figma-console-mcp, FigCli = figma-cli in Safe mode; `python tools/figma_tools_check.py`). With both installed, it asks which one to use per file (saved in `status.json > figma`), allows switching any time, and suggests the better one before costly steps; new users get `Figma_Tools/README.md`. Then it asks (fixed-option questions through the AskUserQuestion arrow-key menu, Intake section 0) the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
+It checks which Figma tools are installed first (Figma Desktop Bridge = figma-console-mcp, FigCli = figma-cli in Safe mode; `python tools/figma_tools_check.py`). With both installed, it asks which one to use per file (saved in `status.json > figma`), allows switching any time, and suggests the better one before costly steps; new users get `Figma_Tools/README.md`. Then it asks the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
+
+**Choice questions, everywhere (Abdul, 2026-10-01):** every question the user answers by picking, in every skill, step, checkpoint, approval and confirmation, uses the AskUserQuestion arrow-key menu (recommended first, explanation in the description, typed answers through its Other field, `multiSelect` when several answers are valid). Only names, links, paths and colors with no default are typed. Rules: Intake section 0.
 
 **Quick mode:** `/ds-quick <task>` (or "quick mode") does one task on a live file (one component, an audit, one fix) without the intake questions, a `My Projects/` folder or project skills. Preflight, the file check, the rules and the audit still apply: `Design_System_Intake_Skill/steps/quick-mode.md`.
 
