@@ -19,12 +19,12 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 
 ## 12. Step 9 (optional) - Live Storybook
 
-Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever the user asks later). When 0.7 = Later, ask again at the trigger in `status.json > storybook_ask_at` and move the trigger forward on each new "Later" (0.7 notes).
+Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever the user asks later). When 0.7 = Later, ask again at the trigger in `status.json > storybook_ask_at` (Ask (choice): "Build Storybook now" / "Later" / "No") and move the trigger forward on each new "Later" (0.7 notes).
 1. Load `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
 2. Make sure `data/tokens.json` and `data/component-registry.json` reflect the live Figma file (token-extractor subagent if they need a resync).
-3. Ask before installing any Node package; show the exact commands.
+3. Ask before installing any Node package: show the exact commands, then Ask (choice): "Yes, install" / "Not now".
    - iOS / Android: build the Storybook as web (React + CSS) styled like the native components (Storybook skill, principle 7).
    - Meet the Storybook quality bar (principle 8): working components, sidebar navigation, Figma description and use case per component, every Figma property as a control, all states in Light and Dark. Write each component description in Figma and in Storybook during the build.
 4. Build the Storybook in `<platform folder>/storybook/`, one per platform, with names that match Figma exactly.
-5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder.
+5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder (Ask (choice): "Register it (Recommended)" / "Not now").
 6. Record the path, run command and MCP status in `Project_Brief.md`, then mark the changelog synced: `python tools/project_status.py "My Projects/<Project>" --mark-synced`.

@@ -6,3 +6,5 @@ alwaysApply: true
 This repo has a live Storybook of the Figma design system at `Trianglz/storybook/` (names identical to Figma). In your first reply, mention it in one line (information only). Ask about the project first; ask about Storybook only at intake 0.7, for a project with pending Storybook work, or when the user asks.
 
 Run: `cd Trianglz/storybook && npm install && npm run storybook` (ask before installing; Node.js 18+), then http://localhost:6006. Storybook MCP: http://localhost:6006/mcp. Full instructions: `AGENTS.md`.
+
+Questions with options (`Ask (choice)` / `Ask (multi)` in the skills, approvals included): a numbered list, recommended option first; the user replies with one or several numbers or free text.

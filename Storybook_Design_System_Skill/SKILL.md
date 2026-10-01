@@ -17,7 +17,7 @@ Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma is the source of
 3. **Tokens only.** Every color, space, radius, font value and shadow in a component comes from the generated token CSS. Zero raw hex or px in component styles.
 4. **One platform per Storybook.** Web, iOS and Android each get their own Storybook inside their own folder. Nothing shared or merged.
 5. **Default stack for every platform: React + Vite + TypeScript + Storybook (latest).** Mobile components are React components styled to look like their iOS / Android counterparts, shown inside a device frame.
-6. **Never install without asking.** Show the exact packages and commands and wait for a "yes" before `npm create`, `npm install` or `npx storybook add`.
+6. **Never install without asking.** Show the exact packages and commands, then Ask (choice) (AskUserQuestion, Intake section 0): "Yes, install" / "Not now", before `npm create`, `npm install` or `npx storybook add`.
 7. **iOS and Android projects get a web Storybook (for now).** Every new iOS or Android design system gets its own Storybook rendered as web: React + CSS components styled to look like the native iOS (HIG) or Android (Material 3) components, in a device frame, built from that platform's own tokens. Same setup and quality bar as Web. This is the interim choice until a native Storybook (SwiftUI / Compose) is decided; it applies to future projects, not to the Trianglz reference folders.
 8. **Quality bar for every new Storybook.**
    - Components really work, not just look right: typing, checking, toggling, opening, closing, selecting and dismissing all behave.
@@ -76,8 +76,8 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
 
 ## 4. Build steps
 
-1. **Checkpoint.** Confirm the Components checkpoint in Figma is approved (or the user explicitly wants a Storybook of the current state). State the platform folder and Figma link.
-2. **Ask to install.** Show: `npm create storybook@latest` (React + Vite + TS) in `<folder>/storybook/`, then `npx storybook add @storybook/addon-mcp` and `@storybook/addon-a11y`. Optional: `@storybook/addon-designs` (embeds the Figma frame in each story). Wait for "yes".
+1. **Checkpoint.** Confirm the Components checkpoint in Figma is approved (or, if it is not, Ask (choice): "Wait for the checkpoint (Recommended)" / "Build from the current state"). State the platform folder and Figma link.
+2. **Ask to install.** Show: `npm create storybook@latest` (React + Vite + TS) in `<folder>/storybook/`, then `npx storybook add @storybook/addon-mcp` and `@storybook/addon-a11y`. Optional: `@storybook/addon-designs` (embeds the Figma frame in each story). Then Ask (choice): "Yes, install (Recommended)" / "Install without the optional addon" / "Not now".
 3. **Tokens.** Run `python tools/tokens_to_css.py <folder>`: writes `src/tokens/tokens.css` and `tokens.ts` from `data/tokens.json`.
    - CSS name rule: take the Figma variable name, lowercase, replace `/` and spaces with `-`, drop other characters, prefix with `--` (e.g. `Semantic::color/text/primary` -> `--color-text-primary`). Collisions are reported, never silently merged.
    - Aliases stay aliases (`var(--gray-900)`), so the Primitive -> Semantic chain is visible.
@@ -97,7 +97,7 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
    - Parity check: every registry component has a story file; every Figma variant and property appears in `argTypes` with the identical name (`python tools/storybook_parity.py <folder>`; report any mismatch).
    - Visual check: open the stories in the browser (Playwright or the browser pane) and compare Light and Dark with the Figma screenshots.
    - a11y addon: no contrast or role violations.
-8. **MCP.** With Storybook running, the addon serves an MCP endpoint at `http://localhost:6006/mcp`. Ask before registering it in this folder: `claude mcp add --transport http storybook http://localhost:6006/mcp --scope project`. After that, agents can list components, read their docs and props, and preview stories before building UI.
+8. **MCP.** With Storybook running, the addon serves an MCP endpoint at `http://localhost:6006/mcp`. Ask before registering it in this folder (Ask (choice): "Register it (Recommended)" / "Not now"): `claude mcp add --transport http storybook http://localhost:6006/mcp --scope project`. After that, agents can list components, read their docs and props, and preview stories before building UI.
 9. **GitHub (only when asked).** Push the Storybook with the repo and publish the static build (`storybook-static/`) with GitHub Pages or Chromatic. Never create a remote or push without the user's word.
 10. **Record.** Add the Storybook path, run command and MCP status to `Project_Brief.md` and the Foundation_Skill; the ds-auditor drift mode then also checks Storybook names against Figma.
 
@@ -108,7 +108,7 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
 - Figma changes -> token-extractor re-exports `data/` -> rerun `tools/tokens_to_css.py` -> parity check lists stories to update.
 
 ### "Update from Figma" procedure
-Tell the user up front which file to open: "Please open '<DS file name>' in Figma Desktop and run the Desktop Bridge plugin in it." The file is the project's `status.json > figma.design_system` (Trianglz Web: the key in `memory/references.md`). Then:
+Tell the user up front which file to open: "Please open '<DS file name>' in Figma Desktop and run the Desktop Bridge plugin in it.", then Ask (choice): "Done, plugin running" / "Not yet". The file is the project's `status.json > figma.design_system` (Trianglz Web: the key in `memory/references.md`). Then:
 1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original Trianglz template may be read freely; writing to it is guarded by `guard_figma.py` and never needed here.
 2. **Tokens:** run the token-extractor agent (writes `data/source/` and `data/tokens.json`; fallback export: `tools/export_variables.figma.js`).
 3. `python tools/tokens_to_css.py "<folder>"` (regenerates `storybook/src/tokens/*`).
