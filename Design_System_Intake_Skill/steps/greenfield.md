@@ -5,19 +5,19 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 ## 4. Step 3 - Greenfield
 
 ### 3a. Existing AI-ready DS
-Question 3.1, Ask (choice): "Do you already have an AI-ready design system for this project?" "Yes" (description: a Figma DS file plus .md / skill files) / "No" (description: build a new one) / "Start from a Trianglz template" (description: the Web, iOS or Android template of the chosen platform)
+Question 3.1, Ask (choice): "Do you already have an AI-ready design system for this project?" "Yes" (description: a Figma DS file plus .md / skill files) / "No" (description: build a new one) / "Start from a reference template" (description: a studied design system from `references.json` for the chosen platform)
 - **Yes** -> ask, typed: "Please share the DS Figma link and the path to the skill files." Then:
   1. Read the skill files (Foundation_Skill, Component_Skills) and the DS file (⭐Setup first, then component groups; screenshot every variant light and dark).
   2. Run a **quick audit** (audit-design-system): remote variables/styles, raw values, unbound tokens, missing states, bad names, dead properties, missing descriptions. Compare against the platform Main Skill section 9 and 10.
   3. Report findings in a short list ("The DS passed" or "The DS has N issues") and Ask (choice): "Fix the issues first (Recommended)" / "Work from it as it is"
   4. Run **Fix on create** (section 7b) on it, then work from the fixed DS. Skip to the checkpoint that matches what is missing.
-- **Start from a Trianglz template** -> 3a-2.
+- **Start from a reference template** -> 3a-2.
 - **No** -> 3b.
 
-### 3a-2. Start from a Trianglz template
-Templates are listed in `References.md` in the Root (Web, iOS, Android). Use the template of the platform chosen in Step 1 only.
-1. Ask, typed: "Please open the Trianglz <Platform> template from References.md, duplicate it into your own Figma workspace (Duplicate to your drafts, then move it to the project folder), rename it '<Project> Design System', and send me the link."
-2. Load the platform's Trianglz skills (`Trianglz/`, `Trianglz_iOS/` or `Trianglz_Android/`: Foundation_Skill first, then the component skills) as the map of what is in the file.
+### 3a-2. Start from a reference template
+Reference design systems are listed in `references.json` in the Root (one entry per company and platform; human list in `References.md`). Offer only entries with `status: "ready"` whose `platform` matches Step 1 (`cross-platform` when 1.3 picked one shared design). If there are several, Ask (choice) with one option per entry, the platform's `default` entry first and marked (Recommended), each described by its `name`; with one entry, use it without asking.
+1. Ask, typed: "Please open '<entry name>' (<entry figma_url>), duplicate it into your own Figma workspace (Duplicate to your drafts, then move it to the project folder), rename it '<Project> Design System', and send me the link."
+2. Load the entry's study skills (its `folder`: Foundation_Skill first, then the component skills) as the map of what is in the file. Record the entry `id` in `Project_Brief.md` (3.1) and `status.json > reference`.
 3. **Node IDs change in a duplicate.** Find every page, component set, style and variable by **name**, never by the ids written in those skills (they belong to the original file only).
 4. Run the brand steps 3b and 3c to get the project's colors, fonts and direction, then rebrand the copy: update Primitives and Semantics, fonts, radius and spacing per the direction.
 5. Run **Fix on create** (section 7b) on the copy: token fixes with `tools/fix_tokens.py`, then the component gaps from each skill's `references/gaps.md` and the platform Main Skill section 9. Then continue with 3d from the first missing layer.

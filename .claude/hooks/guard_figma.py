@@ -1,7 +1,7 @@
 """PreToolUse hook for Figma write tools: enforces rules.json > off_limits.
 
 - no-detach: blocks scripts that call detachInstance().
-- originals-untouched: asks the user before any write script runs in an original Trianglz
+- originals-untouched: asks the user before any write script runs in an original reference
   template (file keys come from every */data/rules.json > off_limits.original_template_file_keys).
 - read-only: denies write APIs in scripts that start with "// read-only" or run inside a read-only
   agent (ds-auditor, token-extractor, docs-writer), so auditors can use figma_execute safely.
@@ -26,7 +26,13 @@ READ_ONLY_AGENTS = {"ds-auditor", "token-extractor", "docs-writer"}
 
 def originals():
     keys = {}
-    for p in ROOT.glob("*/data/rules.json"):
+    try:  # every reference library entry's original file is off-limits too (references.json)
+        for e in json.loads((ROOT / "references.json").read_text(encoding="utf-8")).get("entries", []):
+            if e.get("figma_file_key"):
+                keys[e["figma_file_key"]] = e.get("name", e["id"])
+    except Exception:
+        pass
+    for p in list(ROOT.glob("*/data/rules.json")) + list(ROOT.glob("Reference_Library/*/*/data/rules.json")):
         try:
             d = json.loads(p.read_text(encoding="utf-8"))
             keys.update(d.get("off_limits", {}).get("original_template_file_keys", {}))

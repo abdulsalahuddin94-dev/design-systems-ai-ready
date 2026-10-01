@@ -1,20 +1,20 @@
 ---
 name: web-design-system-builder
-description: Main skill for building a new Web design system in Figma from scratch (Scenario A) or from existing UI (Scenario B) or for an AI-ready refactor of an imperfect DS and its Design files (Scenario C). Defines the file structure, build order, token architecture, style, icon and component conventions, required states per component, and the mistakes to avoid - learned from studying the Trianglz Web Design System. Load it with figma-use and figma-generate-library before creating anything; save the project's own skills under [Root]\My Projects\[Project]\.
+description: Main skill for building a new Web design system in Figma from scratch (Scenario A) or from existing UI (Scenario B) or for an AI-ready refactor of an imperfect DS and its Design files (Scenario C). Defines the file structure, build order, token architecture, style, icon and component conventions, required states per component, and the mistakes to avoid - learned from studying the default Web reference design system (`references.json`). Load it with figma-use and figma-generate-library before creating anything; save the project's own skills under [Root]\My Projects\[Project]\.
 ---
 
 # Web Design System Builder (Main Skill)
 
-Reference implementation studied: **Trianglz - Web Design System** (`Trianglz/` in the Root; Figma template link in `References.md`).
+Reference implementation studied: the platform's default entry in `references.json` (`default.web`; its folder, Figma link and name are there; human list in `References.md`). Other companies' Web systems can be added as entries; when the project picked one (`status.json > reference`), use that entry's folder instead. Today the default is the only Web entry, and the values, layout and section 9 below were learned from it.
 Copy its **structure**. Do **not** copy its mistakes: every item in section 9 must be done correctly from the start.
 Platform: Web, Tailwind conventions (scale names, breakpoints, hover/focus/active states).
-Node IDs quoted in the Trianglz skills are valid in the original Trianglz file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
+Node IDs quoted in a reference entry's skills are valid in that entry's original file only. In a duplicated template or any other file, find pages, component sets, styles and variables by **name**.
 
 **Questions.** Every question with options in this skill (component scope, approvals, publish and Accept updates confirmations, recolor or token proposals) is an AskUserQuestion choice (`Ask (choice)` / `Ask (multi)`, Intake section 0); typed answers go in its Other field.
 
-**Tools and generic skills (figma-console).** The Figma tool (Desktop Bridge or FigCli) is picked in Intake section 0b (`status.json > figma.tool`), which also says when to suggest the other one. Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. The Trianglz page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton (Cover / Getting Started / Foundations / Components) and its per-phase checklist posts; report progress in the thread's status checklist instead.
+**Tools and generic skills (figma-console).** The Figma tool (Desktop Bridge or FigCli) is picked in Intake section 0b (`status.json > figma.tool`), which also says when to suggest the other one. Work runs through figma-console `figma_execute` (plain Plugin API) when the official `use_figma` server is not connected. figma-use and figma-generate-library are still loaded for their rules, but their helper APIs (`figma.createAutoLayout`, `node.set`, `node.query`) do not exist in figma-console and fail with "not a function": use `figma.createFrame()` + `layoutMode`, `appendChild`, `setBoundVariable` directly. The reference page layout (section 1) and the intake checkpoints (Design_System_Intake_Skill section 8) override figma-generate-library's page skeleton (Cover / Getting Started / Foundations / Components) and its per-phase checklist posts; report progress in the thread's status checklist instead.
 
-**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in `Trianglz/data/`. Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
+**Knowledge base (JSON, source of truth for exact values):** every DS folder has `data/tokens.json` (variables per mode, aliases, shade-scale curves, recolor readiness), `data/component-registry.json` (components, variants, properties, tiers), `data/rules.json` (numeric rules: contrast, touch targets, icon sizes, spacing, recolor) and `data/screen-templates.json` (Login, Sign up, OTP, List, Detail, Form, Settings, Empty state), plus `docs/decisions.md`. Read values from these files instead of copying numbers into skills; the reference versions are in the default Web entry's `data/` (`references.json`, today `Trianglz/data/`). Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`).
 
 ---
 
@@ -106,8 +106,8 @@ Before each component: state its tier, list dependencies, build missing lower ti
 ### Typography (modes Desktop / iPad / Mobile)
 - `font-family/base` (Poppins by default for this org, or the brand font), `font-weight/{regular,medium,semibold,bold}` (FONT_STYLE scope).
 - `font-size/{xs,sm,base,lg,xl,2xl,3xl,4xl,5xl,6xl}` (FONT_SIZE), `line-height/{same keys}` (LINE_HEIGHT), `letter-spacing/{same keys}` (LETTER_SPACING).
-- Trianglz values: sizes 12/14/16/18/20/24/28/32/40/48 (Desktop); line heights 16/20/24/28/28/32/36/40/48/60; tracking +0.2, 0, 0, -0.2, -0.2, -0.4, -0.6, -0.8, -1, -1.2.
-- **Responsive rule (default for new systems):** `xs` to `lg` (12-18) stay the same on Desktop, iPad and Mobile, so body text never drops below 16px; only `xl` and up compress on iPad/Mobile. (Trianglz shrinks from `sm` up, which puts body text at 14px on mobile; do not copy that.)
+- Default reference values: sizes 12/14/16/18/20/24/28/32/40/48 (Desktop); line heights 16/20/24/28/28/32/36/40/48/60; tracking +0.2, 0, 0, -0.2, -0.2, -0.4, -0.6, -0.8, -1, -1.2.
+- **Responsive rule (default for new systems):** `xs` to `lg` (12-18) stay the same on Desktop, iPad and Mobile, so body text never drops below 16px; only `xl` and up compress on iPad/Mobile. (The default reference shrinks from `sm` up, which puts body text at 14px on mobile; do not copy that.)
 
 ### Spacing (modes Desktop / iPad / Mobile) - `space/{0,1,2,3,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,48,56,64}` = n x 4px on Desktop; 0-4 fixed across modes, 5+ compress on iPad/Mobile. Scopes GAP (+ WIDTH_HEIGHT).
 ### Radius (1 mode) - `radius/{none 0, sm 2, base 4, md 6, lg 8, xl 12, 2xl 16, 3xl 24, full 9999}` with usage descriptions (base default, lg inputs/cards, xl panels, 2xl modals, full pills/avatars).
@@ -132,7 +132,7 @@ Recolor procedure (when the user asks to change a color):
 6. Screenshot ➜ Colors and every component page in Light and Dark; compare with the previous screenshots.
 7. Log it in `docs/decisions.md`.
 
-**Fix on create:** when a DS starts from an existing file or a Trianglz template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
+**Fix on create:** when a DS starts from an existing file or a reference template, run `tools/fix_tokens.py` and apply its plan before building anything (Design_System_Intake_Skill section 7b). New builds run it as the last foundation step; its plan must come back empty.
 
 ## 4. Styles
 
@@ -199,7 +199,7 @@ Hint text sits between label and field; error text below the field (12px), same 
 - ➜ Typography: every sample uses its text style (variables bound through the style); responsive table shows the real mode values.
 - Shadows, Radius & Spacing, Grid, Icons pages show the real styles/variables with Tailwind class names.
 
-## 9. Mistakes found in Trianglz - never repeat them
+## 9. Mistakes found in the default reference - never repeat them
 1. Variables bound to other libraries (remote spacing, radius, colors, text styles, effect styles).
 2. Raw values: radius 8/20, padding 8/12, gaps 6/10, hard-coded shadows and focus rings.
 3. Generic or broken naming: `Property 1`, `Variant5`, `Status4`, `folled`, `Meduim`, `Large` + `large`, 4 variants all named `Default`, 3 sets with the same name, " 2" suffixes on tokens, mixed case.

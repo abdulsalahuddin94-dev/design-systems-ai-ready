@@ -7,7 +7,7 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 ```
 <Root>\                                    (Main Skills only)
 ├─ CLAUDE.md                                (tells Claude to start with this skill)
-├─ README.md, References.md                 (setup steps, Trianglz template links)
+├─ README.md, References.md                 (setup steps, reference library; index in references.json)
 ├─ .claude\skills\                          (slash commands pointing to the Main Skills)
 ├─ .claude\agents\, hooks\, settings.json   (subagents, QA hooks, permissions)
 ├─ memory\MEMORY.md                        (shared project memory, imported by CLAUDE.md)

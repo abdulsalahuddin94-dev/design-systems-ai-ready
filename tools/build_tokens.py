@@ -1,6 +1,6 @@
 """Build <platform folder>/data/tokens.json from the Figma variable export.
 
-Usage:  python tools/build_tokens.py Trianglz_iOS
+Usage:  python tools/build_tokens.py <DS folder>   (e.g. a reference folder or "My Projects/<Project>")
 Input:  <folder>/data/source/config.json and one of
         - data/source/figma-variables.dtcg.json  (figma-console figma_export_tokens, format dtcg)
         - data/source/variables.from-skill.json   (fallback built from the skill reference files)

@@ -31,7 +31,7 @@ Order asked: 0.0-0.2, then Platform 1.1-1.4, then 0.3-0.8, then Path.
 |---|---|---|
 | 2.1 | Greenfield / Brownfield | |
 | 2.2 | Brownfield type (1 screens, 2 live code, 3 DS + unlinked screens) | |
-| 3.1 | Existing AI-ready DS / Trianglz template / No | |
+| 3.1 | Existing AI-ready DS / Reference template (entry id from references.json) / No | |
 | 3.3 | Brand color(s) and contrast pre-check | |
 | 3.4 | Industry | |
 

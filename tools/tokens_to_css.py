@@ -1,6 +1,6 @@
 """Generate Storybook token files from <folder>/data/tokens.json.
 
-Usage:  python tools/tokens_to_css.py Trianglz [--out Trianglz/storybook/src/tokens]
+Usage:  python tools/tokens_to_css.py <DS folder> [--out <DS folder>/storybook/src/tokens]
 Output: tokens.css  one CSS variable per Figma variable. The default mode of each collection (Light,
                     Desktop, ... else the first) is the :root value; every mode of a multi-mode
                     collection is also a selector

@@ -42,7 +42,7 @@ def main():
         print(
             "Blocked: absolute machine path(s) found: " + ", ".join(hits) +
             ". Rewrite them relative to the repo Root (the folder with CLAUDE.md), "
-            "e.g. Trianglz/Foundation_Skill/SKILL.md. See CLAUDE.md > Rules.",
+            "e.g. Web_Design_System_Skill/SKILL.md. See CLAUDE.md > Rules.",
             file=sys.stderr,
         )
         return 2

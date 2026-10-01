@@ -1,6 +1,6 @@
 """Generate one Storybook stories file per Figma component from data/component-registry.json.
 
-Usage:  python tools/storybook_stories.py Trianglz
+Usage:  python tools/storybook_stories.py <DS folder>
 Reads   <folder>/data/component-registry.json   (names, groups, tiers, variants, properties, use, nests, issues)
         <folder>/storybook/component-map.json   (Figma name -> React export)
         <folder>/storybook/figma-links.json     (Figma file + node ids, optional)

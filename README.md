@@ -3,18 +3,18 @@
 Skills that let Claude Code build, audit and scale AI-ready design systems in Figma for Web, iOS and Android: strictly tokenized, componentized and documented so AI agents can build UIs from them.
 
 
-> **Live Storybook:** the design system runs in Storybook (`Trianglz/storybook/`). See [Storybook for the team](#storybook-for-the-team-run-it-on-your-machine) to run it in two commands.
+> **Live Storybook:** the design system runs in Storybook (the default Web reference's Storybook, folder in `references.json`). See [Storybook for the team](#storybook-for-the-team-run-it-on-your-machine) to run it in two commands.
 ## What is inside
 - `CLAUDE.md`: read by Claude Code automatically; tells it to start every job with the intake.
 - `Design_System_Intake_Skill/`: the entry flow (tools check, questions, path, approval checkpoints).
 - `Web_Design_System_Skill/`, `iOS_Design_System_Skill/`, `Android_Design_System_Skill/`: platform Main Skills.
-- `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/`: studies of the Trianglz template files (foundations, components, known gaps).
+- Reference library: studied design systems the workflow learns from (foundations, components, known gaps), one folder per company and platform, indexed in `references.json`. Today it holds one company's Web, iOS and Android systems; add others the same way (`References.md`).
 - `*/data/`: JSON knowledge base per DS (tokens, component registry, rules, screen templates) and `*/docs/decisions.md`.
 - `tools/`: `build_tokens.py` (Figma export to tokens.json), `recolor.py` (change a color and regenerate all its shades), `tokens_to_css.py` (tokens.json to Storybook CSS variables) and `storybook_parity.py` (checks Storybook names match Figma). Needs Python 3.
 - `Storybook_Design_System_Skill/`: optional live Storybook for developers (`/storybook-design-system`).
 - `memory/`: shared project memory (decisions, references). `CLAUDE.md` imports it, so every Claude session in this folder starts with it.
 - `.claude/agents/`, `.claude/hooks/`, `.claude/settings.json`, `.claude/scheduled/`: the Claude toolkit (see below).
-- `References.md`: Trianglz Figma template links and tooling links.
+- `References.md`: the reference library (entries, Figma links, how to add one) and tooling links.
 - `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`.
 
 ## Setup
@@ -29,7 +29,7 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
    - **and/or FigCli (figma-cli)**: download https://github.com/silships/figma-cli into a `Tools` folder at a drive root (outside this folder), run `npm install` inside it, then `node src/index.js connect --safe` and open Plugins > Development > FigCli. Use **Safe mode only**, never Yolo or Browser (see `Figma_Tools/README.md`).
 4. **Recommended skills and connectors**: the official Figma MCP / Figma plugin (figma-use, figma-generate-library, figma-generate-design), audit-design-system, ui-ux-pro-max, Impeccable.
 5. **Get this folder**: clone the repository (or copy the folder) anywhere on your machine. Paths inside are relative, so any location works.
-6. **Templates (optional)**: duplicate the Trianglz file for your platform from `References.md` into your Figma workspace.
+6. **Templates (optional)**: duplicate a reference design system for your platform from `References.md` into your Figma workspace.
 
 ## Use
 Open the folder in Claude Code and say what you want, or run `/design-system-intake`. Claude checks the Figma bridge, asks one question at a time, then builds with approval checkpoints (Foundation, Components, Screens) and finishes with the project's skills and an audit.
@@ -56,11 +56,11 @@ None of them can edit Figma; they only have read tools.
 
 **Scheduled weekly drift audit** (`.claude/scheduled/weekly-drift-audit.md`). A ready prompt that runs the ds-auditor in drift mode every Monday and writes a summary to `audits/`. It is not turned on. It must run on your computer (the Figma Desktop Bridge is local), so enable it as a scheduled task in the Claude desktop app or with Windows Task Scheduler; the file has both steps.
 
-**Memory** (`memory/`). Stable facts every session needs: standing decisions (build order, atomic tiers, group placement, platforms independent, never install, Storybook direction) and Trianglz references. `CLAUDE.md` imports it. Update the matching file when a decision changes; keep one fact per file and relative paths only.
+**Memory** (`memory/`). Stable facts every session needs: standing decisions (build order, atomic tiers, group placement, platforms independent, never install, Storybook direction) and the reference library. `CLAUDE.md` imports it. Update the matching file when a decision changes; keep one fact per file and relative paths only.
 
 ## Storybook for the team (run it on your machine)
 
-The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: `Trianglz/storybook/` (Trianglz Web Design System).
+The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: the default Web reference (`references.json`, today `Trianglz/storybook/`).
 
 Needs **Node.js 18+** (`node --version`). Then:
 1. `git clone <repo URL>` (private repo; ask for access).

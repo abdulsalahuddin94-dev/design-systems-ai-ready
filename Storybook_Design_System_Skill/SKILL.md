@@ -33,7 +33,7 @@ Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma is the source of
 
 What to update: the project's `CHANGELOG.md` entries marked `Storybook synced: no` (list them with `python tools/project_status.py`). After the update is verified, run `python tools/project_status.py "<platform folder>" --mark-synced`.
 
-From the platform folder (`My Projects/<Project>/`, `<Project>_iOS/`, `<Project>_Android/`, or a Trianglz reference folder):
+From the platform folder (`My Projects/<Project>/`, `<Project>_iOS/`, `<Project>_Android/`, or a reference folder from `references.json`):
 - `data/tokens.json`: every variable with its Figma name (`<Collection>::<name>`), per-mode values and aliases.
 - `data/component-registry.json`: components with group, page, tier, variants, properties, use, nests; text and effect styles; icons.
 - `data/rules.json`: contrast, touch targets, focus, disabled opacity.
@@ -46,7 +46,7 @@ If `data/` says `needs_resync: true` and the Figma file is open in the Desktop B
 
 ## 3. Output layout
 
-Reference build: `Trianglz/storybook/` (Web, 28 component sets, 2026-09-30). Copy its structure.
+Reference build: the default Web reference's Storybook (`references.json`, today `Trianglz/storybook/`, 28 component sets, 2026-09-30). Copy its structure.
 
 ```
 <platform folder>/storybook/

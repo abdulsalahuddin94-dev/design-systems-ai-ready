@@ -1,22 +1,39 @@
 # References
 
-## Trianglz templates (duplicate, never edit the originals)
+## Reference library (duplicate, never edit the originals)
 
-| Platform | Figma file | Skills in this repo |
-|---|---|---|
-| Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System | `Trianglz/` |
-| iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System | `Trianglz_iOS/` |
-| Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System | `Trianglz_Android/` |
+The workflow learns from studied design systems and can start a project from one of them. They are listed in `references.json` (Root): one entry per company and platform (`web`, `ios`, `android`, `cross-platform`), each with its folder of study skills, Figma link and optional Storybook. `default` picks the entry used per platform when the user does not choose. Skills, the intake and tools read `references.json`; they never name a company.
 
-How to use a template:
+Current entries (from `references.json`):
+
+| Entry | Platform | Figma file | Study folder |
+|---|---|---|---|
+| Trianglz - Web Design System | Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System | `Trianglz/` |
+| Trianglz - IOS Design System | iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System | `Trianglz_iOS/` |
+| Trianglz - Android M3 x Design System | Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System | `Trianglz_Android/` |
+
+How to start from a reference template:
 1. Open the link and choose **Duplicate** (the copy lands in your drafts).
 2. Move the copy to your project folder in Figma and rename it `<Project> Design System`.
-3. Give the link to Claude in the intake (Greenfield > "Start from a Trianglz template").
+3. Give the link to Claude in the intake (Greenfield > "Start from a reference template").
 
 Rules:
-- The Trianglz skills describe what is in each template and list its known gaps (`references/gaps.md`). Fix those gaps in your copy.
-- Node IDs written in the Trianglz skills belong to the original files only. A duplicate gets new IDs, so Claude finds everything by component, style and variable **name**.
+- Each entry's skills describe what is in its file and list its known gaps (`references/gaps.md`). Fix those gaps in your copy.
+- Node IDs written in a reference's skills belong to its original file only. A duplicate gets new IDs, so Claude finds everything by component, style and variable **name**.
 - You need view access to the originals to duplicate them.
+
+## Adding a design system to the library (`/study-reference-ds`)
+Say "study this design system" with the company name, the platform(s) and the Figma link(s). One run per platform; a company with Web, iOS, Android and cross-platform files gets four entries, studied one per session (token budget). Nothing here touches the original Figma file: it is read only, and the guard hook asks before any write to it.
+1. **Register and scaffold.** `python tools/add_reference.py --company "<Company>" --platform <web|ios|android|cross-platform> --name "<Figma file name>" --figma-url <link> [--default]`. It creates `Reference_Library/<Company>/<Platform>/` (Foundation_Skill, Component_Skills for Form Elements, Navigation and Data Display, `data/`, `docs/`), marks the original file key off-limits and adds the entry to `references.json` with `status: "studying"`.
+2. **Open the file.** The user opens it in Figma Desktop with the Desktop Bridge (or FigCli in Safe mode); confirm the file key matches the entry.
+3. **Study the Setup group first:** page structure, variables (`token-extractor` -> `data/source/figma-variables.dtcg.json`, `data/source/config.json`, then `python tools/build_tokens.py <folder>`), text and effect styles, icons. Write `Foundation_Skill` (SKILL.md, references/variables.md, gaps.md).
+4. **Study each component group** (⭐Form Elements, ⭐Navigation, ⭐Data Display): every component's purpose, variants, properties, states, nesting and tier, with Light and Dark screenshots of every variant (in `ds-auditor` / `docs-writer` so images stay out of the main session). Write each Component_Skill (SKILL.md, references/components.md, gaps.md) and `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json`, `docs/decisions.md`.
+5. **Compare with the platform Main Skill.** Mistakes the file makes go into its `gaps.md`; a lesson that applies to every project goes into the Main Skill (section 9 or 10) without the company name.
+6. **Ready.** Set the entry's `status` to `"ready"` (and `default` if it should be the platform default), update `memory/references.md`, log it and commit.
+
+What users see afterwards: Greenfield 3.1 offers "Start from a reference template"; when a platform has more than one ready entry, a menu lists them by `name` with the default first (Recommended). Entries still `studying` are never offered.
+
+Rules: platforms stay independent (one entry per platform, nothing shared or merged between entries); a cross-platform entry (one shared design for Flutter / React Native custom UI) is offered when intake 1.3 picks cross-platform; never edit the original file.
 
 ## Figma tooling
 Setup guide, which tool fits which step, Safe mode and switching: `Figma_Tools/README.md`.
