@@ -1,5 +1,8 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledPlugins": {
+    "design@knowledge-work-plugins": false
+  },
   "permissions": {
     "allow": [
       "mcp__figma-console__figma_get_status",
