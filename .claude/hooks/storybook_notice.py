@@ -74,7 +74,8 @@ def main():
            "`npm run storybook` inside the folder above; it serves http://localhost:6006 and an MCP server at "
            "http://localhost:6006/mcp (registered in .mcp.json).\n")
         + "In your first reply, mention in one short line that this repo has a Storybook, as information only: "
-        "do not ask about it there. The first question is about the project (Design_System_Intake_Skill 0.0). "
+        "do not ask about it there. The first question is about the project (Design_System_Intake_Skill 0.0), "
+        "unless the user asked for quick mode (/ds-quick, Design_System_Intake_Skill/steps/quick-mode.md). "
         "Run or update the Storybook only when the user asks, at intake 0.7, or for a project with pending "
         "Storybook work. Run `npm install` only after the user says yes. Details: README.md > Storybook and "
         "Storybook_Design_System_Skill/SKILL.md.\n"
