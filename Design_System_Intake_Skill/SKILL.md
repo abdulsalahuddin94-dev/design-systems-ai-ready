@@ -44,22 +44,43 @@ Checks, in order:
 
 **Never install anything yourself.** The user installs and connects the tools; you only check and show the steps. The user creates the Figma token themselves; never ask them to paste it into the chat.
 
-**figma-console-mcp install steps** (from its README):
-1. Prerequisites: Node.js 18+ (`node --version`), Figma Desktop (not the web app), an MCP client such as Claude Code.
-2. Create a Figma personal access token (Figma > Settings > Security > Personal access tokens), description `Figma Console MCP`, scopes: File content (Read), File versions (Read), Variables (Read), Comments (Read and write). It starts with `figd_`.
-3. Add the server to Claude Code (the user runs this in their own terminal, with their own token):
-   `claude mcp add figma-console -s user -e FIGMA_ACCESS_TOKEN=figd_YOUR_TOKEN_HERE -e ENABLE_MCP_APPS=true -- npx -y figma-console-mcp@latest`
-   (Claude Desktop / Cursor: add the same `npx -y figma-console-mcp@latest` server with those env values to the client's MCP config file.)
-4. Desktop Bridge: in Figma Desktop go to Plugins > Development > Import plugin from manifest..., select `~/.figma-console-mcp/plugin/manifest.json`, then run the plugin inside the file you will work on. It connects over WebSocket.
-5. Restart the MCP client and say "Check Figma status"; it should show the Desktop Bridge connected.
-
-**figma-cli install steps** (from its README):
-1. Prerequisites: Figma Desktop installed and open, Claude Code (or Cursor), Node.js 18+.
-2. The user downloads the project: https://github.com/silships/figma-cli into a folder in their home directory.
-3. Inside that folder, the user asks Claude Code to "Set up figma-cli and connect it to my Figma" and follows its setup. It offers three connection modes: Yolo (patches Figma Desktop, default), Browser (Figma in Chromium) and Safe (official Figma plugin, no app changes). Recommend **Safe mode** for company machines.
-4. Done when figma-cli says it is connected.
+Install steps for figma-console-mcp and figma-cli: `steps/preflight-install.md`.
 
 Also recommended (not blocking): the official Figma MCP and the skills figma-use, figma-generate-library, figma-generate-design, audit-design-system, ui-ux-pro-max. If one is missing, say so in one line and continue.
+
+---
+
+## 0c. Loading, sessions and token budget (Abdul, 2026-10-01)
+
+Trials ran one session per project (470-650 turns, context up to 690K tokens, re-read on every turn). These rules keep the same quality gates (audits, fidelity, approvals) at a fraction of the cost.
+
+**Load only what the step needs.** This file is the router. The rest of the intake lives in `Design_System_Intake_Skill/steps/` and keeps its section numbers:
+
+| Section | File | Load when |
+|---|---|---|
+| 0b install steps | `steps/preflight-install.md` | preflight finds no tool or no Desktop Bridge |
+| 1.3-1.5 detail | `steps/both-native.md` | 1.2 = Both |
+| 4 (3a-3d) | `steps/greenfield.md` | 2.1 = Greenfield |
+| 5 | `steps/brownfield-1-screens.md` | 2.2 = 1 |
+| 6 | `steps/brownfield-2-code.md` | 2.2 = 2 |
+| 7 (Scenario C) | `steps/brownfield-3-scenario-c.md` | 2.2 = 3 |
+| 7b | `steps/fix-on-create.md` | a project starts from an existing file; last foundation step of a new build |
+| 7c | `steps/figma-files.md` | before the first Figma work of every session |
+| 7d, 7e, 7f | `steps/screens.md` | screens are built or changed |
+| 10 | `steps/folders.md` | question 0.3, or unsure where a file goes |
+| 11, 12 | `steps/finish.md` | end of a build, Storybook step |
+
+- The platform Main Skill loads after 1.1 / 1.2. The Figma skills (figma-use, figma-generate-library, figma-generate-design, ui-ux-pro-max) load at the first Figma build step of a session, never during the intake questions; load each once per session.
+- Read the knowledge base before Figma: names, keys and values come from `data/tokens.json` and `data/component-registry.json`. Re-read Figma only for what the files do not hold, or when `CHANGELOG.md` shows a Figma change after the last export.
+
+**One phase per session.** Phases: Intake (ends at the approved Intake Summary), Foundation, Components (one session per group if the set is large), Screens (one flow, or up to 3 screens, per session), Storybook. At the end of each phase:
+1. Write the handoff: `Project_Brief.md` (Status, Checkpoints, one `Next step:` line with what the next session does first), the `CHANGELOG.md` entry, and `python tools/project_status.py "My Projects/<Project>"`.
+2. Tell the user in one line: "Phase done. Please start a new session for <next phase>; it resumes from the project files."
+3. A resumed session reads only `Project_Brief.md`, `status.json`, the newest `CHANGELOG.md` entries and the step files of its phase. It does not re-read finished phases, re-export variables or re-screenshot approved work, unless the changelog shows work by another tool (then the CLAUDE.md handoff audit runs first).
+
+**Heavy visual work runs in subagents.** Variant screenshots (Light and Dark), side-by-side fidelity captures (section 7f.4) and audits run in the `ds-auditor` agent (screens mode for screens). It saves the images under the project's `audits/` and returns numbers and a list of differences; the main session fixes from that list. The main session opens an image only to show it to the user at a checkpoint. The rules themselves (every variant in each mode, a side-by-side per screen, up to 3 fix rounds, user-only approval) do not change.
+
+**Short Figma scripts.** Paste `tools/figma_helpers.figma.js` into `figma_execute` once per file per session; it keeps `DS.*` helpers loaded (variable binding, Auto Layout frames, text with styles, icons, instances and properties, a raw-value report). Later scripts call them instead of redefining helpers; still one section per script (section 7f.3). If a script says `DS is not defined`, paste the file again.
 
 ---
 
@@ -102,27 +123,14 @@ Until the project folder exists (0.3), keep the answers in the conversation; rig
 | 1.4 | Native only: "Do you want a shared Brand Foundation file (brand Primitives only: color ramps, font families, raw values) that both systems copy from? Yes (recommended when one brand drives both apps) / No" | Yes -> create `<Project> Brand Foundation` (Primitives only). Then load **both** `iOS_Design_System_Skill` and `Android_Design_System_Skill`, two independent systems. |
 | 1.5 | Cross-platform only: "Which framework, and which base should the shared design follow? Flutter / React Native, then Material 3 (recommended for one codebase) / Apple HIG / Custom brand UI on a Material 3 structure" | Load the matching Main Skill as the base (Material 3 or custom -> `Android_Design_System_Skill`; Apple HIG -> `iOS_Design_System_Skill`). One DS, one Design file, folder `<Project>_Mobile\`. |
 
-### Both: native or cross-platform (Abdul, 2026-09-30)
-
-| | **Native** | **Cross-platform (Flutter / React Native custom UI)** |
-|---|---|---|
-| Figma DS files | `<Project> iOS Design System` (HIG names such as System Background and Label, Dynamic Type, SF Symbols, pt) **and** `<Project> Android Design System` (`md.sys.color`, M3 type scale, state layers, elevation levels, Material Symbols, dp) | One `<Project> Design System` |
-| Brand Foundation | Optional `<Project> Brand Foundation` file: Primitives only (no Semantics, styles or components) | Not needed: the one DS holds the Primitives |
-| Design files | `<Project> iOS` linked **only** to the iOS DS, `<Project> Android` linked **only** to the Android DS | One `<Project>` Design file |
-| Local folders | `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set and `status.json` (plus `<Project>_Brand\` when the Brand Foundation exists) | One `<Project>_Mobile\` |
-| Main Skills | Both, run one after the other; each checkpoint is shown per platform | The base chosen at 1.5 |
-
-Native rules:
-- The Brand Foundation is the only thing the two systems have in common, and only as a source of values. Each platform DS **copies** its Primitives into its own local collection (never consumes them as remote library variables, so the audit's 0 remote variables still holds) and builds its own platform Semantics on top. A brand color change goes into the Brand Foundation first, then `tools/recolor.py` runs on each platform folder.
-- An iOS Design file never enables the Android library and vice versa. The file check (section 7c) rejects a cross-link.
-- Record the choice in each folder's `status.json`: `mobile_setup` (`native` / `cross-platform`), `sibling_project` (the other platform folder) and `figma.brand_foundation` (name, url, file_key, or null).
+Both: native vs cross-platform rules (DS files, Brand Foundation, Design files, folders, `status.json` fields): `steps/both-native.md`.
 
 Platform rules (never mix):
 - **Web** = Tailwind conventions, web breakpoints (Desktop 1440 / iPad 768 / Mobile 375), Hover / Focus / Active states, Lucide icons.
 - **iOS** = Apple HIG, Dynamic Type, iOS semantic names (System Background, Label...), SF Symbols style icons, pt units.
 - **Android** = Material Design 3, `md.sys.color` tokens, state layers, elevation levels, Material Symbols, dp units.
 - Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system.
-- After choosing, load the platform Main Skill **and** its required skills (figma-use + figma-generate-library; figma-swiftui for iOS; figma-code-connect when mapping to code). Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
+- After choosing, load the platform Main Skill. Its required skills (figma-use + figma-generate-library; figma-swiftui for iOS; figma-code-connect when mapping to code) load at the first Figma build step of the session (section 0c), not during the intake questions. Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
 
 ---
 
@@ -163,207 +171,11 @@ Optional (0.7 = Yes): Storybook after the Components checkpoint (section 12)
 
 ---
 
-## 4. Step 3 - Greenfield
+## 4-7f. Path steps and shared rules
 
-### 3a. Existing AI-ready DS
-Question 3.1: "Do you already have an AI-ready design system for this project, meaning a Figma DS file plus .md / skill files? Yes / No / Start from a Trianglz template (Web/iOS/Android)"
-- **Yes** -> ask "Please share the DS Figma link and the path to the skill files." Then:
-  1. Read the skill files (Foundation_Skill, Component_Skills) and the DS file (⭐Setup first, then component groups; screenshot every variant light and dark).
-  2. Run a **quick audit** (audit-design-system): remote variables/styles, raw values, unbound tokens, missing states, bad names, dead properties, missing descriptions. Compare against the platform Main Skill section 9 and 10.
-  3. Report findings in a short list and ask: "The DS passed / has N issues. Fix the issues first (recommended) / Work from it as it is"
-  4. Run **Fix on create** (section 7b) on it, then work from the fixed DS. Skip to the checkpoint that matches what is missing.
-- **Start from a Trianglz template** -> 3a-2.
-- **No** -> 3b.
-
-### 3a-2. Start from a Trianglz template
-Templates are listed in `References.md` in the Root (Web, iOS, Android). Use the template of the platform chosen in Step 1 only.
-1. Ask: "Please open the Trianglz <Platform> template from References.md, duplicate it into your own Figma workspace (Duplicate to your drafts, then move it to the project folder), rename it '<Project> Design System', and send me the link."
-2. Load the platform's Trianglz skills (`Trianglz/`, `Trianglz_iOS/` or `Trianglz_Android/`: Foundation_Skill first, then the component skills) as the map of what is in the file.
-3. **Node IDs change in a duplicate.** Find every page, component set, style and variable by **name**, never by the ids written in those skills (they belong to the original file only).
-4. Run the brand steps 3b and 3c to get the project's colors, fonts and direction, then rebrand the copy: update Primitives and Semantics, fonts, radius and spacing per the direction.
-5. Run **Fix on create** (section 7b) on the copy: token fixes with `tools/fix_tokens.py`, then the component gaps from each skill's `references/gaps.md` and the platform Main Skill section 9. Then continue with 3d from the first missing layer.
-
-### 3b. Colors from the brand folder
-Look in `[Project folder]\Inputs\Brand\` (PDF brand book, logo, images, mood board).
-- Files found -> extract brand colors (dominant + accent + neutrals), build hue ramps 50-950 around each, map to Semantics per the platform naming, check contrast (text >= 4.5:1, UI >= 3:1, Light and Dark). Show the palette and the Semantic mapping for approval.
-- Folder empty -> Question 3.3: "I found no brand files. What is the primary / brand color (hex)? Add a secondary color too if you have one."
-  If the user has none, ask: "Should I propose a palette based on the industry? Yes / No"
-- **Brand contrast pre-check (right after the brand color is known):** run `python tools/new_foundation.py "<Project folder>" --brand "#hex" --modes <modes> --check-only` (or `ds_color.contrast`) and show the brand color against white, black and each mode's base surface. It decides how every filled button looks: e.g. `#299B48` + white text = 3.57:1, fails 4.5:1, so filled buttons need dark text or a darker brand step. Put the result and the chosen fix in the Intake Summary's Direction line.
-
-### 3c. Design direction from the inspiration folder
-Look in `[Project folder]\Inputs\Inspiration\` (screenshots, links, Dribbble shots, competitor apps).
-Derive and write down: corner style (sharp 0-4 / soft 6-12 / rounded 16+ / pill), density (compact / comfortable / spacious), elevation (flat / subtle shadows / layered), border use, type personality (geometric / humanist / grotesk), icon weight (outline / filled, stroke 1.5 / 2), imagery and illustration style.
-- Folder empty -> Question 3.4: "I found no inspiration files. Which industry is the product in? (e.g. fintech, healthcare, e-commerce, education, government, SaaS)"
-  Derive a style from the industry (use ui-ux-pro-max and Impeccable for the direction; avoid generic AI-looking UI). From ui-ux-pro-max take only the **style**, the **anti-patterns** and the **color mood** (e.g. a dark-palette hint); ignore its landing-page patterns (hero, scroll journeys, CTA placement) and its font pairing. Intake answers always win: fonts (0.6), modes (0.4), brand color (3.3) and RTL (0.5) are never overridden by a skill's suggestion.
-  Do not ask for a separate approval: the direction goes into the Intake Summary (section 9), which is approved once.
-
-### 3d. Build
-**Which Figma file:** use the connected file if the user confirmed it at 0.2 as this project's DS file and it is empty; otherwise ask: "Please create a new Figma design file named '<Project> Design System' and send me its link." Register it in `status.json > figma.design_system`. A plugin cannot rename a file: if the connected file has another name, add "Rename the file to '<Project> Design System'" to the user's to-do list at the Foundation checkpoint.
-**Foundation generator:** `python tools/new_foundation.py "<Project folder>" --brand "#hex" --modes <Light,Dark | Light | Dark>` writes `data/source/foundation-spec.json` (ramps from the brand color with stored curves, the Semantic mapping per mode, the paired-token check and every contrast pair). Fix every failure it prints (re-point the Semantic alias to another step), then build the Primitives and Semantics in Figma from the spec.
-Follow the platform Main Skill build order exactly:
-1. Primitives -> 2. Semantics (Light / Dark) -> 3. Spacing, Radius, Typography variables -> 4. Text and effect styles -> 5. Icons -> 6. Components: Atoms -> Molecules -> Organisms -> Patterns -> 7. Linked documentation pages -> 8. Audit + project skills.
-Before each component: state its tier, post its atomic structure map, check dependencies exist, build missing lower tiers first.
-Colors are built **recolor-ready** (platform Main Skill section 3b): full shade scales generated from one base color with a stored curve, Semantic tokens only alias Primitives, so a later color change regenerates every shade and everything follows.
+Sections 4 (Greenfield), 5-7 (Brownfield types 1-3), 7b (Fix on create), 7c (linked Figma files), 7d-7f (screens) live in `steps/` (map in section 0c). Load the file of the chosen path, plus the shared files it names.
 
 ---
-
-## 5. Step 4 - Brownfield type 1: screens exist, no DS
-
-This path runs in the **reverse direction**: the Design file (the existing screens) is the source, and the Design System file is built from it.
-1. Ask: "Please share the Figma link of the Design file with the screens (or put screenshots in <Project folder>\Inputs\Screens\). Are the screens designed Figma frames, screenshots placed in Figma, or both?"
-   Register it in `status.json > figma.design_files` with `role: source` and `content: frames | screenshots | mixed`.
-   Then ask the user to open that Design file and the plugin (Desktop Bridge), and confirm the connected file key matches the registered one (section 7c) before reading anything.
-2. **Read the screens** from the Design file:
-   - Designed frames: read the layers (fills, strokes, text properties, auto layout gaps and padding, corner radius, effects) and find repeated elements (same structure or local components used many times) as component candidates.
-   - Screenshots (images inside Figma or in `Inputs\Screens\`): export or view them and extract visually (colors by sampling, type sizes and weights by measuring, spacing and radius by measuring, repeated UI patterns).
-   Read-only: never edit the source Design file during extraction. Extract every color, font family / size / weight / line height, spacing value, radius, shadow, and recurring UI pattern (buttons, inputs, cards, nav...). Save the raw inventory to `[Project folder]\Inputs\Extracted_Tokens.md` with usage counts.
-3. **Merge approval**: show a summary of near-duplicate values (e.g. `#1A73E8` x42 and `#1B74E9` x3 -> merge to one; spacing 15/16 -> 16; radius 7/8 -> 8; font sizes 13/14 -> 14). Ask: "Here are the near-duplicates I suggest merging. Approve all (recommended) / Approve with changes (tell me which) / Keep all as they are"
-4. Ask: "Please create a new Figma design file named '<Project> Design System' in the same Figma project folder as the screens, and send me its link." (Do not create it yourself unless the user asks.)
-5. **Build the DS** in that file per the platform Main Skill: Primitives from the merged colors (nearest color per value plus full shade scales 50-950), Semantics, spacing / radius / typography variables, text and effect styles, icons, then the component groups from the recurring patterns (Atoms -> Patterns).
-6. Register the new DS file in `status.json > figma.design_system`. Ask the user to **publish** the library ("Please publish '<Project> Design System' as a library and enable it in the design file. Tell me when done."), then open the Design file and verify it sees the library (section 7c). The source Design file now becomes a normal `role: screens` file linked to the library.
-7. **Screen spec, then map the screens** (section 7f): open every source screen or screenshot at full size and write its screen spec (sections top to bottom, exact texts, icons, counts, full-bleed or gutter, pinned or scrolling). Then list, per section, which DS component / variant / variable covers it and what is missing (the 7e gap table). Show the specs and the map for approval; missing components are built in the DS file first (7e steps 2-3).
-8. **Rebuild the screens properly on the DS** (like the PMO-MVP-New project sync work): section by section with DS instances and variables only, no hardcoded values or detached components, keeping the original layout and content exactly as the approved screen spec says. Follow the screen fidelity rules and the visual loop in section 7f for every screen. Load figma-generate-design + figma-use + ui-ux-pro-max. Keep the old screens on an `Archive` page until the user approves the new ones.
-
-## 6. Step 5 - Brownfield type 2: live product, no Figma
-
-1. Ask: "Please share the GitHub repository link and/or the local code path of the product."
-2. **Extract tokens from the code first**: `tailwind.config.*`, CSS variables, theme files (`theme.ts`, `colors.ts`, SCSS variables), iOS `Assets.xcassets` / Color and Font extensions, Android `colors.xml`, `themes.xml`, `Theme.kt` / `Color.kt` / `Type.kt`, Flutter `ThemeData`. Also list the existing components and screens / routes grouped by module. Save to `[Project folder]\Inputs\Extracted_Tokens.md` and `Inputs\Code_Inventory.md`.
-3. Show the merge summary of near-duplicates (same as type 1, step 3) and get approval. If the code has no tokens, ask for screenshots of the live product and extract from them.
-4. Ask: "Please create two Figma design files in the same Figma project folder: '<Project>' (screens) and '<Project> Design System' (library). Send me both links." Register both in `status.json > figma` (section 7c).
-5. **Build the full DS** per the platform Main Skill, matching the code token names where they are sensible (and noting the mapping for Code Connect).
-6. Ask the user to publish the library and enable it in '<Project>'.
-7. **Rebuild the screens** in '<Project>', **one page per module** (e.g. `Auth`, `Dashboard`, `Settings`), assembled only from DS components and variables. Offer figma-code-connect mapping afterwards.
-
-## 7. Step 6 - Brownfield type 3: imperfect DS + Design file (Scenario C)
-
-Use this path when a design system already exists but is not AI-ready (missing scopes, unclear names, no descriptions, gaps) and one or more Design files follow it only partially or not at all. Six steps, in order. Nothing in the Design files is changed before step 5, and nothing new is added to the DS without Abdul's approval. Load audit-design-system for steps 3 and 6, and figma-use + figma-generate-library for DS changes.
-
-**Before step 1:** ask "Please share the design system Figma link and the link of every Design file (each with a name)." Register them in `status.json > figma` (section 7c). Then ask: "Do you have any reference for the tokens: developer token files, docs, a Storybook, a style guide? Share them if so." Any reference found is read first and wins over inference.
-
-### Step 1 - Understand the DS (Variable Map)
-1. Study the DS file (⭐Setup or its foundation pages first, then component groups; screenshot every variant in each mode).
-2. Read **every variable**: collection, modes, scopes, value per mode (Light / Dark), alias target (which Primitive it points to), description, and **where it is used** inside the DS components (which component, which layer, which property: fill, stroke, text, gap, radius...). Export them first (section 7b step 1) so the data is in `data/source/`.
-3. Infer each variable's purpose from, in this order: the user's references, its name and group, its scopes, where DS components use it, and its values across modes.
-4. Write the **Variable Map** to `<Project folder>/audits/<date>-variable-map.md`, one row per variable:
-
-   | Variable | Collection / modes | Value (Light / Dark) | Alias | Scopes | Used in (component > layer > property) | Inferred usage | Confidence |
-   |---|---|---|---|---|---|---|---|
-
-   Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
-5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, grouped in one message: "What is `<name>` for? <what I found>. My guess: <guess>." Record the answers in the map and in `docs/decisions.md`. Abdul approves the Variable Map before step 2.
-
-### Step 2 - Fix the DS itself (after approval)
-1. Propose the DS fixes as one list: missing or wrong **scopes** (from the approved map, e.g. a border color scoped to STROKE_COLOR only), **descriptions** for every variable (its usage from the map) and every component (Purpose, Usage Rules, Accessibility), bad names (section 7b renames), failing contrast pairs, and **gaps** (missing tokens, states or components the Design files will need). Gaps are flagged, never filled silently.
-2. Apply the fixes in the DS file only (section 7b steps 2-4), split by risk, because this DS is already used by live Design files:
-   - **Fix on create, without asking** (nothing visible changes in the screens): descriptions for variables and components, scopes for **high-confidence** variables, typo / spacing / case renames (bindings are kept), missing states added to components.
-   - **Approval first** (can change how existing screens look or break bindings): any change to a value or alias (including contrast fixes), scopes for medium / low-confidence variables, merging or deleting variables or components, renaming a variable to a different meaning.
-   Show both lists together; the first is already applied, the second waits for Abdul's yes.
-3. Run audit-design-system on the DS, then ask Abdul to **publish** the library (section 7c) and wait for his confirmation.
-
-### Step 3 - Audit the Design file, screen by screen
-Run audit-design-system (ds-auditor, `screens` mode) on each Design file, one screen at a time. Per screen, find:
-- **Raw values:** hardcoded hex colors, px spacing / radius / sizes, fonts and text properties not using a text style.
-- **Misused variables:** a variable used against its scope or its Variable Map purpose (e.g. a border color used as a fill, a text color on a background, a spacing token used as a radius).
-- **Detached instances** and local copies of DS components; hand-drawn elements that match a DS component.
-- **Frames without Auto Layout** and **default layer names** (Frame 124, Rectangle 23).
-
-Write the report to `<Project folder>/audits/<date>-screens-<file>.md`: per screen, one row per issue with the layer, the current value, the problem and a **proposed fix** (the variable, style or component to use, following step 4). Show totals per screen and per issue type.
-
-### Step 4 - Raw values with no matching Semantic variable
-For each raw value the report cannot map directly, decide by this rule and write the decision in the report:
-- **Near-miss of an existing token** (e.g. `#1B74E9` next to `color/action/primary` `#1A73E8`, 15px next to `space/4` 16px) -> use the nearest token.
-- **Repeated new value** (the same value used on several screens or many layers, with a clear purpose) -> propose a **new Primitive + Semantic** pair (name, value per mode, Primitive it aliases, scope). Never added without Abdul's approval; once approved it is added in the DS file, the library is published, then the screens are bound to it.
-- **One-off off-scale value** (e.g. 13px gap, 7px radius) -> snap to the nearest step of the scale.
-- **Unsure** -> mark `needs decision` and ask Abdul.
-- **Alpha colors** (raw color with opacity < 100%, from the hex alpha or the fill/layer opacity; the single source of this rule, Main Skills point here): find the real background under the layer, flatten `result = color*alpha + bg*(1-alpha)`, and match the result to the nearest opaque Semantic token by OKLCH deltaE. Repeat against the background in the other mode (Light and Dark). Same token in both modes with deltaE < 2 -> bind it (opaque); otherwise `needs decision`. Helper: `python tools/flatten_alpha.py <folder> --color "#RRGGBBAA" --bg <bg token>`. **Exceptions stay transparent:** scrims and overlays over content, elements over images, hover/pressed state layers; bind them to an existing alpha token, or propose a new one (e.g. `overlay/scrim`) only with Abdul's approval.
-
-### Step 5 - Fix the screens (after the report is approved)
-1. Abdul approves the report (and any new tokens from step 4). Add approved tokens to the DS file first, publish (section 7c), and have Abdul run **Accept updates** in the Design file before binding.
-2. Fix **screen by screen**: bind raw values to variables and styles, replace misused variables, swap detached copies and hand-drawn parts for library instances, add Auto Layout, rename default layers. Missing components are built in the DS file first (by tier, section 7e step 2), never in the Design file.
-3. On any ambiguous case not decided in the report, stop and ask Abdul before changing it.
-4. **Keep the existing screen sizes** (section 7d Brownfield exception).
-5. Re-run the Design file audit after each screen and report the before / after numbers.
-
-### Step 6 - Log, publish, update every Design file
-Append the `CHANGELOG.md` entry (Variable Map, DS fixes, tokens added, screens fixed, audit numbers, `Storybook synced: no`), run `tools/project_status.py`, make sure the last DS change is published (section 7c), and list every linked Design file that still needs **Accept updates**; mark each one as Abdul confirms it. Then ask about the Storybook update.
-
----
-
-## 7b. Fix on create (Abdul's rule: every problem found while setting up a project gets fixed)
-
-Runs automatically, without asking, whenever a project starts from an existing file: a duplicated Trianglz template (3a-2), an existing AI-ready DS (3a), and as the last foundation step of every new build. Work only in the project's own copy, never in an original template.
-1. Export the file's variables (figma-console `figma_export_tokens`, format dtcg) into `My Projects/<Project>/data/source/figma-variables.dtcg.json`. If it returns 0 tokens (seen for a file with 200 variables, even after `figma_get_variables refreshCache`), run `tools/export_variables.figma.js` with `figma_execute` instead and save its returned JSON to the same file (same DTCG shape). Copy `data/source/config.json` and `data/rules.json` from the matching Trianglz folder (update collection ids and names), and run `python tools/build_tokens.py "My Projects/<Project>"`. For a Web project, set `rules.json > components.required_states_interactive` to the Web Main Skill table (Pressed and Loading are required on Button only), and add the `action/*/border` pairs to `contrast_pairs` (Web skill section 3).
-2. Run `python tools/fix_tokens.py "My Projects/<Project>"`. It builds `data/fixes/<date>-fix-plan.json` and a `.figma.js` script that:
-   - normalizes hand-picked palette tones to true tones (Android, `known_fixes.normalize_tones`);
-   - recomputes derived tokens (M3 state layers, surface tints) from their role colors;
-   - re-points aliases that point to other libraries (`known_fixes.alias_fixes`);
-   - fixes every failing contrast pair in `rules.json` by moving the Semantic alias to the nearest passing step of the same ramp (never raw hex);
-   - renames bad variable and collection names (typos, double or trailing spaces, `??`, generic ` 2` suffixes, mixed case); renames keep every binding.
-3. Apply the script with figma_execute in the project's DS file, re-export, and re-run `build_tokens.py` and `fix_tokens.py` until the plan is empty and `recolor_readiness.ready` is true.
-4. Fix the component-level items listed in the plan's `needs_a_person` and in each `references/gaps.md` (missing states, `Property 1` / `Status4` names, `Mode=Light|Dark` variants, text glyph icons, unwired properties, missing text/instance-swap properties), lowest tier first, in the same file.
-5. Run audit-design-system (or the ds-auditor agent) and screenshot the affected pages in Light and Dark.
-6. Log every fix in `My Projects/<Project>/docs/decisions.md` and show the before/after summary at the Foundation checkpoint (section 8). The fixes are already applied at that point; the user reviews them, they are not asked for permission first.
-
-## 7c. Linked Figma files: registry, publish and file check (every path)
-
-Each project has **one Design System file** and a **list of Design files** (screens), stored in `[Project folder]\status.json > figma`:
-- `design_system`: name, url, file_key, last_publish.
-- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false).
-- `brand_foundation` (Both + Native only, optional): name, url, file_key of `<Project> Brand Foundation`; the same entry is stored in the iOS and the Android folder. It is a value source only, never enabled as a library in a Design file.
-- The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
-
-**After any change to the DS file** (variables, styles, components):
-1. Ask: "Please publish the '<DS name>' library (Assets > Library > Publish). Tell me when done."
-2. When confirmed, set `design_system.last_publish` to today, set every design file's `library_updates_accepted` to false, and log it in `CHANGELOG.md` (`Library published: yes`).
-3. List the linked Design files that still need the update: "These files need Accept updates for the library: <names>. Tell me which ones you updated." Set each confirmed file to true and record it in the same changelog entry.
-
-**Before any Figma work (the file check):**
-1. Screen work with more than one Design file: ask "Which Design file should I work on? <names>".
-2. Ask the user to open that file (or the DS file for DS work) in Figma Desktop and start the plugin (Desktop Bridge).
-3. When connected, read the connected file's key (figma_get_status / figma_list_open_files) and compare it with `status.json`. It must be the file registered for this project and the role you need.
-4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
-5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date, or in a Both + Native project an iOS Design file with the Android library enabled or the reverse): **stop, touch nothing**, and tell the user what is connected and what was expected.
-6. **Two or more files connected** (e.g. the DS file and a Design file): the Desktop Bridge "active file" follows the user's focus, so node ids from one file get looked up in the other. Before any write or screenshot, pin the target with `figma_navigate` (`lock: true`) and re-pin after switching files.
-7. **Screenshots and exports** (`exportAsync`, `figma_capture_screenshot`) also need the target file to be the **visible tab** in Figma Desktop; in a background tab they time out while structural reads still work. Before screen work, ask once: "Please keep '<file name>' as the front tab in Figma until the Screens checkpoint." If a capture times out, ask the user to bring the file to the front, then retry.
-
-## 7d. Screen sizes (Abdul's rule, every path that builds screens)
-
-**Design file audit (Abdul's rule, every time screens are built or changed):** run audit-design-system (ds-auditor, `screens` mode) on that Design file to confirm it really uses the DS: library components only (no local copies, detached instances or hand-drawn parts), library variables and styles only (no raw values, no variables used for the wrong purpose), latest library version. Fix what it finds, save the report in `<Project folder>/audits/`, and log the result in `CHANGELOG.md` (`Design file audit: <numbers>, report <path>`).
-
-- Screens are always **Mobile 375px** and **Desktop 1440px** wide.
-- **Brownfield exception:** keep the sizes of the screens that are already designed in the file, so they are not broken.
-- If the existing "screens" are only screenshots (images, not designed frames), they do not set the size: use 375 / 1440.
-
-## 7e. Multi-screen flows (Abdul's rule, every request for a flow of two or more screens)
-
-A flow (e.g. sign-up, checkout, booking) always runs in this order. Load figma-generate-design + figma-use + ui-ux-pro-max for the screens, and figma-generate-library + figma-use for any new component.
-
-1. **Flow gap analysis first (no build yet).** When the screens have a visual source (screenshots, existing frames, a mockup), write its screen spec first (section 7f). Split every screen of the flow into sections (e.g. Top Bar, Form, Summary, Button Docked). Produce **one table** for the whole flow: screen, section, element, the DS component that covers it (existing) or `missing`. For each missing component give its tier (Atom / Molecule / Organism) and its atomic structure map (which existing atoms and variables it is built from). Save it in `<Project folder>/audits/<date>-flow-<name>.md` and show it. **Abdul approves the table before anything is built.**
-2. **Build the missing components in the DS file, never in the Design file.** Lower tier first, only from existing variables, styles and atoms (Atomic Design golden rule). Each one gets its Figma description (Purpose, Usage Rules, Accessibility), an entry in its group's Component_Skill and `data/component-registry.json`, and an audit (ds-auditor). If a component needs a token that does not exist, **propose it (name, value, Primitive it aliases) and wait for approval**; never add it silently.
-3. **Publish and update the Design file.** Ask Abdul to publish the library (section 7c) and wait for his confirmation. Then he runs Accept updates in the Design file; open it, run the file check (section 7c) and **verify the new components appear** in its library before using them.
-4. **Build the screens one by one** from library instances and variables only (no local copies, detached instances or raw values), section by section, at the sizes in section 7d (375 / 1440; Brownfield keeps existing sizes). Follow the screen fidelity rules and the visual loop in section 7f. **Audit the Design file after each screen** (ds-auditor, `screens` mode, fidelity checks included) and fix before the next screen.
-5. **Log and ask.** Append the entry to `CHANGELOG.md` (components added, library published, Design files updated, Design file audits) with `Storybook synced: no`, run `tools/project_status.py`, then ask whether to update the Storybook now or later.
-
-- Screens that need **no new component** may be built while waiting for the Publish confirmation; screens that use a new component wait for step 3.
-- The Screens checkpoint (section 8) shows the whole flow, per mode, with the audit results.
-
-## 7f. Screen fidelity (Abdul's rule, every path that builds or rebuilds screens)
-
-Brownfield trial (2026-09-30): screens built from the text inventory alone, with default instance text and no visual check, passed the DS audit but looked nothing like the source. A screen is done only when it matches its source, not when it only uses the DS.
-
-1. **Look at the source first.** Open every source screenshot or frame at full size (view the image file, or `figma_capture_screenshot` of the frame). `Inputs/Extracted_Tokens.md` is for tokens only; it is never the reference for a screen.
-2. **Screen spec** (one file per screen, `<Project folder>/audits/<date>-screen-spec-<screen>.md`), sections top to bottom. Per section: the DS component and variant, every text exactly as shown (keep the original language), icons, item counts (e.g. 8 playlist rows, 3 chips), selected/active states, alignment, full-bleed or inside the gutter, and whether it scrolls, scrolls horizontally or is pinned (status bar, app bar, mini player, bottom navigation), and each bar's width as the source shows it (full-bleed, or inset like a floating mini player). Anything the DS lacks goes in the 7e gap table. The specs are approved together with the gap table, before any build.
-3. **Build rules.**
-   - Every text, variant, boolean, icon swap and image slot of every instance is set from the spec. No default placeholder text may remain ("Label", "Filter", "Track title", "Title"); two instances only share a text when the source does.
-   - Item counts match the spec. A list or rail that continues off screen keeps the visible count plus the partial item the source shows.
-   - Screen structure: status bar and top bars at the top; mini player and bottom navigation pinned at the bottom (outside the scrolling content); each bar full-bleed or inset exactly as the spec says (a floating mini player stays inset); the gutter applies to the content only. Horizontal rows clip and scroll; they never overflow the screen or squash their children.
-   - Fixed-size instances keep their size (no instance narrower than its component's minimum width). Hug or fill is chosen per the spec, never left to overflow.
-   - The screen frame's background, padding and gaps are bound to DS variables, like everything inside it.
-   - Build one section per script call and check it before the next; never build a whole screen in one script.
-4. **Visual loop (mandatory, every screen).** After each screen: capture it with `figma_capture_screenshot`, place the capture next to the source image, and compare section by section: order, texts, counts, icons, sizes (within 4 px), colors, pinned bars. Fix and repeat, up to 3 rounds; list what still differs and why. If the capture fails, stop and ask the user to bring the Design file to the front in Figma (section 7c.7), then retry. A screen is never reported as done without its side-by-side images.
-5. **Fidelity audit.** ds-auditor `screens` mode includes the fidelity checks (placeholder texts left, counts vs spec, overflowing or squashed children, pinned bars, unbound screen frames). `tools/check_screens.figma.js` does the structural part.
-6. **Report, never self-approve.** Show every screen next to its source (each mode the project has) with the audit numbers, and set the Screens checkpoint to `Ready for review`. Only the user's reply sets `Approved` (section 8).
-7. **Brownfield `screen-templates.json`:** generated from the approved screen specs of the project's real screens, not copied from a Trianglz reference.
 
 ## 8. Step 7 - Approval checkpoints (every path)
 
@@ -404,76 +216,6 @@ Next step: <first action>
 
 ---
 
-## 10. Folder conventions
+## 10-12. Folder conventions, finish, Storybook
 
-```
-<Root>\                                    (Main Skills only)
-├─ CLAUDE.md                                (tells Claude to start with this skill)
-├─ README.md, References.md                 (setup steps, Trianglz template links)
-├─ .claude\skills\                          (slash commands pointing to the Main Skills)
-├─ .claude\agents\, hooks\, settings.json   (subagents, QA hooks, permissions)
-├─ memory\MEMORY.md                        (shared project memory, imported by CLAUDE.md)
-├─ Storybook_Design_System_Skill\SKILL.md  (optional live Storybook)
-├─ tools\                                   (build_tokens.py, recolor.py, ds_color.py)
-├─ Design_System_Intake_Skill\SKILL.md      (this skill, runs first)
-├─ Web_Design_System_Skill\SKILL.md
-├─ iOS_Design_System_Skill\SKILL.md
-├─ Android_Design_System_Skill\SKILL.md
-└─ My Projects\                            (every project; README.md explains how to add one)
-   ├─ _Project_Template\                   (copied for each new project, never edited per project)
-   └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (Both, cross-platform) | <Project>_Brand\ (Both native, optional Brand Foundation)
-      ├─ Project_Brief.md                      (intake answers, links, decisions)
-      ├─ CHANGELOG.md                          (dated Figma changes, each marked Storybook synced yes/no)
-      ├─ status.json                           (last change, unsynced count, last Storybook sync; tools/project_status.py)
-      ├─ Inputs\
-      │  ├─ Brand\                             (brand book PDF, logo, images, mood board)
-      │  ├─ Inspiration\                       (reference screenshots, links)
-      │  ├─ Screens\                           (screenshots of existing UI)
-      │  ├─ Extracted_Tokens.md                (Brownfield types 1 and 2)
-      │  └─ Code_Inventory.md                  (Brownfield type 2)
-      ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
-      ├─ docs\decisions.md                     (why each decision was made; recolor log)
-      ├─ audits\                              (ds-auditor reports)
-      ├─ storybook\                           (optional live Storybook, section 12)
-      ├─ Foundation_Skill\SKILL.md + references\ (variables.md, gaps.md, screens\)
-      └─ Component_Skills\
-         ├─ Form_Elements_Skill\               (anything the user enters data with)
-         ├─ Navigation_Skill\                  (actions, buttons, links, tabs, anything that moves between places)
-         └─ Data_Display_Skill\                (anything that displays information)
-            each: SKILL.md + references\ (components.md, gaps.md, screens\)
-```
-
-- New project folders are copies of `My Projects\_Project_Template\`. Each can become its own private Git repo, separate from the workflow repo (see `My Projects\README.md`); never create or push one without asking.
-- Root tools take the project folder relative to the Root, quoted: `python tools/build_tokens.py "My Projects/<Project>"`.
-- One folder per platform: "Both" + Native creates `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set (and `<Project>_Brand\` with `Project_Brief.md`, `status.json` and `data\tokens.json` Primitives when the Brand Foundation is chosen). "Both" + Cross-platform creates one `<Project>_Mobile\`.
-- Group routing for new components and pages (Figma and skills): foundations -> ⭐Setup / Foundation_Skill; data entry -> ⭐Form Elements; actions and navigation -> ⭐Navigation; information display -> ⭐Data Display. Create a new `➜` page in the matching group when no page fits.
-- Figma file names: `<Project> Design System` for the library, `<Project>` for screens. Both + Native: `<Project> iOS Design System`, `<Project> Android Design System`, `<Project> iOS`, `<Project> Android`, optional `<Project> Brand Foundation`. Page structure follows the platform Main Skill (Cover, ⭐Setup, ⭐ groups with ➜ topic pages).
-
----
-
-## 11. Step 8 - Always finish with skills and the final audit
-
-1. Run **audit-design-system** on the DS and on every Design file whose screens were built or relinked (section 7d rule): 0 remote variables/styles, 0 raw values, 0 detached components, every property wired, contrast passing in Light and Dark. Fix and re-run until clean, then report the numbers.
-2. Screenshot every variant (each mode the project has) into the skills' `references\screens\`.
-3. Write / update the project skills (usually through the docs-writer agent, which keeps `data/docs-progress.json` so a run cut off by a rate limit can resume where it stopped):
-   - `Foundation_Skill`: variables (names, values per mode, scopes, code syntax), styles, grids, icon rules, direction decisions from the intake.
-   - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies.
-   - `gaps.md` in each: anything left open.
-   - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the Trianglz reference versions as the starting shape) and `docs/decisions.md`.
-   - Check `tokens.json > recolor_readiness.ready` is true.
-4. Update `Project_Brief.md` with the final state and links, add the `CHANGELOG.md` entry (`Storybook synced: no`), refresh `status.json` with `tools/project_status.py`, and save the key facts to memory.
-5. Reply to the user with the audit result, the skill paths and what is left.
-
----
-
-## 12. Step 9 (optional) - Live Storybook
-
-Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever the user asks later). When 0.7 = Later, ask again at the trigger in `status.json > storybook_ask_at` and move the trigger forward on each new "Later" (0.7 notes).
-1. Load `Storybook_Design_System_Skill/SKILL.md` (`/storybook-design-system`).
-2. Make sure `data/tokens.json` and `data/component-registry.json` reflect the live Figma file (token-extractor subagent if they need a resync).
-3. Ask before installing any Node package; show the exact commands.
-   - iOS / Android: build the Storybook as web (React + CSS) styled like the native components (Storybook skill, principle 7).
-   - Meet the Storybook quality bar (principle 8): working components, sidebar navigation, Figma description and use case per component, every Figma property as a control, all states in Light and Dark. Write each component description in Figma and in Storybook during the build.
-4. Build the Storybook in `<platform folder>/storybook/`, one per platform, with names that match Figma exactly.
-5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder.
-6. Record the path, run command and MCP status in `Project_Brief.md`, then mark the changelog synced: `python tools/project_status.py "My Projects/<Project>" --mark-synced`.
+Section 10 (folder conventions): `steps/folders.md`. Sections 11 (always finish with skills and the final audit) and 12 (optional live Storybook): `steps/finish.md`.

@@ -1,0 +1,25 @@
+# Linked Figma files, publish and file check
+
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load before the first Figma work of every session (every path).
+
+## 7c. Linked Figma files: registry, publish and file check (every path)
+
+Each project has **one Design System file** and a **list of Design files** (screens), stored in `[Project folder]\status.json > figma`:
+- `design_system`: name, url, file_key, last_publish.
+- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false).
+- `brand_foundation` (Both + Native only, optional): name, url, file_key of `<Project> Brand Foundation`; the same entry is stored in the iOS and the Android folder. It is a value source only, never enabled as a library in a Design file.
+- The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
+
+**After any change to the DS file** (variables, styles, components):
+1. Ask: "Please publish the '<DS name>' library (Assets > Library > Publish). Tell me when done."
+2. When confirmed, set `design_system.last_publish` to today, set every design file's `library_updates_accepted` to false, and log it in `CHANGELOG.md` (`Library published: yes`).
+3. List the linked Design files that still need the update: "These files need Accept updates for the library: <names>. Tell me which ones you updated." Set each confirmed file to true and record it in the same changelog entry.
+
+**Before any Figma work (the file check):**
+1. Screen work with more than one Design file: ask "Which Design file should I work on? <names>".
+2. Ask the user to open that file (or the DS file for DS work) in Figma Desktop and start the plugin (Desktop Bridge).
+3. When connected, read the connected file's key (figma_get_status / figma_list_open_files) and compare it with `status.json`. It must be the file registered for this project and the role you need.
+4. For screen work, also check that the DS library is enabled in that file and current (its library variables and components are visible, and `library_updates_accepted` is true after the last publish).
+5. On any mismatch (a file from another project, an unregistered file, the DS file when screens were expected, the library missing or out of date, or in a Both + Native project an iOS Design file with the Android library enabled or the reverse): **stop, touch nothing**, and tell the user what is connected and what was expected.
+6. **Two or more files connected** (e.g. the DS file and a Design file): the Desktop Bridge "active file" follows the user's focus, so node ids from one file get looked up in the other. Before any write or screenshot, pin the target with `figma_navigate` (`lock: true`) and re-pin after switching files.
+7. **Screenshots and exports** (`exportAsync`, `figma_capture_screenshot`) also need the target file to be the **visible tab** in Figma Desktop; in a background tab they time out while structural reads still work. Before screen work, ask once: "Please keep '<file name>' as the front tab in Figma until the Screens checkpoint." If a capture times out, ask the user to bring the file to the front, then retry.

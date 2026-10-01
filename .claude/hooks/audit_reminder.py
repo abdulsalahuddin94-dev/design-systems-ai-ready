@@ -33,7 +33,7 @@ WRITE = re.compile(r"\.(remove|setValueForMode|setBoundVariable|setProperties|ap
 
 CHECKLIST = (
     "Figma was changed in this session and no audit has run since. Before you finish, run the "
-    "QA checklist (Design_System_Intake_Skill/SKILL.md section 11), ideally through the "
+    "QA checklist (Design_System_Intake_Skill section 11, `steps/finish.md`), ideally through the "
     "ds-auditor subagent: 0 remote variables/styles, 0 raw hex/px values, 0 detached components, "
     "every property wired, contrast passing in Light and Dark, screenshots of every variant. "
     "If this was only a small tweak that is not a finished build step, say so in one line and stop."

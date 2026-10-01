@@ -33,24 +33,16 @@ It checks the Figma tools first (figma-console-mcp or figma-cli with the Desktop
 | `Android_Design_System_Skill/SKILL.md` | Android systems (Material Design 3) |
 | `Storybook_Design_System_Skill/SKILL.md` | Optional: live Storybook (React + Storybook MCP) from a finished DS; names match Figma exactly |
 
-Knowledge base (exact values, read these instead of re-deriving): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`).
+Knowledge base (exact values, read these instead of re-deriving or re-reading Figma): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`).
 
 Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step and for weekly drift), `token-extractor` (Figma variables or screens to `data/tokens.json`), `docs-writer` (skills, registry and usage docs from Figma). Hooks in `.claude/settings.json` block absolute paths in files and remind you to run the audit after Figma changes. Weekly drift audit definition: `.claude/scheduled/weekly-drift-audit.md` (not enabled).
 
 Reference studies of the Trianglz templates: `Trianglz/`, `Trianglz_iOS/`, `Trianglz_Android/` (Foundation_Skill + Component_Skills). Template links: `References.md`.
 
 ## Rules
+Abdul's standing rules live in one place: `memory/decisions.md` (imported above). This list holds only what is not there.
 - The full list of prohibitions is `data/rules.json > off_limits` in each DS folder (read it before any build). ds-auditor checks every rule; `.claude/hooks/guard_figma.py` blocks detaching and asks before writing to an original Trianglz template. What each instance swap or slot accepts is in `data/component-registry.json > slots`.
-- All paths are relative to this folder. Never write absolute machine paths into skills.
-- Each project lives in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, copied from `My Projects/_Project_Template/` (`Project_Brief.md`, `Inputs/`, `Foundation_Skill/`, `Component_Skills/`). Intake first lists `My Projects/` and asks which project to work on or whether to start a new one. The Root holds only the workflow.
-- Platforms are independent: nothing is shared or merged between Web, iOS and Android.
-- Find Figma nodes by name. Node IDs in the Trianglz skills are valid in the original files only.
-- Build order: Primitives, Semantics (Light/Dark), Spacing/Radius/Typography variables, styles, icons, components (Atoms, Molecules, Organisms, Patterns), linked docs, audit, project skills.
-- Required skills: figma-use + figma-generate-library before building; figma-generate-design + ui-ux-pro-max for screens; audit-design-system at the end of every build.
 - Colors are recolor-ready: Semantic tokens only alias Primitives; a color change runs `tools/recolor.py` (full shade scale regenerated, contrast re-checked) and never edits components.
 - Fix on create: every problem found while setting up a project from an existing file is fixed in the project's copy (`tools/fix_tokens.py`, then component gaps), without asking first; results are shown at the Foundation checkpoint.
-- Figma files: each project's `status.json > figma` holds one Design System file and a list of Design files (name, URL, file key). Before any Figma work, confirm the connected file key matches the project and role; on a mismatch stop and warn. After any DS change, ask the user to publish the library, log it in `CHANGELOG.md`, and list which Design files still need Accept updates. Brownfield without a DS runs in reverse: the Design file is the source, the DS file is built from it, then the Design file is linked to the new library (Intake section 7c and Step 4).
-- Changelog: every session that changes a project's Figma file appends a dated entry to its `CHANGELOG.md` with `Storybook synced: no` and refreshes `status.json` (`python tools/project_status.py "<folder>"`); a Storybook update runs it with `--mark-synced`. The SessionStart hook (`.claude/hooks/storybook_notice.py`) is the only daily Storybook check (Abdul, 2026-09-30: no separate scheduled question): it lists projects with unsynced entries and Design files needing Accept updates, from these files only (Figma may be closed); mention them in one line and ask whether to open the Figma plugin and update Storybook when the user picks that project.
-- Design file audit (Abdul, 2026-09-30): every time screens are built or changed in a Design file, run audit-design-system (ds-auditor, screens mode) on it, save the report in the project's `audits/` and log it in `CHANGELOG.md` (Intake section 7d).
-- Screen fidelity (Abdul, 2026-09-30): screens are built from an approved screen spec of their source (every screenshot opened and read section by section), with real content in every instance, a side-by-side capture check after each screen and `tools/check_screens.figma.js`; only the user approves a checkpoint (Intake section 7f).
-- Never install tools on the user's behalf; show the install steps and let them do it.
+- Brownfield without a DS runs in reverse: the Design file is the source, the DS file is built from it, then the Design file is linked to the new library (Intake section 5).
+- Token budget: load only the intake step file you need, one phase per session, image-heavy checks in ds-auditor, `tools/figma_helpers.figma.js` for short Figma scripts (Intake section 0c).

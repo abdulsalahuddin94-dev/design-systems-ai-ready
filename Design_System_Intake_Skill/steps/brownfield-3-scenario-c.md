@@ -1,0 +1,56 @@
+# Brownfield type 3: imperfect DS + Design file (Scenario C)
+
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md.
+
+## 7. Step 6 - Brownfield type 3: imperfect DS + Design file (Scenario C)
+
+Use this path when a design system already exists but is not AI-ready (missing scopes, unclear names, no descriptions, gaps) and one or more Design files follow it only partially or not at all. Six steps, in order. Nothing in the Design files is changed before step 5, and nothing new is added to the DS without Abdul's approval. Load audit-design-system for steps 3 and 6, and figma-use + figma-generate-library for DS changes.
+
+**Before step 1:** ask "Please share the design system Figma link and the link of every Design file (each with a name)." Register them in `status.json > figma` (section 7c). Then ask: "Do you have any reference for the tokens: developer token files, docs, a Storybook, a style guide? Share them if so." Any reference found is read first and wins over inference.
+
+### Step 1 - Understand the DS (Variable Map)
+1. Study the DS file (⭐Setup or its foundation pages first, then component groups; screenshot every variant in each mode).
+2. Read **every variable**: collection, modes, scopes, value per mode (Light / Dark), alias target (which Primitive it points to), description, and **where it is used** inside the DS components (which component, which layer, which property: fill, stroke, text, gap, radius...). Export them first (section 7b step 1) so the data is in `data/source/`.
+3. Infer each variable's purpose from, in this order: the user's references, its name and group, its scopes, where DS components use it, and its values across modes.
+4. Write the **Variable Map** to `<Project folder>/audits/<date>-variable-map.md`, one row per variable:
+
+   | Variable | Collection / modes | Value (Light / Dark) | Alias | Scopes | Used in (component > layer > property) | Inferred usage | Confidence |
+   |---|---|---|---|---|---|---|---|
+
+   Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
+5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, grouped in one message: "What is `<name>` for? <what I found>. My guess: <guess>." Record the answers in the map and in `docs/decisions.md`. Abdul approves the Variable Map before step 2.
+
+### Step 2 - Fix the DS itself (after approval)
+1. Propose the DS fixes as one list: missing or wrong **scopes** (from the approved map, e.g. a border color scoped to STROKE_COLOR only), **descriptions** for every variable (its usage from the map) and every component (Purpose, Usage Rules, Accessibility), bad names (section 7b renames), failing contrast pairs, and **gaps** (missing tokens, states or components the Design files will need). Gaps are flagged, never filled silently.
+2. Apply the fixes in the DS file only (section 7b steps 2-4), split by risk, because this DS is already used by live Design files:
+   - **Fix on create, without asking** (nothing visible changes in the screens): descriptions for variables and components, scopes for **high-confidence** variables, typo / spacing / case renames (bindings are kept), missing states added to components.
+   - **Approval first** (can change how existing screens look or break bindings): any change to a value or alias (including contrast fixes), scopes for medium / low-confidence variables, merging or deleting variables or components, renaming a variable to a different meaning.
+   Show both lists together; the first is already applied, the second waits for Abdul's yes.
+3. Run audit-design-system on the DS, then ask Abdul to **publish** the library (section 7c) and wait for his confirmation.
+
+### Step 3 - Audit the Design file, screen by screen
+Run audit-design-system (ds-auditor, `screens` mode) on each Design file, one screen at a time. Per screen, find:
+- **Raw values:** hardcoded hex colors, px spacing / radius / sizes, fonts and text properties not using a text style.
+- **Misused variables:** a variable used against its scope or its Variable Map purpose (e.g. a border color used as a fill, a text color on a background, a spacing token used as a radius).
+- **Detached instances** and local copies of DS components; hand-drawn elements that match a DS component.
+- **Frames without Auto Layout** and **default layer names** (Frame 124, Rectangle 23).
+
+Write the report to `<Project folder>/audits/<date>-screens-<file>.md`: per screen, one row per issue with the layer, the current value, the problem and a **proposed fix** (the variable, style or component to use, following step 4). Show totals per screen and per issue type.
+
+### Step 4 - Raw values with no matching Semantic variable
+For each raw value the report cannot map directly, decide by this rule and write the decision in the report:
+- **Near-miss of an existing token** (e.g. `#1B74E9` next to `color/action/primary` `#1A73E8`, 15px next to `space/4` 16px) -> use the nearest token.
+- **Repeated new value** (the same value used on several screens or many layers, with a clear purpose) -> propose a **new Primitive + Semantic** pair (name, value per mode, Primitive it aliases, scope). Never added without Abdul's approval; once approved it is added in the DS file, the library is published, then the screens are bound to it.
+- **One-off off-scale value** (e.g. 13px gap, 7px radius) -> snap to the nearest step of the scale.
+- **Unsure** -> mark `needs decision` and ask Abdul.
+- **Alpha colors** (raw color with opacity < 100%, from the hex alpha or the fill/layer opacity; the single source of this rule, Main Skills point here): find the real background under the layer, flatten `result = color*alpha + bg*(1-alpha)`, and match the result to the nearest opaque Semantic token by OKLCH deltaE. Repeat against the background in the other mode (Light and Dark). Same token in both modes with deltaE < 2 -> bind it (opaque); otherwise `needs decision`. Helper: `python tools/flatten_alpha.py <folder> --color "#RRGGBBAA" --bg <bg token>`. **Exceptions stay transparent:** scrims and overlays over content, elements over images, hover/pressed state layers; bind them to an existing alpha token, or propose a new one (e.g. `overlay/scrim`) only with Abdul's approval.
+
+### Step 5 - Fix the screens (after the report is approved)
+1. Abdul approves the report (and any new tokens from step 4). Add approved tokens to the DS file first, publish (section 7c), and have Abdul run **Accept updates** in the Design file before binding.
+2. Fix **screen by screen**: bind raw values to variables and styles, replace misused variables, swap detached copies and hand-drawn parts for library instances, add Auto Layout, rename default layers. Missing components are built in the DS file first (by tier, section 7e step 2), never in the Design file.
+3. On any ambiguous case not decided in the report, stop and ask Abdul before changing it.
+4. **Keep the existing screen sizes** (section 7d Brownfield exception).
+5. Re-run the Design file audit after each screen and report the before / after numbers.
+
+### Step 6 - Log, publish, update every Design file
+Append the `CHANGELOG.md` entry (Variable Map, DS fixes, tokens added, screens fixed, audit numbers, `Storybook synced: no`), run `tools/project_status.py`, make sure the last DS change is published (section 7c), and list every linked Design file that still needs **Accept updates**; mark each one as Abdul confirms it. Then ask about the Storybook update.

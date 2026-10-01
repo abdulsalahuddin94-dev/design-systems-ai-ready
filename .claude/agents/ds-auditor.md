@@ -48,6 +48,12 @@ Abdul's rule: every Design file is audited for real use of the design system.
 - **Fidelity (section 7f), as numbers:** run `tools/check_screens.figma.js` (set its `SCOPE`) and report placeholder texts left, sibling instances sharing one text, layers overflowing the screen, squashed instances, bars that are not full-bleed, and raw fill / padding / gap on screen frames (target 0 each). Compare the instance counts with the screen spec in `audits/*-screen-spec-*.md`. Capture every screen and put it next to its source image; list each visible difference (order, text, count, icon, size, color, pinned bar). A screen with any fidelity issue or no side-by-side capture does not pass; never write "passed" from instance counts alone.
 Write the report to `<folder>/audits/<date>-screens-<design file name>.md` and return the numbers; the caller logs it in `CHANGELOG.md`.
 
+## Visual checks for the caller (token budget, Abdul 2026-10-01)
+The main session hands you the image-heavy work so its context stays small (Design_System_Intake_Skill section 0c). The rules do not change; only where the images are looked at.
+- **Variant screenshots:** capture every variant of the scope in each mode the project has (Light and Dark) and check them by eye (opacity-based disabled states, dashed borders, icon colors, clipped text, wrong mode).
+- **Side-by-side fidelity (screens mode):** capture each screen, open its source image (`Inputs/Screens/` or the source frame) and compare section by section: order, texts, counts, icons, sizes (within 4 px), colors, pinned bars. Each fix round the caller makes gets a fresh comparison, up to 3 rounds.
+- **Return text only:** per variant or screen, `pass` or a numbered list of differences, each with the section, the layer name, what the source shows and the fix to make. Never paste images or long node dumps into the reply; the report file holds the details and the numbers.
+
 ## Drift mode (scheduled / weekly)
 Compare Figma against the project's `data/tokens.json`, `data/component-registry.json` and Component_Skills:
 - variables added, removed, renamed or with changed values per mode;

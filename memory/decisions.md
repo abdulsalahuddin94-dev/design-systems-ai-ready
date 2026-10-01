@@ -13,6 +13,10 @@ updated: 2026-09-30
 - One workflow copy in the Root; every project lives in `My Projects/`, created from `My Projects/_Project_Template/`. Intake starts by asking which project or a new one (Abdul, 2026-09-30). Each project may later become its own private repo. ClinicSoft moved there after the trial run (2026-09-30).
 - Approval checkpoints in order: Foundation, Components, Screens. Show Light and Dark screenshots at each.
 
+## Token budget (Abdul, 2026-10-01)
+- Trials cost 180-260M tokens per project session (one session of 470-650 turns, context up to 690K). Fixes, same quality gates: the intake is a router plus `Design_System_Intake_Skill/steps/` files loaded per step; Figma skills load at the first build step, not during the intake; one phase per session with a handoff in `Project_Brief.md` / `CHANGELOG.md` / `status.json`; variant screenshots, side-by-side fidelity captures and audits run in ds-auditor, which returns text and numbers; `tools/figma_helpers.figma.js` is pasted once per file per session so scripts stop redefining helpers; names and keys come from `data/*.json` before Figma reads. Details: Intake section 0c.
+- The design plugin (Asana, Jira, Linear, Notion, Slack, Intercom) is disabled for this folder in `.claude/settings.json`; stitch, pencil and the official figma MCP server are disabled by Abdul in `/mcp`.
+
 ## Build order (always)
 1. Primitives (raw values). 2. Semantic variables aliasing Primitives (Light/Dark). 3. Spacing, Radius, Typography variables. 4. Text and effect styles built from those variables. 5. Icons. 6. Components built only on those variables and styles: Atoms, Molecules, Organisms, Patterns. 7. Linked docs pages. 8. Audit. 9. Project skills.
 
