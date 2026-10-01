@@ -1,6 +1,6 @@
 # Quick mode: one task on a live file, no intake
 
-Part of `Design_System_Intake_Skill` (section 13; map in `SKILL.md` section 0c). Load when the user runs `/ds-quick`, says "quick mode", or asks for one specific task on a file that is already in use (Abdul, 2026-10-01).
+Part of `Design_System_Intake_Skill` (section 13; map in `SKILL.md` section 0c). Load when the user picks "Quick task" at question 0.0m (asked at the start of every session), runs `/ds-quick`, or says "quick mode" (Abdul, 2026-10-01).
 
 ## 13. Quick mode
 

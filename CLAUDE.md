@@ -24,7 +24,7 @@ Other tools (Codex, Cursor, Antigravity...) may work here between Claude session
 Before any other work, load and follow `Design_System_Intake_Skill/SKILL.md`.
 It checks which Figma tools are installed first (Figma Desktop Bridge = figma-console-mcp, FigCli = figma-cli in Safe mode; `python tools/figma_tools_check.py`). With both installed, it asks which one to use per file (saved in `status.json > figma`), allows switching any time, and suggests the better one before costly steps; new users get `Figma_Tools/README.md`. Then it asks (fixed-option questions through the AskUserQuestion arrow-key menu, Intake section 0) the user one question at a time and routes to the right path. Do not touch Figma until the intake summary is approved.
 
-**Quick mode:** `/ds-quick <task>` (or "quick mode") does one task on a live file (one component, an audit, one fix) without the intake questions, a `My Projects/` folder or project skills. Preflight, the file check, the rules and the audit still apply: `Design_System_Intake_Skill/steps/quick-mode.md`.
+**Quick mode:** the first question of every session (intake 0.0m) offers "Quick task" or "Full workflow", so the user never has to remember it; `/ds-quick <task>` skips that question. A quick task does one task on a live file (one component, an audit, one fix) without the intake questions, a `My Projects/` folder or project skills. Preflight, the file check, the rules and the audit still apply: `Design_System_Intake_Skill/steps/quick-mode.md`.
 
 ## Main Skills (Root)
 | Skill | Use for |

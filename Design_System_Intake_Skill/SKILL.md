@@ -14,7 +14,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 ## 0. Interview rules
 
 - Ask **one question per message**, in English, and wait for the answer. Never send a list of questions at once.
-- **The first reply asks about the project, never about Storybook.** The SessionStart notice (Storybook exists, projects with unsynced changes) is passed on as one informational line at most. Storybook questions come at 0.7 for a new project, or right after 0.0 when the user picks an existing project that has unsynced changelog entries or a `later` Storybook plan whose trigger was reached.
+- **The first question is the mode (0.0m), then the project, never Storybook.** The SessionStart notice (Storybook exists, projects with unsynced changes) is passed on as one informational line at most. Storybook questions come at 0.7 for a new project, or right after 0.0 when the user picks an existing project that has unsynced changelog entries or a `later` Storybook plan whose trigger was reached.
 - Use the exact questions below. Offer options on short lines, mark the recommended one, and accept free text.
 - **Choice questions use arrow-key options (Abdul, 2026-10-01).** Every question with fixed options (the `A / B / C` questions below and in `steps/*.md`, 0.0t, the tool checkpoints, checkpoint approvals) is asked with Claude Code's **AskUserQuestion** tool, never as plain text:
   - one question per call; each option is a separate choice with a label of 1-5 words;
@@ -26,7 +26,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
 - Skip a question when the user already answered it (in this conversation, in the project folder's `Project_Brief.md`, or in memory). Say what you reused in one line.
 - If the user says "you decide", pick the recommended option, say which, and continue.
 - If the user only asks to **change a color** in an existing DS, skip the intake questions: run the Recolor procedure in the platform Main Skill (section 3b) with `tools/recolor.py`.
-- **Quick mode (Abdul, 2026-10-01):** if the user runs `/ds-quick`, says "quick mode", or asks for one specific task on a live file (one component, an audit, one fix) and does not want a project set up, skip the intake questions and follow `steps/quick-mode.md`. Preflight (0b) and every rule still apply. If it is unclear, ask once with AskUserQuestion: "Quick task on this file / Full project setup".
+- **Quick mode (Abdul, 2026-10-01):** the user never has to remember it. Question 0.0m offers it at the start of every session; `/ds-quick` or "quick mode" skips that question. Quick mode follows `steps/quick-mode.md` instead of the intake questions; preflight (0b) and every rule still apply.
 - After the last intake question, post a short **Intake Summary** (section 9) and get a "yes" before any Figma work.
 - Record every answer in `[Project folder]\Project_Brief.md` as you go, so a later session never re-asks.
 - `[Project folder]` is always `My Projects\<Project>` (plus the platform suffix, section 10). Projects never live in the Root; the Root holds only the workflow (Main Skills, rules, hooks, tools).
@@ -113,10 +113,11 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 
 ## 1. Step 0 - Intake basics
 
-First pick the project (always, before 0.1):
+First pick the mode, then the project (always, before 0.1):
 
 | # | Question (send exactly) | Notes |
 |---|---|---|
+| 0.0m | AskUserQuestion: "What do you want to do now?" Options: "Quick task" (description: one component, an audit or one fix on a live Figma file; no project folder, no new skills) / "Full workflow" (description: new or existing project in My Projects, with the intake, checkpoints and project skills) | Asked first in every session, right after the preflight result line (Abdul, 2026-10-01: he may forget to type "quick mode"). Put "(Recommended)" on Quick task when the first message already asks for one specific thing on a file or website, otherwise on Full workflow. Skip the question when the user ran `/ds-quick` or `/design-system-intake`, said "quick mode", or named a project in `My Projects/` (then Full workflow). Quick task -> `steps/quick-mode.md` (section 13). Full workflow -> 0.0. |
 | 0.0 | "Which project should I work on? <one line per folder in My Projects> / Start a new project" | List the folders in `My Projects\` (skip `_Project_Template` and `README.md`). If there are none, say so and go straight to 0.1. Existing project: read its `Project_Brief.md` and `status.json`, say in one line what is already answered, and ask only what is missing (or continue from its Status). If it has unsynced changelog entries, ask then whether to update its Storybook (open the DS file and the Desktop Bridge first). New project: continue with 0.1. |
 | 0.0t | Only when both Figma tools are installed (0b check 4) and the file has no saved `tool` (fallback `figma.tool`). AskUserQuestion: "Which Figma tool should I use for '<file name>'?" Options: "Figma Desktop Bridge (Recommended)" (description: full build and audit with the Figma skills, catches everything) / "FigCli" (description: much faster, about 20-30x fewer tokens for checks, extract and measure) | Record the `tool` on that file entry in `status.json > figma` and in `figma.tool` (`desktop-bridge` / `figcli`; for a new project, once its folder exists in 0.1 and the files are registered in 0.2). The user can switch any time (0b, Switching any time). Then run 0b check 5 (connection) with that tool. One tool installed: skip, use it. |
 
