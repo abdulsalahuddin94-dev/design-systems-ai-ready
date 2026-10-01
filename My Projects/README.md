@@ -12,7 +12,7 @@ Every design system project lives here, one folder per project. The workflow its
 
 ## What the template holds
 - `Project_Brief.md`: intake answers, links, decisions, status.
-- `Inputs/Brand`, `Inputs/Inspiration`, `Inputs/Screens`: drop brand books, references and screenshots here before intake.
+- `Inputs/Brand`, `Inputs/Inspiration`, `Inputs/Screens`, `Inputs/Research`: drop the logo and brand book, references, screenshots of existing UI, and research or PRDs here. The intake tells you about these folders right after it creates the project (question 0.3b) and reads them before asking about colors and direction.
 - `Foundation_Skill/` and `Component_Skills/` (`Form_Elements_Skill`, `Navigation_Skill`, `Data_Display_Skill`): empty stubs, filled at the end of the build.
 - `data/`, `docs/`, `audits/`: knowledge base, decision log, audit reports.
 - `status.json > figma`: the project's one Design System file and its list of Design files (name, URL, file key). Claude checks the open file against it before touching Figma.

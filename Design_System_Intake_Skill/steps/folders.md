@@ -27,6 +27,7 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
       │  ├─ Brand\                             (brand book PDF, logo, images, mood board)
       │  ├─ Inspiration\                       (reference screenshots, links)
       │  ├─ Screens\                           (screenshots of existing UI)
+      │  ├─ Research\                          (research, personas, PRDs, notes about the product)
       │  ├─ Extracted_Tokens.md                (Brownfield types 1 and 2)
       │  └─ Code_Inventory.md                  (Brownfield type 2)
       ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
