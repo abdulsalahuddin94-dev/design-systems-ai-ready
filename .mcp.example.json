@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "trianglz-web-storybook": {
+    "<project>-<platform>-storybook": {
       "type": "http",
-      "url": "http://localhost:6006/mcp"
+      "url": "http://localhost:<port>/mcp"
     }
   }
 }
