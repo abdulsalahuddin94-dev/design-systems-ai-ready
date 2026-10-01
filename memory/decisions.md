@@ -35,6 +35,9 @@ updated: 2026-09-30
 ## Scenario C: imperfect DS + Design file (Abdul, 2026-09-30)
 - Variable Map first (every variable: scopes, modes, alias, usage in DS components, confidence; references first; ask only on low confidence), approved; DS fixes: safe ones (descriptions, high-confidence scopes, typo renames, missing states) as Fix on create, anything that changes live screens (values, aliases, contrast, low-confidence scopes, merges/deletes) after approval; then publish; Design file audited screen by screen with a proposed fix per issue; raw values: near-miss -> nearest token, repeated -> propose Primitive + Semantic (approval, DS, publish, bind), one-off -> nearest scale step, unsure -> needs decision; screens fixed only after the report is approved, keeping existing sizes; changelog, publish, Accept updates. Details: Design_System_Intake_Skill section 7.
 
+## Alpha colors (Abdul, 2026-10-01)
+- A raw color with alpha < 100% is flattened on its real background (color*alpha + bg*(1-alpha)), matched to the nearest opaque Semantic by OKLCH deltaE, rechecked in the other mode; same token in both modes with deltaE < 2 -> bind, else `needs decision`. Scrims/overlays, elements over images and hover/pressed state layers stay transparent; a new alpha token needs approval. Rule: Design_System_Intake_Skill section 7 step 4; helper `tools/flatten_alpha.py`.
+
 ## Screen sizes (Abdul, 2026-09-30)
 - Screens are Mobile 375px and Desktop 1440px wide. Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 / 1440. Details: Design_System_Intake_Skill section 7d.
 
