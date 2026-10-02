@@ -9,6 +9,9 @@ Each project has **one Design System file** and a **list of Design files** (scre
 - `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false), tool (as above).
 - `brand_foundation` (Both + Native only, optional): name, url, file_key of `<Project> Brand Foundation`; the same entry is stored in the iOS and the Android folder. It is a value source only, never enabled as a library in a Design file.
 - The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
+- `layout` (Scenario C, section 7g): `separate` (default, a DS library file plus Design files) or `single-file` (the DS lives inside the Design file: `design_system` and `design_files[0]` share one `file_key`, `ds_pages` lists the DS page names, and `library_updates_accepted` is `null`).
+
+**Single-file projects (`layout` = `single-file`):** the publish steps below do not apply. After a DS change, ask Abdul to save a Figma version named after the step (Ask (choice): "Is the version saved?" "Done, saved" / "Not yet") and log `Version saved: <name>` in `CHANGELOG.md`. The file check runs once for both roles; DS work writes only on `ds_pages`, screen work only on the other pages, and step 4 (library enabled) is skipped.
 
 **After any change to the DS file** (variables, styles, components):
 1. Say "Please publish the '<DS name>' library (Assets > Library > Publish).", then Ask (choice): "Is it published?" "Done, published" / "Not yet".

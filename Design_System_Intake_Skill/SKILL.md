@@ -92,6 +92,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 | 5 | `steps/brownfield-1-screens.md` | 2.2 = 1 |
 | 6 | `steps/brownfield-2-code.md` | 2.2 = 2 |
 | 7 (Scenario C) | `steps/brownfield-3-scenario-c.md` | 2.2 = 3 |
+| 7g | `steps/single-file-ds.md` | 2.3 = the DS is inside the Design file |
 | 7b | `steps/fix-on-create.md` | a project starts from an existing file; last foundation step of a new build |
 | 7c | `steps/figma-files.md` | before the first Figma work of every session |
 | 7d, 7e, 7f | `steps/screens.md` | screens are built or changed |
@@ -170,7 +171,8 @@ Platform rules (never mix):
 | # | Question | Next |
 |---|---|---|
 | 2.1 | Ask (choice): "Is this a new product, or does something already exist?" "Greenfield" (description: new product, nothing designed yet) / "Brownfield" (description: screens, code or a design system already exist) | Greenfield -> section 4. Brownfield -> 2.2 |
-| 2.2 | Ask (choice): "What already exists?" "Screens, no design system" (description: 1, screens in Figma or screenshots) / "Live code, no Figma" (description: 2, a live product in code with no Figma at all) / "Imperfect DS + screens" (description: 3, a design system exists, possibly imperfect, and the screens follow it only partly or not at all) | 1 -> section 5. 2 -> section 6. 3 -> section 7 |
+| 2.2 | Ask (choice): "What already exists?" "Screens, no design system" (description: 1, screens in Figma or screenshots) / "Live code, no Figma" (description: 2, a live product in code with no Figma at all) / "Imperfect DS + screens" (description: 3, a design system exists, possibly imperfect, and the screens follow it only partly or not at all) | 1 -> section 5. 2 -> section 6. 3 -> 2.3 |
+| 2.3 | Ask (choice): "Where does the design system live?" "In its own library file" (description: a separate DS file that the Design files enable as a library) / "Inside the Design file" (description: variables, styles and components sit on pages next to the screens, no library) (nothing marked recommended; put first the answer the files point to) | Library file -> section 7. Inside the Design file -> section 7 with section 7g (`steps/single-file-ds.md`), which asks the path (2.4: split into a library, or keep one file) after the Variable Map |
 
 ### Decision tree
 
@@ -191,7 +193,11 @@ Intake basics 0.0-0.2 -> Platform (1.1-1.5) -> load platform Main Skill(s) -> ba
       └─ Brownfield (2.2)
          ├─ Type 1: screens, no DS  -> register the Design file as the source -> open it -> extract (frames or screenshots) -> merge approval -> "<Project> Design System" file -> build -> publish -> link the Design file to the library -> rebuild screens
          ├─ Type 2: live code, no Figma -> repo/path -> extract tokens from code -> "<Project>" + "<Project> Design System" files -> build -> rebuild screens per module
-         └─ Type 3: imperfect DS + Design file -> Scenario C: Variable Map -> fix DS + publish -> audit screens -> approve report -> fix screens -> log + Accept updates
+         └─ Type 3: imperfect DS + Design file -> where is the DS? (2.3)
+            ├─ Own library file -> Scenario C: Variable Map -> fix DS + publish -> audit screens -> approve report -> fix screens -> log + Accept updates
+            └─ Inside the Design file (7g) -> version -> DS pages -> Variable Map -> path? (2.4)
+               ├─ Split into a library (recommended) -> publish this file -> screens move to a new Design file -> audit -> Scenario C from step 2
+               └─ Keep one file -> Scenario C with history versions instead of publish / Accept updates
 Every path from an existing file: Fix on create (section 7b)
 Every path: linked Figma files, publish and file check (section 7c)
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
@@ -215,7 +221,7 @@ Stop and ask for approval at each checkpoint. Show screenshots of each mode the 
 | Checkpoint | Show | Question |
 |---|---|---|
 | **1. Foundation** | Colors (Primitives + Semantics, per mode), typography scale, spacing, radius, shadows, icons, contrast results, Fix on create before/after, **user to-do list** (e.g. rename the Figma file to '<Project> Design System', which a plugin cannot do) | Ask (choice): "Foundation is ready. Approve it?" "Approve, go to components (Recommended)" / "Request changes" |
-| **2. Components** | Every component set per group, all variants and states, per-mode previews; anything left out and why (e.g. Avatar Photo when no photo was supplied) | Ask (choice): "Components are ready. Approve them?" "Approve (Recommended)" (description: screens or Storybook come next when planned) / "Request changes". If screens will follow (0.8 = Yes) or Storybook is due, then say "Before screens, please publish '<Project> Design System' as a library (Assets > Library > Publish). Screens go in a separate Design file that must enable this library." and Ask (choice): "Is the library published?" "Done, published" / "Not yet". Save `design_system.last_publish` in `status.json` when confirmed. |
+| **2. Components** | Every component set per group, all variants and states, per-mode previews; anything left out and why (e.g. Avatar Photo when no photo was supplied) | Ask (choice): "Components are ready. Approve them?" "Approve (Recommended)" (description: screens or Storybook come next when planned) / "Request changes". If screens will follow (0.8 = Yes) or Storybook is due, then say "Before screens, please publish '<Project> Design System' as a library (Assets > Library > Publish). Screens go in a separate Design file that must enable this library." and Ask (choice): "Is the library published?" "Done, published" / "Not yet". Save `design_system.last_publish` in `status.json` when confirmed. Single-file projects (`figma.layout` = `single-file`, section 7g) skip the publish question and save a Figma version instead. |
 | **3. Screens** | Every rebuilt or new screen next to its source (screen spec and side-by-side captures, section 7f), per mode, and the Design file audit result with the fidelity checks (section 7d) | Ask (choice): "Screens are ready. Approve them?" "Approve (Recommended)" / "Request changes" |
 
 - Do not start the next phase before the user approves the current one.
