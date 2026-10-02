@@ -1,12 +1,12 @@
 # Brownfield type 3: imperfect DS + Design file (Scenario C)
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md. When 2.3 = "Inside the Design file", also load `single-file-ds.md` (section 7g): it sets up the file first, splits the Variable Map's "Used in" column into DS pages and screen pages, asks the path (2.4) after step 1, and says which publish steps change.
 
 ## 7. Step 6 - Brownfield type 3: imperfect DS + Design file (Scenario C)
 
 Use this path when a design system already exists but is not AI-ready (missing scopes, unclear names, no descriptions, gaps) and one or more Design files follow it only partially or not at all. Six steps, in order. Nothing in the Design files is changed before step 5, and nothing new is added to the DS without Abdul's approval. Load audit-design-system for steps 3 and 6, and figma-use + figma-generate-library for DS changes.
 
-**Before step 1:** ask "Please share the design system Figma link and the link of every Design file (each with a name)." Register them in `status.json > figma` (section 7c). Then Ask (choice): "Do you have any reference for the tokens?" "Yes, I will share them" (description: developer token files, docs, a Storybook, a style guide; paste links or paths in Other) / "No references" Any reference found is read first and wins over inference.
+**Before step 1:** ask "Please share the design system Figma link and the link of every Design file (each with a name)." (Single file, 2.3: ask for that one link and follow section 7g "Before anything".) Register them in `status.json > figma` (section 7c). Then Ask (choice): "Do you have any reference for the tokens?" "Yes, I will share them" (description: developer token files, docs, a Storybook, a style guide; paste links or paths in Other) / "No references" Any reference found is read first and wins over inference.
 
 ### Step 1 - Understand the DS (Variable Map)
 1. Study the DS file (⭐Setup or its foundation pages first, then component groups; screenshot every variant in each mode).
@@ -19,6 +19,7 @@ Use this path when a design system already exists but is not AI-ready (missing s
 
    Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
 5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, up to 4 per AskUserQuestion call (more in further calls), one Ask (choice) per variable: "What is `<name>` for?" with the guess first, "<guess> (Recommended)" (description: <what I found>), then up to 2 other plausible usages; the real purpose is typed in Other. Record the answers in the map and in `docs/decisions.md`. Then Ask (choice): "Approve the Variable Map?" "Approve (Recommended)" / "Request changes". Abdul approves the Variable Map before step 2.
+6. Single file (section 7g): ask 2.4 now. "Split into a library" runs the 7g migration before step 2; "Keep it in one file" runs steps 2-6 with the 7g path 1 changes (history versions instead of Publish and Accept updates).
 
 ### Step 2 - Fix the DS itself (after approval)
 1. Propose the DS fixes as one list: missing or wrong **scopes** (from the approved map, e.g. a border color scoped to STROKE_COLOR only), **descriptions** for every variable (its usage from the map) and every component (Purpose, Usage Rules, Accessibility), bad names (section 7b renames), failing contrast pairs, and **gaps** (missing tokens, states or components the Design files will need). Gaps are flagged, never filled silently.

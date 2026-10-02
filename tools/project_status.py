@@ -87,7 +87,10 @@ def library_pending():
         path = f / "status.json"
         if not path.exists():
             continue
-        files = json.loads(path.read_text(encoding="utf-8")).get("figma", {}).get("design_files", [])
+        figma = json.loads(path.read_text(encoding="utf-8")).get("figma", {})
+        if figma.get("layout") == "single-file":  # DS inside the Design file: no publish, no Accept updates
+            continue
+        files = figma.get("design_files", [])
         names = [d.get("name") or d.get("file_key") for d in files
                  if d.get("role", "screens") == "screens" and d.get("library_updates_accepted") is False]
         if names:
