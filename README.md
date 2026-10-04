@@ -21,7 +21,7 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 1. **Install Claude Code** and Node.js 18+ (`node --version`).
 2. **Install Figma Desktop** (the web app is not enough).
 3. **Install at least one Figma tool, ideally both** (full guide: `Figma_Tools/README.md`; check with `python tools/figma_tools_check.py`). With both installed, Claude uses FigCli Yolo for everything and the Desktop Bridge only for what Yolo cannot do (creating slots):
-   - **figma-console-mcp** (Desktop Bridge; needed only for slots, or where Yolo is not allowed): create a Figma personal access token (scopes: File content Read, File versions Read, Variables Read, Comments Read and write), then run
+   - **figma-console-mcp** (Desktop Bridge; works on its own for everything. With FigCli Yolo also installed, it is used only for slots): create a Figma personal access token (scopes: File content Read, File versions Read, Variables Read, Comments Read and write), then run
      ```
      claude mcp add figma-console -s user -e FIGMA_ACCESS_TOKEN=figd_YOUR_TOKEN_HERE -e ENABLE_MCP_APPS=true -- npx -y figma-console-mcp@latest
      ```
