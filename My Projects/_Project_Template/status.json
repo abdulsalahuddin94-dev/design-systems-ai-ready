@@ -12,6 +12,7 @@
   "reference": null,
   "figma": {
     "layout": "separate",
+    "figcli_mode": null,
     "ds_pages": [],
     "design_system": {
       "name": null,
