@@ -8,12 +8,15 @@ Desktop Bridge = the figma-console-mcp server is configured (project .mcp.json o
 ~/.claude.json). FigCli = a figma-cli folder with node_modules whose `node src/index.js --version`
 works, or a `figma-cli` command on the PATH. Search order for the folder: FIGMA_CLI_DIR, then
 a Tools folder at the drive root, next to the Root, inside the Root's parent and in the home folder.
+Yolo = port 9222 accepts a connection on 127.0.0.1 (Figma Desktop running patched by
+`node src/index.js connect`); this only opens and closes a socket, it sends nothing.
 This only checks installation; the live connection is checked in the session (figma_get_status,
 or `figma-cli daemon status`).
 """
 import json
 import os
 import shutil
+import socket
 import subprocess
 import sys
 from pathlib import Path
@@ -71,8 +74,17 @@ def figcli():
     return {"installed": False, "folder": None}
 
 
+def yolo_port(port=9222):
+    try:
+        with socket.create_connection(("127.0.0.1", port), timeout=1):
+            return True
+    except OSError:
+        return False
+
+
 def main():
     result = {"desktop_bridge": desktop_bridge(), "figcli": figcli()}
+    result["figcli"]["yolo_port_open"] = yolo_port()
     if "--json" in sys.argv:
         print(json.dumps(result, indent=2))
         return 0
@@ -81,6 +93,8 @@ def main():
           "" if db["plugin_manifest"] or not db["installed"] else "- plugin manifest not created yet (start the MCP server once)")
     if fc["installed"]:
         print("FigCli (figma-cli):", "installed", fc["version"], "-", fc["folder"] or "on PATH")
+        print("FigCli Yolo (Recommended):", "port 9222 open - Figma is running patched" if fc["yolo_port_open"]
+              else "port 9222 closed - Figma not running, or not patched (node src/index.js connect, as administrator)")
     else:
         print("FigCli (figma-cli):", fc.get("note", "not installed"), fc["folder"] or "")
     return 0
