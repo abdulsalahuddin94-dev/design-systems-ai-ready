@@ -1,11 +1,11 @@
 # Figma tools: FigCli (Yolo mode) and Desktop Bridge
 
-This workflow reaches Figma Desktop through one of two tools. **A new user needs at least one.** The recommended setup is **FigCli in Yolo mode**. FigCli runs in Yolo mode only: its Safe-mode plugin was not stable in the 2026-10-04 trial, so this workflow does not use it. Installing the Desktop Bridge as well lets Claude use it where it fits better.
+This workflow reaches Figma Desktop through one of two tools. **A new user needs at least one.** The recommended setup is **FigCli in Yolo mode**. FigCli runs in Yolo mode only: its Safe-mode plugin was not stable in the 2026-10-04 trial, so this workflow does not use it. Install the Desktop Bridge as well only if you need slots (FigCli cannot create them) or cannot patch Figma.
 
 | Tool | Biggest advantage | Best for |
 |---|---|---|
 | **FigCli, Yolo mode** (figma-cli, Recommended) | Stable, no plugin to keep open, Figma can stay minimized, switches between open files per command; about 20–30× fewer tokens for checks, extract and measure | Everything by default: builds and checks through `eval` (the same `tools/*.figma.js` scripts), full-file extract (tokens 100%), `snapshot` / `rules gen` / `check` regression gates (about 16 s and 300 tokens per file), `verify --measure` on screens (under 1 s and about 500 tokens per frame) |
-| **Figma Desktop Bridge** (figma-console-mcp + its Figma plugin) | Full build and audit with the Figma skills' MCP tools, and it catches everything | Variant screenshots, the final audit-design-system when it is installed (5 of 5 planted defects caught in the 2026-10-01 trial), and as the fallback when Yolo is not allowed on the machine |
+| **Figma Desktop Bridge** (figma-console-mcp + its Figma plugin) | Full build and audit with the Figma skills' MCP tools, and it catches everything | Only what Yolo cannot do: creating slots (`figma_add_slot_property`). Also the fallback when Yolo is not allowed on the machine. Yolo is the main tool for everything else, screenshots and audits included (Abdul, 2026-10-05) |
 
 Trial details (2026-10-01, ClinicSoft DS duplicate):
 - **FigCli `check`** caught 4 of 5 defects. Across all variants it checks only fill binding and the variant matrix; strokes, padding and size are checked on one sample variant per set, so it missed a Button height change. The extract also skips standalone components that are not component sets. The mandatory audit-design-system step at the end of every build covers this whichever tool is used.
@@ -38,7 +38,7 @@ Claude only installs after you say yes, and you can do it in the same session as
 **What it does, plainly:** Yolo patches the Figma Desktop app file `app.asar` (Windows: `%LOCALAPPDATA%\Figma\app-<version>\resources`) so Figma starts with a remote debugging port (**9222**) open on your machine. FigCli runs code in your files through that port. No plugin is needed.
 
 **Risks (decide once per machine):**
-- Your Figma app is modified. Figma support and company IT policies may not accept a patched app; use Yolo on a machine you control. Where patching is not allowed, use the Desktop Bridge instead. Where patching is not allowed, use the Desktop Bridge instead.
+- Your Figma app is modified. Figma support and company IT policies may not accept a patched app; use Yolo on a machine you control. Where patching is not allowed, use the Desktop Bridge instead.
 - Port 9222 has **no password**. While Figma runs patched, any program on your computer can read and change every open Figma file through it. It listens on your own machine only, not the network.
 - A Figma update replaces the app, so the patch is lost and has to be applied again.
 - The Desktop Bridge plugin may lose its connection when Figma restarts after the patch; run it again if you use both tools.
