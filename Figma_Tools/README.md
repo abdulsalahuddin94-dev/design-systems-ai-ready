@@ -1,12 +1,11 @@
-# Figma tools: FigCli (Yolo or Safe mode) and Desktop Bridge
+# Figma tools: FigCli (Yolo mode) and Desktop Bridge
 
-This workflow reaches Figma Desktop through one of two tools. **A new user needs at least one.** The recommended setup is **FigCli in Yolo mode** (Abdul, 2026-10-04: the FigCli plugin in Safe mode proved unstable in a trial, Yolo did not). Installing the Desktop Bridge as well lets Claude use it where it fits better.
+This workflow reaches Figma Desktop through one of two tools. **A new user needs at least one.** The recommended setup is **FigCli in Yolo mode**. FigCli runs in Yolo mode only: its Safe-mode plugin was not stable in the 2026-10-04 trial, so this workflow does not use it. Installing the Desktop Bridge as well lets Claude use it where it fits better.
 
 | Tool | Biggest advantage | Best for |
 |---|---|---|
 | **FigCli, Yolo mode** (figma-cli, Recommended) | Stable, no plugin to keep open, Figma can stay minimized, switches between open files per command; about 20–30× fewer tokens for checks, extract and measure | Everything by default: builds and checks through `eval` (the same `tools/*.figma.js` scripts), full-file extract (tokens 100%), `snapshot` / `rules gen` / `check` regression gates (about 16 s and 300 tokens per file), `verify --measure` on screens (under 1 s and about 500 tokens per frame) |
 | **Figma Desktop Bridge** (figma-console-mcp + its Figma plugin) | Full build and audit with the Figma skills' MCP tools, and it catches everything | Variant screenshots, the final audit-design-system when it is installed (5 of 5 planted defects caught in the 2026-10-01 trial), and as the fallback when Yolo is not allowed on the machine |
-| **FigCli, Safe mode** (figma-cli + the FigCli plugin) | Changes nothing in the Figma app | Machines where patching Figma is not allowed. The plugin was unstable in the 2026-10-04 trial, so prefer the Desktop Bridge there |
 
 Trial details (2026-10-01, ClinicSoft DS duplicate):
 - **FigCli `check`** caught 4 of 5 defects. Across all variants it checks only fill binding and the variant matrix; strokes, padding and size are checked on one sample variant per set, so it missed a Button height change. The extract also skips standalone components that are not component sets. The mandatory audit-design-system step at the end of every build covers this whichever tool is used.
@@ -33,13 +32,13 @@ Claude only installs after you say yes, and you can do it in the same session as
 3. Inside that folder run `npm install`. **Never `npm install -g`.**
 4. Check it: `node src/index.js --version`.
 5. Do **not** run `figma-cli init-agent` inside this workflow folder, because it writes its own `AGENTS.md` and Cursor rules over ours. Do **not** install its Claude Code plugin (`/plugin install figma-cli...`). Our skills drive it.
-6. Connect in Yolo mode (Recommended) or Safe mode, below.
+6. Connect in Yolo mode, below.
 
-### Yolo mode (Recommended)
+### Yolo mode (the only FigCli mode used here)
 **What it does, plainly:** Yolo patches the Figma Desktop app file `app.asar` (Windows: `%LOCALAPPDATA%\Figma\app-<version>\resources`) so Figma starts with a remote debugging port (**9222**) open on your machine. FigCli runs code in your files through that port. No plugin is needed.
 
 **Risks (decide once per machine):**
-- Your Figma app is modified. Figma support and company IT policies may not accept a patched app; use Yolo on a machine you control.
+- Your Figma app is modified. Figma support and company IT policies may not accept a patched app; use Yolo on a machine you control. Where patching is not allowed, use the Desktop Bridge instead. Where patching is not allowed, use the Desktop Bridge instead.
 - Port 9222 has **no password**. While Figma runs patched, any program on your computer can read and change every open Figma file through it. It listens on your own machine only, not the network.
 - A Figma update replaces the app, so the patch is lost and has to be applied again.
 - The Desktop Bridge plugin may lose its connection when Figma restarts after the patch; run it again if you use both tools.
@@ -60,13 +59,9 @@ Claude only installs after you say yes, and you can do it in the same session as
 - `FIGMA_FILE` matches **part** of the file name, so use a part that only that file has. With `Design System` and `Design System (Copy)` both open, `"Design System"` can pick the copy; `"Design System -"` (or the full name) picks the original.
 - Claude saves the exact file name in `status.json > figma` and uses it as `FIGMA_FILE`. Every command prints or checks `figma.root.name` before the first write to a file, and writes nothing if the name is not the expected one.
 
-### Safe mode (alternative)
-Use it only where Yolo's patch is not allowed (the Desktop Bridge is usually the better fallback).
-1. `node src/index.js connect --safe`, then in Figma Desktop go to Plugins > Development > **FigCli** and keep that plugin open while you work. `node src/index.js daemon status` should report it running.
-2. Safe mode talks to only **one** file: the one with the FigCli plugin open. Close the plugin in every other file. It cannot read the file key, so Claude confirms the exact file name with you.
-3. Safe mode changes nothing in the Figma app. It was unstable in the 2026-10-04 trial (the plugin lost the connection).
-
-**Browser mode** (Figma in a separate Chromium over the same debugging port, outside Figma Desktop) is not used by this workflow.
+### Modes this workflow does not use
+- **Safe mode** (`connect --safe` + the FigCli plugin): not stable in the 2026-10-04 trial. Do not use it; on a machine where Yolo's patch is not allowed, use the Desktop Bridge.
+- **Browser mode** (Figma in a separate Chromium over the same debugging port, outside Figma Desktop).
 
 ## Install the Figma Desktop Bridge (figma-console-mcp)
 1. You need Node.js 18+ (`node --version`) and Figma Desktop (the web app is not enough).
@@ -79,12 +74,12 @@ Use it only where Yolo's patch is not allowed (the Desktop Bridge is usually the
 
 ## Switching any time
 - You can use any tool on any file at any time: mid-project, days later, or one tool per file (for example FigCli Yolo on the DS file and the Desktop Bridge on a Design file). Just tell Claude.
-- Claude saves the tool used on each file in the project's `status.json` (and the FigCli mode in `figma.figcli_mode`), logs every switch in `CHANGELOG.md`, re-checks the connection and the file, and reloads its helper script.
+- Claude saves the tool used on each file in the project's `status.json` logs every switch in `CHANGELOG.md`, re-checks the connection and the file, and reloads its helper script.
 - Nothing in Figma or in the project files belongs to one tool, so switching never needs rework. The one thing that gets refreshed is FigCli's saved baseline (`snapshot` + `rules gen`): Claude regenerates it after a switch, after changes made through the Desktop Bridge, and after each approved checkpoint, so `check` does not report your own changes as drift.
-- File check: the Desktop Bridge confirms the file by its key. FigCli confirms it by the exact name (`FIGMA_FILE` in Yolo, the plugin's file in Safe mode) and writes nothing if it does not match.
-- Steps that touch two files (publish, Accept updates, checking the library) need both files connected. In Yolo both are reachable at once; pass the right `FIGMA_FILE` on each command.
+- File check: the Desktop Bridge confirms the file by its key. FigCli confirms it by the exact name through `FIGMA_FILE` (and the key when `figma.fileKey` returns one) and writes nothing if it does not match.
+- Steps that touch two files (publish, Accept updates, checking the library) need both files connected. With FigCli both are reachable at once; pass the right `FIGMA_FILE` on each command.
 
 ## Notes
-- The Desktop Bridge plugin shows in Figma Desktop under Plugins > Development (**Figma Desktop Bridge**, and **FigCli** for Safe mode). Figma runs one plugin at a time per file; Yolo needs no plugin, so it can run next to the Desktop Bridge plugin.
+- The Desktop Bridge plugin shows in Figma Desktop under Plugins > Development as **Figma Desktop Bridge**. FigCli (Yolo) needs no plugin, so it can run next to the Desktop Bridge plugin.
 - Claude Code auto mode may block `figma-cli eval` commands that write. Allow the command when asked, or run it yourself.
 - After a switch, Claude re-checks the connection and confirms the file name before any work.

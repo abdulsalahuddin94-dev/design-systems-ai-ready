@@ -25,7 +25,7 @@ Rules:
 ## Adding a design system to the library (`/study-reference-ds`)
 Say "study this design system" with the company name, the platform(s) and the Figma link(s). One run per platform; a company with Web, iOS, Android and cross-platform files gets four entries, studied one per session (token budget). Nothing here touches the original Figma file: it is read only, and the guard hook asks before any write to it.
 1. **Register and scaffold.** `python tools/add_reference.py --company "<Company>" --platform <web|ios|android|cross-platform> --name "<Figma file name>" --figma-url <link> [--default]`. It creates `Reference_Library/<Company>/<Platform>/` (Foundation_Skill, Component_Skills for Form Elements, Navigation and Data Display, `data/`, `docs/`), marks the original file key off-limits and adds the entry to `references.json` with `status: "studying"`.
-2. **Open the file.** The user opens it in Figma Desktop with FigCli Yolo (`FIGMA_FILE` set to its exact name) or the Desktop Bridge (or FigCli Safe mode); confirm the file key (or, when FigCli cannot read it, the exact name) matches the entry.
+2. **Open the file.** The user opens it in Figma Desktop with FigCli Yolo (`FIGMA_FILE` set to its exact name) or the Desktop Bridge; confirm the file key (or, when FigCli cannot read it, the exact name) matches the entry.
 3. **Study the Setup group first:** page structure, variables (`token-extractor` -> `data/source/figma-variables.dtcg.json`, `data/source/config.json`, then `python tools/build_tokens.py <folder>`), text and effect styles, icons. Write `Foundation_Skill` (SKILL.md, references/variables.md, gaps.md).
 4. **Study each component group** (⭐Form Elements, ⭐Navigation, ⭐Data Display): every component's purpose, variants, properties, states, nesting and tier, with Light and Dark screenshots of every variant (in `ds-auditor` / `docs-writer` so images stay out of the main session). Write each Component_Skill (SKILL.md, references/components.md, gaps.md) and `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json`, `docs/decisions.md`.
 5. **Compare with the platform Main Skill.** Mistakes the file makes go into its `gaps.md`; a lesson that applies to every project goes into the Main Skill (section 9 or 10) without the company name.
@@ -36,6 +36,6 @@ What users see afterwards: Greenfield 3.1 offers "Start from a reference templat
 Rules: platforms stay independent (one entry per platform, nothing shared or merged between entries); a cross-platform entry (one shared design for Flutter / React Native custom UI) is offered when intake 1.3 picks cross-platform; never edit the original file.
 
 ## Figma tooling
-Setup guide, which tool fits which step, Yolo (Recommended) and Safe mode, switching: `Figma_Tools/README.md`.
+Setup guide, which tool fits which step, Yolo setup and risks, switching: `Figma_Tools/README.md`.
 - figma-console-mcp: https://github.com/southleft/figma-console-mcp
 - figma-cli: https://github.com/silships/figma-cli
