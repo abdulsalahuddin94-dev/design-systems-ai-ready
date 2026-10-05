@@ -379,10 +379,11 @@ def write_pages(folder, replace=False):
     # Foundations
     f = src / "foundations"
     head = lambda title, blocks: ["import { Meta } from '@storybook/addon-docs/blocks';", f"import {{ {blocks} }} from '../docs/DocBlocks';", "", GENERATED, "", f'<Meta title="Foundations/{title}" />', ""]
-    write(f / "Colors.mdx", "\n".join(head("Colors", "ColorPrimitives, ColorSemantics") + [
+    write(f / "Colors.mdx", "\n".join(head("Colors", "ColorRoles, ColorRamps, ColorTable") + [
         "# Colors", "",
-        "Primitives hold the raw values. Semantic variables alias them and are the only colors components use. Every swatch is drawn from its CSS variable, so this page always shows the live tokens; Semantic swatches are shown in every Figma mode.",
-        "", "## Semantic", "", "<ColorSemantics />", "", "## Primitives", "", "<ColorPrimitives />", ""]))
+        "Semantic variables are the only colors components use; they alias the Primitive ramps below. Every swatch is drawn from its CSS variable, so this page always shows the live tokens. Switch the mode with the tabs when the system has more than one.",
+        "", "<ColorRoles />", "", "## Primitive ramps", "", "<ColorRamps />", "",
+        "<ColorTable />", ""]))
 
     ts = registry.get("text_styles", {}) or {}
     if isinstance(ts, list):

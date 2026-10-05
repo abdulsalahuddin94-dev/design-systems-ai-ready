@@ -253,6 +253,186 @@ export function ColorSemantics() {
   );
 }
 
+/* ---------- Foundations: colors as roles (visual) ---------- */
+const STATE_RE = /(^|[-/ ])(hover|active|pressed|focus|focused|disabled|visited)$/i;
+const ROLES: [string, RegExp][] = [
+  ['Brand', /brand|(action|btn|button)\/primary/i],
+  ['Accent', /accent|(action|btn|button)\/secondary/i],
+  ['Success', /success|positive/i],
+  ['Error', /error|danger|critical|negative|destructive/i],
+  ['Warning', /warning|caution/i],
+  ['Info', /(^|\/)info/i],
+];
+type Kind = 'fill' | 'text' | 'border' | 'icon';
+const kindOf = (name: string): Kind =>
+  /(^|\/)(text|label|on-[a-z]+|foreground)(\/|$|-)|\/text$/i.test(name) ? 'text'
+  : /border|outline|separator|stroke|divider|ring/i.test(name) ? 'border'
+  : /(^|\/)icon/i.test(name) ? 'icon' : 'fill';
+const KIND_ORDER: Kind[] = ['fill', 'text', 'border', 'icon'];
+const semanticTokens = () => ALL.filter((t) => t.type === 'color' && roleOf(t.collection).includes('semantic'));
+const firstCollection = () => semanticTokens()[0]?.collection;
+const isSubtle = (n: string) => /subtle|light|soft|muted|tint|container|weak|bg\/(success|error|warning|info|danger)$/i.test(n);
+
+function hexOf(t: AnyTok, mode: string) {
+  return valueOf(t, mode).hex;
+}
+// Text and icon colors meant for a filled surface (on-brand, inverse, a button's text) are shown on that surface.
+const onSurface = (name: string) => /(^|\/)on-|inverse|(action|btn|button)\/[^/]+\/(text|icon)/i.test(name);
+function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string; onToken?: AnyTok; label?: string; surface?: AnyTok }) {
+  const kind = kindOf(t.name);
+  const bgStyle = surface ? { background: `var(${surface.css})` } : {};
+  const v = valueOf(t, mode);
+  let face: React.ReactNode;
+  if (kind === 'text') face = <div className="dsd-sw-face dsd-sw-text" style={{ ...bgStyle, color: `var(${t.css})` }}>Aa <span>{label || 'Text'}</span></div>;
+  else if (kind === 'border') face = <div className="dsd-sw-face dsd-sw-border"><span style={{ borderColor: `var(${t.css})` }} /></div>;
+  else if (kind === 'icon') face = <div className="dsd-sw-face dsd-sw-icon" style={{ ...bgStyle, color: `var(${t.css})` }}><Icon name={iconNames.find((n) => /check|info|star|heart/i.test(n)) || iconNames[0]} size={28} /></div>;
+  else face = (
+    <div className="dsd-sw-face" style={{ background: `var(${t.css})`, color: onToken ? `var(${onToken.css})` : undefined }}>
+      {onToken ? <span className="dsd-sw-on">{label}</span> : null}
+    </div>
+  );
+  return (
+    <div className="dsd-sw" title={`${t.figma}\n${t.css}${t.description ? '\n' + t.description : ''}`}>
+      {face}
+      <div className="dsd-sw-meta">
+        <code>{t.name}</code>
+        <span>{v.hex}</span>
+      </div>
+      {onToken ? <div className="dsd-sw-sub">text: {onToken.name}</div> : surface ? <div className="dsd-sw-sub">on {surface.name}</div> : v.alias ? <div className="dsd-sw-sub">→ {v.alias}</div> : null}
+    </div>
+  );
+}
+
+function useMode() {
+  const c = firstCollection();
+  const modes = (c && COLLECTIONS[c]?.modes) || [];
+  const [mode, setMode] = React.useState(modes[0] || '');
+  const tabs = modes.length > 1 ? (
+    <div className="dsd-tabs">{modes.map((m) => <button key={m} type="button" className={m === mode ? 'is-on' : ''} onClick={() => setMode(m)}>{m}</button>)}</div>
+  ) : null;
+  const wrap = (children: React.ReactNode) => (c ? <div {...modeAttrs(c, mode)} style={themeStyle} className="dsd-mode-surface">{children}</div> : <>{children}</>);
+  return { mode, tabs, wrap };
+}
+
+function onTokenFor(fill: AnyTok, pool: AnyTok[]) {
+  const base = fill.name.replace(/\/(bg|background|fill|solid|default)$/i, '');
+  return pool.find((t) => kindOf(t.name) === 'text' && !STATE_RE.test(t.name) && (t.name === `${base}/text` || t.name === `${base}/on` || new RegExp(`on-${fill.name.split('/').filter((s) => !/^(color|bg|background)$/i.test(s))[0] || 'x'}$`, 'i').test(t.name)));
+}
+
+export function ColorRoles() {
+  const { mode, tabs, wrap } = useMode();
+  const sem = semanticTokens();
+  const used = new Set<string>();
+  const rows = ROLES.map(([role, re]) => {
+    const list = sem.filter((t) => re.test(t.name) && !STATE_RE.test(t.name) && !/(^|\/)text\/(primary|secondary)$/i.test(t.name));
+    list.forEach((t) => used.add(t.css));
+    const fills = list.filter((t) => kindOf(t.name) === 'fill').sort((a, b) => Number(isSubtle(b.name)) - Number(isSubtle(a.name)));
+    const others = list.filter((t) => kindOf(t.name) !== 'fill').sort((a, b) => KIND_ORDER.indexOf(kindOf(a.name)) - KIND_ORDER.indexOf(kindOf(b.name)));
+    return { role, fills, others };
+  }).filter((r) => r.fills.length || r.others.length);
+  const anchors = rows.filter((r) => /Brand|Accent/.test(r.role)).map((r) => r.fills.find((t) => !isSubtle(t.name)) || r.fills[0]).filter(Boolean) as AnyTok[];
+  const neutral = sem.filter((t) => !used.has(t.css) && !STATE_RE.test(t.name));
+  const neutralGroups = KIND_ORDER.map((k) => ({ k, list: neutral.filter((t) => kindOf(t.name) === k) })).filter((g) => g.list.length);
+  const KIND_TITLE: Record<Kind, string> = { fill: 'Surfaces and backgrounds', text: 'Text', border: 'Borders', icon: 'Icons' };
+  return (
+    <DocsRoot>
+      {tabs}
+      {wrap(
+        <>
+          {anchors.length ? (
+            <section className="dsd-first">
+              <h3 className="dsd-h3">Brand anchors</h3>
+              <p className="dsd-p dsd-muted">The colors that carry the brand. Every primary action uses them.</p>
+              <div className="dsd-anchors">
+                {anchors.map((t) => (
+                  <div key={t.css} className="dsd-anchor">
+                    <div className="dsd-anchor-face" style={{ background: `var(${t.css})` }} />
+                    <div className="dsd-sw-meta"><code>{t.name}</code><span>{hexOf(t, mode)}</span></div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {rows.length ? (
+            <section>
+              <h3 className="dsd-h3">Semantic roles</h3>
+              <p className="dsd-p dsd-muted">One row per role: fills (subtle first, then solid with its text on top), then text, border and icon colors. Hover and pressed variants are in the full list below.</p>
+              <div className="dsd-roles">
+                {rows.map((r) => (
+                  <div key={r.role} className="dsd-role">
+                    <div className="dsd-role-name">{r.role}</div>
+                    <div className="dsd-role-cells">
+                      {r.fills.map((t) => {
+                        const on = isSubtle(t.name) ? undefined : onTokenFor(t, sem);
+                        return <Swatch key={t.css} t={t} mode={mode} onToken={on} label={r.role} />;
+                      })}
+                      {r.others.map((t) => {
+                        const solid = r.fills.find((f) => !isSubtle(f.name) && f.name.split('/').slice(0, -1).join('/') === t.name.split('/').slice(0, -1).join('/')) || r.fills.find((f) => !isSubtle(f.name));
+                        return <Swatch key={t.css} t={t} mode={mode} label={r.role} surface={onSurface(t.name) ? solid : undefined} />;
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          {neutralGroups.map((g) => (
+            <section key={g.k}>
+              <h3 className="dsd-h3">{KIND_TITLE[g.k]}</h3>
+              <div className="dsd-role-cells dsd-role-cells-wide">
+                {g.list.map((t) => <Swatch key={t.css} t={t} mode={mode} surface={onSurface(t.name) ? neutral.find((x) => kindOf(x.name) === 'fill' && /inverse/i.test(x.name)) : undefined} />)}
+              </div>
+            </section>
+          ))}
+        </>,
+      )}
+    </DocsRoot>
+  );
+}
+
+export function ColorTable() {
+  return (
+    <details className="dsd dsd-details sb-unstyled" style={themeStyle}>
+      <summary>Full list of Semantic variables (name, value per mode, CSS variable, use)</summary>
+      <ColorSemantics />
+    </details>
+  );
+}
+
+export function ColorRamps() {
+  const prims = ALL.filter((t) => t.type === 'color' && roleOf(t.collection).includes('primitive'));
+  const ramps = new Map<string, AnyTok[]>();
+  prims.forEach((t) => {
+    const k = t.name.includes('/') ? t.name.split('/').slice(0, -1).join('/') : 'Single colors';
+    ramps.set(k, [...(ramps.get(k) ?? []), t]);
+  });
+  return (
+    <DocsRoot>
+      <div className="dsd-strips">
+        {[...ramps].map(([ramp, list]) => (
+          <div key={ramp} className="dsd-strip-row">
+            <div className="dsd-strip-name">{ramp}</div>
+            <div className="dsd-strip">
+              {list.map((t) => {
+                const mode = Object.keys(t.values)[0];
+                return (
+                  <div key={t.css} className="dsd-strip-cell" title={`${t.figma}\n${t.css}`}>
+                    <div className="dsd-strip-color" style={{ background: `var(${t.css})` }} />
+                    <div className="dsd-strip-step">{t.name.split('/').pop()}</div>
+                    <div className="dsd-strip-hex">{String(valueOf(t, mode).hex).replace('#', '')}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </DocsRoot>
+  );
+}
+
 /* ---------- Foundations: typography at real size ---------- */
 export const textClass = (style: string) => 'ts-' + style.toLowerCase().replace(/[/\s]+/g, '-').replace(/[^a-z0-9_-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
