@@ -6,30 +6,40 @@
 // text sizes from the real CSS of each text style (getComputedStyle), components from their stories.
 // The docs chrome takes its colors from the design system's own semantic tokens (found by name), with neutral
 // fallbacks, so the same file works for any brand and platform.
+// Modes (Color, Language, OS / Platform...) come from the toolbar through ./Modes: every value shown is resolved for
+// the selected modes, and on a Mobile Adaptive Storybook every code name follows the Platform switch.
 import React from 'react';
 import { Canvas, Controls, ArgTypes } from '@storybook/addon-docs/blocks';
 import { tokens } from '../tokens/tokens';
 import { Icon, iconNames } from '../lib/Icon';
+import {
+  ALL_TOKENS, COLLECTIONS, IS_ADAPTIVE, PLATFORMS, OS_COLLECTION, LANGUAGE_COLLECTION, RTL_MODE, ModeScope,
+  useModes, usePlatform, usePlatformLabel, platformLabel, codesFor, resolveToken, type CodeName, type Modes, type Token,
+} from './Modes';
 import './docs.css';
 
-type AnyTok = { figma: string; collection: string; name: string; type: string; css: string; values: Record<string, unknown>; resolved?: Record<string, string>; description?: string };
-const ALL = (tokens as unknown as { tokens: AnyTok[] }).tokens;
-const COLLECTIONS = (tokens as unknown as { collections: Record<string, { modes: string[]; default: string; attribute: string; role?: string }> }).collections;
+type AnyTok = Token;
+const ALL = ALL_TOKENS;
 const roleOf = (c: string) => (COLLECTIONS[c]?.role || c).toLowerCase();
 
 /* ---------- platform names: what developers type (SwiftUI on iOS, Compose on Android, CSS on Web) ---------- */
-type CodeName = { label: string; name: string };
 const TOK = tokens as unknown as { platform?: string; platform_label?: string; platform_file?: string };
+/** Storybook platform: 'web' | 'ios' | 'android' | 'adaptive' (iOS + Android, Platform switch in the toolbar). */
 export const PLATFORM = TOK.platform || 'web';
 export const PLATFORM_LABEL = TOK.platform_label || 'CSS variable';
-const codesOf = (t: AnyTok): CodeName[] => ((t as unknown as { code?: CodeName[] }).code || [{ label: 'CSS variable', name: t.css }]);
-const codeOf = (t: AnyTok) => codesOf(t)[0].name;
+const codeOf = (t: AnyTok, platform: string) => codesFor(t, platform)[0].name;
+const platformName = (key: string) => (key === 'ios' ? 'iOS' : key === 'android' ? 'Android' : key);
+/** A value for display: px for dimensions, as is otherwise. */
+const show = (t: AnyTok, v: unknown) => (v === undefined || v === null ? '' : typeof v === 'number' && t.type !== 'boolean' && !/weight|opacity/i.test(t.name) ? `${+v.toFixed(2)}px` : String(v));
 function CodeCell({ t }: { t: AnyTok }) {
-  const [first, ...rest] = codesOf(t);
+  const platform = usePlatform();
+  const modes = useModes();
+  const [first, ...rest] = codesFor(t, platform);
   return (
     <div className="dsd-codecell">
       <code className="dsd-code">{first.name}</code>
       {rest.map((c) => <div key={c.label} className="dsd-small dsd-muted">{c.label}: <code>{c.name}</code></div>)}
+      {IS_ADAPTIVE ? <div className="dsd-small dsd-muted">On {platformName(platform)}: <strong>{show(t, resolveToken(t.figma, modes))}</strong></div> : null}
       {PLATFORM !== 'web' ? <div className="dsd-small dsd-muted">CSS (this Storybook): <code>{t.css}</code></div> : null}
     </div>
   );
@@ -180,13 +190,13 @@ export function Welcome({ data, samples = [] }: { data: WelcomeData; samples?: {
 }
 
 /* ---------- Foundations: colors ---------- */
-const valueOf = (t: AnyTok, mode: string) => {
+// Value of a token in one mode of its collection; with modes, the other collections use those modes (the toolbar's)
+const valueOf = (t: AnyTok, mode: string, modes?: Modes) => {
   const v = t.values[mode];
-  const r = t.resolved?.[mode];
-  if (v && typeof v === 'object' && 'alias' in (v as object)) return { alias: String((v as { alias: string }).alias).split('::').pop(), hex: r };
-  return { hex: r ?? String(v) };
+  const r = modes ? resolveToken(t.figma, { ...modes, [t.collection]: mode }) : t.resolved?.[mode];
+  if (v && typeof v === 'object' && 'alias' in (v as object)) return { alias: String((v as { alias: string }).alias).split('::').pop(), hex: r === undefined ? undefined : String(r) };
+  return { hex: r !== undefined ? String(r) : String(v) };
 };
-const modeAttrs = (collection: string, mode: string) => ({ [COLLECTIONS[collection]?.attribute || `data-${collection.toLowerCase()}`]: mode });
 
 export function ColorPrimitives() {
   const prims = ALL.filter((t) => t.type === 'color' && roleOf(t.collection).includes('primitive'));
@@ -221,6 +231,8 @@ export function ColorPrimitives() {
 }
 
 export function ColorSemantics() {
+  const label = usePlatformLabel();
+  const ctx = useModes();
   const sem = ALL.filter((t) => t.type === 'color' && roleOf(t.collection).includes('semantic'));
   const collections = [...new Set(sem.map((t) => t.collection))];
   return (
@@ -240,19 +252,19 @@ export function ColorSemantics() {
               <div key={g} className="dsd-block">
                 <div className="dsd-ramp-name">{g}</div>
                 <table className="dsd-table">
-                  <thead><tr><th>Figma variable</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{PLATFORM_LABEL}</th><th>Use</th></tr></thead>
+                  <thead><tr><th>Figma variable</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{label}</th><th>Use</th></tr></thead>
                   <tbody>
                     {list.map((t) => (
                       <tr key={t.css}>
                         <td><Code>{t.name}</Code></td>
                         {modes.map((m) => {
-                          const v = valueOf(t, m);
+                          const v = valueOf(t, m, ctx);
                           return (
                             <td key={m}>
-                              <div className="dsd-sem" {...modeAttrs(c, m)}>
+                              <ModeScope modes={{ [c]: m }} dir={false} className="dsd-sem">
                                 <span className="dsd-sem-swatch" style={{ background: `var(${t.css})` }} />
                                 <span className="dsd-sem-meta">{v.alias ? <>{v.alias}<br /></> : null}<span className="dsd-muted">{v.hex}</span></span>
-                              </div>
+                              </ModeScope>
                             </td>
                           );
                         })}
@@ -291,15 +303,17 @@ const semanticTokens = () => ALL.filter((t) => t.type === 'color' && roleOf(t.co
 const firstCollection = () => semanticTokens()[0]?.collection;
 const isSubtle = (n: string) => /subtle|light|soft|muted|tint|container|weak|bg\/(success|error|warning|info|danger)$/i.test(n);
 
-function hexOf(t: AnyTok, mode: string) {
-  return valueOf(t, mode).hex;
+function hexOf(t: AnyTok, mode: string, modes?: Modes) {
+  return valueOf(t, mode, modes).hex;
 }
 // Text and icon colors meant for a filled surface (on-brand, inverse, a button's text) are shown on that surface.
 const onSurface = (name: string) => /(^|\/)on-|inverse|(action|btn|button)\/[^/]+\/(text|icon)/i.test(name);
 function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string; onToken?: AnyTok; label?: string; surface?: AnyTok }) {
   const kind = kindOf(t.name);
+  const platform = usePlatform();
+  const modes = useModes();
   const bgStyle = surface ? { background: `var(${surface.css})` } : {};
-  const v = valueOf(t, mode);
+  const v = valueOf(t, mode, modes);
   let face: React.ReactNode;
   if (kind === 'text') face = <div className="dsd-sw-face dsd-sw-text" style={{ ...bgStyle, color: `var(${t.css})` }}>Aa <span>{label || 'Text'}</span></div>;
   else if (kind === 'border') face = <div className="dsd-sw-face dsd-sw-border"><span style={{ borderColor: `var(${t.css})` }} /></div>;
@@ -310,13 +324,13 @@ function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string;
     </div>
   );
   return (
-    <div className="dsd-sw" title={`${t.figma}\n${codesOf(t).map((c) => `${c.label}: ${c.name}`).join('\n')}${t.description ? '\n' + t.description : ''}`}>
+    <div className="dsd-sw" title={`${t.figma}\n${codesFor(t, platform).map((c) => `${c.label}: ${c.name}`).join('\n')}${t.description ? '\n' + t.description : ''}`}>
       {face}
       <div className="dsd-sw-meta">
         <code>{t.name}</code>
         <span>{v.hex}</span>
       </div>
-      <div className="dsd-sw-code">{codeOf(t)}</div>
+      <div className="dsd-sw-code">{codeOf(t, platform)}</div>
       {onToken ? <div className="dsd-sw-sub">text: {onToken.name}</div> : surface ? <div className="dsd-sw-sub">on {surface.name}</div> : v.alias ? <div className="dsd-sw-sub">→ {v.alias}</div> : null}
     </div>
   );
@@ -324,12 +338,15 @@ function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string;
 
 function useMode() {
   const c = firstCollection();
+  const ctx = useModes();
   const modes = (c && COLLECTIONS[c]?.modes) || [];
-  const [mode, setMode] = React.useState(modes[0] || '');
+  // starts at the toolbar's mode and follows it; the tabs switch only this page
+  const [mode, setMode] = React.useState((c && ctx[c]) || modes[0] || '');
+  React.useEffect(() => { if (c && ctx[c]) setMode(ctx[c]); }, [c, c && ctx[c]]);
   const tabs = modes.length > 1 ? (
     <div className="dsd-tabs">{modes.map((m) => <button key={m} type="button" className={m === mode ? 'is-on' : ''} onClick={() => setMode(m)}>{m}</button>)}</div>
   ) : null;
-  const wrap = (children: React.ReactNode) => (c ? <div {...modeAttrs(c, mode)} style={themeStyle} className="dsd-mode-surface">{children}</div> : <>{children}</>);
+  const wrap = (children: React.ReactNode) => (c ? <ModeScope modes={{ [c]: mode }} dir={false} style={themeStyle} className="dsd-mode-surface">{children}</ModeScope> : <>{children}</>);
   return { mode, tabs, wrap };
 }
 
@@ -340,6 +357,8 @@ function onTokenFor(fill: AnyTok, pool: AnyTok[]) {
 
 export function ColorRoles() {
   const { mode, tabs, wrap } = useMode();
+  const platform = usePlatform();
+  const ctx = useModes();
   const sem = semanticTokens();
   const used = new Set<string>();
   const rows = ROLES.map(([role, re]) => {
@@ -366,8 +385,8 @@ export function ColorRoles() {
                 {anchors.map((t) => (
                   <div key={t.css} className="dsd-anchor">
                     <div className="dsd-anchor-face" style={{ background: `var(${t.css})` }} />
-                    <div className="dsd-sw-meta"><code>{t.name}</code><span>{hexOf(t, mode)}</span></div>
-                    <div className="dsd-sw-code dsd-anchor-code">{codeOf(t)}</div>
+                    <div className="dsd-sw-meta"><code>{t.name}</code><span>{hexOf(t, mode, ctx)}</span></div>
+                    <div className="dsd-sw-code dsd-anchor-code">{codeOf(t, platform)}</div>
                   </div>
                 ))}
               </div>
@@ -415,7 +434,7 @@ export function ColorRoles() {
 export function ColorTable() {
   return (
     <details className="dsd dsd-details sb-unstyled" style={themeStyle}>
-      <summary>Full list of Semantic variables (name, value per mode, {PLATFORM_LABEL} name, use)</summary>
+      <summary>Full list of Semantic variables (name, value per mode, {IS_ADAPTIVE ? 'SwiftUI / Compose' : PLATFORM_LABEL} name, use)</summary>
       <ColorSemantics />
     </details>
   );
@@ -458,6 +477,7 @@ export const textClass = (style: string) => 'ts-' + style.toLowerCase().replace(
 
 function Measured({ cls, sample, compact, code }: { cls: string; sample: string; compact?: boolean; code?: string }) {
   const ref = React.useRef<HTMLDivElement>(null);
+  const modesKey = JSON.stringify(useModes());
   const [m, setM] = React.useState<{ size: string; line: string; weight: string; family: string; tracking: string } | null>(null);
   React.useLayoutEffect(() => {
     const read = () => {
@@ -469,8 +489,9 @@ function Measured({ cls, sample, compact, code }: { cls: string; sample: string;
     read();
     const obs = new MutationObserver(read);
     obs.observe(document.documentElement, { attributes: true });
-    return () => obs.disconnect();
-  }, []);
+    const late = setTimeout(read, 150); // web fonts and mode changes settle after the first paint
+    return () => { obs.disconnect(); clearTimeout(late); };
+  }, [modesKey]);
   return (
     <>
       <div ref={ref} className={`dsd-type-sample ${cls}`}>{sample}</div>
@@ -485,9 +506,15 @@ function Measured({ cls, sample, compact, code }: { cls: string; sample: string;
 export type TypeData = {
   font?: string; styles: string[]; groups?: { name: string; styles: string[] }[]; sample?: string; rules?: string[];
   scales?: { name: string; note?: string; styles: string[] }[];
-  codes?: Record<string, CodeName[]>;
+  codes?: Record<string, CodeName[] | Record<string, CodeName[]>>;
 };
 export function TypeSpecimen({ data }: { data: TypeData }) {
+  const platform = usePlatform();
+  // Mobile Adaptive: codes per platform ({ ios: [...], android: [...] }), the Platform switch picks one
+  const codesOfStyle = (s: string): CodeName[] | undefined => {
+    const c = data.codes?.[s];
+    return Array.isArray(c) ? c : c?.[platform];
+  };
   const groups = data.groups?.length ? data.groups : [{ name: 'Text styles', styles: data.styles }];
   const sample = data.sample || 'The quick brown fox jumps over the lazy dog';
   return (
@@ -506,7 +533,7 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
           <div className="dsd-type-group">
             {sc.styles.map((s) => (
               <div key={s} className="dsd-type-row dsd-type-row-compact">
-                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact code={PLATFORM !== 'web' ? data.codes?.[s]?.[0]?.name : undefined} />
+                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact code={PLATFORM !== 'web' ? codesOfStyle(s)?.[0]?.name : undefined} />
               </div>
             ))}
           </div>
@@ -520,7 +547,7 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
             <div key={s} className="dsd-type-row">
               <div className="dsd-type-name">
                 <Code>{s}</Code>
-                {(data.codes?.[s] || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small">{c.name}</div>)}
+                {(codesOfStyle(s) || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small">{c.name}</div>)}
               </div>
               <Measured cls={textClass(s)} sample={sample} />
             </div>
@@ -533,28 +560,34 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
 
 /* ---------- Foundations: sizing (spacing, radius, other dimensions) ---------- */
 export function Sizing() {
-  const dims = ALL.filter((t) => (t.type === 'number' || t.type === 'dimension') && !/typography|font|opacity/i.test(t.collection + ' ' + roleOf(t.collection)) && !/font|line-height|letter|opacity|weight/i.test(t.name));
+  const ctx = useModes();
+  const label = usePlatformLabel();
+  const dims = ALL.filter((t) => (t.type === 'number' || t.type === 'dimension') && !/typography|font|opacity|language/i.test(t.collection + ' ' + roleOf(t.collection)) && !/font|line[- ]height|letter|opacity|weight/i.test(t.name));
   const collections = [...new Set(dims.map((t) => t.collection))];
+  // Mobile Adaptive: one column per platform (values resolved with that OS mode), the current one highlighted
+  const columns = (c: string): { title: string; modes: Modes; on: boolean }[] => IS_ADAPTIVE && !roleOf(c).includes('primitive')
+    ? PLATFORMS.map((p) => ({ title: platformName(p.key), modes: { ...ctx, [OS_COLLECTION!]: p.mode }, on: ctx[OS_COLLECTION!] === p.mode }))
+    : (COLLECTIONS[c]?.modes || []).map((m) => ({ title: m, modes: { ...ctx, [c]: m }, on: (COLLECTIONS[c]?.modes.length || 0) > 1 && ctx[c] === m }));
   return (
     <DocsRoot>
       {collections.map((c) => {
-        const modes = COLLECTIONS[c]?.modes || [];
-        const isRadius = /radius|corner|shape/i.test(c + roleOf(c));
+        const cols = columns(c);
+        const isRadius = (t: AnyTok) => /radius|corner|shape/i.test(c + roleOf(c) + t.name);
         return (
           <div key={c} className="dsd-block">
             <h3 className="dsd-h3">{c}</h3>
             <table className="dsd-table">
-              <thead><tr><th>Figma variable</th><th>Preview</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{PLATFORM_LABEL}</th></tr></thead>
+              <thead><tr><th>Figma variable</th><th>Preview</th>{cols.map((m) => <th key={m.title} className={m.on ? 'dsd-on' : undefined}>{m.title}</th>)}<th>{label}</th></tr></thead>
               <tbody>
                 {dims.filter((t) => t.collection === c).map((t) => (
                   <tr key={t.css}>
                     <td><Code>{t.name}</Code></td>
                     <td>
-                      {isRadius
+                      {isRadius(t)
                         ? <div className="dsd-radius" style={{ borderRadius: `var(${t.css})` }} />
                         : <div className="dsd-bar" style={{ width: `min(var(${t.css}), 320px)` }} />}
                     </td>
-                    {modes.map((m) => <td key={m}>{String(t.values[m] ?? '')}{typeof t.values[m] === 'number' ? 'px' : ''}</td>)}
+                    {cols.map((m) => <td key={m.title} className={m.on ? 'dsd-on' : undefined}>{show(t, resolveToken(t.figma, m.modes))}</td>)}
                     <td><CodeCell t={t} /></td>
                   </tr>
                 ))}
@@ -570,6 +603,7 @@ export function Sizing() {
 /* ---------- Foundations: effects (effect styles + opacity) ---------- */
 const cssName = (s: string) => '--' + s.toLowerCase().replace(/[/\s]+/g, '-').replace(/[^a-z0-9_-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
 export function Effects({ styles = [] }: { styles?: string[] }) {
+  const ctx = useModes();
   const opacity = ALL.filter((t) => /opacity/i.test(t.collection + ' ' + roleOf(t.collection) + ' ' + t.name) && t.type !== 'color');
   return (
     <DocsRoot>
@@ -582,6 +616,7 @@ export function Effects({ styles = [] }: { styles?: string[] }) {
                 <div className="dsd-effect-box" style={{ boxShadow: `var(${cssName(s)})` }} />
                 <Code>{s}</Code>
                 {PLATFORM === 'web' ? <div className="dsd-muted dsd-small">var({cssName(s)})</div> : null}
+                {IS_ADAPTIVE ? <div className="dsd-muted dsd-small">Switch Platform: on iOS the shadow color resolves to a transparent token.</div> : null}
               </div>
             ))}
           </div>
@@ -595,7 +630,7 @@ export function Effects({ styles = [] }: { styles?: string[] }) {
               <div key={t.css} className="dsd-effect">
                 <div className="dsd-effect-box dsd-opacity" style={{ opacity: `var(${t.css})` as unknown as number }} />
                 <Code>{t.name}</Code>
-                <div className="dsd-muted dsd-small">{String(Object.values(t.values)[0])}</div>
+                <div className="dsd-muted dsd-small">{String(resolveToken(t.figma, ctx))}</div>
               </div>
             ))}
           </div>
@@ -626,7 +661,21 @@ export function IconGallery({ note }: { note?: string }) {
 }
 
 /* ---------- Foundations: code (platform names + download) ---------- */
-export function CodeExport({ file, source, rules = [], examples = [] }: { file: string; source: string; rules?: string[]; examples?: { figma: string; code: CodeName[] }[] }) {
+type CodeFile = { key: string; label: string; file: string; source: string; rules?: string[] };
+/** One token file (Web, iOS, Android), or several (Mobile Adaptive: DesignTokens.swift + DesignTokens.kt) with tabs
+ * that follow the Platform switch. Example codes may be per platform ({ ios: [...], android: [...] }). */
+export function CodeExport({ file: oneFile, source: oneSource, rules: oneRules = [], examples = [], files }: {
+  file?: string; source?: string; rules?: string[]; files?: CodeFile[];
+  examples?: { figma: string; code: CodeName[] | Record<string, CodeName[]> }[];
+}) {
+  const platform = usePlatform();
+  const list: CodeFile[] = files?.length ? files : [{ key: PLATFORM, label: PLATFORM_LABEL, file: oneFile || '', source: oneSource || '', rules: oneRules }];
+  const [pick, setPick] = React.useState(platform);
+  React.useEffect(() => setPick(platform), [platform]);
+  const cur = list.find((f) => f.key === pick) || list[0];
+  const { file, source } = cur;
+  const rules = cur.rules || [];
+  const codeList = (c: CodeName[] | Record<string, CodeName[]>) => (Array.isArray(c) ? c : c[cur.key] || []);
   const [copied, setCopied] = React.useState(false);
   const download = () => {
     const url = URL.createObjectURL(new Blob([source], { type: 'text/plain' }));
@@ -637,8 +686,11 @@ export function CodeExport({ file, source, rules = [], examples = [] }: { file: 
   const copy = async () => { try { await navigator.clipboard.writeText(source); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ } };
   return (
     <DocsRoot>
+      {list.length > 1 ? (
+        <div className="dsd-tabs">{list.map((f) => <button key={f.key} type="button" className={f.key === cur.key ? 'is-on' : ''} onClick={() => setPick(f.key)}>{f.file}</button>)}</div>
+      ) : null}
       <div className="dsd-card dsd-type-intro">
-        <div className="dsd-eyebrow">{PLATFORM_LABEL}</div>
+        <div className="dsd-eyebrow">{cur.label}</div>
         <div className="dsd-type-font">{file}</div>
         <ul className="dsd-list">{rules.map((r) => <li key={r}>{r}</li>)}</ul>
         <div className="dsd-pills" style={{ marginTop: 12 }}>
@@ -650,8 +702,8 @@ export function CodeExport({ file, source, rules = [], examples = [] }: { file: 
         <>
           <h3 className="dsd-h3">Figma name → code</h3>
           <table className="dsd-table">
-            <thead><tr><th>Figma</th>{examples[0].code.map((c) => <th key={c.label}>{c.label}</th>)}</tr></thead>
-            <tbody>{examples.map((e) => <tr key={e.figma}><td><code className="dsd-code">{e.figma}</code></td>{e.code.map((c) => <td key={c.label}><code className="dsd-code">{c.name}</code></td>)}</tr>)}</tbody>
+            <thead><tr><th>Figma</th>{codeList(examples[0].code).slice(0, 2).map((c) => <th key={c.label}>{c.label}</th>)}</tr></thead>
+            <tbody>{examples.map((e) => <tr key={e.figma}><td><code className="dsd-code">{e.figma}</code></td>{codeList(e.code).slice(0, 2).map((c) => <td key={c.label}><code className="dsd-code">{c.name}</code></td>)}</tr>)}</tbody>
           </table>
         </>
       ) : null}
@@ -670,17 +722,20 @@ export type ComponentDocsData = {
   sizes?: { value: string; meaning?: string }[]; states?: { value: string; meaning?: string }[];
   icons?: { property: string; accepts?: string; default?: string; rule?: string; show?: string }[];
   rtl?: boolean;
-  code?: { label: string; call: string; props: { figma: string; code: string; type: string; values: string[] }[] };
+  /** One block, or one per platform on a Mobile Adaptive Storybook ({ ios: {...}, android: {...} }). */
+  code?: CodeBlock | Record<string, CodeBlock>;
   guidelines?: { do?: string; dont?: string; do_args?: Record<string, unknown>; dont_args?: Record<string, unknown> }[];
   content?: string[]; accessibility?: string[]; built_from?: string[]; related?: string[]; gaps?: string[];
   figma_description?: string;
 };
+type CodeBlock = { label: string; call: string; props: { figma: string; code: string; type: string; values: string[] }[] };
 type StoriesModule = { default: { component?: React.ComponentType<any>; args?: Record<string, unknown> } } & Record<string, any>;
 
 function Example({ stories, args }: { stories: StoriesModule; args?: Record<string, unknown> }) {
   const C = stories.default.component;
   if (!C) return null;
-  return <C {...(stories.default.args || {})} {...(args || {})} />;
+  // examples follow the Language mode's direction (the docs page itself stays left to right)
+  return <ModeScope><C {...(stories.default.args || {})} {...(args || {})} /></ModeScope>;
 }
 const SEMANTIC = Object.entries(COLLECTIONS).find(([k, c]) => (c.role || k).toLowerCase().includes('semantic'));
 function ModePanels({ children }: { children: React.ReactNode }) {
@@ -689,10 +744,24 @@ function ModePanels({ children }: { children: React.ReactNode }) {
   return (
     <div className="dsd-modes">
       {c.modes.map((m) => (
-        <div key={m} className="dsd-mode" {...modeAttrs(name, m)} style={themeStyle}>
+        <ModeScope key={m} modes={{ [name]: m }} className="dsd-mode" style={themeStyle}>
           <div className="dsd-mode-name">{m}</div>
           {children}
-        </div>
+        </ModeScope>
+      ))}
+    </div>
+  );
+}
+/** Mobile Adaptive: the same component side by side on each platform (OS mode), in the toolbar's Color and Language. */
+function PlatformPanels({ children }: { children: React.ReactNode }) {
+  if (!IS_ADAPTIVE) return null;
+  return (
+    <div className="dsd-modes">
+      {PLATFORMS.map((p) => (
+        <ModeScope key={p.key} modes={{ [OS_COLLECTION!]: p.mode }} className="dsd-mode" style={themeStyle}>
+          <div className="dsd-mode-name">{platformName(p.key)} · {p.label}</div>
+          {children}
+        </ModeScope>
       ))}
     </div>
   );
@@ -713,8 +782,11 @@ function Gallery({ stories, axis, items }: { stories: StoriesModule; axis: strin
 export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stories: StoriesModule }) {
   const d = docs;
   const playground = stories.Playground;
+  const platform = usePlatform();
+  const code: CodeBlock | undefined = d.code && ('call' in d.code ? (d.code as CodeBlock) : (d.code as Record<string, CodeBlock>)[platform]);
   const toc: [string, string, boolean][] = [
     ['overview', 'Overview', true],
+    ['platforms', 'iOS and Android', IS_ADAPTIVE],
     ['when-to-use', 'When to use', !!(d.when_to_use?.length || d.when_not_to_use?.length)],
     ['anatomy', 'Anatomy', !!d.anatomy?.length],
     ['variants', 'Variants', !!d.variants?.length],
@@ -745,6 +817,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
       <section>
         <H2 id="overview">Overview</H2>
         {playground && <Canvas of={playground} sourceState={PLATFORM === 'web' ? 'hidden' : 'none'} />}
+        {IS_ADAPTIVE ? <p className="dsd-p dsd-muted">Switch <strong>Platform</strong>, Color and Language in the toolbar: the same component takes the iOS or Android look from the Figma OS mode, never from a separate component.</p> : null}
         {d.use_cases?.length ? (
           <>
             <h3 className="dsd-h3">Use cases</h3>
@@ -752,6 +825,14 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           </>
         ) : null}
       </section>
+
+      {IS_ADAPTIVE ? (
+        <section>
+          <H2 id="platforms">iOS and Android</H2>
+          <p className="dsd-p">One Figma component, two platforms: height, radius, type, colors and platform-only parts come from the OS mode (Figma collection <Code>{OS_COLLECTION}</Code>).</p>
+          <PlatformPanels><div className="dsd-stage"><Example stories={stories} /></div></PlatformPanels>
+        </section>
+      ) : null}
 
       {(d.when_to_use?.length || d.when_not_to_use?.length) ? (
         <section>
@@ -846,13 +927,15 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
       {d.rtl ? (
         <section>
           <H2 id="rtl">Right to left</H2>
-          <p className="dsd-p">In right-to-left languages the layout is mirrored: leading items move to the right, and directional icons (arrows, chevrons) must be mirrored too.</p>
-          <div className="dsd-gallery" dir="rtl">
-            <figure className="dsd-figure"><div className="dsd-stage"><Example stories={stories} /></div></figure>
-            {(d.icons || []).filter((i) => i.show).map((i) => (
-              <figure key={i.property} className="dsd-figure"><div className="dsd-stage"><Example stories={stories} args={{ [i.show!]: true }} /></div><figcaption><Code>{i.property}</Code></figcaption></figure>
-            ))}
-          </div>
+          <p className="dsd-p">In right-to-left languages the layout is mirrored: leading items move to the right, and directional icons (arrows, chevrons) must be mirrored too.{RTL_MODE && LANGUAGE_COLLECTION ? <> Rendered with the Figma mode <Code>{LANGUAGE_COLLECTION}: {RTL_MODE}</Code>.</> : null}</p>
+          <ModeScope modes={RTL_MODE && LANGUAGE_COLLECTION ? { [LANGUAGE_COLLECTION]: RTL_MODE } : {}} dir={false}>
+            <div className="dsd-gallery" dir="rtl">
+              <figure className="dsd-figure"><div className="dsd-stage"><Example stories={stories} /></div></figure>
+              {(d.icons || []).filter((i) => i.show).map((i) => (
+                <figure key={i.property} className="dsd-figure"><div className="dsd-stage"><Example stories={stories} args={{ [i.show!]: true }} /></div><figcaption><Code>{i.property}</Code></figcaption></figure>
+              ))}
+            </div>
+          </ModeScope>
         </section>
       ) : null}
 
@@ -896,14 +979,14 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
         <H2 id="properties">Properties</H2>
         <p className="dsd-p">Names, options and defaults are the Figma component properties, character for character.</p>
         {playground ? <ArgTypes of={playground} /> : null}
-        {d.code?.props.length ? (
+        {code?.props.length ? (
           <>
-            <h3 className="dsd-h3">In {d.code.label}</h3>
-            <p className="dsd-p dsd-muted">Suggested names for the native component, derived from the Figma properties so design and code use the same words.</p>
-            <pre className="dsd-pre"><code>{d.code.call}</code></pre>
+            <h3 className="dsd-h3">In {code.label}</h3>
+            <p className="dsd-p dsd-muted">Suggested names for the native component, derived from the Figma properties so design and code use the same words.{IS_ADAPTIVE ? ' Switch Platform in the toolbar for the other platform.' : ''}</p>
+            <pre className="dsd-pre"><code>{code.call}</code></pre>
             <table className="dsd-table">
-              <thead><tr><th>Figma property</th><th>{d.code.label}</th><th>Type</th><th>Values</th></tr></thead>
-              <tbody>{d.code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td>{p.type}</td><td className="dsd-small">{p.values.join(', ')}</td></tr>)}</tbody>
+              <thead><tr><th>Figma property</th><th>{code.label}</th><th>Type</th><th>Values</th></tr></thead>
+              <tbody>{code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td>{p.type}</td><td className="dsd-small">{p.values.join(', ')}</td></tr>)}</tbody>
             </table>
           </>
         ) : null}

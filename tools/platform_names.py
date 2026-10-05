@@ -14,6 +14,10 @@ Rules
            layers <role>.copy(alpha = 0.08f), M3 type scale MaterialTheme.typography.<style>
            (md.sys.typescale.*), M3 shapes MaterialTheme.shapes.<size>; everything else
            AppTheme.colors.<camel> / AppTheme.<Collection>.<camel> (XML @color/<snake>, @dimen/<snake>).
+- Mobile Adaptive (iOS + Android in one Figma file, an OS collection with iOS / Android modes): every token
+           gets both name lists ({"ios": [...], "android": [...]}) and the Storybook Platform switch picks one.
+- Figma Code syntax wins: when a variable has Code syntax for the platform (data/tokens.json > code_syntax,
+           keys iOS / ANDROID / WEB), that is the first name; the derived name follows as the DesignTokens file name.
 """
 import re
 
@@ -34,12 +38,48 @@ M3_SHAPES = {"extraSmall", "small", "medium", "large", "extraLarge"}
 HIG_TEXT = {"largetitle": "largeTitle", "title1": "title", "title": "title", "title2": "title2", "title3": "title3",
             "headline": "headline", "body": "body", "callout": "callout", "subheadline": "subheadline",
             "footnote": "footnote", "caption1": "caption", "caption": "caption", "caption2": "caption2"}
-PLATFORM_LABEL = {"web": "CSS variable", "ios": "SwiftUI", "android": "Jetpack Compose"}
+PLATFORM_LABEL = {"web": "CSS variable", "ios": "SwiftUI", "android": "Jetpack Compose", "adaptive": "SwiftUI / Jetpack Compose"}
+PLATFORM_FILE = {"ios": "DesignTokens.swift", "android": "DesignTokens.kt", "web": "tokens.css"}
+ADAPTIVE_PLATFORMS = ("ios", "android")
+CODE_SYNTAX_KEY = {"ios": "iOS", "android": "ANDROID", "web": "WEB"}
 
 
 def platform_key(platform):
     p = (platform or "web").lower()
+    if "adaptive" in p:
+        return "adaptive"
     return "ios" if "ios" in p else "android" if "android" in p else "web"
+
+
+def os_collection(collections):
+    """Mobile Adaptive: the collection whose modes are the platforms (role "os", or modes iOS + Android)."""
+    for name, meta in collections.items():
+        modes = [m.lower() for m in meta.get("modes", [])]
+        if (meta.get("role") or "").lower() == "os" or ("ios" in modes and "android" in modes):
+            return name
+    return None
+
+
+def platform_modes(collections):
+    """{"ios": "<Figma mode name>", "android": "<Figma mode name>"} of the OS collection."""
+    col = os_collection(collections)
+    if not col:
+        return {}
+    modes = collections[col]["modes"]
+    return {p: next((m for m in modes if m.lower() == p), None) for p in ADAPTIVE_PLATFORMS}
+
+
+def resolve(variables, collections, key, modes, depth=0):
+    """Value of a variable for a set of modes ({collection: mode}); other collections use their default mode."""
+    v = variables.get(key)
+    if v is None or depth > 12:
+        return None
+    meta = collections.get(v["collection"], {})
+    mode = modes.get(v["collection"]) or meta.get("default") or (meta.get("modes") or [None])[0]
+    val = v["values"].get(mode, next(iter(v["values"].values()), None))
+    if isinstance(val, dict) and "alias" in val:
+        return resolve(variables, collections, val["alias"], modes, depth + 1)
+    return val
 
 
 def words(text, dedupe=True):
@@ -333,15 +373,222 @@ def _argb(v, mode=None):
 
 
 def assign_codes(variables, platform, roles):
-    """{key: [{label, name}]} for every variable; names that would collide fall back to the full Figma path."""
+    """{key: [{label, name}]} for every variable; derived names that would collide fall back to the full Figma path.
+    The Figma Code syntax of the platform, when set, comes first (several tokens may share one, e.g. a system color).
+    Mobile Adaptive: {key: {"ios": [...], "android": [...]}}."""
+    p = platform_key(platform)
+    if p == "adaptive":
+        per = {q: assign_codes(variables, q, roles) for q in ADAPTIVE_PLATFORMS}
+        return {k: {q: per[q][k] for q in ADAPTIVE_PLATFORMS} for k in variables}
     out = {k: token_code(v, platform, roles.get(v["collection"], "")) for k, v in variables.items()}
     seen = {}
     for k, codes in out.items():
         seen.setdefault(codes[0]["name"], []).append(k)
     for name, keys in seen.items():
-        if len(keys) > 1 and platform_key(platform) != "web" and "(" not in name:
+        if len(keys) > 1 and p != "web" and "(" not in name:
             for k in keys:
                 v = variables[k]
                 head = name.rsplit(".", 1)[0]
                 out[k][0]["name"] = f"{head}.{camel(_strip_color(v['collection'] + '/' + v['name']), dedupe=False)}"
+    for k, v in variables.items():
+        syntax = (v.get("code_syntax") or {}).get(CODE_SYNTAX_KEY[p])
+        if not syntax:
+            continue
+        if p == "web":
+            # the CSS variable drives this Storybook, so it stays first; the Figma name follows when it differs
+            if syntax != out[k][0]["name"]:
+                out[k].append({"label": "Figma code syntax", "name": syntax})
+            continue
+        derived = out[k][0]
+        out[k] = [{"label": PLATFORM_LABEL[p], "name": syntax, "source": "figma"},
+                  {"label": PLATFORM_FILE[p], "name": derived["name"]}] + [c for c in out[k][1:] if c["name"] != syntax]
     return out
+
+
+def first_codes(codes, platform):
+    """The name list for one platform from assign_codes output (lists for single-platform, dicts for adaptive)."""
+    if isinstance(codes, dict):
+        return codes.get(platform_key(platform) if platform_key(platform) in codes else ADAPTIVE_PLATFORMS[0], [])
+    return codes
+
+
+_TYPESCALE = re.compile(r"md\.sys\.typescale\.([a-z-]+?)\.(size|font-size|line-height|weight)$")
+
+
+def text_style_code_bound(style, platform, variables):
+    """Code names of a text style from the Code syntax of its bound font size variable (Mobile Adaptive and any
+    file whose text styles are bound to variables with Code syntax): iOS '.font(.body)', Android
+    'md.sys.typescale.body-large.size' -> MaterialTheme.typography.bodyLarge."""
+    key = (style.get("bound") or {}).get("fontSize") if isinstance(style, dict) else None
+    syntax = ((variables.get(key) or {}).get("code_syntax") or {}).get(CODE_SYNTAX_KEY[platform_key(platform)]) if key else None
+    if not syntax:
+        return None
+    if platform_key(platform) == "android":
+        m = _TYPESCALE.match(syntax)
+        if m:
+            return [{"label": "Compose", "name": f"MaterialTheme.typography.{camel(m.group(1).replace('-', ' '))}", "source": "figma"},
+                    {"label": "M3 token", "name": f"md.sys.typescale.{m.group(1)}"}]
+        return [{"label": "Compose", "name": syntax, "source": "figma"}]
+    if platform_key(platform) == "ios":
+        name = syntax if syntax.startswith(".font(") else f".font({syntax})"
+        m = re.match(r"\.font\(\.(\w+)\)", name)
+        return [{"label": "SwiftUI", "name": name, "source": "figma"}] + ([{"label": "Dynamic Type", "name": f"Font.TextStyle.{m.group(1)}"}] if m else [])
+    return None
+
+
+# ------------------------------------------------------------------ Mobile Adaptive source files
+_SYSTEM_HEADS = re.compile(r"^(Color|Font|MaterialTheme|CircleShape|RectangleShape|Capsule|ContentAlpha|LocalLayoutDirection|layoutDirection)$|Defaults$")
+
+
+def _declarable(syntax, platform):
+    """'Spacing.screenMargin' (iOS) / 'Spacing.ScreenMargin' (Android): a token the generated file can declare,
+    so the Figma Code syntax compiles. System APIs (Color(.label), ButtonDefaults.MinHeight, ...) are left alone."""
+    m = re.fullmatch(r"([A-Z][A-Za-z0-9]*)\.([A-Za-z][A-Za-z0-9]*)", syntax or "")
+    if not m or _SYSTEM_HEADS.search(m.group(1)):
+        return None
+    return m.group(1), m.group(2)
+
+
+def _adaptive_tables(variables, collections, platform, modes_for):
+    """Colors (per Color mode) and numbers resolved for one platform, with their declared names."""
+    pmode = platform_modes(collections).get(platform)
+    oscol = os_collection(collections)
+    color_col = next((c for c, m in collections.items() if (m.get("role") or "").lower() == "semantic"), None)
+    color_modes = collections.get(color_col, {}).get("modes", [None])
+    colors, numbers, seen_c = [], {}, set()
+    for key, v in variables.items():
+        role = (collections[v["collection"]].get("role") or "").lower()
+        if role in ("primitive", "language") or (v["collection"] == oscol and v["name"].lower().startswith("components/")):
+            continue  # raw values, and OS component tokens that the Component Specific collection re-exposes
+        syntax = (v.get("code_syntax") or {}).get(CODE_SYNTAX_KEY[platform], "")
+        if v["type"] == "color":
+            name = camel(_strip_color((v["name"] if v["collection"] in (color_col, oscol) else v["collection"] + "/" + v["name"])), dedupe=False)
+            if name in seen_c:
+                continue
+            seen_c.add(name)
+            vals = {cm: _hex(resolve(variables, collections, key, modes_for({oscol: pmode, color_col: cm}))) for cm in color_modes}
+            colors.append((name, vals, key, syntax))
+        elif v["type"] == "number":
+            scopes = set(v.get("scopes") or [])
+            if scopes & {"FONT_SIZE", "LINE_HEIGHT", "FONT_WEIGHT", "LETTER_SPACING"} or re.match(r"(?i)(font|line height)", v["name"]):
+                continue  # typography goes in TypeScale / AppTypography
+            val = resolve(variables, collections, key, modes_for({oscol: pmode}))
+            if _num(val) is None:
+                continue
+            decl = _declarable(syntax, platform)
+            if "OPACITY" in scopes or re.search(r"(?i)opacity", v["name"]):
+                group, member, val = "Opacity", camel(v["name"]) if platform == "ios" else pascal(v["name"]), round(float(val) / 100 if float(val) > 1 else float(val), 3)
+            else:
+                group, member = decl if decl else (_collection_name(v["collection"]), camel(v["name"]) if platform == "ios" else pascal(v["name"]))
+            numbers.setdefault(group, {})
+            if member not in numbers[group]:
+                numbers[group][member] = (val, key, syntax)
+    return colors, numbers, color_modes
+
+
+def _type_specs(text_styles, variables, collections, platform, modes_for):
+    pmode = platform_modes(collections).get(platform)
+    oscol = os_collection(collections)
+    lang = next((c for c, m in collections.items() if (m.get("role") or "").lower() == "language"), None)
+    out = []
+    for s in text_styles or []:
+        b = s.get("bound") or {}
+        if not b.get("fontSize"):
+            continue
+        for lm in (collections.get(lang, {}).get("modes") if lang else [None]):
+            m = modes_for({oscol: pmode, **({lang: lm} if lang else {})})
+            r = lambda k: resolve(variables, collections, b[k], m) if b.get(k) else None
+            out.append((s["name"], lm, r("fontSize"), r("lineHeight"), r("fontWeight"), r("fontFamily")))
+    return out
+
+
+def adaptive_swift_source(variables, collections, text_styles, project):
+    defaults = {c: m.get("default") or m["modes"][0] for c, m in collections.items()}
+    modes_for = lambda over: {**defaults, **{k: v for k, v in over.items() if k}}
+    colors, numbers, color_modes = _adaptive_tables(variables, collections, "ios", modes_for)
+    light = next((m for m in color_modes if (m or "").lower() == "light"), color_modes[0])
+    dark = next((m for m in color_modes if (m or "").lower() == "dark"), None)
+    lines = [
+        f"// DesignTokens.swift - {project} design tokens for SwiftUI (OS mode: iOS).",
+        "// Generated by tools/tokens_to_css.py from data/tokens.json (Figma variables). Do not edit by hand.",
+        "// Names in Storybook are the Figma Code syntax; the enums below declare the ones that are app tokens",
+        "// (Spacing.screenMargin, Toggle.trackWidth...), so that code compiles. System APIs (Color(.label), .font(.body))",
+        "// are used as they are. Colors adapt to Light/Dark automatically.",
+        "import SwiftUI",
+        "import UIKit",
+        "",
+        "extension Color {",
+        "    init(hex: UInt32) {",
+        "        self.init(.sRGB, red: Double((hex >> 24) & 0xFF) / 255, green: Double((hex >> 16) & 0xFF) / 255,",
+        "                  blue: Double((hex >> 8) & 0xFF) / 255, opacity: Double(hex & 0xFF) / 255)",
+        "    }",
+        "    init(light: UInt32, dark: UInt32) {",
+        "        self.init(UIColor { $0.userInterfaceStyle == .dark ? UIColor(Color(hex: dark)) : UIColor(Color(hex: light)) })",
+        "    }",
+        "",
+    ]
+    for name, vals, key, syntax in colors:
+        note = f"{key}" + (f" · Figma: {syntax}" if syntax else "")
+        if dark and vals.get(light) and vals.get(dark):
+            lines.append(f"    static let {name} = Color(light: 0x{vals[light]}, dark: 0x{vals[dark]}) // {note}")
+        elif vals.get(light):
+            lines.append(f"    static let {name} = Color(hex: 0x{vals[light]}) // {note}")
+    lines += ["}", ""]
+    for group, members in numbers.items():
+        lines.append(f"enum {group} {{")
+        lines += [f"    static let {m}: {'Double' if group == 'Opacity' else 'CGFloat'} = {_num(val)} // {key}" for m, (val, key, _s) in members.items()]
+        lines += ["}", ""]
+    specs = _type_specs(text_styles, variables, collections, "ios", modes_for)
+    if specs:
+        lines += ["struct TypeSpec { let size: CGFloat; let lineHeight: CGFloat; let weight: Font.Weight; let family: String }", "",
+                  "/// Text styles resolved for iOS, per Language mode. Prefer the Dynamic Type style in Storybook (.font(.body)).",
+                  "enum TypeScale {"]
+        wmap = {100: "ultraLight", 200: "thin", 300: "light", 400: "regular", 500: "medium", 600: "semibold", 700: "bold", 800: "heavy", 900: "black"}
+        for name, lm, size, lh, w, fam in specs:
+            ident = camel(name) + ("" if not lm or lm == specs[0][1] else pascal(lm))
+            lines.append(f"    static let {ident} = TypeSpec(size: {_num(size)}, lineHeight: {_num(lh)}, weight: .{wmap.get(int(float(w or 400)), 'regular')}, family: \"{fam}\")")
+        lines += ["}", ""]
+    return "\n".join(lines) + "\n"
+
+
+def adaptive_kotlin_source(variables, collections, text_styles, project):
+    defaults = {c: m.get("default") or m["modes"][0] for c, m in collections.items()}
+    modes_for = lambda over: {**defaults, **{k: v for k, v in over.items() if k}}
+    colors, numbers, color_modes = _adaptive_tables(variables, collections, "android", modes_for)
+    pkg = "designsystem." + (snake(project) or "tokens")
+    lines = [
+        f"// DesignTokens.kt - {project} design tokens for Jetpack Compose (OS mode: Android).",
+        "// Generated by tools/tokens_to_css.py from data/tokens.json (Figma variables). Do not edit by hand.",
+        "// Names in Storybook are the Figma Code syntax; the objects below declare the ones that are app tokens",
+        "// (Spacing.ScreenMargin, Size.Icon...). Material 3 APIs (MaterialTheme.colorScheme.surface, ButtonDefaults...) are",
+        "// used as they are; AppColors holds this design system's own values for each Color mode.",
+        f"package {pkg}",
+        "",
+        "import androidx.compose.runtime.Immutable",
+        "import androidx.compose.ui.graphics.Color",
+        "import androidx.compose.ui.text.TextStyle",
+        "import androidx.compose.ui.text.font.FontWeight",
+        "import androidx.compose.ui.unit.dp",
+        "import androidx.compose.ui.unit.sp",
+        "",
+        "@Immutable",
+        "data class AppColors(",
+    ]
+    lines += [f"    val {name}: Color, // {key}" + (f" · Figma: {syntax}" if syntax else "") for name, _v, key, syntax in colors]
+    lines += [")", ""]
+    for cm in color_modes:
+        lines.append(f"val {pascal(cm or 'Default')}AppColors = AppColors(")
+        lines += [f"    {name} = Color(0x{(vals.get(cm) or '00000000')[6:]}{(vals.get(cm) or '00000000')[:6]})," for name, vals, _k, _s in colors]
+        lines += [")", ""]
+    for group, members in numbers.items():
+        lines.append(f"object {group} {{")
+        lines += [f"    val {m} = {_num(val) + 'f' if group == 'Opacity' else _num(val) + '.dp'} // {key}" for m, (val, key, _s) in members.items()]
+        lines += ["}", ""]
+    specs = _type_specs(text_styles, variables, collections, "android", modes_for)
+    if specs:
+        lines += ["/** Text styles resolved for Android, per Language mode. Prefer MaterialTheme.typography.* (see Storybook). */", "object AppTypography {"]
+        for name, lm, size, lh, w, fam in specs:
+            ident = camel(name) + ("" if not lm or lm == specs[0][1] else pascal(lm))
+            lines.append(f"    val {ident} = TextStyle(fontSize = {_num(size)}.sp, lineHeight = {_num(lh)}.sp, fontWeight = FontWeight({int(float(w or 400))})) // {fam}")
+        lines += ["}", ""]
+    return "\n".join(lines) + "\n"

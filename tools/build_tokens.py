@@ -52,6 +52,9 @@ def load_dtcg(path, cfg):
         variables[full] = {'collection': col, 'name': name, 'type': t.get('$type'),
                            'values': vals, 'scopes': ext.get('scopes', []),
                            'description': t.get('$description', '')}
+        if ext.get('codeSyntax'):
+            # Figma "Code syntax" per platform (WEB / iOS / ANDROID): Storybook shows it as the code name
+            variables[full]['code_syntax'] = ext['codeSyntax']
     return variables
 
 
