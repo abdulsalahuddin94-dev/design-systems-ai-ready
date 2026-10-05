@@ -101,6 +101,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 | 6 | `steps/brownfield-2-code.md` | 2.2 = 2 |
 | 7 (Scenario C) | `steps/brownfield-3-scenario-c.md` | 2.2 = 3 |
 | 7g | `steps/single-file-ds.md` | 2.3 = the DS is inside the Design file |
+| 7h | `steps/app-icon.md` | building the ⭐Setup pages, ➜ App Icon missing from a DS file, or the user dropped an app icon |
 | 7b | `steps/fix-on-create.md` | a project starts from an existing file; last foundation step of a new build |
 | 7c | `steps/figma-files.md` | before the first Figma work of every session |
 | 7d, 7e, 7f | `steps/screens.md` | screens are built or changed |
@@ -228,7 +229,7 @@ Stop and ask for approval at each checkpoint. Show screenshots of each mode the 
 
 | Checkpoint | Show | Question |
 |---|---|---|
-| **1. Foundation** | Colors (Primitives + Semantics, per mode), typography scale, spacing, radius, shadows, icons, contrast results, Fix on create before/after, **user to-do list** (e.g. rename the Figma file to '<Project> Design System', which a plugin cannot do) | Ask (choice): "Foundation is ready. Approve it?" "Approve, go to components (Recommended)" / "Request changes" |
+| **1. Foundation** | Colors (Primitives + Semantics, per mode), typography scale, spacing, radius, shadows, icons, the ➜ App Icon page (drop zones, or the presented icon, section 7h), contrast results, Fix on create before/after, **user to-do list** (e.g. rename the Figma file to '<Project> Design System', which a plugin cannot do; drop the app icon into ➜ App Icon while it is still waiting) | Ask (choice): "Foundation is ready. Approve it?" "Approve, go to components (Recommended)" / "Request changes" |
 | **2. Components** | Every component set per group, all variants and states, per-mode previews; anything left out and why (e.g. Avatar Photo when no photo was supplied) | Ask (choice): "Components are ready. Approve them?" "Approve (Recommended)" (description: screens or Storybook come next when planned) / "Request changes". If screens will follow (0.8 = Yes) or Storybook is due, then say "Before screens, please publish '<Project> Design System' as a library (Assets > Library > Publish). Screens go in a separate Design file that must enable this library." and Ask (choice): "Is the library published?" "Done, published" / "Not yet". Save `design_system.last_publish` in `status.json` when confirmed. Single-file projects (`figma.layout` = `single-file`, section 7g) skip the publish question and save a Figma version instead. |
 | **3. Screens** | Every rebuilt or new screen next to its source (screen spec and side-by-side captures, section 7f), per mode, and the Design file audit result with the fidelity checks (section 7d) | Ask (choice): "Screens are ready. Approve them?" "Approve (Recommended)" / "Request changes" |
 

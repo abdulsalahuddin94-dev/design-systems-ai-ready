@@ -39,6 +39,7 @@ Cover
 ➜ Elevation              (levels 0-5, tone + shadow)
 ➜ State Layers           (hover/focus/pressed/dragged recipe)
 ➜ Icons                  (Material Symbols)
+➜ App Icon               (adaptive icon layers, themed icon, Play Store 512; section 5b)
 ➜ Layout                 (window size classes, grids, example layouts)
 ➜ Utilities              (status bar, gesture bar, keyboard, scrim, focus indicator)
 -
@@ -68,7 +69,7 @@ Keep research boards out of the DS file (the reference has a 12800px ➜ Researc
 ### Group routing rule
 | Request is about... | Goes under | Android examples |
 |---|---|---|
-| Tokens, type, shape, elevation, state layers, grids, icons, utilities | **⭐Setup** | new scheme role, typescale change, window class grid |
+| Tokens, type, shape, elevation, state layers, grids, icons, app icon, utilities | **⭐Setup** | new scheme role, typescale change, window class grid |
 | Anything the user **enters or chooses data** with | **⭐Form Elements** | text field, dropdown, checkbox, radio, switch, slider, search, pickers |
 | Any **action** or **movement between destinations** | **⭐Navigation** | buttons, FAB, app bar, nav bar/rail, toolbar, tabs, menus |
 | Anything that **displays information** | **⭐Data display** | cards, lists, chips, badges, dialogs, sheets, snackbar, tooltip, carousel, progress |
@@ -80,7 +81,7 @@ Page convention (from the kit): one Section per family with `Header`, the public
 2. **Semantic** = md.sys.color scheme roles aliased to palette tones, modes **Light / Dark** (+ **Light Medium/High Contrast**, **Dark Medium/High Contrast** when required); **state layers** as aliases + opacity variables.
 3. **Spacing, Shape, Typography** variables (md.sys.typescale: font, size, line height, tracking, weight per role/size).
 4. **Styles**: text styles bound to the typescale variables; **Elevation 1-5** effect styles; grid styles per window size class.
-5. **Icons** (Material Symbols, atoms), then components **Atoms -> Molecules -> Organisms -> Patterns**.
+5. **Icons** (Material Symbols, atoms) and the **➜ App Icon** page (section 5b), then components **Atoms -> Molecules -> Organisms -> Patterns**.
 6. **Documentation pages** linked. 7. **Audit** + write the project skills.
 Before each component: state tier, list dependencies, build lower tiers first, post the atomic structure map.
 
@@ -151,6 +152,16 @@ Recolor procedure (when the user asks to change a color):
 - 24dp default (18 chips, 20 small buttons, 36 large FAB), single vector bound to `Schemes/On Surface` and recolored per component with on-roles.
 - Exposed as INSTANCE_SWAP `Icon` / `Icon (selected)` with `Show icon` booleans (M3 kit convention). Components use the **local** icon set only (reference uses remote kit icons).
 
+## 5b. App Icon page (➜ App Icon, always created)
+Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Skill section 7h (`steps/app-icon.md`). Exact sizes and file names: `tools/app_icon_specs.json > android`.
+- **Adaptive icon:** each layer is 108 x 108 dp (drop zones at 432 px = xxxhdpi). Launchers show the inner 72 dp through their mask; key shapes stay inside the **66 dp safe circle**; the outer 18 dp per side is reserved for motion. Drop zones: Foreground (required, transparent background), Background (optional, opaque; a Palette or Scheme color when empty), Monochrome (optional, one flat color on transparent; Android 13+ themed icons use only its shape), Play Store (optional, 512 full square; made from the layers when empty).
+- **Component:** `App Icon` set with `Layer = Foreground | Background | Monochrome | Adaptive` (Adaptive stacks the other three as instances); previews are instances.
+- **Masks (preview only):** Circle, Squircle, Rounded Square, each with a safe-zone overlay (108 / 72 / 66 dp) that can be hidden.
+- **Themed icon preview:** the Monochrome shape on Light and Dark frames using `Schemes/Secondary Container` and `Schemes/On Secondary Container` (the system picks the real colors from the wallpaper; the docs frame says so).
+- **Sizes:** layers 108 / 162 / 216 / 324 / 432 px (mdpi to xxxhdpi); legacy `ic_launcher` 48 / 72 / 96 / 144 / 192 px (minSdk < 26 only); Google Play 512 x 512, 32-bit PNG, up to 1024 KB, full square with no rounded corners or shadow (Play applies them).
+- **Checks:** Foreground shapes inside 66 dp; Background opaque; Monochrome one color; legible at 48 px.
+- **Docs:** the specs table points to `res/mipmap-anydpi-v26/ic_launcher.xml` (adaptive-icon with background, foreground and monochrome), the foreground as a vector drawable when the art is vector, the legacy mipmaps and the Play Store PNG.
+
 ## 6. Component conventions (M3 kit)
 - Public names match M3 (`Button`, `Button - tonal`, `Icon button - outline`, `Navigation Rail`); private parts start with `.Building Blocks/` and live in the Building Blocks frame.
 - Properties: `State` = Enabled, Hovered, Focused, Pressed, (Dragged), Disabled · `Selected` · `Size` XSmall, Small, Medium, Large, XLarge · `Type`/`Style`/`Color`/`Configuration` · BOOLEAN `Show ...` and `Show focus indicator` · TEXT `Label text`, `Supporting text`, `Headline` · INSTANCE_SWAP `Icon`, `Icon (selected)` · SLOT `Content`.
@@ -207,6 +218,7 @@ Recolor procedure (when the user asks to change a color):
 - [ ] State layers = alias + opacity; disabled per M3 recipe; focus indicator on every interactive component.
 - [ ] Typescale local and bound (size, line height, tracking, weight); Shape and Spacing bound everywhere.
 - [ ] Icons local Material Symbols instances with swap properties.
+- [ ] ➜ App Icon exists in ⭐Setup (drop zones, or the presented adaptive icon with masks, themed preview, Play Store 512 and export settings).
 - [ ] Targets >= 48dp; contrast text >= 4.5:1, UI >= 3:1 in each mode the project has.
 - [ ] Light and Dark preview frames per family; Color/Typography/Shape docs linked.
 - [ ] Screenshot every variant (light + dark) and compare with the description.

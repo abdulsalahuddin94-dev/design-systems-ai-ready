@@ -7,4 +7,4 @@ description: <Project> foundations: variables (Primitives, Semantics, Spacing, R
 
 Status: empty (not built yet).
 
-Sections to fill: Variables, Text styles, Effect styles, Grids, Icons, File structure, Build rules. Details in `references/variables.md`, `references/gaps.md`, screenshots in `references/screens/`.
+Sections to fill: Variables, Text styles, Effect styles, Grids, Icons, App Icon (➜ App Icon page: drop zones or presented icon, appearances, sizes, export files and where they go in code; Intake section 7h), File structure, Build rules. Details in `references/variables.md`, `references/gaps.md`, screenshots in `references/screens/`.

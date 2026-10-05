@@ -29,11 +29,14 @@ updated: 2026-09-30
 - Before costly steps (full build, full audit, Brownfield extract, multi-screen builds), and only when both are installed, say in 2-3 lines which tool fits and let the user pick (FigCli Yolo by default; the Desktop Bridge only for slots). Tools live outside the Root (`<drive>:\Tools`) and are never copied into the repo. Trial numbers: FigCli check 4/5 defects, about 16 s and 300 tokens; Desktop Bridge audit 5/5, about 52 s and 6-10K tokens. The final audit-design-system stays mandatory.
 
 ## Build order (always)
-1. Primitives (raw values). 2. Semantic variables aliasing Primitives (Light/Dark). 3. Spacing, Radius, Typography variables. 4. Text and effect styles built from those variables. 5. Icons. 6. Components built only on those variables and styles: Atoms, Molecules, Organisms, Patterns. 7. Linked docs pages. 8. Audit. 9. Project skills.
+1. Primitives (raw values). 2. Semantic variables aliasing Primitives (Light/Dark). 3. Spacing, Radius, Typography variables. 4. Text and effect styles built from those variables. 5. Icons + the ➜ App Icon page. 6. Components built only on those variables and styles: Atoms, Molecules, Organisms, Patterns. 7. Linked docs pages. 8. Audit. 9. Project skills.
 
 ## Atomic design (strict)
 - Never build a complex component or screen if its sub-components do not exist yet; build the missing lower tier first as separate main components.
 - Before building: state the tier, check dependencies, post the atomic structure map, expose nested booleans, text and instance swaps up the hierarchy.
+
+## App Icon page (Abdul, 2026-10-05)
+- Every DS file gets a standard `➜ App Icon` page in ⭐Setup after ➜ Icons, always created with the foundations (Web replaces the reference's `➜ Favicon` in ⭐Data Display). It starts as labeled drop zones plus the platform guidelines; when the user drops an icon, Claude checks it and presents it the platform's standard way: iOS 1024 master with Default/Dark/Tinted, masked previews and the size ladder; Android adaptive layers (108 dp, 66 dp safe zone, Foreground/Background/Monochrome), masks, themed preview and Play Store 512; Web favicon, icon.svg, apple-touch 180, PWA 192/512 and maskable. Previews are instances of an `App Icon` component, every size frame exports its file, docs list where each file goes in code. Storybook gets `Foundations/App Icon` only when the user chose Storybook. Rules: Intake section 7h (`steps/app-icon.md`), platform Main Skill section 5b, `tools/app_icon_specs.json`.
 
 ## Radio vs Select (Abdul, 2026-09-30)
 - Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.

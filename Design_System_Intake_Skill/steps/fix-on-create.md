@@ -14,5 +14,6 @@ Runs automatically, without asking, whenever a project starts from an existing f
    - renames bad variable and collection names (typos, double or trailing spaces, `??`, generic ` 2` suffixes, mixed case); renames keep every binding.
 3. Apply the script with figma_execute in the project's DS file, re-export, and re-run `build_tokens.py` and `fix_tokens.py` until the plan is empty and `recolor_readiness.ready` is true.
 4. Fix the component-level items listed in the plan's `needs_a_person` and in each `references/gaps.md` (missing states, `Property 1` / `Status4` names, `Mode=Light|Dark` variants, text glyph icons, unwired properties, missing text/instance-swap properties), lowest tier first, in the same file.
+   - **➜ App Icon page:** if the file has none, or keeps a `➜ Favicon` page in another group (Web references), create ➜ App Icon in ⭐Setup per section 7h (`steps/app-icon.md`), moving any favicon art from the old page into its drop zone; the old page is removed from the project's copy only.
 5. Run audit-design-system (or the ds-auditor agent) and screenshot the affected pages in Light and Dark.
 6. Log every fix in `My Projects/<Project>/docs/decisions.md` and show the before/after summary at the Foundation checkpoint (section 8). The fixes are already applied at that point; the user reviews them, they are not asked for permission first.
