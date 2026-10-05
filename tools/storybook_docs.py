@@ -92,11 +92,15 @@ def read_component_md(folder):
     return out
 
 
+DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?"
+
+
 def parse_description(desc):
-    """Split a Figma description into Purpose / Usage rules / Accessibility (the house format)."""
+    """Split a Figma description into Purpose / Usage rules / Accessibility (the house format). Labels match in any case
+    ("Usage Rules:"), so a description never ends up whole in the overview (lesson from the Mobile Adaptive pilot)."""
     parts = {}
-    for label, key in (("Purpose", "purpose"), ("Usage rules", "usage"), ("Accessibility", "a11y")):
-        m = re.search(label + r"\s*:\s*(.+?)(?=\n?\s*(Purpose|Usage rules|Accessibility)\s*:|\Z)", desc or "", re.S)
+    for label, key in (("Purpose", "purpose"), (r"Usage rules?|Usage", "usage"), ("Accessibility", "a11y")):
+        m = re.search(r"(?:^|\n|\.\s)\s*(?:" + label + r")\s*:\s*(.+?)(?=(?:\n|\.\s)\s*(?:" + DESC_LABELS + r")\s*:|\Z)", desc or "", re.S | re.I)
         if m:
             parts[key] = " ".join(m.group(1).split())
     return parts
@@ -362,8 +366,8 @@ def welcome_data(folder, registry, tokens, rules, cmap, extra):
             "Each component has a Docs page (use cases, when to use, anatomy, variants, sizes, states, do and don't, accessibility) and stories: Playground, one per variant, States, Sizes and All variants.",
             "Controls are the Figma properties with the Figma defaults. Switch modes from the toolbar.",
             *([f"Tokens and text styles are shown with their {pn.PLATFORM_LABEL[pn.platform_key(platform)]} names (the CSS only drives this Storybook); Foundations › Code has the full token file to download."] if pn.platform_key(platform) in ("ios", "android") else []),
-            *(["iOS and Android share one Figma file. Use the Platform switch in the toolbar (the Figma OS mode): every component, value and code name changes with it, e.g. Font Size/Body is .font(.body) 17 on iOS and MaterialTheme.typography.bodyLarge 16 on Android. Color and Language are switches too (Language AR mirrors the layout).",
-               "Code names are the Figma Code syntax of each platform; Foundations › Code has DesignTokens.swift and DesignTokens.kt to download."] if pn.platform_key(platform) == "adaptive" else []),
+            *(["iOS and Android share one Figma file. Use the Platform switch in the toolbar (the Figma OS mode): every component, value and code name changes with it, one platform at a time. Color and Language are switches too (Language AR mirrors the layout).",
+               "Code names are the Figma Code syntax of the selected platform; Foundations › Code has the token file of the selected platform to download."] if pn.platform_key(platform) == "adaptive" else []),
             "This is documentation, not production code: copy the names, tokens and behavior into your own codebase.",
         ],
     }
@@ -473,8 +477,8 @@ def write_pages(folder, replace=False):
         return pn.text_style_code_bound(style_dicts.get(s, {}), plat, variables) or pn.text_style_code(s, plat, css_class(s))
     if pn.platform_key(platform) == "adaptive":
         codes = {s: {q: style_codes(s, q) for q in pn.ADAPTIVE_PLATFORMS} for s in styles}
-        type_rules[1] = "In code each style has its SwiftUI or Jetpack Compose name (shown under the style name, it follows the Platform switch); the CSS class only drives this Storybook."
-        type_rules.append("Switch Platform (OS) and Language in the toolbar: family, size, line height and weight come from the OS and Language modes, so the px values below update (Body: 17 on iOS, 16 on Android).")
+        type_rules[1] = "In code each style has the name of the selected platform (shown under the style name, it follows the Platform switch); the CSS class only drives this Storybook."
+        type_rules.append("Switch Platform (OS) and Language in the toolbar: family, size, line height and weight come from the OS and Language modes, so the px values below update.")
     else:
         codes = {s: style_codes(s, platform) for s in styles}
     if pn.platform_key(platform) in ("ios", "android"):
@@ -484,7 +488,7 @@ def write_pages(folder, replace=False):
         "# Typography", "", "Each style is rendered at its real size. The size and line height on the right are measured from the rendered text.", "",
         f"export const type = {json.dumps(tdata, ensure_ascii=False, indent=1)};", "", "<TypeSpecimen data={type} />", ""]))
 
-    sizing_text = ("Spacing, radius, heights and component sizes, with their value on each platform (resolved through the Figma OS mode). The highlighted column follows the Platform switch."
+    sizing_text = ("Spacing, radius, heights and component sizes, with their value on the platform selected in the toolbar (resolved through the Figma OS mode). Switch Platform to see the other platform's values."
                    if pn.platform_key(platform) == "adaptive" else "Spacing, radius and the other dimension variables, with their value in every Figma mode.")
     write(f / "Sizing.mdx", "\n".join(head("Sizing", "Sizing") + [
         "# Sizing", "", sizing_text, "", "<Sizing />", ""]))
@@ -496,7 +500,9 @@ def write_pages(folder, replace=False):
         f"export const effects = {js(es)};", "", "<Effects styles={effects} />", ""]))
 
     icons = registry.get("icons", {})
-    note = (f"{icons.get('set', '')} icons, named {icons.get('naming', '')}, {icons.get('size', '')}px. "
+    size = icons.get('size', '') if isinstance(icons, dict) else ''
+    size = f"{size}px" if str(size).replace('.', '').isdigit() else size
+    note = (f"{icons.get('set', '')} icons, named {icons.get('naming', '')}, {size}. "
             f"{icons.get('color', '')}").strip() if isinstance(icons, dict) else ""
     write(f / "Icons.mdx", "\n".join(head("Icons", "IconGallery") + [
         "# Icons", "", "Icons are instances of the Icon component; components expose them as instance swap properties.", "",
@@ -532,14 +538,14 @@ def write_pages(folder, replace=False):
                     "Text styles are classes: sm/Semi Bold is .ts-sm-semi-bold."],
         }
         if pkey == "adaptive":
-            figma_rule = "Names are the Figma Code syntax of the variable for this platform; the file declares the app tokens among them (Spacing, Size, Radius, component enums / objects) and AppColors / Color values per Color mode. System APIs (Color(.label), MaterialTheme.colorScheme.*) are used as they are."
-            files = [{"key": "ios", "label": "SwiftUI", "file": "DesignTokens.swift", "rules": [figma_rule, *rules_text["ios"][2:3], "Values are resolved with the Figma OS mode iOS; TypeScale has one entry per Language mode."]},
-                     {"key": "android", "label": "Jetpack Compose", "file": "DesignTokens.kt", "rules": [figma_rule, *rules_text["android"][2:3], "Values are resolved with the Figma OS mode Android; AppTypography has one entry per Language mode."]}]
+            figma_rule = "Names are the Figma Code syntax of the variable for this platform; the file declares the app tokens among them (Spacing, Size, Radius, component enums) and the Color values per Color mode. {sys} are used as they are."
+            files = [{"key": "ios", "label": "SwiftUI", "file": "DesignTokens.swift", "rules": [figma_rule.format(sys="System APIs (Color(.label), .font(.body))"), *rules_text["ios"][2:3], "Values are resolved with the Figma OS mode iOS; TypeScale has one entry per Language mode."]},
+                     {"key": "android", "label": "Jetpack Compose", "file": "DesignTokens.kt", "rules": [figma_rule.format(sys="Material 3 APIs (MaterialTheme.colorScheme.*, ButtonDefaults.*)"), *rules_text["android"][2:3], "Values are resolved with the Figma OS mode Android; AppTypography has one entry per Language mode."]}]
             write(f / "Code.mdx", "\n".join(head("Code", "CodeExport") + [
                 "import swift from '../tokens/DesignTokens.swift?raw';",
                 "import kotlin from '../tokens/DesignTokens.kt?raw';", "",
                 "# Tokens in code", "",
-                "iOS and Android share one Figma file; the Platform switch in the toolbar picks the file below. Names are the Figma Code syntax of each platform, so a rename in Figma is a rename in code.", "",
+                "iOS and Android share one Figma file; the file below is the one of the platform selected in the toolbar (switch Platform for the other). Names are the Figma Code syntax, so a rename in Figma is a rename in code.", "",
                 f"export const examples = {json.dumps(picks_adaptive(variables, roles), ensure_ascii=False, indent=1)};", "",
                 f"export const files = {json.dumps(files, ensure_ascii=False, indent=1)};", "",
                 "<CodeExport files={[{ ...files[0], source: swift }, { ...files[1], source: kotlin }]} examples={examples} />", ""]))
@@ -554,6 +560,19 @@ def write_pages(folder, replace=False):
             f"export const examples = {json.dumps(picks[:12], ensure_ascii=False, indent=1)};", "",
             f"export const rules = {json.dumps(rules_text, ensure_ascii=False)};", "",
             f'<CodeExport file="{file}" source={{source}} rules={{rules}} examples={{examples}} />', ""]))
+
+    # translation dictionaries: one per Language mode other than the default (src/i18n/<mode>.json, project-owned,
+    # filled from the untranslated list of templates/mode_check.js; never overwritten here)
+    lang_col = next((c for c, m in tokens.get("collections", {}).items() if "language" in (m.get("role") or c).lower()), None)
+    if lang_col:
+        meta = tokens["collections"][lang_col]
+        default = meta.get("default") or meta["modes"][0]
+        for mode in meta["modes"]:
+            path = src / "i18n" / f"{mode.lower()}.json"
+            if mode != default and not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("{}\n", encoding="utf-8")
+                out.append(path)
 
     removed = []
     if replace:

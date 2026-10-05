@@ -3,11 +3,12 @@
    from the design system's own semantic tokens); the fallbacks only apply when a token cannot be found. */
 /* re-declared on every mode scope inside the docs, so a Dark or Android panel next to a Light / iOS one resolves its own colors */
 .dsd, .dsd [data-mode-scope] {
+  /* when the DS has no token for a role, it is mixed from text + background, so it still follows Light / Dark */
   --dsd-text-c: var(--dsd-text, #0f172a);
-  --dsd-muted-c: var(--dsd-muted, #64748b);
   --dsd-bg-c: var(--dsd-bg, #ffffff);
-  --dsd-surface-c: var(--dsd-surface, #f8fafc);
-  --dsd-border-c: var(--dsd-border, #e2e8f0);
+  --dsd-muted-c: var(--dsd-muted, color-mix(in srgb, var(--dsd-text-c) 62%, var(--dsd-bg-c)));
+  --dsd-surface-c: var(--dsd-surface, color-mix(in srgb, var(--dsd-text-c) 5%, var(--dsd-bg-c)));
+  --dsd-border-c: var(--dsd-border, color-mix(in srgb, var(--dsd-text-c) 14%, var(--dsd-bg-c)));
   --dsd-brand-c: var(--dsd-brand, #2563eb);
   --dsd-success-c: var(--dsd-success, #16a34a);
   --dsd-error-c: var(--dsd-error, #dc2626);
@@ -34,9 +35,9 @@
 .dsd-muted { color: var(--dsd-muted-c); }
 .dsd-small { font-size: 12px; }
 .dsd-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; padding: 1px 6px; border-radius: 4px; background: var(--dsd-surface-c); border: 1px solid var(--dsd-border-c); white-space: nowrap; }
-.dsd-list { margin: 0; padding-left: 20px; }
+.dsd-list { margin: 0; padding-inline-start: 20px; }
 .dsd-list li { margin: 4px 0; }
-.dsd-quote { margin: 0; padding: 12px 16px; border-left: 3px solid var(--dsd-brand-c); background: var(--dsd-surface-c); border-radius: 0 8px 8px 0; }
+.dsd-quote { margin: 0; padding: 12px 16px; border-inline-start: 3px solid var(--dsd-brand-c); background: var(--dsd-surface-c); border-start-end-radius: 8px; border-end-end-radius: 8px; }
 .dsd-quote p { margin: 4px 0; }
 
 /* hero + pills + stats */
@@ -61,8 +62,8 @@
 @media (max-width: 720px) { .dsd-two { grid-template-columns: 1fr; } }
 .dsd-good { border-top: 3px solid var(--dsd-success-c); }
 .dsd-bad { border-top: 3px solid var(--dsd-error-c); }
-.dsd-good .dsd-verdict { color: var(--dsd-success-c); font-weight: 700; margin: 8px 0 4px; }
-.dsd-bad .dsd-verdict { color: var(--dsd-error-c); font-weight: 700; margin: 8px 0 4px; }
+.dsd-good .dsd-verdict { color: color-mix(in srgb, var(--dsd-success-c) 55%, var(--dsd-text-c)); /* readable on light and dark cards */ font-weight: 700; margin: 8px 0 4px; }
+.dsd-bad .dsd-verdict { color: color-mix(in srgb, var(--dsd-error-c) 70%, var(--dsd-text-c)); font-weight: 700; margin: 8px 0 4px; }
 
 /* live samples, stages, galleries */
 .dsd-samples { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
@@ -77,7 +78,7 @@
 .dsd-figure figcaption { margin-top: 6px; }
 .dsd-anatomy { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 @media (max-width: 720px) { .dsd-anatomy { grid-template-columns: 1fr; } }
-.dsd-parts { margin: 0; padding-left: 22px; }
+.dsd-parts { margin: 0; padding-inline-start: 22px; }
 .dsd-parts li { margin: 0 0 10px; }
 .dsd-comp-head { padding-bottom: 8px; }
 .dsd-toc { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 16px; font-size: 13px; }
@@ -90,12 +91,12 @@
 .dsd-matrix-wrap { overflow-x: auto; }
 .dsd-stage.dsd-matrix-wrap { display: block; margin-bottom: 12px; }
 .dsd-matrix { border-collapse: collapse; }
-.dsd-matrix th { font-size: 11px; font-weight: 600; color: var(--dsd-muted-c); text-align: left; padding: 6px 10px; white-space: nowrap; }
+.dsd-matrix th { font-size: 11px; font-weight: 600; color: var(--dsd-muted-c); text-align: start; padding: 6px 10px; white-space: nowrap; }
 .dsd-matrix td { padding: 8px 10px; vertical-align: middle; }
 
 /* tables */
 .dsd-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.dsd-table th { text-align: left; font-weight: 600; font-size: 12px; color: var(--dsd-muted-c); padding: 8px 10px; border-bottom: 1px solid var(--dsd-border-c); }
+.dsd-table th { text-align: start; font-weight: 600; font-size: 12px; color: var(--dsd-muted-c); padding: 8px 10px; border-bottom: 1px solid var(--dsd-border-c); }
 .dsd-table td { padding: 8px 10px; border-bottom: 1px solid var(--dsd-border-c); vertical-align: middle; }
 .dsd-block { margin-bottom: 24px; overflow-x: auto; }
 
@@ -170,10 +171,10 @@
 .dsd-type-row { display: grid; grid-template-columns: 160px minmax(0, 1fr) 150px; gap: 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--dsd-border-c); }
 .dsd-type-row:last-child { border-bottom: 0; }
 .dsd-type-sample { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dsd-text-c); }
-.dsd-type-meta { text-align: right; font-size: 12px; font-family: ui-monospace, monospace; }
+.dsd-type-meta { text-align: end; font-size: 12px; font-family: ui-monospace, monospace; }
 .dsd-type-row-compact { grid-template-columns: minmax(0, 1fr) 220px; }
 .dsd-scale { margin-bottom: 24px; }
-@media (max-width: 720px) { .dsd-type-row { grid-template-columns: 1fr; } .dsd-type-meta { text-align: left; } }
+@media (max-width: 720px) { .dsd-type-row { grid-template-columns: 1fr; } .dsd-type-meta { text-align: start; } }
 
 /* sizing + effects */
 .dsd-bar { height: 16px; min-width: 2px; border-radius: 3px; background: var(--dsd-brand-c); }
@@ -189,3 +190,15 @@
 .dsd-icon { text-align: center; color: var(--dsd-text-c); }
 .dsd-icon-stage { display: flex; justify-content: center; padding: 14px; border: 1px solid var(--dsd-border-c); border-radius: 10px; background: var(--dsd-surface-c); margin-bottom: 4px; }
 .dsd-table th.dsd-on, .dsd-table td.dsd-on { background: color-mix(in srgb, var(--dsd-brand-c) 12%, transparent); color: var(--dsd-text-c); font-weight: 600; }
+/* Storybook's own blocks inside the docs (ArgTypes / Controls tables, canvas toolbars) use the Storybook theme, which
+   does not know the design system's modes: give them the DS colors so they stay readable in Dark */
+.dsd :is(.docblock-argstable, .docblock-argstable *):not(label, label *) { color: var(--dsd-text-c) !important; }
+.dsd .docblock-argstable :is(th, td, tbody, thead, tr) { background: var(--dsd-bg-c) !important; border-color: var(--dsd-border-c) !important; }
+.dsd .docblock-argstable tbody { box-shadow: 0 0 0 1px var(--dsd-border-c) !important; }
+.dsd .docblock-argstable :is(input:not([type="checkbox"]), textarea, select) { background: var(--dsd-surface-c) !important; color: var(--dsd-text-c) !important; border-color: var(--dsd-border-c) !important; }
+.dsd .docblock-argstable :is(code, span[class]) { border-color: var(--dsd-border-c) !important; }
+.dsd .sbdocs-preview { background: var(--dsd-bg-c) !important; border-color: var(--dsd-border-c) !important; }
+/* Right to left (Language mode AR): layout mirrors, but code names, hex values and Figma names stay left to right, and
+   English prose keeps its own direction (no stray punctuation at the wrong end) */
+[dir="rtl"] .dsd :is(code, pre, .dsd-code, .dsd-sw-meta span, .dsd-sw-code, .dsd-sw-sub, .dsd-chip-value, .dsd-strip-hex, .dsd-type-meta, .dsd-codecell, td:has(> code)) { direction: ltr; unicode-bidi: isolate; }
+[dir="rtl"] .sbdocs-content :is(p, li, h1, h2, h3, .dsd-card-text, .dsd-summary, .dsd-lead, .dsd-small, .dsd-card-title) { unicode-bidi: plaintext; text-align: right; }

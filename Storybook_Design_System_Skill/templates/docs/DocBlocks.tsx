@@ -13,7 +13,7 @@ import { Canvas, Controls, ArgTypes } from '@storybook/addon-docs/blocks';
 import { tokens } from '../tokens/tokens';
 import { Icon, iconNames } from '../lib/Icon';
 import {
-  ALL_TOKENS, COLLECTIONS, IS_ADAPTIVE, PLATFORMS, OS_COLLECTION, LANGUAGE_COLLECTION, RTL_MODE, ModeScope,
+  ALL_TOKENS, COLLECTIONS, IS_ADAPTIVE, PLATFORMS, OS_COLLECTION, LANGUAGE_COLLECTION, RTL_MODE, ModeScope, isRtl,
   useModes, usePlatform, usePlatformLabel, platformLabel, codesFor, resolveToken, type CodeName, type Modes, type Token,
 } from './Modes';
 import './docs.css';
@@ -61,7 +61,7 @@ const THEME: Record<string, string | undefined> = {
   '--dsd-text': pick([/(^|\/)text\/primary$/i, /label\/primary$/i, /(^|\/)on-surface$/i, /(^|\/)text$/i]),
   '--dsd-muted': pick([/(^|\/)text\/(secondary|muted)$/i, /label\/secondary$/i, /on-surface-variant$/i]),
   '--dsd-bg': pick([/(^|\/)bg\/primary$/i, /background\/primary$/i, /system-?background$/i, /(^|\/)surface$/i, /(^|\/)background$/i]),
-  '--dsd-surface': pick([/(^|\/)bg\/secondary$/i, /background\/secondary$/i, /secondary-?system-?background$/i, /surface-container$/i, /(^|\/)bg\/subtle$/i]),
+  '--dsd-surface': pick([/(^|\/)bg\/secondary$/i, /background\/(secondary|grouped|elevated)$/i, /secondary-?system-?background$/i, /surface[-/ ]container$/i, /(^|\/)bg\/subtle$/i, /(^|\/)surface$/i]),
   '--dsd-border': pick([/(^|\/)border\/default$/i, /separator/i, /outline-variant$/i, /(^|\/)border\/muted$/i]),
   '--dsd-brand': pick([/(^|\/)bg\/brand$/i, /action\/primary\/bg$/i, /btn\/primary\/bg/i, /(^|\/)accent/i, /(^|\/)primary$/i, /brand\/(600|500)$/i]),
   '--dsd-success': pick([/(^|\/)text\/success$/i, /(^|\/)icon\/success$/i, /success/i]),
@@ -78,6 +78,10 @@ if (typeof document !== 'undefined' && !document.getElementById('dsd-page')) {
   el.textContent = `
     .sbdocs-wrapper:has(.dsd) { background: ${bg}; padding: 40px 48px 64px; }
     .sbdocs-wrapper:has(.dsd) .sbdocs-content { max-width: 1280px; width: 100%; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content :is(h1, h2, h3, h4, strong, th, td, li) { color: ${THEME['--dsd-text'] || 'inherit'}; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content :is(p, blockquote) { color: ${THEME['--dsd-muted'] || THEME['--dsd-text'] || 'inherit'}; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content :is(h1, h2, h3) { border-color: ${THEME['--dsd-border'] || 'currentColor'}; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content code:not(.dsd code) { color: inherit; background: transparent; border-color: ${THEME['--dsd-border'] || 'currentColor'}; }
     .dsd .docs-story { background: ${bg}; }
     @media (max-width: 720px) { .sbdocs-wrapper:has(.dsd) { padding: 24px 16px 48px; } }
   `;
@@ -159,8 +163,8 @@ export function Welcome({ data, samples = [] }: { data: WelcomeData; samples?: {
           <div className="dsd-samples">
             {samples.map((s) => (
               <a key={s.name} className="dsd-sample" href={docsHref(s.id)} onClick={goTo(s.id)}>
-                <div className="dsd-sample-stage">{s.node}</div>
-                <div className="dsd-sample-name">{s.name}</div>
+                <div className="dsd-sample-stage" data-no-i18n>{s.node}</div>
+                <div className="dsd-sample-name" data-no-i18n>{s.name}</div>
               </a>
             ))}
           </div>
@@ -172,8 +176,8 @@ export function Welcome({ data, samples = [] }: { data: WelcomeData; samples?: {
         <div className="dsd-cards">
           {data.groups.map((g) => (
             <div key={g.name} className="dsd-card">
-              <div className="dsd-card-title">{g.name} <span className="dsd-muted">· {g.count}</span></div>
-              <div className="dsd-card-text">{g.components.join(', ')}</div>
+              <div className="dsd-card-title" data-no-i18n>{g.name} <span className="dsd-muted">· {g.count}</span></div>
+              <div className="dsd-card-text" data-no-i18n>{g.components.join(', ')}</div>
             </div>
           ))}
         </div>
@@ -210,7 +214,7 @@ export function ColorPrimitives() {
       <div className="dsd-ramps">
         {[...ramps].map(([ramp, list]) => (
           <div key={ramp} className="dsd-ramp">
-            <div className="dsd-ramp-name">{ramp}</div>
+            <div className="dsd-ramp-name" data-no-i18n>{ramp}</div>
             <div className="dsd-ramp-row">
               {list.map((t) => {
                 const mode = Object.keys(t.values)[0];
@@ -247,10 +251,10 @@ export function ColorSemantics() {
         });
         return (
           <div key={c}>
-            {collections.length > 1 && <h3 className="dsd-h3">{c}</h3>}
+            {collections.length > 1 && <h3 className="dsd-h3" data-no-i18n>{c}</h3>}
             {[...groups].map(([g, list]) => (
               <div key={g} className="dsd-block">
-                <div className="dsd-ramp-name">{g}</div>
+                <div className="dsd-ramp-name" data-no-i18n>{g}</div>
                 <table className="dsd-table">
                   <thead><tr><th>Figma variable</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{label}</th><th>Use</th></tr></thead>
                   <tbody>
@@ -263,7 +267,7 @@ export function ColorSemantics() {
                             <td key={m}>
                               <ModeScope modes={{ [c]: m }} dir={false} className="dsd-sem">
                                 <span className="dsd-sem-swatch" style={{ background: `var(${t.css})` }} />
-                                <span className="dsd-sem-meta">{v.alias ? <>{v.alias}<br /></> : null}<span className="dsd-muted">{v.hex}</span></span>
+                                <span className="dsd-sem-meta" data-no-i18n>{v.alias ? <>{v.alias}<br /></> : null}<span className="dsd-muted">{v.hex}</span></span>
                               </ModeScope>
                             </td>
                           );
@@ -295,7 +299,7 @@ const ROLES: [string, RegExp][] = [
 ];
 type Kind = 'fill' | 'text' | 'border' | 'icon';
 const kindOf = (name: string): Kind =>
-  /(^|\/)(text|label|on-[a-z]+|foreground)(\/|$|-)|\/text$/i.test(name) ? 'text'
+  /(^|\/)(text|label|on[- ][a-z]+|foreground)(\/|$|-)|\/text$/i.test(name) ? 'text'
   : /border|outline|separator|stroke|divider|ring/i.test(name) ? 'border'
   : /(^|\/)icon/i.test(name) ? 'icon' : 'fill';
 const KIND_ORDER: Kind[] = ['fill', 'text', 'border', 'icon'];
@@ -307,7 +311,7 @@ function hexOf(t: AnyTok, mode: string, modes?: Modes) {
   return valueOf(t, mode, modes).hex;
 }
 // Text and icon colors meant for a filled surface (on-brand, inverse, a button's text) are shown on that surface.
-const onSurface = (name: string) => /(^|\/)on-|inverse|(action|btn|button)\/[^/]+\/(text|icon)/i.test(name);
+const onSurface = (name: string) => /(^|\/)on[- ]|inverse|(action|btn|button)\/[^/]+\/(text|icon)/i.test(name);
 function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string; onToken?: AnyTok; label?: string; surface?: AnyTok }) {
   const kind = kindOf(t.name);
   const platform = usePlatform();
@@ -432,9 +436,10 @@ export function ColorRoles() {
 }
 
 export function ColorTable() {
+  const label = usePlatformLabel();
   return (
     <details className="dsd dsd-details sb-unstyled" style={themeStyle}>
-      <summary>Full list of Semantic variables (name, value per mode, {IS_ADAPTIVE ? 'SwiftUI / Compose' : PLATFORM_LABEL} name, use)</summary>
+      <summary>Full list of Semantic variables (name, value per mode, {label} name, use)</summary>
       <ColorSemantics />
     </details>
   );
@@ -452,7 +457,7 @@ export function ColorRamps() {
       <div className="dsd-strips">
         {[...ramps].map(([ramp, list]) => (
           <div key={ramp} className="dsd-strip-row">
-            <div className="dsd-strip-name">{ramp}</div>
+            <div className="dsd-strip-name" data-no-i18n>{ramp}</div>
             <div className="dsd-strip">
               {list.map((t) => {
                 const mode = Object.keys(t.values)[0];
@@ -508,15 +513,17 @@ export type TypeData = {
   scales?: { name: string; note?: string; styles: string[] }[];
   codes?: Record<string, CodeName[] | Record<string, CodeName[]>>;
 };
+const SAMPLE_RTL = 'نص تجريبي يوضح شكل الخط وحجمه في هذا النمط';
 export function TypeSpecimen({ data }: { data: TypeData }) {
   const platform = usePlatform();
+  const rtl = isRtl(useModes());
   // Mobile Adaptive: codes per platform ({ ios: [...], android: [...] }), the Platform switch picks one
   const codesOfStyle = (s: string): CodeName[] | undefined => {
     const c = data.codes?.[s];
     return Array.isArray(c) ? c : c?.[platform];
   };
   const groups = data.groups?.length ? data.groups : [{ name: 'Text styles', styles: data.styles }];
-  const sample = data.sample || 'The quick brown fox jumps over the lazy dog';
+  const sample = rtl ? SAMPLE_RTL : data.sample || 'The quick brown fox jumps over the lazy dog';
   return (
     <DocsRoot>
       <div className="dsd-card dsd-type-intro">
@@ -533,7 +540,7 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
           <div className="dsd-type-group">
             {sc.styles.map((s) => (
               <div key={s} className="dsd-type-row dsd-type-row-compact">
-                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact code={PLATFORM !== 'web' ? codesOfStyle(s)?.[0]?.name : undefined} />
+                <Measured cls={textClass(s)} sample={sample} compact code={PLATFORM !== 'web' ? codesOfStyle(s)?.[0]?.name : undefined} />
               </div>
             ))}
           </div>
@@ -542,12 +549,12 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
       {data.scales?.length ? <h3 className="dsd-h3">All text styles</h3> : null}
       {groups.map((g) => (
         <div key={g.name} className="dsd-type-group">
-          <div className="dsd-type-group-name">{g.name}</div>
+          <div className="dsd-type-group-name" data-no-i18n={g.name !== 'Text styles' || undefined}>{g.name}</div>
           {g.styles.map((s) => (
             <div key={s} className="dsd-type-row">
               <div className="dsd-type-name">
                 <Code>{s}</Code>
-                {(codesOfStyle(s) || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small">{c.name}</div>)}
+                {(codesOfStyle(s) || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small" data-no-i18n>{c.name}</div>)}
               </div>
               <Measured cls={textClass(s)} sample={sample} />
             </div>
@@ -564,9 +571,11 @@ export function Sizing() {
   const label = usePlatformLabel();
   const dims = ALL.filter((t) => (t.type === 'number' || t.type === 'dimension') && !/typography|font|opacity|language/i.test(t.collection + ' ' + roleOf(t.collection)) && !/font|line[- ]height|letter|opacity|weight/i.test(t.name));
   const collections = [...new Set(dims.map((t) => t.collection))];
-  // Mobile Adaptive: one column per platform (values resolved with that OS mode), the current one highlighted
-  const columns = (c: string): { title: string; modes: Modes; on: boolean }[] => IS_ADAPTIVE && !roleOf(c).includes('primitive')
-    ? PLATFORMS.map((p) => ({ title: platformName(p.key), modes: { ...ctx, [OS_COLLECTION!]: p.mode }, on: ctx[OS_COLLECTION!] === p.mode }))
+  // Mobile Adaptive: ONE platform at a time (Abdul, 2026-10-05): a single value column resolved for the platform in the
+  // toolbar; the user switches Platform to see the other one. Never iOS and Android side by side.
+  const platform = usePlatform();
+  const columns = (c: string): { title: string; modes: Modes; on: boolean }[] => IS_ADAPTIVE
+    ? [{ title: `Value on ${platformName(platform)}`, modes: ctx, on: false }]
     : (COLLECTIONS[c]?.modes || []).map((m) => ({ title: m, modes: { ...ctx, [c]: m }, on: (COLLECTIONS[c]?.modes.length || 0) > 1 && ctx[c] === m }));
   return (
     <DocsRoot>
@@ -575,7 +584,7 @@ export function Sizing() {
         const isRadius = (t: AnyTok) => /radius|corner|shape/i.test(c + roleOf(c) + t.name);
         return (
           <div key={c} className="dsd-block">
-            <h3 className="dsd-h3">{c}</h3>
+            <h3 className="dsd-h3" data-no-i18n>{c}</h3>
             <table className="dsd-table">
               <thead><tr><th>Figma variable</th><th>Preview</th>{cols.map((m) => <th key={m.title} className={m.on ? 'dsd-on' : undefined}>{m.title}</th>)}<th>{label}</th></tr></thead>
               <tbody>
@@ -587,7 +596,7 @@ export function Sizing() {
                         ? <div className="dsd-radius" style={{ borderRadius: `var(${t.css})` }} />
                         : <div className="dsd-bar" style={{ width: `min(var(${t.css}), 320px)` }} />}
                     </td>
-                    {cols.map((m) => <td key={m.title} className={m.on ? 'dsd-on' : undefined}>{show(t, resolveToken(t.figma, m.modes))}</td>)}
+                    {cols.map((m) => <td key={m.title} className={m.on ? 'dsd-on' : undefined} data-no-i18n>{show(t, resolveToken(t.figma, m.modes))}</td>)}
                     <td><CodeCell t={t} /></td>
                   </tr>
                 ))}
@@ -652,7 +661,7 @@ export function IconGallery({ note }: { note?: string }) {
         {list.map((n) => (
           <div key={n} className="dsd-icon" title={n}>
             <div className="dsd-icon-stage"><Icon name={n} size={24} /></div>
-            <div className="dsd-small">{n}</div>
+            <div className="dsd-small" data-no-i18n>{n}</div>
           </div>
         ))}
       </div>
@@ -670,9 +679,8 @@ export function CodeExport({ file: oneFile, source: oneSource, rules: oneRules =
 }) {
   const platform = usePlatform();
   const list: CodeFile[] = files?.length ? files : [{ key: PLATFORM, label: PLATFORM_LABEL, file: oneFile || '', source: oneSource || '', rules: oneRules }];
-  const [pick, setPick] = React.useState(platform);
-  React.useEffect(() => setPick(platform), [platform]);
-  const cur = list.find((f) => f.key === pick) || list[0];
+  // Mobile Adaptive: only the file of the platform in the toolbar (switch Platform to get the other one)
+  const cur = list.find((f) => f.key === platform) || list[0];
   const { file, source } = cur;
   const rules = cur.rules || [];
   const codeList = (c: CodeName[] | Record<string, CodeName[]>) => (Array.isArray(c) ? c : c[cur.key] || []);
@@ -686,9 +694,7 @@ export function CodeExport({ file: oneFile, source: oneSource, rules: oneRules =
   const copy = async () => { try { await navigator.clipboard.writeText(source); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ } };
   return (
     <DocsRoot>
-      {list.length > 1 ? (
-        <div className="dsd-tabs">{list.map((f) => <button key={f.key} type="button" className={f.key === cur.key ? 'is-on' : ''} onClick={() => setPick(f.key)}>{f.file}</button>)}</div>
-      ) : null}
+      {list.length > 1 ? <p className="dsd-p dsd-muted">Showing the {platformName(cur.key)} file. Switch <strong>Platform</strong> in the toolbar for the other platform.</p> : null}
       <div className="dsd-card dsd-type-intro">
         <div className="dsd-eyebrow">{cur.label}</div>
         <div className="dsd-type-font">{file}</div>
@@ -735,7 +741,7 @@ function Example({ stories, args }: { stories: StoriesModule; args?: Record<stri
   const C = stories.default.component;
   if (!C) return null;
   // examples follow the Language mode's direction (the docs page itself stays left to right)
-  return <ModeScope><C {...(stories.default.args || {})} {...(args || {})} /></ModeScope>;
+  return <span data-no-i18n style={{ display: 'contents' }}><ModeScope><C {...(stories.default.args || {})} {...(args || {})} /></ModeScope></span>;
 }
 const SEMANTIC = Object.entries(COLLECTIONS).find(([k, c]) => (c.role || k).toLowerCase().includes('semantic'));
 function ModePanels({ children }: { children: React.ReactNode }) {
@@ -745,21 +751,7 @@ function ModePanels({ children }: { children: React.ReactNode }) {
     <div className="dsd-modes">
       {c.modes.map((m) => (
         <ModeScope key={m} modes={{ [name]: m }} className="dsd-mode" style={themeStyle}>
-          <div className="dsd-mode-name">{m}</div>
-          {children}
-        </ModeScope>
-      ))}
-    </div>
-  );
-}
-/** Mobile Adaptive: the same component side by side on each platform (OS mode), in the toolbar's Color and Language. */
-function PlatformPanels({ children }: { children: React.ReactNode }) {
-  if (!IS_ADAPTIVE) return null;
-  return (
-    <div className="dsd-modes">
-      {PLATFORMS.map((p) => (
-        <ModeScope key={p.key} modes={{ [OS_COLLECTION!]: p.mode }} className="dsd-mode" style={themeStyle}>
-          <div className="dsd-mode-name">{platformName(p.key)} · {p.label}</div>
+          <div className="dsd-mode-name" data-no-i18n>{m}</div>
           {children}
         </ModeScope>
       ))}
@@ -786,7 +778,6 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
   const code: CodeBlock | undefined = d.code && ('call' in d.code ? (d.code as CodeBlock) : (d.code as Record<string, CodeBlock>)[platform]);
   const toc: [string, string, boolean][] = [
     ['overview', 'Overview', true],
-    ['platforms', 'iOS and Android', IS_ADAPTIVE],
     ['when-to-use', 'When to use', !!(d.when_to_use?.length || d.when_not_to_use?.length)],
     ['anatomy', 'Anatomy', !!d.anatomy?.length],
     ['variants', 'Variants', !!d.variants?.length],
@@ -804,7 +795,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
     <DocsRoot>
       <header className="dsd-comp-head">
         <div className="dsd-eyebrow">{d.group} · {d.tier}</div>
-        <h1 className="dsd-h1">{d.name}</h1>
+        <h1 className="dsd-h1" data-no-i18n>{d.name}</h1>
         {d.overview && <p className="dsd-summary">{d.overview}</p>}
         <div className="dsd-pills">
           {d.page && <span className="dsd-pill">Figma page {d.page}</span>}
@@ -817,7 +808,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
       <section>
         <H2 id="overview">Overview</H2>
         {playground && <Canvas of={playground} sourceState={PLATFORM === 'web' ? 'hidden' : 'none'} />}
-        {IS_ADAPTIVE ? <p className="dsd-p dsd-muted">Switch <strong>Platform</strong>, Color and Language in the toolbar: the same component takes the iOS or Android look from the Figma OS mode, never from a separate component.</p> : null}
+        {IS_ADAPTIVE ? <p className="dsd-p dsd-muted" data-platform-view={platform}>Showing <strong>{platformName(platform)}</strong> ({platformLabel(platform)}). Switch <strong>Platform</strong> in the toolbar to see the other platform: the same component takes its iOS or Android look from the Figma OS mode (collection <Code>{OS_COLLECTION}</Code>), never from a separate component.</p> : null}
         {d.use_cases?.length ? (
           <>
             <h3 className="dsd-h3">Use cases</h3>
@@ -825,14 +816,6 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           </>
         ) : null}
       </section>
-
-      {IS_ADAPTIVE ? (
-        <section>
-          <H2 id="platforms">iOS and Android</H2>
-          <p className="dsd-p">One Figma component, two platforms: height, radius, type, colors and platform-only parts come from the OS mode (Figma collection <Code>{OS_COLLECTION}</Code>).</p>
-          <PlatformPanels><div className="dsd-stage"><Example stories={stories} /></div></PlatformPanels>
-        </section>
-      ) : null}
 
       {(d.when_to_use?.length || d.when_not_to_use?.length) ? (
         <section>
@@ -849,7 +832,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           <H2 id="anatomy">Anatomy</H2>
           <div className="dsd-anatomy">
             <div className="dsd-stage dsd-stage-lg"><Example stories={stories} /></div>
-            <ol className="dsd-parts">{d.anatomy.map((a) => <li key={a.part}><strong>{a.part}</strong>{a.detail && <div className="dsd-muted dsd-small">{a.detail}</div>}</li>)}</ol>
+            <ol className="dsd-parts">{d.anatomy.map((a) => <li key={a.part}><strong data-no-i18n>{a.part}</strong>{a.detail && <div className="dsd-muted dsd-small">{a.detail}</div>}</li>)}</ol>
           </div>
         </section>
       ) : null}
@@ -873,10 +856,10 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
         <section>
           <H2 id="states">States</H2>
           <p className="dsd-p">Each state is a Figma variant (<Code>State</Code>) and also works for real on hover, focus and press.</p>
-          <ul className="dsd-list">{d.states.filter((s) => s.meaning).map((s) => <li key={s.value}><strong>{s.value}</strong>: {s.meaning}</li>)}</ul>
+          <ul className="dsd-list">{d.states.filter((s) => s.meaning).map((s) => <li key={s.value}><strong data-no-i18n>{s.value}</strong>: {s.meaning}</li>)}</ul>
           <ModePanels>
             <div className="dsd-matrix-wrap">
-              <table className="dsd-matrix">
+              <table className="dsd-matrix" data-matrix>
                 <thead><tr>{d.main_axis ? <th /> : null}{d.states.map((s) => <th key={s.value}>{s.value}</th>)}</tr></thead>
                 <tbody>
                   {(d.main_axis && d.variants?.length ? d.variants : [{ value: '' }]).map((v) => (
@@ -899,7 +882,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           <H2 id="icons">Icons</H2>
           {d.icons.some((i) => i.show) ? (
             <div className="dsd-matrix-wrap dsd-stage">
-              <table className="dsd-matrix">
+              <table className="dsd-matrix" data-matrix>
                 <thead><tr>{d.sizes?.length ? <th /> : null}{d.icons.filter((i) => i.show).map((i) => <th key={i.property}>{i.property}</th>)}{d.icons.filter((i) => i.show).length > 1 ? <th>Both</th> : null}</tr></thead>
                 <tbody>
                   {(d.sizes?.length ? d.sizes : [{ value: '' }]).map((sz) => {
@@ -919,7 +902,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           ) : null}
           <table className="dsd-table">
             <thead><tr><th>Property</th><th>Accepts</th><th>Default</th><th>Rule</th></tr></thead>
-            <tbody>{d.icons.map((i) => <tr key={i.property}><td><Code>{i.property}</Code></td><td>{i.accepts}</td><td>{i.default}</td><td className="dsd-small">{i.rule}</td></tr>)}</tbody>
+            <tbody>{d.icons.map((i) => <tr key={i.property}><td><Code>{i.property}</Code></td><td data-no-i18n>{i.accepts}</td><td data-no-i18n>{i.default}</td><td className="dsd-small">{i.rule}</td></tr>)}</tbody>
           </table>
         </section>
       ) : null}
@@ -986,7 +969,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
             <pre className="dsd-pre"><code>{code.call}</code></pre>
             <table className="dsd-table">
               <thead><tr><th>Figma property</th><th>{code.label}</th><th>Type</th><th>Values</th></tr></thead>
-              <tbody>{code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td>{p.type}</td><td className="dsd-small">{p.values.join(', ')}</td></tr>)}</tbody>
+              <tbody>{code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td data-no-i18n>{p.type}</td><td className="dsd-small" data-no-i18n>{p.values.join(', ')}</td></tr>)}</tbody>
             </table>
           </>
         ) : null}
