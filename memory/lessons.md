@@ -3,6 +3,9 @@
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
 ## Storybook (Native_One_File_Pilot, 2026-10-05)
+These rules live in the one Storybook skill and its shared generator and templates, so they apply to every platform: Web, iOS, Android and Mobile Adaptive.
+6. **Do / Don't, When to use and a clean Description were missing.** The component pages had none of the sections the Web Storybook has, and the whole Figma description sat in the overview.
+   Cause: the Figma descriptions used "Usage Rules:" and the parser only knew "Usage rules:"; the pilot had no registry `docs` block. Rule: labels match in any case; every component gets a registry `docs` block (use cases, when to use, do not use, do / don't with `do_args` / `dont_args` examples, content) from docs-writer. Check: `tools/storybook_parity.py` fails when a Docs page misses Overview, Use cases, When to use, Do not use, Do and don't, Accessibility or the Figma description.
 1. **Docs not translated in Arabic.** AR flipped the layout, but every docs text stayed English.
    Cause: the docs had one language. Rule: a Language mode other than the default translates the docs from `storybook/src/i18n/<mode>.json` (`templates/docs/I18n.tsx`); Figma names, code names and component texts stay exact. Check: `templates/mode_check.js` `untranslated` must be empty in that mode (its list is the missing keys to translate). Skill section 4 step 7 and 6b.
 2. **iOS and Android shown side by side.** Component pages had an iOS and Android panel, Sizing had two platform columns, Code had two file tabs.
