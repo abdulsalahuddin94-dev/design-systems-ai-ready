@@ -1,6 +1,6 @@
 # Mobile "Both": native or cross-platform
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when 1.2 = Both.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when 1.2 = Both. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ### Both: native or cross-platform (Abdul, 2026-09-30)
 
@@ -15,4 +15,5 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 Native rules:
 - The Brand Foundation is the only thing the two systems have in common, and only as a source of values. Each platform DS **copies** its Primitives into its own local collection (never consumes them as remote library variables, so the audit's 0 remote variables still holds) and builds its own platform Semantics on top. A brand color change goes into the Brand Foundation first, then `tools/recolor.py` runs on each platform folder.
 - An iOS Design file never enables the Android library and vice versa. The file check (section 7c) rejects a cross-link.
+- Third option, Mobile Adaptive (Native, one file) (Abdul, 2026-10-05): iOS + Android in one DS file through OS / Language modes; rules in `steps/mobile-adaptive.md`.
 - Record the choice in each folder's `status.json`: `mobile_setup` (`native` / `cross-platform`), `sibling_project` (the other platform folder) and `figma.brand_foundation` (name, url, file_key, or null).

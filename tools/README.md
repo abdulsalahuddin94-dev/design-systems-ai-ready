@@ -19,7 +19,8 @@ Python 3, standard library only. Run from the Root.
 | `add_reference.py --company --platform --name --figma-url [--default]` | Adds a studied design system to the reference library: scaffolds `Reference_Library/<Company>/<Platform>/`, marks its original file key off-limits and registers it in `references.json` (`status: studying`). Procedure: `References.md` > "Adding a design system" (`/study-reference-ds`). |
 | `figma_tools_check.py [--json]` | Read-only: which Figma tools are installed (Desktop Bridge = figma-console-mcp in `.mcp.json` or `~/.claude.json`; FigCli = a `figma-cli*` folder in a `Tools` folder or `FIGMA_CLI_DIR`, with `node_modules` and a working `--version`; also whether Yolo's port 9222 is open on 127.0.0.1). Used by Intake section 0b. |
 | `project_status.py [<folder>] [--mark-synced] [--add-design-file <url> --name "<name>"]` | Storybook sync status from each project's `CHANGELOG.md`, Design files needing Accept updates, projects whose Storybook plan is Later; `--add-design-file` registers a Design file in `status.json > figma`. |
-| `tokens_to_css.py`, `storybook_stories.py`, `storybook_parity.py` | Storybook generators and the Figma name check (Storybook_Design_System_Skill section 5). |
+| `platform_names.py` | SwiftUI / Jetpack Compose / CSS names for tokens, text styles and component properties, plus `DesignTokens.swift` / `.kt` (used by `tokens_to_css.py` and `storybook_docs.py`). |
+| `tokens_to_css.py`, `storybook_docs.py`, `storybook_stories.py`, `storybook_parity.py` | Storybook generators (tokens; Welcome, Foundations and component Docs pages; stories) and the Figma name check (Storybook_Design_System_Skill sections 4 and 5). |
 
 ## Refresh tokens from Figma
 1. Open the DS file in Figma Desktop with the Desktop Bridge plugin running.

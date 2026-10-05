@@ -1,6 +1,6 @@
 # Finish: skills, final audit, Storybook
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load at the end of a build (Step 8) or when the Storybook step runs (Step 9).
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load at the end of a build (Step 8) or when the Storybook step runs (Step 9). Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 11. Step 8 - Always finish with skills and the final audit
 
@@ -28,3 +28,5 @@ Runs when 0.7 = Yes, after the Components checkpoint is approved (or whenever th
 4. Build the Storybook in `<platform folder>/storybook/`, one per platform, with names that match Figma exactly.
 5. Verify (build, parity check, visual check against Light/Dark screenshots), then offer to register the Storybook MCP for this folder (Ask (choice): "Register it (Recommended)" / "Not now").
 6. Record the path, run command and MCP status in `Project_Brief.md`, then mark the changelog synced: `python tools/project_status.py "My Projects/<Project>" --mark-synced`.
+7. **Share with developers (Abdul, 2026-10-05).** Once the Storybook is verified, Ask (choice): "How should developers open this documentation?" "Public link on GitHub Pages (Recommended)" (description: a link developers open with nothing to install, updated on every push; anyone with the link can see it) / "Private link with Chromatic" (description: only invited people; needs the user's Chromatic account and token) / "Keep it local for now" (description: developers clone the repo and run it; ask again at the Screens checkpoint). Publishing needs this explicit choice; never publish without it. Steps: Storybook skill step 9. Record the repo, the link and the choice in `Project_Brief.md` (0.7) and `status.json > storybook_publish` (`pages`, `chromatic`, `local`).
+8. **Keeping the link current.** When `storybook_publish` is `pages` or `chromatic`, every later Storybook update (Storybook skill section 5) ends with a commit and push of the project repo, which redeploys the same link; tell the user in one line that the link is updated. Pushes need no new question once the user chose to publish, but a new public repo or a visibility change always does.

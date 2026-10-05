@@ -1,6 +1,6 @@
 # Greenfield path
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.1 = Greenfield.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.1 = Greenfield. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 4. Step 3 - Greenfield
 
@@ -25,6 +25,7 @@ Reference design systems are listed in `references.json` in the Root (one entry 
 ### 3b. Colors from the brand folder
 Look in `[Project folder]\Inputs\Brand\` (PDF brand book, logo, images, mood board).
 - Files found -> extract brand colors (dominant + accent + neutrals), build hue ramps 50-950 around each, map to Semantics per the platform naming, check contrast (text >= 4.5:1, UI >= 3:1, Light and Dark). Show the palette and the Semantic mapping, then Ask (choice): "Approve (Recommended)" / "Request changes".
+- Brand color already confirmed at 0.3c ("Use these") -> skip 3.3 and go to the contrast pre-check.
 - Folder empty -> Question 3.3, typed: "I found no brand files. What is the primary / brand color (hex)? Add a secondary color too if you have one. If you have none, say so."
   If the user has none, Ask (choice): "Should I propose a palette based on the industry?" "Yes, propose one (Recommended)" / "No, I will pick a color"
 - **Brand contrast pre-check (right after the brand color is known):** run `python tools/new_foundation.py "<Project folder>" --brand "#hex" --modes <modes> --check-only` (or `ds_color.contrast`) and show the brand color against white, black and each mode's base surface. It decides how every filled button looks: e.g. `#299B48` + white text = 3.57:1, fails 4.5:1, so filled buttons need dark text or a darker brand step. Put the result and the chosen fix in the Intake Summary's Direction line.

@@ -5,4 +5,4 @@ description: Study another company's design system (Web, iOS, Android or cross-p
 
 Read and follow `References.md` > "Adding a design system to the library" in the repo root (the folder that contains `.claude/`). That section is the source of truth; this entry only makes it available as `/study-reference-ds`.
 
-Ask for the company name, the platform (Ask (choice): Web / iOS / Android / Cross-platform) and the Figma link if they were not given. One platform per run.
+Ask for the company name, the platform (Ask (choice): Web / iOS / Android / Cross-platform; later menus in the run also end with "Back", Intake section 0) and the Figma link if they were not given. One platform per run.

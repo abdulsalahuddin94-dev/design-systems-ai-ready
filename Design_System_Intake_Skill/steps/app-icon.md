@@ -1,6 +1,6 @@
 # App Icon page
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when the ⭐Setup pages are built, when ➜ App Icon is missing from a DS file (Fix on create, Scenario C), or when the user says they dropped an app icon (also in quick mode).
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when the ⭐Setup pages are built, when ➜ App Icon is missing from a DS file (Fix on create, Scenario C), or when the user says they dropped an app icon (also in quick mode). Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 7h. ➜ App Icon (every DS file, every platform)
 

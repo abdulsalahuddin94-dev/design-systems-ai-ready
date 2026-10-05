@@ -7,4 +7,4 @@ This repo has a live Storybook of the default Web reference design system (folde
 
 Run (in that folder): `npm install && npm run storybook` (ask before installing; Node.js 18+), then http://localhost:6006. Storybook MCP: http://localhost:6006/mcp. Full instructions: `AGENTS.md`.
 
-Questions with options (`Ask (choice)` / `Ask (multi)` in the skills, approvals included): a numbered list, recommended option first; the user replies with one or several numbers or free text.
+Questions with options (`Ask (choice)` / `Ask (multi)` in the skills, approvals included): a numbered list, recommended option first, "Back" (to the previous question or step) as the last number except on the first question; the user replies with one or several numbers or free text.

@@ -1,12 +1,13 @@
 # Linked Figma files, publish and file check
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load before the first Figma work of every session (every path).
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load before the first Figma work of every session (every path). Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 7c. Linked Figma files: registry, publish and file check (every path)
 
 Each project has **one Design System file** and a **list of Design files** (screens), stored in `[Project folder]\status.json > figma`:
 - `design_system`: name, url, file_key, last_publish, tool (`figcli` / `desktop-bridge`, the tool last used on this file; Intake section 0b). For FigCli (Yolo) the exact `name` is also the `FIGMA_FILE` value for that file, so keep it exactly as Figma shows it.
-- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false), tool (as above).
+- `design_system.shared` and `design_system.editable_pages` (Scenario D branch a, section 6a): `shared: true` marks a DS used by other products; it is read only except the pages listed in `editable_pages`, where the new components go. Before every write to it, the script checks that `figma.currentPage.name` is in `editable_pages`; otherwise it writes nothing.
+- `design_files`: one entry per file: name (e.g. Web App, Admin Dashboard, Marketing Site), url, file_key, role (`screens`, or `source` for Brownfield type 1 before the DS exists, or `reference` for a read-only file that shows how a shared DS is used), content (`frames`, `screenshots`, `mixed`), library_updates_accepted (true / false), tool (as above).
 - `brand_foundation` (Both + Native only, optional): name, url, file_key of `<Project> Brand Foundation`; the same entry is stored in the iOS and the Android folder. It is a value source only, never enabled as a library in a Design file.
 - The file key is the part of the Figma URL after `/design/` or `/file/`. Ask for the links once (question 0.2); later sessions read them from `status.json`.
 - `layout` (Scenario C, section 7g): `separate` (default, a DS library file plus Design files) or `single-file` (the DS lives inside the Design file: `design_system` and `design_files[0]` share one `file_key`, `ds_pages` lists the DS page names, and `library_updates_accepted` is `null`).

@@ -1,6 +1,6 @@
 # Brownfield type 3: imperfect DS + Design file (Scenario C)
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md. When 2.3 = "Inside the Design file", also load `single-file-ds.md` (section 7g): it sets up the file first, splits the Variable Map's "Used in" column into DS pages and screen pages, asks the path (2.4) after step 1, and says which publish steps change.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md. When 2.3 = "Inside the Design file", also load `single-file-ds.md` (section 7g): it sets up the file first, splits the Variable Map's "Used in" column into DS pages and screen pages, asks the path (2.4) after step 1, and says which publish steps change. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 7. Step 6 - Brownfield type 3: imperfect DS + Design file (Scenario C)
 
@@ -18,6 +18,7 @@ Use this path when a design system already exists but is not AI-ready (missing s
    |---|---|---|---|---|---|---|---|
 
    Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
+   Then confirm the intake answers it holds (0.3c): post the color modes, RTL and fonts found in the DS (its variable modes, Arabic or RTL components, the font families of its text styles), then Ask (choice): "Use these (Recommended)" / "Change something". Record them in `Project_Brief.md` with their source.
 5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, up to 4 per AskUserQuestion call (more in further calls), one Ask (choice) per variable: "What is `<name>` for?" with the guess first, "<guess> (Recommended)" (description: <what I found>), then up to 2 other plausible usages; the real purpose is typed in Other. Record the answers in the map and in `docs/decisions.md`. Then Ask (choice): "Approve the Variable Map?" "Approve (Recommended)" / "Request changes". Abdul approves the Variable Map before step 2.
 6. Single file (section 7g): ask 2.4 now. "Split into a library" runs the 7g migration before step 2; "Keep it in one file" runs steps 2-6 with the 7g path 1 changes (history versions instead of Publish and Accept updates).
 

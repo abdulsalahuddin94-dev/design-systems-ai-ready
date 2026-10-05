@@ -1,6 +1,6 @@
 # Scenario C with the DS inside the Design file (single file)
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers; the map is in `SKILL.md` section 0c). Load when 2.3 = "Inside the Design file", together with `brownfield-3-scenario-c.md`, `figma-files.md`, `fix-on-create.md` and `screens.md`.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers; the map is in `SKILL.md` section 0c). Load when 2.3 = "Inside the Design file", together with `brownfield-3-scenario-c.md`, `figma-files.md`, `fix-on-create.md` and `screens.md`. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 7g. One Figma file holds both the DS and the screens (Abdul, 2026-10-02)
 

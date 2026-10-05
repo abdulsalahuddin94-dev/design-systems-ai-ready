@@ -1,6 +1,6 @@
 # Screens: sizes, Design file audit, flows, fidelity
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when screens are built or changed (0.8 = Yes, Brownfield rebuilds, flows).
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when screens are built or changed (0.8 = Yes, Brownfield rebuilds, flows). Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 7d. Screen sizes (Abdul's rule, every path that builds screens)
 
