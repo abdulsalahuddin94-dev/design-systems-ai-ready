@@ -37,7 +37,7 @@ Rules: platforms stay independent (one entry per platform, nothing shared or mer
 
 ## Platform quality skills (optional)
 Not Figma kits: agent skills that guide decisions (component choice, states, accessibility, polish). Values they suggest still map to the project's tokens. How each is used: section 11 of the iOS and Android Main Skills.
-- iOS: heyimjames iOS Design Engineering Skills (MIT): https://github.com/heyimjames/ios-design-skills
+- iOS: heyimjames iOS Design Engineering Skills (MIT): https://github.com/heyimjames/ios-design-skills. Its Figma-relevant rules are already in `iOS_Design_System_Skill/references/ios-polish.md`; the plugin is optional.
 - Android: material-design-3-ui (MIT): https://github.com/skydashnet/material-design-3-ui-skill
 - Android exact M3 values: material-components-android `tokens.xml` files: https://github.com/material-components/material-components-android (Views, maintenance mode; Compose Material 3 is current)
 
