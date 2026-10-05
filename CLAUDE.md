@@ -13,6 +13,7 @@ This repo has a live Storybook of the default Web reference design system (folde
 Shared facts and Abdul's standing decisions (read before any work; update the matching file when a decision changes):
 @memory/MEMORY.md
 @memory/decisions.md
+@memory/lessons.md
 
 ## Handoff from other tools (check at session start)
 Other tools (Codex, Cursor, Antigravity...) may work here between Claude sessions; they follow `AGENTS.md`, log each change in the project's `CHANGELOG.md` with a `Tool:` line and commit with a `[Tool]` prefix. At the start of every session:

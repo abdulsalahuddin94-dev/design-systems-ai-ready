@@ -10,6 +10,7 @@
 import React from 'react';
 import { DocsContainer } from '@storybook/addon-docs/blocks';
 import { tokens } from '../tokens/tokens';
+import { I18nScope } from './I18n';
 
 export type CodeName = { label: string; name: string; source?: string };
 export type Collection = { modes: string[]; default: string; attribute: string; role?: string };
@@ -154,7 +155,12 @@ export function ModesDocsContainer(props: { context: any; children?: React.React
   useHtmlModes(modes);
   return (
     <DocsContainer {...(props as any)}>
-      <ModeScope modes={modes} className="sb-docs-scope">{props.children}</ModeScope>
+      <ModeScope modes={modes} className="sb-docs-scope">
+        {/* a Language mode other than the default translates the docs (src/i18n/<mode>.json); Figma names stay exact */}
+        <I18nScope lang={LANGUAGE_COLLECTION && modes[LANGUAGE_COLLECTION] !== COLLECTIONS[LANGUAGE_COLLECTION].default ? modes[LANGUAGE_COLLECTION] : undefined}>
+          {props.children}
+        </I18nScope>
+      </ModeScope>
     </DocsContainer>
   );
 }

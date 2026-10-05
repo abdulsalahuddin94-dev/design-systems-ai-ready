@@ -496,7 +496,9 @@ def write_pages(folder, replace=False):
         f"export const effects = {js(es)};", "", "<Effects styles={effects} />", ""]))
 
     icons = registry.get("icons", {})
-    note = (f"{icons.get('set', '')} icons, named {icons.get('naming', '')}, {icons.get('size', '')}px. "
+    size = icons.get('size', '') if isinstance(icons, dict) else ''
+    size = f"{size}px" if str(size).replace('.', '').isdigit() else size
+    note = (f"{icons.get('set', '')} icons, named {icons.get('naming', '')}, {size}. "
             f"{icons.get('color', '')}").strip() if isinstance(icons, dict) else ""
     write(f / "Icons.mdx", "\n".join(head("Icons", "IconGallery") + [
         "# Icons", "", "Icons are instances of the Icon component; components expose them as instance swap properties.", "",
@@ -554,6 +556,19 @@ def write_pages(folder, replace=False):
             f"export const examples = {json.dumps(picks[:12], ensure_ascii=False, indent=1)};", "",
             f"export const rules = {json.dumps(rules_text, ensure_ascii=False)};", "",
             f'<CodeExport file="{file}" source={{source}} rules={{rules}} examples={{examples}} />', ""]))
+
+    # translation dictionaries: one per Language mode other than the default (src/i18n/<mode>.json, project-owned,
+    # filled from the untranslated list of templates/mode_check.js; never overwritten here)
+    lang_col = next((c for c, m in tokens.get("collections", {}).items() if "language" in (m.get("role") or c).lower()), None)
+    if lang_col:
+        meta = tokens["collections"][lang_col]
+        default = meta.get("default") or meta["modes"][0]
+        for mode in meta["modes"]:
+            path = src / "i18n" / f"{mode.lower()}.json"
+            if mode != default and not path.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("{}\n", encoding="utf-8")
+                out.append(path)
 
     removed = []
     if replace:

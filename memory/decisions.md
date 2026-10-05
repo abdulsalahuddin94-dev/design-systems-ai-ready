@@ -17,6 +17,9 @@ updated: 2026-09-30
 - Quick mode (Abdul, 2026-10-01): one specific task on a live file (one component from a live site or captured frames, an audit, one fix) skips the intake questions, the `My Projects/` folder, checkpoints and project skills (`/ds-quick`, `Design_System_Intake_Skill/steps/quick-mode.md`). Preflight, the file check, these rules, atomic tiers, the audit and no self-approval still apply; captured frames are a reference, never the component.
 - Approval checkpoints in order: Foundation, Components, Screens. Show Light and Dark screenshots at each.
 
+## Lessons log (Abdul, 2026-10-05)
+- Every mistake fixed in a session (reported by Abdul or found by a check) is logged in `memory/lessons.md` in the same session: what broke, the cause, the rule now in the workflow, and the check that catches it. The fix also goes into the matching skill or tool, so it never depends on memory alone.
+
 ## Token budget (Abdul, 2026-10-01)
 - Trials cost 180-260M tokens per project session (one session of 470-650 turns, context up to 690K). Fixes, same quality gates: the intake is a router plus `Design_System_Intake_Skill/steps/` files loaded per step; Figma skills load at the first build step, not during the intake; one phase per session with a handoff in `Project_Brief.md` / `CHANGELOG.md` / `status.json`; variant screenshots, side-by-side fidelity captures and audits run in ds-auditor, which returns text and numbers; `tools/figma_helpers.figma.js` is pasted once per file per session so scripts stop redefining helpers; names and keys come from `data/*.json` before Figma reads. Details: Intake section 0c.
 - The design plugin (Asana, Jira, Linear, Notion, Slack, Intercom) is disabled for this folder in `.claude/settings.json`; stitch, pencil and the official figma MCP server are disabled by Abdul in `/mcp`.

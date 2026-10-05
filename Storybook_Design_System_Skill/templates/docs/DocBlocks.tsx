@@ -163,8 +163,8 @@ export function Welcome({ data, samples = [] }: { data: WelcomeData; samples?: {
           <div className="dsd-samples">
             {samples.map((s) => (
               <a key={s.name} className="dsd-sample" href={docsHref(s.id)} onClick={goTo(s.id)}>
-                <div className="dsd-sample-stage">{s.node}</div>
-                <div className="dsd-sample-name">{s.name}</div>
+                <div className="dsd-sample-stage" data-no-i18n>{s.node}</div>
+                <div className="dsd-sample-name" data-no-i18n>{s.name}</div>
               </a>
             ))}
           </div>
@@ -176,8 +176,8 @@ export function Welcome({ data, samples = [] }: { data: WelcomeData; samples?: {
         <div className="dsd-cards">
           {data.groups.map((g) => (
             <div key={g.name} className="dsd-card">
-              <div className="dsd-card-title">{g.name} <span className="dsd-muted">· {g.count}</span></div>
-              <div className="dsd-card-text">{g.components.join(', ')}</div>
+              <div className="dsd-card-title" data-no-i18n>{g.name} <span className="dsd-muted">· {g.count}</span></div>
+              <div className="dsd-card-text" data-no-i18n>{g.components.join(', ')}</div>
             </div>
           ))}
         </div>
@@ -214,7 +214,7 @@ export function ColorPrimitives() {
       <div className="dsd-ramps">
         {[...ramps].map(([ramp, list]) => (
           <div key={ramp} className="dsd-ramp">
-            <div className="dsd-ramp-name">{ramp}</div>
+            <div className="dsd-ramp-name" data-no-i18n>{ramp}</div>
             <div className="dsd-ramp-row">
               {list.map((t) => {
                 const mode = Object.keys(t.values)[0];
@@ -251,10 +251,10 @@ export function ColorSemantics() {
         });
         return (
           <div key={c}>
-            {collections.length > 1 && <h3 className="dsd-h3">{c}</h3>}
+            {collections.length > 1 && <h3 className="dsd-h3" data-no-i18n>{c}</h3>}
             {[...groups].map(([g, list]) => (
               <div key={g} className="dsd-block">
-                <div className="dsd-ramp-name">{g}</div>
+                <div className="dsd-ramp-name" data-no-i18n>{g}</div>
                 <table className="dsd-table">
                   <thead><tr><th>Figma variable</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{label}</th><th>Use</th></tr></thead>
                   <tbody>
@@ -267,7 +267,7 @@ export function ColorSemantics() {
                             <td key={m}>
                               <ModeScope modes={{ [c]: m }} dir={false} className="dsd-sem">
                                 <span className="dsd-sem-swatch" style={{ background: `var(${t.css})` }} />
-                                <span className="dsd-sem-meta">{v.alias ? <>{v.alias}<br /></> : null}<span className="dsd-muted">{v.hex}</span></span>
+                                <span className="dsd-sem-meta" data-no-i18n>{v.alias ? <>{v.alias}<br /></> : null}<span className="dsd-muted">{v.hex}</span></span>
                               </ModeScope>
                             </td>
                           );
@@ -457,7 +457,7 @@ export function ColorRamps() {
       <div className="dsd-strips">
         {[...ramps].map(([ramp, list]) => (
           <div key={ramp} className="dsd-strip-row">
-            <div className="dsd-strip-name">{ramp}</div>
+            <div className="dsd-strip-name" data-no-i18n>{ramp}</div>
             <div className="dsd-strip">
               {list.map((t) => {
                 const mode = Object.keys(t.values)[0];
@@ -549,12 +549,12 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
       {data.scales?.length ? <h3 className="dsd-h3">All text styles</h3> : null}
       {groups.map((g) => (
         <div key={g.name} className="dsd-type-group">
-          <div className="dsd-type-group-name">{g.name}</div>
+          <div className="dsd-type-group-name" data-no-i18n={g.name !== 'Text styles' || undefined}>{g.name}</div>
           {g.styles.map((s) => (
             <div key={s} className="dsd-type-row">
               <div className="dsd-type-name">
                 <Code>{s}</Code>
-                {(codesOfStyle(s) || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small">{c.name}</div>)}
+                {(codesOfStyle(s) || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small" data-no-i18n>{c.name}</div>)}
               </div>
               <Measured cls={textClass(s)} sample={sample} />
             </div>
@@ -584,7 +584,7 @@ export function Sizing() {
         const isRadius = (t: AnyTok) => /radius|corner|shape/i.test(c + roleOf(c) + t.name);
         return (
           <div key={c} className="dsd-block">
-            <h3 className="dsd-h3">{c}</h3>
+            <h3 className="dsd-h3" data-no-i18n>{c}</h3>
             <table className="dsd-table">
               <thead><tr><th>Figma variable</th><th>Preview</th>{cols.map((m) => <th key={m.title} className={m.on ? 'dsd-on' : undefined}>{m.title}</th>)}<th>{label}</th></tr></thead>
               <tbody>
@@ -596,7 +596,7 @@ export function Sizing() {
                         ? <div className="dsd-radius" style={{ borderRadius: `var(${t.css})` }} />
                         : <div className="dsd-bar" style={{ width: `min(var(${t.css}), 320px)` }} />}
                     </td>
-                    {cols.map((m) => <td key={m.title} className={m.on ? 'dsd-on' : undefined}>{show(t, resolveToken(t.figma, m.modes))}</td>)}
+                    {cols.map((m) => <td key={m.title} className={m.on ? 'dsd-on' : undefined} data-no-i18n>{show(t, resolveToken(t.figma, m.modes))}</td>)}
                     <td><CodeCell t={t} /></td>
                   </tr>
                 ))}
@@ -661,7 +661,7 @@ export function IconGallery({ note }: { note?: string }) {
         {list.map((n) => (
           <div key={n} className="dsd-icon" title={n}>
             <div className="dsd-icon-stage"><Icon name={n} size={24} /></div>
-            <div className="dsd-small">{n}</div>
+            <div className="dsd-small" data-no-i18n>{n}</div>
           </div>
         ))}
       </div>
@@ -741,7 +741,7 @@ function Example({ stories, args }: { stories: StoriesModule; args?: Record<stri
   const C = stories.default.component;
   if (!C) return null;
   // examples follow the Language mode's direction (the docs page itself stays left to right)
-  return <ModeScope><C {...(stories.default.args || {})} {...(args || {})} /></ModeScope>;
+  return <span data-no-i18n style={{ display: 'contents' }}><ModeScope><C {...(stories.default.args || {})} {...(args || {})} /></ModeScope></span>;
 }
 const SEMANTIC = Object.entries(COLLECTIONS).find(([k, c]) => (c.role || k).toLowerCase().includes('semantic'));
 function ModePanels({ children }: { children: React.ReactNode }) {
@@ -751,7 +751,7 @@ function ModePanels({ children }: { children: React.ReactNode }) {
     <div className="dsd-modes">
       {c.modes.map((m) => (
         <ModeScope key={m} modes={{ [name]: m }} className="dsd-mode" style={themeStyle}>
-          <div className="dsd-mode-name">{m}</div>
+          <div className="dsd-mode-name" data-no-i18n>{m}</div>
           {children}
         </ModeScope>
       ))}
@@ -795,7 +795,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
     <DocsRoot>
       <header className="dsd-comp-head">
         <div className="dsd-eyebrow">{d.group} · {d.tier}</div>
-        <h1 className="dsd-h1">{d.name}</h1>
+        <h1 className="dsd-h1" data-no-i18n>{d.name}</h1>
         {d.overview && <p className="dsd-summary">{d.overview}</p>}
         <div className="dsd-pills">
           {d.page && <span className="dsd-pill">Figma page {d.page}</span>}
@@ -832,7 +832,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           <H2 id="anatomy">Anatomy</H2>
           <div className="dsd-anatomy">
             <div className="dsd-stage dsd-stage-lg"><Example stories={stories} /></div>
-            <ol className="dsd-parts">{d.anatomy.map((a) => <li key={a.part}><strong>{a.part}</strong>{a.detail && <div className="dsd-muted dsd-small">{a.detail}</div>}</li>)}</ol>
+            <ol className="dsd-parts">{d.anatomy.map((a) => <li key={a.part}><strong data-no-i18n>{a.part}</strong>{a.detail && <div className="dsd-muted dsd-small">{a.detail}</div>}</li>)}</ol>
           </div>
         </section>
       ) : null}
@@ -856,10 +856,10 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
         <section>
           <H2 id="states">States</H2>
           <p className="dsd-p">Each state is a Figma variant (<Code>State</Code>) and also works for real on hover, focus and press.</p>
-          <ul className="dsd-list">{d.states.filter((s) => s.meaning).map((s) => <li key={s.value}><strong>{s.value}</strong>: {s.meaning}</li>)}</ul>
+          <ul className="dsd-list">{d.states.filter((s) => s.meaning).map((s) => <li key={s.value}><strong data-no-i18n>{s.value}</strong>: {s.meaning}</li>)}</ul>
           <ModePanels>
             <div className="dsd-matrix-wrap">
-              <table className="dsd-matrix">
+              <table className="dsd-matrix" data-matrix>
                 <thead><tr>{d.main_axis ? <th /> : null}{d.states.map((s) => <th key={s.value}>{s.value}</th>)}</tr></thead>
                 <tbody>
                   {(d.main_axis && d.variants?.length ? d.variants : [{ value: '' }]).map((v) => (
@@ -882,7 +882,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           <H2 id="icons">Icons</H2>
           {d.icons.some((i) => i.show) ? (
             <div className="dsd-matrix-wrap dsd-stage">
-              <table className="dsd-matrix">
+              <table className="dsd-matrix" data-matrix>
                 <thead><tr>{d.sizes?.length ? <th /> : null}{d.icons.filter((i) => i.show).map((i) => <th key={i.property}>{i.property}</th>)}{d.icons.filter((i) => i.show).length > 1 ? <th>Both</th> : null}</tr></thead>
                 <tbody>
                   {(d.sizes?.length ? d.sizes : [{ value: '' }]).map((sz) => {
@@ -902,7 +902,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           ) : null}
           <table className="dsd-table">
             <thead><tr><th>Property</th><th>Accepts</th><th>Default</th><th>Rule</th></tr></thead>
-            <tbody>{d.icons.map((i) => <tr key={i.property}><td><Code>{i.property}</Code></td><td>{i.accepts}</td><td>{i.default}</td><td className="dsd-small">{i.rule}</td></tr>)}</tbody>
+            <tbody>{d.icons.map((i) => <tr key={i.property}><td><Code>{i.property}</Code></td><td data-no-i18n>{i.accepts}</td><td data-no-i18n>{i.default}</td><td className="dsd-small">{i.rule}</td></tr>)}</tbody>
           </table>
         </section>
       ) : null}
@@ -969,7 +969,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
             <pre className="dsd-pre"><code>{code.call}</code></pre>
             <table className="dsd-table">
               <thead><tr><th>Figma property</th><th>{code.label}</th><th>Type</th><th>Values</th></tr></thead>
-              <tbody>{code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td>{p.type}</td><td className="dsd-small">{p.values.join(', ')}</td></tr>)}</tbody>
+              <tbody>{code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td data-no-i18n>{p.type}</td><td className="dsd-small" data-no-i18n>{p.values.join(', ')}</td></tr>)}</tbody>
             </table>
           </>
         ) : null}
