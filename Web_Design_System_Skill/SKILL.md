@@ -30,6 +30,7 @@ Cover
 ➜ Shadows
 ➜ Corner Radius & Spacing
 ➜ Icons
+➜ App Icon                     (favicon, apple-touch, PWA and maskable icons; section 5b)
 -----
 ⭐Form Elements
 ➜ Input Fields and Dropdown      (Input / Text, URL, Card Number, Select / Dropdown, OTP, Stepper, Upload Field, Search)
@@ -50,13 +51,12 @@ Cover
 ➜ Dividers
 ➜ Banners, Badges & Toasts
 ➜ Popups
-➜ Favicon
 -----
 ```
 ### Where a new request goes (group routing rule)
 | Request is about... | Goes under | Examples |
 |---|---|---|
-| Foundations: tokens, colors, typography, spacing, radius, shadows, grid, icons | **⭐Setup** | new color, text style, grid, icon |
+| Foundations: tokens, colors, typography, spacing, radius, shadows, grid, icons, app icon | **⭐Setup** | new color, text style, grid, icon, favicon |
 | Any component the user **enters data** with | **⭐Form Elements** | input, select, date picker, checkbox, radio, toggle, slider, upload, search field, OTP, stepper |
 | Any **action** or anything that **moves the user from place to place** | **⭐Navigation** | button, link, tabs, pagination, breadcrumb, navbar, sidebar, menu, stepper-wizard |
 | Any component that **displays information** | **⭐Data Display** | avatar, badge, tooltip, alert, toast, card, table, list, popup, empty state, progress |
@@ -74,7 +74,7 @@ Create a new `➜` page inside the matching group when no existing page fits, an
 2. **Semantic** variables aliased to Primitives (Light / Dark).
 3. **Spacing, Radius, Typography** variables (Desktop / iPad / Mobile where responsive).
 4. **Styles** from those variables: text styles, effect styles, grid styles.
-5. **Icons** (atoms) bound to icon tokens.
+5. **Icons** (atoms) bound to icon tokens, and the **➜ App Icon** page (section 5b).
 6. **Components**: Atoms -> Molecules -> Organisms -> Patterns.
 7. **Documentation pages** linked to variables and styles (section 8).
 8. **Audit** (audit-design-system) + write the project skills (Foundation_Skill + Component_Skills per group).
@@ -148,6 +148,14 @@ Recolor procedure (when the user asks to change a color):
 - Fetch Lucide icons (better-icons or Iconify) **without the `color` parameter**: it injects `fill="#000000"` into stroke-only paths and circles, which renders filled shapes. Use the raw SVG, keep `fill="none"` and bind the stroke to the icon token.
 - Fill/stroke bound to `color/icon/default`; recolor instances with other `color/icon/*` tokens.
 - Components **only** use Icon instances (never drawn vectors or text glyphs like ← →), exposed through INSTANCE_SWAP properties (leading/trailing icon on buttons, inputs, menu items, list items).
+
+## 5b. App Icon page (➜ App Icon, always created)
+Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Skill section 7h (`steps/app-icon.md`). Exact sizes and file names: `tools/app_icon_specs.json > web`. On the Web the app icon is the favicon set plus the home-screen and PWA icons; it lives in ⭐Setup, never in ⭐Data Display (some references keep a `➜ Favicon` page there; Fix on create moves it).
+- **Drop zones:** Icon (512, SVG preferred, transparency allowed, required), Dark (optional, used inside `icon.svg` with `prefers-color-scheme: dark`), Maskable (optional, opaque full-bleed, made from Icon when empty).
+- **Sizes and files:** `favicon.ico` (32, may hold 16/32/48), `favicon-16.png`, `favicon-48.png`, `icon.svg`, `apple-touch-icon.png` 180 (opaque, square; iOS rounds the corners), `icon-192.png` and `icon-512.png` (manifest `purpose: any`), `icon-512-maskable.png` (`purpose: maskable`, key shapes inside the central 80% circle).
+- **Previews:** browser tab bar in Light and Dark with the favicon at real size (16 and 32), bookmark list, iOS Home Screen with the apple-touch icon rounded, PWA on Android with the maskable icon in Circle and Squircle, the full size ladder.
+- **Checks:** readable at 16 px on both tab colors (a thin or low-contrast mark gets a Dark version or a simplified small version, asked first); apple-touch and maskable icons opaque.
+- **Docs:** the specs table lists each file with its size and the `<link>` tags and manifest entries from the spec file, so developers copy them as they are.
 
 ## 6. Component conventions
 
@@ -231,6 +239,7 @@ Hint text sits between label and field; error text below the field (12px), same 
 - [ ] Every component has Hover/Focus/Disabled (+ Error/Success where relevant); focus visible (focus-ring styles).
 - [ ] Contrast: text >= 4.5:1, UI boundaries >= 3:1, in each mode (Light and Dark, or the single mode).
 - [ ] Icons are instances with swap properties; icon colors from `color/icon/*`.
+- [ ] ➜ App Icon exists in ⭐Setup (drop zones, or the presented icon with every size frame exporting its file).
 - [ ] Dark previews are instances in Dark-mode frames; Colors/Typography docs linked.
 - [ ] Screenshot every variant (light + dark) and compare against the description.
 - [ ] Save a version in history after each phase; write Foundation_Skill and Component_Skills per group.

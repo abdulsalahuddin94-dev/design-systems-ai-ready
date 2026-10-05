@@ -1,0 +1,91 @@
+{
+  "_help": "App Icon page specs per platform (Design_System_Intake_Skill section 7h, steps/app-icon.md). Each platform reads only its own block; the platform Main Skill section 5b explains the rules in words. Sizes in px unless the key says pt or dp. Preview masks are for the ➜ App Icon page only and are never baked into exported art.",
+  "page": {
+    "name": "➜ App Icon",
+    "group": "⭐Setup",
+    "after_page": "➜ Icons",
+    "doc_frame": "App Icon",
+    "drop_zone_prefix": "App Icon Drop Zone",
+    "component_set": "App Icon",
+    "status_waiting_text": "Waiting for the app icon"
+  },
+  "ios": {
+    "drop_zones": [
+      {"name": "App Icon Drop Zone / Default", "size": 1024, "required": true, "accepts": "square artwork, fully opaque, no rounded corners, no shadow"},
+      {"name": "App Icon Drop Zone / Dark", "size": 1024, "required": false, "accepts": "dark appearance; transparent background allowed (the system adds the dark background)"},
+      {"name": "App Icon Drop Zone / Tinted", "size": 1024, "required": false, "accepts": "grayscale artwork; the system adds the tint color"}
+    ],
+    "appearances": ["Default", "Dark", "Tinted"],
+    "master": {"size": 1024, "format": "PNG", "color_space": "sRGB or Display P3", "alpha": "none in Default"},
+    "mask": {"shape": "rounded rectangle, continuous corners", "corner_radius_ratio": 0.2237, "corner_smoothing": 0.6},
+    "sizes": [
+      {"use": "App Store", "pt": 1024, "scale": 1, "px": 1024, "file": "AppIcon-1024.png"},
+      {"use": "iPhone Home Screen", "pt": 60, "scale": 3, "px": 180, "file": "AppIcon-60@3x.png"},
+      {"use": "iPhone Home Screen", "pt": 60, "scale": 2, "px": 120, "file": "AppIcon-60@2x.png"},
+      {"use": "iPad Pro Home Screen", "pt": 83.5, "scale": 2, "px": 167, "file": "AppIcon-83.5@2x.png"},
+      {"use": "iPad Home Screen", "pt": 76, "scale": 2, "px": 152, "file": "AppIcon-76@2x.png"},
+      {"use": "Spotlight", "pt": 40, "scale": 3, "px": 120, "file": "AppIcon-40@3x.png"},
+      {"use": "Spotlight", "pt": 40, "scale": 2, "px": 80, "file": "AppIcon-40@2x.png"},
+      {"use": "Settings", "pt": 29, "scale": 3, "px": 87, "file": "AppIcon-29@3x.png"},
+      {"use": "Settings", "pt": 29, "scale": 2, "px": 58, "file": "AppIcon-29@2x.png"},
+      {"use": "Notification", "pt": 20, "scale": 3, "px": 60, "file": "AppIcon-20@3x.png"},
+      {"use": "Notification", "pt": 20, "scale": 2, "px": 40, "file": "AppIcon-20@2x.png"}
+    ],
+    "code_target": "Assets.xcassets/AppIcon.appiconset (Xcode single size: the 1024 image per appearance; the other sizes are previews and legacy exports)",
+    "liquid_glass_note": "For iOS 26 layered (Liquid Glass) icons, also export the foreground shapes and the background as separate SVG layers for Icon Composer when the user asks.",
+    "previews": ["Home Screen on Light wallpaper", "Home Screen on Dark wallpaper", "Tinted Home Screen", "Size ladder (all sizes above, masked)", "App Store 1024 (unmasked square)"]
+  },
+  "android": {
+    "drop_zones": [
+      {"name": "App Icon Drop Zone / Foreground", "size_dp": 108, "size": 432, "required": true, "accepts": "transparent background; key shapes inside the 66dp safe circle"},
+      {"name": "App Icon Drop Zone / Background", "size_dp": 108, "size": 432, "required": false, "accepts": "fully opaque color or image; a Semantic or Palette color is used when empty"},
+      {"name": "App Icon Drop Zone / Monochrome", "size_dp": 108, "size": 432, "required": false, "accepts": "one flat color on transparent (themed icons, Android 13+); only the shape (alpha) is used"},
+      {"name": "App Icon Drop Zone / Play Store", "size": 512, "required": false, "accepts": "512 x 512 full square, 32-bit PNG; generated from the layers when empty"}
+    ],
+    "appearances": ["Default", "Themed Light", "Themed Dark"],
+    "adaptive": {"layer_dp": 108, "visible_dp": 72, "safe_zone_diameter_dp": 66, "reserved_edge_dp": 18},
+    "masks": ["Circle", "Squircle", "Rounded Square"],
+    "layer_densities": [
+      {"density": "mdpi", "px": 108}, {"density": "hdpi", "px": 162}, {"density": "xhdpi", "px": 216},
+      {"density": "xxhdpi", "px": 324}, {"density": "xxxhdpi", "px": 432}
+    ],
+    "legacy_densities": [
+      {"density": "mdpi", "px": 48}, {"density": "hdpi", "px": 72}, {"density": "xhdpi", "px": 96},
+      {"density": "xxhdpi", "px": 144}, {"density": "xxxhdpi", "px": 192}
+    ],
+    "play_store": {"px": 512, "format": "32-bit PNG", "max_kb": 1024, "note": "full square, no rounded corners and no shadow (Google Play applies them)"},
+    "files": ["res/mipmap-anydpi-v26/ic_launcher.xml (adaptive-icon: background, foreground, monochrome)", "res/drawable/ic_launcher_foreground.xml (vector) or res/mipmap-<density>/ic_launcher_foreground.png", "res/mipmap-<density>/ic_launcher.png and ic_launcher_round.png (legacy, minSdk < 26)", "ic_launcher-playstore.png (512)"],
+    "previews": ["Masks: Circle, Squircle, Rounded Square", "Safe zone overlay (108 / 72 / 66 dp)", "Themed icon in Light and Dark", "Density ladder", "Play Store 512"]
+  },
+  "web": {
+    "drop_zones": [
+      {"name": "App Icon Drop Zone / Icon", "size": 512, "required": true, "accepts": "square artwork (SVG preferred); transparency allowed"},
+      {"name": "App Icon Drop Zone / Dark", "size": 512, "required": false, "accepts": "variant for dark browser UI (used inside icon.svg with prefers-color-scheme)"},
+      {"name": "App Icon Drop Zone / Maskable", "size": 512, "required": false, "accepts": "full-bleed opaque background; key shapes inside the central circle (80% diameter); generated from Icon when empty"}
+    ],
+    "appearances": ["Light", "Dark"],
+    "maskable_safe_zone_ratio": 0.8,
+    "sizes": [
+      {"use": "Browser tab (favicon.ico)", "px": 32, "file": "favicon.ico", "note": "may hold 16, 32 and 48"},
+      {"use": "Browser tab, small", "px": 16, "file": "favicon-16.png"},
+      {"use": "Pinned site / install prompt", "px": 48, "file": "favicon-48.png"},
+      {"use": "Scalable favicon", "px": null, "file": "icon.svg", "note": "may include a prefers-color-scheme: dark style"},
+      {"use": "iOS Home Screen (apple-touch-icon)", "px": 180, "file": "apple-touch-icon.png", "note": "opaque, square; iOS rounds the corners"},
+      {"use": "PWA home screen", "px": 192, "file": "icon-192.png", "purpose": "any"},
+      {"use": "PWA splash / install", "px": 512, "file": "icon-512.png", "purpose": "any"},
+      {"use": "PWA maskable", "px": 512, "file": "icon-512-maskable.png", "purpose": "maskable"}
+    ],
+    "html": [
+      "<link rel=\"icon\" href=\"/favicon.ico\" sizes=\"32x32\">",
+      "<link rel=\"icon\" href=\"/icon.svg\" type=\"image/svg+xml\">",
+      "<link rel=\"apple-touch-icon\" href=\"/apple-touch-icon.png\">",
+      "<link rel=\"manifest\" href=\"/manifest.webmanifest\">"
+    ],
+    "manifest_icons": [
+      {"src": "/icon-192.png", "sizes": "192x192", "type": "image/png"},
+      {"src": "/icon-512.png", "sizes": "512x512", "type": "image/png"},
+      {"src": "/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    ],
+    "previews": ["Browser tab bar Light and Dark (16 and 32 at real size)", "Bookmark list", "iOS Home Screen (apple-touch, rounded)", "PWA on Android (maskable in Circle and Squircle)", "Size ladder"]
+  }
+}

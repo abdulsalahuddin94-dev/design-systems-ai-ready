@@ -75,7 +75,8 @@ Reference build: the default Web reference's Storybook (`references.json`, today
    ├─ docs/Welcome.mdx               (generated: first page)
    ├─ stories/<Group>/<Name>.stories.tsx  (generated: tools/storybook_stories.py)
    ├─ stories/<Group>/<Name>.mdx     (generated Docs page attached to the stories: tools/storybook_docs.py)
-   └─ foundations/{Colors,Typography,Sizing,Effects,Icons}.mdx  (generated; live from tokens.ts and the text style CSS)
+   └─ foundations/{Colors,Typography,Sizing,Effects,Icons}.mdx  (generated; live from tokens.ts and the text style CSS), plus App Icon.mdx when ➜ App Icon exists
+public/app-icon/                    (App Icon PNG/SVG files exported from the ➜ App Icon size frames; only when the icon is presented)
 ```
 Also in the Root: `.claude/launch.json` (preview entry). The Storybook MCP is registered per machine (local scope, step 8), never in a committed `.mcp.json`.
 
@@ -94,6 +95,7 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
    - Aliases stay aliases (`var(--gray-900)`), so the Primitive -> Semantic chain is visible.
    - Each mode becomes a selector: `[data-theme="Dark"]`, `[data-typography="Mobile"]`, using the exact Figma mode names.
 4. **Welcome and Foundations docs.** `python tools/storybook_docs.py <folder>` copies the doc blocks and writes Welcome plus the Colors, Typography, Sizing, Effects and Icons pages, all rendered live from `tokens.ts` and the text style CSS (swatch, Figma name, CSS variable, value per mode; type at real size). Same rule as Figma: docs are linked to tokens, never static. On an older Storybook, `--replace` regenerates hand-written foundation pages and removes Introduction, Spacing, Radius and Shadows (their content moved to Welcome, Sizing and Effects).
+   - **App Icon** (`Foundations/App Icon`, only in a Storybook the user chose to create; Intake section 7h-5): when `status.json > app_icon.status` is `presented`, export each size frame of ➜ App Icon with its own export setting into `storybook/public/app-icon/` (file names from `tools/app_icon_specs.json`), then render the same blocks as the Figma page: the platform's masks and contexts (CSS `border-radius` / `clip-path`, never edited images), the size ladder at real size, each appearance in each mode the project has, and the specs table with the code snippet (Xcode asset catalog, `ic_launcher.xml`, or the `<link>` tags and manifest entries). While it is `waiting`, the page shows the platform guidelines and says the icon is not in Figma yet. The ds-auditor drift mode checks that the exported files match the Figma frames' sizes.
 5. **Components.** For each registry entry, tier by tier (Atoms first, so Molecules reuse them exactly like Figma nesting):
    - `argTypes` keys = Figma property and variant names exactly (`"Show optional"`, `"Leading icon"`, `State`, `Type`, `Size`). Variant options = Figma values exactly. Booleans -> boolean control, TEXT -> text control, INSTANCE_SWAP -> select of icon names.
    - Visuals match the Light and Dark screenshots in `references/screens/`. Use only token variables.
@@ -145,7 +147,7 @@ Tell the user up front which file to open: "Please open '<DS file name>' in Figm
 1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original Trianglz template may be read freely; writing to it is guarded by `guard_figma.py` and never needed here.
 2. **Tokens:** run the token-extractor agent (writes `data/source/` and `data/tokens.json`; fallback export: `tools/export_variables.figma.js`).
 3. `python tools/tokens_to_css.py "<folder>"` (regenerates `storybook/src/tokens/*`).
-4. `python tools/storybook_docs.py "<folder>"` (Welcome, Foundations, doc blocks), then `python tools/storybook_stories.py "<folder>"` (stories and component Docs pages from `data/component-registry.json`; refresh the registry with docs-writer first if components changed).
+4. `python tools/storybook_docs.py "<folder>"` (Welcome, Foundations, doc blocks), then `python tools/storybook_stories.py "<folder>"` (stories and component Docs pages from `data/component-registry.json`; refresh the registry with docs-writer first if components changed). When ➜ App Icon changed, re-export `public/app-icon/` as in section 4 step 4.
 5. `python tools/storybook_parity.py "<folder>"` (names must match Figma exactly; fix every mismatch).
 6. `npm --prefix "<folder>/storybook" run build-storybook`, then a visual check of the changed components in each mode against the Figma screenshots.
 7. `python tools/project_status.py "<folder>" --mark-synced`.

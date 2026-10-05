@@ -36,6 +36,7 @@ Report each line as a number, never "looks fine":
 12. Docs pages linked, not static: ➜ Colors swatches bound to variables, ➜ Typography samples use text styles bound to Typography variables.
 13. **Off-limits**: for every rule in `data/rules.json > off_limits.rules`, report its `id` with a violation count (target 0) using its `check` (and `patterns` for default names). List `known_violations` separately as accepted template debt.
 14. **Slots**: every instance inside a component or screen uses the swap/slot listed in `component-registry.json > slots` with an accepted component; count detached or wrong-slot content (target 0).
+15. **App Icon** (Design_System_Intake_Skill section 7h, platform Main Skill section 5b, `tools/app_icon_specs.json`): ➜ App Icon exists in ⭐Setup with its docs frame and drop zones (0 or 1 per check). When `status.json > app_icon.status` is `presented`: size frames missing from the platform block, size frames without an export setting, previews that are not instances of `App Icon`, masks baked into the exported art, and platform rule failures (iOS Default with transparency, Android Foreground outside the 66 dp safe circle, Web favicon unreadable at 16 px in the visual check): target 0 each.
 
 Screenshot every variant you flag, in Light and Dark, with `figma_capture_screenshot`.
 

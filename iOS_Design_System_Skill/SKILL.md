@@ -40,7 +40,7 @@ Cover
 ➜ Radius
 ➜ Materials & Shadows        (Liquid Glass, blur, shadow effect styles)
 ➜ Icons                      (SF Symbols-style Icon set)
-➜ App Icon                   (1024 master + required sizes)
+➜ App Icon                   (drop zones, then 1024 master, appearances, sizes; section 5b)
 ➜ App Store Screenshots      (6.9", 6.5", 13" iPad)
 ➜ Keyboards                  (system keyboards for mockups)
 -----
@@ -85,7 +85,7 @@ Cover
 2. **Semantic** colors aliased to Primitives, modes **Light / Dark** (optionally Increased Contrast).
 3. **Spacing, Radius, Typography** variables (Typography with **Dynamic Type modes**).
 4. **Styles**: text styles bound to Typography vars; effect styles for Liquid Glass, blur and shadows; grid styles.
-5. **Icons** (atoms), then components **Atoms -> Molecules -> Organisms -> Patterns**.
+5. **Icons** (atoms) and the **➜ App Icon** page (section 5b), then components **Atoms -> Molecules -> Organisms -> Patterns**.
 6. **Documentation pages** linked to variables/styles.
 7. **Audit** (audit-design-system) + write the project skills (Foundation_Skill + Component_Skills per group).
 Before each component: state tier, list dependencies, build missing lower tiers first, post the atomic structure map.
@@ -153,6 +153,16 @@ Recolor procedure (when the user asks to change a color):
 - Colors bound to `icon/*`; exposed through INSTANCE_SWAP (leading/trailing icon on buttons, fields, rows, tab items with `Icon` + `Icon (selected)`).
 - Never text glyphs (private-use SF Symbols characters) - they vanish without SF Pro and cannot be swapped (reference mistake).
 
+## 5b. App Icon page (➜ App Icon, always created)
+Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Skill section 7h (`steps/app-icon.md`). Exact sizes and file names: `tools/app_icon_specs.json > ios`.
+- **Drop zones (1024 x 1024):** Default (required: square, fully opaque, no rounded corners, no shadow, sRGB or Display P3), Dark (optional; transparent background allowed, the system adds the dark background), Tinted (optional; grayscale artwork, the system adds the tint). `App Icon` component set with `Appearance = Default | Dark | Tinted`.
+- **Mask (preview only):** rounded rectangle with continuous corners, radius about 22.37% of the size (229 at 1024) and corner smoothing 60%. The exported art stays square; the system and the App Store apply the mask. Keep key shapes clear of the masked corners.
+- **Sizes:** App Store 1024; iPhone 60pt @3x 180 / @2x 120; iPad Pro 83.5pt @2x 167; iPad 76pt @2x 152; Spotlight 40pt @3x 120 / @2x 80; Settings 29pt @3x 87 / @2x 58; Notification 20pt @3x 60 / @2x 40. Xcode needs only the 1024 per appearance (single size); the ladder shows how it reads small and serves older targets.
+- **Previews:** Home Screen on a Light wallpaper (Default), on a Dark wallpaper (Dark), Tinted Home Screen, the masked size ladder, the App Store 1024 square.
+- **Checks:** Default has no transparency; no text that is unreadable at 40 px; Tinted reads as one shape in gray.
+- **iOS 26 (Liquid Glass):** when the user asks, also export the foreground shapes and the background as separate SVG layers for Icon Composer; the docs frame notes that the Clear appearance is made there.
+- **Docs:** the specs table points to `Assets.xcassets/AppIcon.appiconset`, one 1024 PNG per appearance.
+
 ## 6. Component conventions
 - Names `Family / Variant`, Title Case; no `_` prefix for public components (use `_` or `.` only for private building blocks and keep them on a Building Blocks frame).
 - Properties: `Style`, `Size`, `State` (Default, Pressed, Disabled, Focused - iPad; no Hover on iPhone), `Selected`/`Is On`, `Role` (Default, Cancel, Destructive). **Never a `Mode=Light|Dark` variant** - dark is a variable mode.
@@ -214,6 +224,7 @@ Recolor procedure (when the user asks to change a color):
 - [ ] Apple semantic roles present (label 1-4, background + grouped 1-3, fill 1-4, separator, tint, scrim, status).
 - [ ] Typography: local tracking, Dynamic Type modes, styles fully bound.
 - [ ] Icons are SF Symbols-style instances with swap properties; colors from `icon/*`.
+- [ ] ➜ App Icon exists in ⭐Setup (drop zones, or the presented icon with Default/Dark/Tinted, masked previews and export settings).
 - [ ] Touch targets >= 44pt; contrast text >= 4.5:1, UI >= 3:1 in each mode the project has.
 - [ ] Light and Dark preview frames per family; Colors/Typography docs linked.
 - [ ] Screenshot every variant (light + dark) and compare with the description.
