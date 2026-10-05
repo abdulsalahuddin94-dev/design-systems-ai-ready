@@ -1,7 +1,8 @@
 /* Docs chrome for Welcome, Foundations and component pages. Copied by tools/storybook_docs.py; edit the
    template in Storybook_Design_System_Skill/templates/docs/. Colors come from --dsd-* (set by DocBlocks.tsx
    from the design system's own semantic tokens); the fallbacks only apply when a token cannot be found. */
-.dsd {
+/* re-declared on every mode scope inside the docs, so a Dark or Android panel next to a Light / iOS one resolves its own colors */
+.dsd, .dsd [data-mode-scope] {
   --dsd-text-c: var(--dsd-text, #0f172a);
   --dsd-muted-c: var(--dsd-muted, #64748b);
   --dsd-bg-c: var(--dsd-bg, #ffffff);
@@ -10,6 +11,8 @@
   --dsd-brand-c: var(--dsd-brand, #2563eb);
   --dsd-success-c: var(--dsd-success, #16a34a);
   --dsd-error-c: var(--dsd-error, #dc2626);
+}
+.dsd {
   color: var(--dsd-text-c);
   background: var(--dsd-bg-c);
   font-family: var(--font-family-base, var(--font-family, system-ui)), system-ui, sans-serif;
@@ -185,3 +188,4 @@
 .dsd-icons { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px; }
 .dsd-icon { text-align: center; color: var(--dsd-text-c); }
 .dsd-icon-stage { display: flex; justify-content: center; padding: 14px; border: 1px solid var(--dsd-border-c); border-radius: 10px; background: var(--dsd-surface-c); margin-bottom: 4px; }
+.dsd-table th.dsd-on, .dsd-table td.dsd-on { background: color-mix(in srgb, var(--dsd-brand-c) 12%, transparent); color: var(--dsd-text-c); font-weight: 600; }

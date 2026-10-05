@@ -122,7 +122,9 @@ def main():
             doc += ["", "**Built from:** " + ", ".join(f"`{n}`" for n in c["nests"])]
         if c.get("issues"):
             doc += ["", "**Known Figma gaps (see gaps.md):** " + "; ".join(c["issues"])]
-        doc += ["", "Controls use the Figma variant and property names exactly. Switch the Figma modes (Semantic theme, Desktop/iPad/Mobile) from the toolbar."]
+        adaptive = "adaptive" in str(registry["meta"].get("platform", "")).lower()
+        doc += ["", "Controls use the Figma variant and property names exactly. Switch the Figma modes from the toolbar"
+                + (" (Platform = the OS mode iOS / Android, Color, Language)." if adaptive else ".")]
 
         imports = sorted({exp, *m.get("example_imports", [])})
         at_src = json.dumps(arg_types, ensure_ascii=False, indent=2).replace('"__ICONS__"', "iconNames")
