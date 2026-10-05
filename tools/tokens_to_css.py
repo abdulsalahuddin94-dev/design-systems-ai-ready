@@ -7,7 +7,11 @@ Output: tokens.css  one CSS variable per Figma variable. The default mode of eac
                     [data-<collection>="<Figma mode name>"] set by the Storybook toolbar.
                     Aliases stay aliases (var(--gray-900)).
         tokens.ts   Figma name -> CSS variable, per-mode values, collections and modes, used by the
-                    Foundations docs pages and the preview toolbars.
+                    Foundations docs pages and the preview toolbars. Each token also carries its platform
+                    code names ("code", tools/platform_names.py): SwiftUI on iOS, Jetpack Compose on
+                    Android, the CSS variable on Web, so the docs show developers the names they type.
+        DesignTokens.swift (iOS) / DesignTokens.kt (Android)  the same tokens as platform source,
+                    offered for download on the Foundations/Code page.
 
 CSS name rule (mechanical, so Figma names stay the source of truth): take the variable name,
 lowercase it, turn "/" and spaces into "-", drop anything else that is not a-z 0-9 - _.
@@ -17,6 +21,9 @@ import json
 import pathlib
 import re
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import platform_names as pn  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 
@@ -112,7 +119,28 @@ def main():
     out.mkdir(parents=True, exist_ok=True)
     (out / "tokens.css").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
+    registry_path = folder / "data" / "component-registry.json"
+    registry = json.loads(registry_path.read_text(encoding="utf-8")) if registry_path.exists() else {}
+    platform = data.get("meta", {}).get("platform") or registry.get("meta", {}).get("platform") or "Web"
+    pkey = pn.platform_key(platform)
+    roles = {c: m.get("role", "") for c, m in collections.items()}
+    for key, v in variables.items():
+        v["css"] = names[key]
+    codes = pn.assign_codes(variables, platform, roles)
+    project = registry.get("meta", {}).get("project") or folder.name
+    ts_list = [s for s in (registry.get("text_styles") or []) if isinstance(s, dict)]
+    platform_file = None
+    if pkey == "ios":
+        platform_file = ("DesignTokens.swift", pn.swift_source(variables, collections, ts_list, project))
+    elif pkey == "android":
+        platform_file = ("DesignTokens.kt", pn.kotlin_source(variables, collections, ts_list, project, roles))
+    if platform_file:
+        (out / platform_file[0]).write_text(platform_file[1], encoding="utf-8")
+
     ts = {
+        "platform": pkey,
+        "platform_label": pn.PLATFORM_LABEL[pkey],
+        "platform_file": platform_file[0] if platform_file else "tokens.css",
         "meta": data.get("meta", {}),
         "collections": {c: {"modes": m["modes"], "default": defaults[c], "attribute": attrs[c], "role": m.get("role", "")} for c, m in collections.items()},
         "tokens": [
@@ -122,6 +150,7 @@ def main():
                 "name": v["name"],
                 "type": v["type"],
                 "css": names[key],
+                "code": codes[key],
                 "values": v["values"],
                 "resolved": v.get("resolved", {}),
                 "description": v.get("description", ""),
@@ -136,7 +165,8 @@ def main():
         encoding="utf-8",
     )
 
-    print(f"{len(variables)} variables -> {out.relative_to(ROOT).as_posix()}/tokens.css, tokens.ts")
+    print(f"{len(variables)} variables -> {out.relative_to(ROOT).as_posix()}/tokens.css, tokens.ts"
+          + (f", {platform_file[0]}" if platform_file else "") + f" (platform names: {pn.PLATFORM_LABEL[pkey]})")
     print(f"mode selectors: {', '.join(s for s in blocks if s != ':root') or 'none'}")
     for key, other in collisions:
         print(f"collision: {key} and {other} share a CSS name; prefixed with the collection")
