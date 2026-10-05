@@ -17,6 +17,24 @@ const ALL = (tokens as unknown as { tokens: AnyTok[] }).tokens;
 const COLLECTIONS = (tokens as unknown as { collections: Record<string, { modes: string[]; default: string; attribute: string; role?: string }> }).collections;
 const roleOf = (c: string) => (COLLECTIONS[c]?.role || c).toLowerCase();
 
+/* ---------- platform names: what developers type (SwiftUI on iOS, Compose on Android, CSS on Web) ---------- */
+type CodeName = { label: string; name: string };
+const TOK = tokens as unknown as { platform?: string; platform_label?: string; platform_file?: string };
+export const PLATFORM = TOK.platform || 'web';
+export const PLATFORM_LABEL = TOK.platform_label || 'CSS variable';
+const codesOf = (t: AnyTok): CodeName[] => ((t as unknown as { code?: CodeName[] }).code || [{ label: 'CSS variable', name: t.css }]);
+const codeOf = (t: AnyTok) => codesOf(t)[0].name;
+function CodeCell({ t }: { t: AnyTok }) {
+  const [first, ...rest] = codesOf(t);
+  return (
+    <div className="dsd-codecell">
+      <code className="dsd-code">{first.name}</code>
+      {rest.map((c) => <div key={c.label} className="dsd-small dsd-muted">{c.label}: <code>{c.name}</code></div>)}
+      {PLATFORM !== 'web' ? <div className="dsd-small dsd-muted">CSS (this Storybook): <code>{t.css}</code></div> : null}
+    </div>
+  );
+}
+
 /* ---------- theme: map docs chrome to the DS's own semantic tokens ---------- */
 function pick(patterns: RegExp[], role = 'semantic'): string | undefined {
   for (const p of patterns) {
@@ -222,7 +240,7 @@ export function ColorSemantics() {
               <div key={g} className="dsd-block">
                 <div className="dsd-ramp-name">{g}</div>
                 <table className="dsd-table">
-                  <thead><tr><th>Figma variable</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>CSS variable</th><th>Use</th></tr></thead>
+                  <thead><tr><th>Figma variable</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{PLATFORM_LABEL}</th><th>Use</th></tr></thead>
                   <tbody>
                     {list.map((t) => (
                       <tr key={t.css}>
@@ -238,7 +256,7 @@ export function ColorSemantics() {
                             </td>
                           );
                         })}
-                        <td><Code>{t.css}</Code></td>
+                        <td><CodeCell t={t} /></td>
                         <td className="dsd-muted dsd-small">{t.description}</td>
                       </tr>
                     ))}
@@ -292,12 +310,13 @@ function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string;
     </div>
   );
   return (
-    <div className="dsd-sw" title={`${t.figma}\n${t.css}${t.description ? '\n' + t.description : ''}`}>
+    <div className="dsd-sw" title={`${t.figma}\n${codesOf(t).map((c) => `${c.label}: ${c.name}`).join('\n')}${t.description ? '\n' + t.description : ''}`}>
       {face}
       <div className="dsd-sw-meta">
         <code>{t.name}</code>
         <span>{v.hex}</span>
       </div>
+      <div className="dsd-sw-code">{codeOf(t)}</div>
       {onToken ? <div className="dsd-sw-sub">text: {onToken.name}</div> : surface ? <div className="dsd-sw-sub">on {surface.name}</div> : v.alias ? <div className="dsd-sw-sub">→ {v.alias}</div> : null}
     </div>
   );
@@ -348,6 +367,7 @@ export function ColorRoles() {
                   <div key={t.css} className="dsd-anchor">
                     <div className="dsd-anchor-face" style={{ background: `var(${t.css})` }} />
                     <div className="dsd-sw-meta"><code>{t.name}</code><span>{hexOf(t, mode)}</span></div>
+                    <div className="dsd-sw-code dsd-anchor-code">{codeOf(t)}</div>
                   </div>
                 ))}
               </div>
@@ -395,7 +415,7 @@ export function ColorRoles() {
 export function ColorTable() {
   return (
     <details className="dsd dsd-details sb-unstyled" style={themeStyle}>
-      <summary>Full list of Semantic variables (name, value per mode, CSS variable, use)</summary>
+      <summary>Full list of Semantic variables (name, value per mode, {PLATFORM_LABEL} name, use)</summary>
       <ColorSemantics />
     </details>
   );
@@ -436,7 +456,7 @@ export function ColorRamps() {
 /* ---------- Foundations: typography at real size ---------- */
 export const textClass = (style: string) => 'ts-' + style.toLowerCase().replace(/[/\s]+/g, '-').replace(/[^a-z0-9_-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
-function Measured({ cls, sample, compact }: { cls: string; sample: string; compact?: boolean }) {
+function Measured({ cls, sample, compact, code }: { cls: string; sample: string; compact?: boolean; code?: string }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [m, setM] = React.useState<{ size: string; line: string; weight: string; family: string; tracking: string } | null>(null);
   React.useLayoutEffect(() => {
@@ -455,7 +475,7 @@ function Measured({ cls, sample, compact }: { cls: string; sample: string; compa
     <>
       <div ref={ref} className={`dsd-type-sample ${cls}`}>{sample}</div>
       <div className="dsd-type-meta">
-        {m && compact ? <><span className="dsd-muted">.{cls}</span>&nbsp;&nbsp;<strong>{m.size}</strong></> : null}
+        {m && compact ? <><span className="dsd-muted">{code || '.' + cls}</span>&nbsp;&nbsp;<strong>{m.size}</strong></> : null}
         {m && !compact ? <><strong>{m.size}</strong> / {m.line}<br /><span className="dsd-muted">weight {m.weight} · tracking {m.tracking}</span></> : null}
       </div>
     </>
@@ -465,6 +485,7 @@ function Measured({ cls, sample, compact }: { cls: string; sample: string; compa
 export type TypeData = {
   font?: string; styles: string[]; groups?: { name: string; styles: string[] }[]; sample?: string; rules?: string[];
   scales?: { name: string; note?: string; styles: string[] }[];
+  codes?: Record<string, CodeName[]>;
 };
 export function TypeSpecimen({ data }: { data: TypeData }) {
   const groups = data.groups?.length ? data.groups : [{ name: 'Text styles', styles: data.styles }];
@@ -485,7 +506,7 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
           <div className="dsd-type-group">
             {sc.styles.map((s) => (
               <div key={s} className="dsd-type-row dsd-type-row-compact">
-                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact />
+                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact code={PLATFORM !== 'web' ? data.codes?.[s]?.[0]?.name : undefined} />
               </div>
             ))}
           </div>
@@ -497,7 +518,10 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
           <div className="dsd-type-group-name">{g.name}</div>
           {g.styles.map((s) => (
             <div key={s} className="dsd-type-row">
-              <div className="dsd-type-name"><Code>{s}</Code><div className="dsd-muted dsd-small">.{textClass(s)}</div></div>
+              <div className="dsd-type-name">
+                <Code>{s}</Code>
+                {(data.codes?.[s] || [{ label: 'CSS class', name: '.' + textClass(s) }]).map((c) => <div key={c.label} className="dsd-muted dsd-small">{c.name}</div>)}
+              </div>
               <Measured cls={textClass(s)} sample={sample} />
             </div>
           ))}
@@ -520,7 +544,7 @@ export function Sizing() {
           <div key={c} className="dsd-block">
             <h3 className="dsd-h3">{c}</h3>
             <table className="dsd-table">
-              <thead><tr><th>Figma variable</th><th>Preview</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>CSS variable</th></tr></thead>
+              <thead><tr><th>Figma variable</th><th>Preview</th>{modes.map((m) => <th key={m}>{m}</th>)}<th>{PLATFORM_LABEL}</th></tr></thead>
               <tbody>
                 {dims.filter((t) => t.collection === c).map((t) => (
                   <tr key={t.css}>
@@ -531,7 +555,7 @@ export function Sizing() {
                         : <div className="dsd-bar" style={{ width: `min(var(${t.css}), 320px)` }} />}
                     </td>
                     {modes.map((m) => <td key={m}>{String(t.values[m] ?? '')}{typeof t.values[m] === 'number' ? 'px' : ''}</td>)}
-                    <td><Code>{t.css}</Code></td>
+                    <td><CodeCell t={t} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -557,7 +581,7 @@ export function Effects({ styles = [] }: { styles?: string[] }) {
               <div key={s} className="dsd-effect">
                 <div className="dsd-effect-box" style={{ boxShadow: `var(${cssName(s)})` }} />
                 <Code>{s}</Code>
-                <div className="dsd-muted dsd-small">var({cssName(s)})</div>
+                {PLATFORM === 'web' ? <div className="dsd-muted dsd-small">var({cssName(s)})</div> : null}
               </div>
             ))}
           </div>
@@ -601,6 +625,42 @@ export function IconGallery({ note }: { note?: string }) {
   );
 }
 
+/* ---------- Foundations: code (platform names + download) ---------- */
+export function CodeExport({ file, source, rules = [], examples = [] }: { file: string; source: string; rules?: string[]; examples?: { figma: string; code: CodeName[] }[] }) {
+  const [copied, setCopied] = React.useState(false);
+  const download = () => {
+    const url = URL.createObjectURL(new Blob([source], { type: 'text/plain' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = file; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const copy = async () => { try { await navigator.clipboard.writeText(source); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ } };
+  return (
+    <DocsRoot>
+      <div className="dsd-card dsd-type-intro">
+        <div className="dsd-eyebrow">{PLATFORM_LABEL}</div>
+        <div className="dsd-type-font">{file}</div>
+        <ul className="dsd-list">{rules.map((r) => <li key={r}>{r}</li>)}</ul>
+        <div className="dsd-pills" style={{ marginTop: 12 }}>
+          <button type="button" className="dsd-pill dsd-pill-link dsd-btn" onClick={download}>Download {file}</button>
+          <button type="button" className="dsd-pill dsd-btn" onClick={copy}>{copied ? 'Copied' : 'Copy'}</button>
+        </div>
+      </div>
+      {examples.length ? (
+        <>
+          <h3 className="dsd-h3">Figma name → code</h3>
+          <table className="dsd-table">
+            <thead><tr><th>Figma</th>{examples[0].code.map((c) => <th key={c.label}>{c.label}</th>)}</tr></thead>
+            <tbody>{examples.map((e) => <tr key={e.figma}><td><code className="dsd-code">{e.figma}</code></td>{e.code.map((c) => <td key={c.label}><code className="dsd-code">{c.name}</code></td>)}</tr>)}</tbody>
+          </table>
+        </>
+      ) : null}
+      <h3 className="dsd-h3">Preview</h3>
+      <pre className="dsd-pre"><code>{source.split('\n').slice(0, 80).join('\n')}{source.split('\n').length > 80 ? '\n…' : ''}</code></pre>
+    </DocsRoot>
+  );
+}
+
 /* ---------- Component docs (one page per Figma component) ---------- */
 export type ComponentDocsData = {
   name: string; group: string; tier: string; page?: string; figma_url?: string; variant_count?: number;
@@ -610,6 +670,7 @@ export type ComponentDocsData = {
   sizes?: { value: string; meaning?: string }[]; states?: { value: string; meaning?: string }[];
   icons?: { property: string; accepts?: string; default?: string; rule?: string; show?: string }[];
   rtl?: boolean;
+  code?: { label: string; call: string; props: { figma: string; code: string; type: string; values: string[] }[] };
   guidelines?: { do?: string; dont?: string; do_args?: Record<string, unknown>; dont_args?: Record<string, unknown> }[];
   content?: string[]; accessibility?: string[]; built_from?: string[]; related?: string[]; gaps?: string[];
   figma_description?: string;
@@ -683,7 +744,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
 
       <section>
         <H2 id="overview">Overview</H2>
-        {playground && <Canvas of={playground} sourceState="hidden" />}
+        {playground && <Canvas of={playground} sourceState={PLATFORM === 'web' ? 'hidden' : 'none'} />}
         {d.use_cases?.length ? (
           <>
             <h3 className="dsd-h3">Use cases</h3>
@@ -835,6 +896,17 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
         <H2 id="properties">Properties</H2>
         <p className="dsd-p">Names, options and defaults are the Figma component properties, character for character.</p>
         {playground ? <ArgTypes of={playground} /> : null}
+        {d.code?.props.length ? (
+          <>
+            <h3 className="dsd-h3">In {d.code.label}</h3>
+            <p className="dsd-p dsd-muted">Suggested names for the native component, derived from the Figma properties so design and code use the same words.</p>
+            <pre className="dsd-pre"><code>{d.code.call}</code></pre>
+            <table className="dsd-table">
+              <thead><tr><th>Figma property</th><th>{d.code.label}</th><th>Type</th><th>Values</th></tr></thead>
+              <tbody>{d.code.props.map((p) => <tr key={p.figma}><td><code className="dsd-code">{p.figma}</code></td><td><code className="dsd-code">{p.code}</code></td><td>{p.type}</td><td className="dsd-small">{p.values.join(', ')}</td></tr>)}</tbody>
+            </table>
+          </>
+        ) : null}
         {(d.built_from?.length || d.related?.length) ? (
           <p className="dsd-p">
             {d.built_from?.length ? <><strong>Built from:</strong> {d.built_from.map((b) => <Code key={b}>{b}</Code>).reduce((a: React.ReactNode[], b, i) => (i ? [...a, ' ', b] : [b]), [])}. </> : null}
@@ -846,7 +918,8 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
       {playground ? (
         <section>
           <H2 id="playground">Playground</H2>
-          <Canvas of={playground} />
+          {/* React source is only useful on Web; native teams read the "In SwiftUI / Compose" table instead */}
+          <Canvas of={playground} sourceState={PLATFORM === 'web' ? 'hidden' : 'none'} />
           <Controls of={playground} />
         </section>
       ) : null}
