@@ -18,6 +18,7 @@ Use this path when a design system already exists but is not AI-ready (missing s
    |---|---|---|---|---|---|---|---|
 
    Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
+   Then confirm the intake answers it holds (0.3c): post the color modes, RTL and fonts found in the DS (its variable modes, Arabic or RTL components, the font families of its text styles), then Ask (choice): "Use these (Recommended)" / "Change something". Record them in `Project_Brief.md` with their source.
 5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, up to 4 per AskUserQuestion call (more in further calls), one Ask (choice) per variable: "What is `<name>` for?" with the guess first, "<guess> (Recommended)" (description: <what I found>), then up to 2 other plausible usages; the real purpose is typed in Other. Record the answers in the map and in `docs/decisions.md`. Then Ask (choice): "Approve the Variable Map?" "Approve (Recommended)" / "Request changes". Abdul approves the Variable Map before step 2.
 6. Single file (section 7g): ask 2.4 now. "Split into a library" runs the 7g migration before step 2; "Keep it in one file" runs steps 2-6 with the 7g path 1 changes (history versions instead of Publish and Accept updates).
 
