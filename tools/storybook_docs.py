@@ -99,7 +99,7 @@ def strip_md(text):
 
 
 # ---------------------------------------------------------------- component pages
-def component_docs(c, live, usage, rules, url):
+def component_docs(c, live, usage, rules, url, rtl=False):
     name = c["name"]
     variants = c.get("variants", {})
     props = c.get("properties", {})
@@ -138,7 +138,10 @@ def component_docs(c, live, usage, rules, url):
     slots = [s for s in c.get("slots", []) if s.get("kind") == "instance_swap"]
     if not slots:
         slots = [{"property": k, "accepts": "Icon/*", "default": (c.get("defaults") or {}).get(k)} for k, t in props.items() if t == "INSTANCE_SWAP"]
-    icons = [{"property": s["property"], "accepts": s.get("accepts"), "default": s.get("default"), "rule": s.get("rule")} for s in slots]
+    def show_prop(slot):
+        return next((b for b, t in props.items() if t == "BOOLEAN" and slot.lower() in b.lower()), None)
+    icons = [{"property": s["property"], "accepts": s.get("accepts"), "default": s.get("default"), "rule": s.get("rule"),
+              "show": show_prop(s["property"])} for s in slots]
 
     def order(k):
         return 0 if k.lower().startswith("leading") else 2 if k.lower().startswith("trailing") else 1
@@ -175,6 +178,7 @@ def component_docs(c, live, usage, rules, url):
         "accessibility": a11y,
         "built_from": [n for n in c.get("nests", [])],
         "gaps": c.get("issues", []),
+        "rtl": rtl,
         "figma_description": desc,
     }
     cap = lambda t: t[:1].upper() + t[1:] if isinstance(t, str) else t
@@ -187,6 +191,18 @@ def component_docs(c, live, usage, rules, url):
     return {k: v for k, v in docs.items() if v not in (None, "", [])} | {"name": name, "group": docs["group"], "tier": docs["tier"]}
 
 
+def is_rtl(folder):
+    """Project_Brief.md intake row 'Arabic / RTL' answered Yes (or welcome.json "rtl": true)."""
+    extra = read_json(folder / "storybook" / "welcome.json", {})
+    if "rtl" in extra:
+        return bool(extra["rtl"])
+    p = folder / "Project_Brief.md"
+    if not p.exists():
+        return False
+    m = re.search(r"\|\s*(Arabic\s*/\s*RTL|RTL)[^|]*\|\s*([^|]+)\|", p.read_text(encoding="utf-8"), re.I)
+    return bool(m and m.group(2).strip().lower().startswith("yes"))
+
+
 def write_component_docs(folder):
     sb = folder / "storybook"
     registry = read_json(folder / "data" / "component-registry.json")
@@ -195,6 +211,7 @@ def write_component_docs(folder):
     rules = read_json(folder / "data" / "rules.json", {})
     live = {c["name"]: c for c in read_json(folder / "data" / "source" / "components-live.json", {}).get("components", [])}
     usage = read_component_md(folder)
+    rtl = is_rtl(folder)
     written = []
     for c in registry["components"]:
         name = c["name"]
@@ -202,7 +219,7 @@ def write_component_docs(folder):
             continue
         node = links.get("components", {}).get(name)
         url = f"{links['file']}?node-id={node.replace(':', '-')}" if node and links.get("file") else registry["meta"].get("figma_url", "")
-        docs = component_docs(c, live.get(name, {}), usage, rules, url)
+        docs = component_docs(c, live.get(name, {}), usage, rules, url, rtl)
         safe = re.sub(r"[^0-9A-Za-z]+", "-", name).strip("-")
         gdir = sb / "src" / "stories" / re.sub(r"[^0-9A-Za-z]+", "-", c["group"]).strip("-")
         if not (gdir / f"{safe}.stories.tsx").exists():
@@ -380,7 +397,20 @@ def write_pages(folder, replace=False):
                   "Family, size, line height, letter spacing and weight are bound to the Typography variables."]
     if len(type_modes) > 1:
         type_rules.append(f"Sizes change with the {', '.join(type_modes)} modes: switch the mode in the toolbar and the px values below update.")
-    tdata = {"font": (ts.get("font") if isinstance(ts, dict) else None), "styles": styles, "groups": groups, "rules": type_rules}
+    scales = []
+    if isinstance(ts, dict) and ts.get("sizes") and ts.get("weights"):
+        sizes, weights = ts["sizes"], ts["weights"]
+        naming = ts.get("naming", "{size}/{weight}")
+        style = lambda s, w: naming.replace("{size}", s).replace("{weight}", w)
+        cut = sizes.index("xl") if "xl" in sizes else len(sizes) // 2
+        heavy = next((w for w in ("Bold", "Semi Bold", "SemiBold") if w in weights), weights[-1])
+        light = next((w for w in ("Regular", "Book", "Normal") if w in weights), weights[0])
+        scales = [
+            {"name": "Headline scale", "note": f"{heavy} weight, for page and section headings.", "styles": [style(s, heavy) for s in sizes[cut:]]},
+            {"name": "Body scale", "note": f"{light} weight, for body text, labels and captions.", "styles": [style(s, light) for s in sizes[:cut]]},
+        ]
+        scales = [s for s in scales if s["styles"]]
+    tdata = {"font": (ts.get("font") if isinstance(ts, dict) else None), "styles": styles, "groups": groups, "rules": type_rules, "scales": scales}
     write(f / "Typography.mdx", "\n".join(head("Typography", "TypeSpecimen") + [
         "# Typography", "", "Each style is rendered at its real size. The size and line height on the right are measured from the rendered text.", "",
         f"export const type = {json.dumps(tdata, ensure_ascii=False, indent=1)};", "", "<TypeSpecimen data={type} />", ""]))

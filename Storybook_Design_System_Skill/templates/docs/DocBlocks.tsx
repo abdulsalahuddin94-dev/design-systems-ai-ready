@@ -241,7 +241,7 @@ export function ColorSemantics() {
 /* ---------- Foundations: typography at real size ---------- */
 export const textClass = (style: string) => 'ts-' + style.toLowerCase().replace(/[/\s]+/g, '-').replace(/[^a-z0-9_-]/g, '').replace(/-+/g, '-').replace(/^-|-$/g, '');
 
-function Measured({ cls, sample }: { cls: string; sample: string }) {
+function Measured({ cls, sample, compact }: { cls: string; sample: string; compact?: boolean }) {
   const ref = React.useRef<HTMLDivElement>(null);
   const [m, setM] = React.useState<{ size: string; line: string; weight: string; family: string; tracking: string } | null>(null);
   React.useLayoutEffect(() => {
@@ -260,13 +260,17 @@ function Measured({ cls, sample }: { cls: string; sample: string }) {
     <>
       <div ref={ref} className={`dsd-type-sample ${cls}`}>{sample}</div>
       <div className="dsd-type-meta">
-        {m ? <><strong>{m.size}</strong> / {m.line}<br /><span className="dsd-muted">weight {m.weight} · tracking {m.tracking}</span></> : null}
+        {m && compact ? <><span className="dsd-muted">.{cls}</span>&nbsp;&nbsp;<strong>{m.size}</strong></> : null}
+        {m && !compact ? <><strong>{m.size}</strong> / {m.line}<br /><span className="dsd-muted">weight {m.weight} · tracking {m.tracking}</span></> : null}
       </div>
     </>
   );
 }
 
-export type TypeData = { font?: string; styles: string[]; groups?: { name: string; styles: string[] }[]; sample?: string; rules?: string[] };
+export type TypeData = {
+  font?: string; styles: string[]; groups?: { name: string; styles: string[] }[]; sample?: string; rules?: string[];
+  scales?: { name: string; note?: string; styles: string[] }[];
+};
 export function TypeSpecimen({ data }: { data: TypeData }) {
   const groups = data.groups?.length ? data.groups : [{ name: 'Text styles', styles: data.styles }];
   const sample = data.sample || 'The quick brown fox jumps over the lazy dog';
@@ -279,6 +283,20 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
           {(data.rules || []).map((r) => <li key={r}>{r}</li>)}
         </ul>
       </div>
+      {(data.scales || []).map((sc) => (
+        <div key={sc.name} className="dsd-scale">
+          <h3 className="dsd-h3">{sc.name}</h3>
+          {sc.note && <p className="dsd-p dsd-muted">{sc.note}</p>}
+          <div className="dsd-type-group">
+            {sc.styles.map((s) => (
+              <div key={s} className="dsd-type-row dsd-type-row-compact">
+                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact />
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      {data.scales?.length ? <h3 className="dsd-h3">All text styles</h3> : null}
       {groups.map((g) => (
         <div key={g.name} className="dsd-type-group">
           <div className="dsd-type-group-name">{g.name}</div>
@@ -395,7 +413,8 @@ export type ComponentDocsData = {
   anatomy?: { part: string; detail?: string }[];
   main_axis?: string; variants?: { value: string; meaning?: string }[];
   sizes?: { value: string; meaning?: string }[]; states?: { value: string; meaning?: string }[];
-  icons?: { property: string; accepts?: string; default?: string; rule?: string }[];
+  icons?: { property: string; accepts?: string; default?: string; rule?: string; show?: string }[];
+  rtl?: boolean;
   guidelines?: { do?: string; dont?: string; do_args?: Record<string, unknown>; dont_args?: Record<string, unknown> }[];
   content?: string[]; accessibility?: string[]; built_from?: string[]; related?: string[]; gaps?: string[];
   figma_description?: string;
@@ -406,6 +425,21 @@ function Example({ stories, args }: { stories: StoriesModule; args?: Record<stri
   const C = stories.default.component;
   if (!C) return null;
   return <C {...(stories.default.args || {})} {...(args || {})} />;
+}
+const SEMANTIC = Object.entries(COLLECTIONS).find(([k, c]) => (c.role || k).toLowerCase().includes('semantic'));
+function ModePanels({ children }: { children: React.ReactNode }) {
+  if (!SEMANTIC) return <>{children}</>;
+  const [name, c] = SEMANTIC;
+  return (
+    <div className="dsd-modes">
+      {c.modes.map((m) => (
+        <div key={m} className="dsd-mode" {...modeAttrs(name, m)} style={themeStyle}>
+          <div className="dsd-mode-name">{m}</div>
+          {children}
+        </div>
+      ))}
+    </div>
+  );
 }
 function Gallery({ stories, axis, items }: { stories: StoriesModule; axis: string; items: { value: string; meaning?: string }[] }) {
   return (
@@ -431,6 +465,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
     ['sizes', 'Sizes', !!d.sizes?.length],
     ['states', 'States', !!d.states?.length],
     ['icons', 'Icons', !!d.icons?.length],
+    ['rtl', 'Right to left', !!d.rtl],
     ['guidelines', 'Do and don\'t', !!d.guidelines?.length],
     ['content', 'Content', !!d.content?.length],
     ['accessibility', 'Accessibility', !!d.accessibility?.length],
@@ -501,17 +536,67 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
         <section>
           <H2 id="states">States</H2>
           <p className="dsd-p">Each state is a Figma variant (<Code>State</Code>) and also works for real on hover, focus and press.</p>
-          <Gallery stories={stories} axis="State" items={d.states} />
+          <ul className="dsd-list">{d.states.filter((s) => s.meaning).map((s) => <li key={s.value}><strong>{s.value}</strong>: {s.meaning}</li>)}</ul>
+          <ModePanels>
+            <div className="dsd-matrix-wrap">
+              <table className="dsd-matrix">
+                <thead><tr>{d.main_axis ? <th /> : null}{d.states.map((s) => <th key={s.value}>{s.value}</th>)}</tr></thead>
+                <tbody>
+                  {(d.main_axis && d.variants?.length ? d.variants : [{ value: '' }]).map((v) => (
+                    <tr key={v.value}>
+                      {d.main_axis ? <th>{v.value}</th> : null}
+                      {d.states!.map((s) => (
+                        <td key={s.value}><Example stories={stories} args={{ ...(d.main_axis && v.value ? { [d.main_axis]: v.value } : {}), State: s.value }} /></td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </ModePanels>
         </section>
       ) : null}
 
       {d.icons?.length ? (
         <section>
           <H2 id="icons">Icons</H2>
+          {d.icons.some((i) => i.show) ? (
+            <div className="dsd-matrix-wrap dsd-stage">
+              <table className="dsd-matrix">
+                <thead><tr>{d.sizes?.length ? <th /> : null}{d.icons.filter((i) => i.show).map((i) => <th key={i.property}>{i.property}</th>)}{d.icons.filter((i) => i.show).length > 1 ? <th>Both</th> : null}</tr></thead>
+                <tbody>
+                  {(d.sizes?.length ? d.sizes : [{ value: '' }]).map((sz) => {
+                    const base = sz.value ? { Size: sz.value } : {};
+                    const shows = d.icons!.filter((i) => i.show);
+                    return (
+                      <tr key={sz.value}>
+                        {sz.value ? <th>{sz.value}</th> : null}
+                        {shows.map((i) => <td key={i.property}><Example stories={stories} args={{ ...base, [i.show!]: true }} /></td>)}
+                        {shows.length > 1 ? <td><Example stories={stories} args={{ ...base, ...Object.fromEntries(shows.map((i) => [i.show!, true])) }} /></td> : null}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
           <table className="dsd-table">
             <thead><tr><th>Property</th><th>Accepts</th><th>Default</th><th>Rule</th></tr></thead>
             <tbody>{d.icons.map((i) => <tr key={i.property}><td><Code>{i.property}</Code></td><td>{i.accepts}</td><td>{i.default}</td><td className="dsd-small">{i.rule}</td></tr>)}</tbody>
           </table>
+        </section>
+      ) : null}
+
+      {d.rtl ? (
+        <section>
+          <H2 id="rtl">Right to left</H2>
+          <p className="dsd-p">In right-to-left languages the layout is mirrored: leading items move to the right, and directional icons (arrows, chevrons) must be mirrored too.</p>
+          <div className="dsd-gallery" dir="rtl">
+            <figure className="dsd-figure"><div className="dsd-stage"><Example stories={stories} /></div></figure>
+            {(d.icons || []).filter((i) => i.show).map((i) => (
+              <figure key={i.property} className="dsd-figure"><div className="dsd-stage"><Example stories={stories} args={{ [i.show!]: true }} /></div><figcaption><Code>{i.property}</Code></figcaption></figure>
+            ))}
+          </div>
         </section>
       ) : null}
 

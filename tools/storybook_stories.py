@@ -198,6 +198,29 @@ def main():
                         "};",
                     ]
 
+            # icon placements: each "Show <slot>" boolean on its own, then all of them
+            shows = [b for b, t in props.items() if t == "BOOLEAN" and any(s.lower() in b.lower() for s, k in props.items() if k == "INSTANCE_SWAP")]
+            if shows and "Icons" not in used:
+                used.add("Icons")
+                combos = [{b: True} for b in shows] + ([{b: True for b in shows}] if len(shows) > 1 else [])
+                labels = shows + (["Both"] if len(shows) > 1 else [])
+                lines += [
+                    "",
+                    "export const Icons: Story = {",
+                    "  name: 'Icons',",
+                    "  render: (args) => (",
+                    "    <div className=\"sb-row\">",
+                    f"      {{{js(list(zip(labels, combos)))}.map(([label, extra]: any) => (",
+                    "        <div key={label}>",
+                    "          <div className=\"sb-cell-label ts-xs-medium\">{label}</div>",
+                    f"          <{exp} {{...args}} {{...extra}} />",
+                    "        </div>",
+                    "      ))}",
+                    "    </div>",
+                    "  ),",
+                    "};",
+                ]
+
             # matrix of every value (two axes when the map asks for it)
             axes = m.get("matrix") or [first]
             a = axes[0]
