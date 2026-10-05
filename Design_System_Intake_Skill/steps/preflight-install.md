@@ -1,6 +1,6 @@
 # Install steps for the Figma tools
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when preflight (section 0b) finds no tool installed or none connected. The full guide for new users (both tools, where to install, Yolo setup and risks, switching) is `Figma_Tools/README.md`.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load only when preflight (section 0b) finds no tool installed or none connected. The full guide for new users (both tools, where to install, Yolo setup and risks, switching) is `Figma_Tools/README.md`. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 **figma-console-mcp install steps** (from its README):
 1. Prerequisites: Node.js 18+ (`node --version`), Figma Desktop (not the web app), an MCP client such as Claude Code.

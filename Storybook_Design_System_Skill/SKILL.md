@@ -7,6 +7,7 @@ description: Generates a living Storybook for a finished Figma design system (We
 
 Root: the folder that contains `CLAUDE.md`. All paths are relative to it.
 Toolkit: **Claude -> MCP -> Figma + Storybook + GitHub.** Figma is the source of truth; Storybook is the live, browsable documentation that developers and AI agents read; GitHub hosts it when the user asks.
+Questions: every `Ask (choice)` / `Ask (multi)` in this skill is an AskUserQuestion menu that also gets a "Back" option to the previous question or step (Intake section 0, Back on every menu).
 
 ---
 
@@ -156,5 +157,5 @@ Tell the user up front which file to open: "Please open '<DS file name>' in Figm
 
 ## 6. Related tools
 
-- figma-console `figma_ds_*` tools (`figma_ds_analyze`, `figma_ds_scaffold`, `figma_ds_setup_storybook`, `figma_ds_verify`) go the other way: they extract a design system from an existing **code** app into a Storybook workshop. Use them for Brownfield type 2 (live product, no Figma), not for Figma-first systems.
+- figma-console `figma_ds_*` tools (`figma_ds_analyze`, `figma_ds_scaffold`, `figma_ds_setup_storybook`, `figma_ds_verify`) go the other way: they extract a design system from an existing **code** app into a Storybook workshop. Use them for Code to Design with a new DS (Scenario D branch b), not for Figma-first systems.
 - Storybook MCP docs: https://storybook.js.org/docs/ai/mcp/overview
