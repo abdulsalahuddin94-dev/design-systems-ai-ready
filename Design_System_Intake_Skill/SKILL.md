@@ -96,6 +96,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 |---|---|---|
 | 0b install steps | `steps/preflight-install.md`, `Figma_Tools/README.md` | preflight finds no tool installed or none connected |
 | 1.3-1.5 detail | `steps/both-native.md` | 1.2 = Both |
+| 1.6 Native, one file | `steps/native-one-file.md` | 1.3 = Native, one file |
 | 4 (3a-3d) | `steps/greenfield.md` | 2.1 = Greenfield |
 | 5 | `steps/brownfield-1-screens.md` | 2.2 = 1 |
 | 6 | `steps/brownfield-2-code.md` | 2.2 = 2 |
@@ -159,17 +160,19 @@ Until the project folder exists (0.3), keep the answers in the conversation; rig
 |---|---|---|
 | 1.1 | Ask (choice): "Which platform is this design system for?" "Web" / "Mobile" | Web -> load `Web_Design_System_Skill`. Mobile -> 1.2 |
 | 1.2 | Ask (choice): "Which mobile platform?" "iOS" / "Android" / "Both" | iOS -> `iOS_Design_System_Skill`. Android -> `Android_Design_System_Skill`. Both -> 1.3 |
-| 1.3 | Ask (choice): "Native, or cross-platform with one shared design?" "Native" (description: two systems, each app looks native) / "Cross-platform" (description: one shared design, Flutter / React Native custom UI) | Native -> 1.4. Cross-platform -> 1.5. See "Both: native or cross-platform" below. |
+| 1.3 | Ask (choice): "Native, or cross-platform with one shared design?" "Native" (description: two systems, each app looks native) / "Cross-platform" (description: one shared design, Flutter / React Native custom UI) / "Native, one file" (description: iOS + Android (+ EN/AR) in ONE DS file; each component renders natively per platform through OS / Language / Color modes; best when both apps share one product design and one team) | Native -> 1.4. Cross-platform -> 1.5. Native, one file -> 1.6. See "Both: native or cross-platform" below. |
 | 1.4 | Native only. Ask (choice): "Do you want a shared Brand Foundation file that both systems copy from?" "Yes (Recommended)" (description: brand Primitives only: color ramps, font families, raw values; recommended when one brand drives both apps) / "No" | Yes -> create `<Project> Brand Foundation` (Primitives only). Then load **both** `iOS_Design_System_Skill` and `Android_Design_System_Skill`, two independent systems. |
 | 1.5 | Cross-platform only. Two questions in one AskUserQuestion call: Ask (choice) "Which framework?" "Flutter" / "React Native"; Ask (choice) "Which base should the shared design follow?" "Material 3 (Recommended)" (description: best for one codebase) / "Apple HIG" / "Custom brand UI" (description: custom look on a Material 3 structure) | Load the matching Main Skill as the base (Material 3 or custom -> `Android_Design_System_Skill`; Apple HIG -> `iOS_Design_System_Skill`). One DS, one Design file, folder `<Project>_Mobile\`. |
 
-Both: native vs cross-platform rules (DS files, Brand Foundation, Design files, folders, `status.json` fields): `steps/both-native.md`.
+| 1.6 | Native, one file only. Ask (choice): "Which languages?" "English only" / "English + Arabic (RTL)" | Load `steps/native-one-file.md` and **both** `iOS_Design_System_Skill` and `Android_Design_System_Skill` as platform references. One DS file, folder `<Project>_Mobile\`. |
+
+Both: native vs cross-platform rules (DS files, Brand Foundation, Design files, folders, `status.json` fields): `steps/both-native.md`. Native, one file (collections, platform/direction techniques, Figma limits): `steps/native-one-file.md`.
 
 Platform rules (never mix):
 - **Web** = Tailwind conventions, web breakpoints (Desktop 1440 / iPad 768 / Mobile 375), Hover / Focus / Active states, Lucide icons.
 - **iOS** = Apple HIG, Dynamic Type, iOS semantic names (System Background, Label...), SF Symbols style icons, pt units.
 - **Android** = Material Design 3, `md.sys.color` tokens, state layers, elevation levels, Material Symbols, dp units.
-- Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system.
+- Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system. "Both" + Native, one file is the one exception where iOS and Android share a DS file: platform differences live only in OS-mode variables (`steps/native-one-file.md`).
 - After choosing, load the platform Main Skill. Its required skills (figma-use + figma-generate-library; figma-swiftui for iOS; figma-code-connect when mapping to code) load at the first Figma build step of the session (section 0c), not during the intake questions. Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
 
 ---
@@ -249,7 +252,7 @@ One approval covers the whole plan, including the design direction (3.4 is not a
 ```
 Project: <name>            Local folder: <path>
 Figma: <links and roles>
-Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base)> -> Main Skill(s): <names>
+Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base) / Both native, one file (EN or EN+AR)> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>, Research <n / empty>
