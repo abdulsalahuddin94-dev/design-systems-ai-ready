@@ -10,11 +10,16 @@ Every story file uses the Figma names exactly: title "<Group>/<Component name>",
 the Figma variant and property names, options equal to the Figma variant values. Docs text comes from
 the registry (tier, use, nests, known Figma gaps) plus a link back to the Figma component.
 The React components themselves are written by hand in src/components/ (visual replicas on tokens).
+When the docs blocks exist (src/docs/DocBlocks.tsx, from tools/storybook_docs.py), each component also gets
+its generated Docs page (<name>.mdx) and the stories drop autodocs; otherwise autodocs stays on.
 """
 import json
 import pathlib
 import re
 import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from storybook_docs import write_component_docs  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TIER_ORDER = {"Atom": 1, "Molecule": 2, "Organism": 3, "Pattern": 4}
@@ -63,6 +68,7 @@ def main():
         live = {c["name"]: c for c in json.loads(live_path.read_text(encoding="utf-8")).get("components", [])}
     usage = read_usage(folder)
     out_root = sb / "src" / "stories"
+    rich_docs = (sb / "src" / "docs" / "DocBlocks.tsx").exists()
     written, missing = [], []
 
     for c in registry["components"]:
@@ -135,7 +141,7 @@ def main():
             f"const meta = {{",
             f"  title: {js(group + '/' + name)},",
             f"  component: {exp},",
-            f"  tags: ['autodocs', 'tier-{c.get('tier', '').lower()}'],",
+            f"  tags: ['{'!autodocs' if rich_docs else 'autodocs'}', 'tier-{c.get('tier', '').lower()}'],",
             f"  argTypes: {at_src},",
             f"  args: {json.dumps(args, ensure_ascii=False)},",
             f"  parameters: {{",
@@ -170,6 +176,27 @@ def main():
                         sid += "_"
                     used.add(sid)
                     lines.append(f"export const {sid}: Story = {{ name: {js('State=' + v)}, args: {{ \"State\": {js(v)} }} }};")
+
+            # one story showing every State side by side, and one for every Size (Figma axes)
+            for axis, sid in (("State", "States"), ("Size", "Sizes")):
+                if axis in variants and len(variants[axis]) > 1 and sid not in used:
+                    used.add(sid)
+                    lines += [
+                        "",
+                        f"export const {sid}: Story = {{",
+                        f"  name: {js(sid)},",
+                        "  render: (args) => (",
+                        "    <div className=\"sb-row\">",
+                        f"      {{{js(variants[axis])}.map((x) => (",
+                        "        <div key={x}>",
+                        f"          <div className=\"sb-cell-label ts-xs-medium\">{axis}={{x}}</div>",
+                        f"          <{exp} {{...args}} {{...{{ {js(axis)}: x }} as any}} />",
+                        "        </div>",
+                        "      ))}",
+                        "    </div>",
+                        "  ),",
+                        "};",
+                    ]
 
             # matrix of every value (two axes when the map asks for it)
             axes = m.get("matrix") or [first]
@@ -219,6 +246,10 @@ def main():
         written.append(path.relative_to(ROOT).as_posix())
 
     print(f"{len(written)} story files written under {out_root.relative_to(ROOT).as_posix()}")
+    if rich_docs:
+        print(f"{len(write_component_docs(folder))} component docs pages written (<name>.mdx)")
+    else:
+        print("autodocs pages only: run tools/storybook_docs.py for the Welcome, Foundations and full component docs")
     for n in missing:
         print(f"no entry in component-map.json for: {n}")
     return 1 if missing else 0
