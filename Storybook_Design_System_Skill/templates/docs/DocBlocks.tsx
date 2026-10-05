@@ -41,6 +41,21 @@ const THEME: Record<string, string | undefined> = {
 };
 const themeStyle = Object.fromEntries(Object.entries(THEME).filter(([, v]) => v)) as React.CSSProperties;
 
+// Docs pages fill the preview: the page takes the DS background (no grey frame around a narrow column) and the
+// content column grows to 1280px, so wide tables, state grids and type samples have room.
+if (typeof document !== 'undefined' && !document.getElementById('dsd-page')) {
+  const el = document.createElement('style');
+  el.id = 'dsd-page';
+  const bg = THEME['--dsd-bg'] || 'inherit';
+  el.textContent = `
+    .sbdocs-wrapper:has(.dsd) { background: ${bg}; padding: 40px 48px 64px; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content { max-width: 1280px; width: 100%; }
+    .dsd .docs-story { background: ${bg}; }
+    @media (max-width: 720px) { .sbdocs-wrapper:has(.dsd) { padding: 24px 16px 48px; } }
+  `;
+  document.head.appendChild(el);
+}
+
 export function DocsRoot({ children }: { children: React.ReactNode }) {
   // sb-unstyled opts out of the Storybook docs typography, so text styles render at their real size
   return <div className="dsd sb-unstyled" style={themeStyle}>{children}</div>;
