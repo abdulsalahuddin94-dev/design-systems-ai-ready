@@ -170,7 +170,7 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - 100% bound: fills, strokes, **padding/gap (spacing)**, **radius (Shape)**, text styles, effect styles; 0 remote variables/styles/components.
 - Touch target 48x48dp (visual 40dp controls inside 48 targets).
 - Disabled per M3 recipe: container on-surface 12%, content on-surface 38%.
-- Descriptions on every set (M3 kit text is fine) + when to use / not use.
+- Descriptions on every set (M3 kit text is fine) + when to use / not use. Component docs are written once: the `docs` block of its `data/component-registry.json` entry (Storybook_Design_System_Skill/SKILL.md section 4b: overview, when to use / not use, anatomy, do/don't, accessibility rows, keywords), filled when the component is built; `python tools/component_docs.py <folder> figma` turns it into the description (Purpose / Usage rules / Accessibility / Keywords) and `tools/apply_descriptions.figma.js` writes it to the set. Never type a description by hand.
 
 ### Required inventory and states (Android)
 | Tier | Component | Variants / states |

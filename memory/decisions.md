@@ -43,6 +43,9 @@ updated: 2026-09-30
 ## App Icon page (Abdul, 2026-10-05)
 - Every DS file gets a standard `➜ App Icon` page in ⭐Setup after ➜ Icons, always created with the foundations (Web replaces the reference's `➜ Favicon` in ⭐Data Display). It starts as labeled drop zones plus the platform guidelines; when the user drops an icon, Claude checks it and presents it the platform's standard way: iOS 1024 master with Default/Dark/Tinted, masked previews and the size ladder; Android adaptive layers (108 dp, 66 dp safe zone, Foreground/Background/Monochrome), masks, themed preview and Play Store 512; Web favicon, icon.svg, apple-touch 180, PWA 192/512 and maskable. Previews are instances of an `App Icon` component, every size frame exports its file, docs list where each file goes in code. Storybook gets `Foundations/App Icon` only when the user chose Storybook. Rules: Intake section 7h (`steps/app-icon.md`), platform Main Skill section 5b, `tools/app_icon_specs.json`.
 
+## One docs source per component (Abdul, 2026-10-05, idea from Astryx `*.doc.mjs`)
+- Each component's docs live once, in its registry `docs` block (overview, when to use / not use with the alternative, anatomy, do/don't, accessibility rows per part with WCAG criterion, ratio and states, keywords), written while the component is built. The Figma description (`tools/component_docs.py figma` + `tools/apply_descriptions.figma.js`), the `components.md` usage lines (`... skills`) and the Storybook Docs page are generated from it; nobody edits them by hand. `... check` must be 0 missing at the Components checkpoint. Rules: Storybook_Design_System_Skill section 4b.
+
 ## Radio vs Select (Abdul, 2026-09-30)
 - Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.
 

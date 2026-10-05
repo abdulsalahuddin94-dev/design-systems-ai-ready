@@ -161,7 +161,7 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 
 - Names: `Family / Variant` (Input / Text, OTP / Cell, Menu / Item, Tabs / Item — Underline). Unique set names.
 - Variant properties in Title Case: `State`, `Type`, `Size`, `Status`, `Open`; values Title Case (`Default, Hover, Focus, Filled, Error, Success, Disabled`). Never `Property 1`, `Variant5`, `Status4`, `folled`, `dimmed`.
-- Every set: description with tier + purpose + when to use / not use.
+- Every set: description with tier + purpose + when to use / not use. Component docs are written once: the `docs` block of its `data/component-registry.json` entry (Storybook_Design_System_Skill/SKILL.md section 4b: overview, when to use / not use, anatomy, do/don't, accessibility rows, keywords), filled when the component is built; `python tools/component_docs.py <folder> figma` turns it into the description (Purpose / Usage rules / Accessibility / Keywords) and `tools/apply_descriptions.figma.js` writes it to the set. Never type a description by hand.
 - TEXT properties for every visible string (label, hint, error, title, message, placeholder where constant), BOOLEAN for optional parts (show hint, show optional, show tooltip, show close, show icon), INSTANCE_SWAP for icons. Every property must be wired to a layer (no dead properties, no property that hides the wrong layer).
 - 100% bound: fills, strokes, padding, gap, radius, text styles, effect styles. No raw values, no remote variables/styles.
 - Auto layout everywhere; instances set to Fill container in forms.

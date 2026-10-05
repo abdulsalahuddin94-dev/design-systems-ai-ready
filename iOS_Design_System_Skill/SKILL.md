@@ -170,6 +170,7 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - 100% bound: fills, strokes, padding, gap, radius, text styles, effect styles; **0 remote** variables, styles or components (copy Apple kit parts only after re-binding them to local tokens).
 - Touch targets **44x44pt** minimum; list rows 44pt min (52-60 with subtitle).
 - Disabled = content at `opacity/disabled` or Apple disabled label colors.
+- Every set: description with tier + purpose + when to use / not use. Component docs are written once: the `docs` block of its `data/component-registry.json` entry (Storybook_Design_System_Skill/SKILL.md section 4b: overview, when to use / not use, anatomy, do/don't, accessibility rows, keywords), filled when the component is built; `python tools/component_docs.py <folder> figma` turns it into the description (Purpose / Usage rules / Accessibility / Keywords) and `tools/apply_descriptions.figma.js` writes it to the set. Never type a description by hand.
 
 ### Required inventory and states (iOS)
 | Tier | Component | Variants / states |
