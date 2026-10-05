@@ -436,9 +436,10 @@ export function ColorRoles() {
 }
 
 export function ColorTable() {
+  const label = usePlatformLabel();
   return (
     <details className="dsd dsd-details sb-unstyled" style={themeStyle}>
-      <summary>Full list of Semantic variables (name, value per mode, {IS_ADAPTIVE ? 'SwiftUI / Compose' : PLATFORM_LABEL} name, use)</summary>
+      <summary>Full list of Semantic variables (name, value per mode, {label} name, use)</summary>
       <ColorSemantics />
     </details>
   );
@@ -570,9 +571,11 @@ export function Sizing() {
   const label = usePlatformLabel();
   const dims = ALL.filter((t) => (t.type === 'number' || t.type === 'dimension') && !/typography|font|opacity|language/i.test(t.collection + ' ' + roleOf(t.collection)) && !/font|line[- ]height|letter|opacity|weight/i.test(t.name));
   const collections = [...new Set(dims.map((t) => t.collection))];
-  // Mobile Adaptive: one column per platform (values resolved with that OS mode), the current one highlighted
-  const columns = (c: string): { title: string; modes: Modes; on: boolean }[] => IS_ADAPTIVE && !roleOf(c).includes('primitive')
-    ? PLATFORMS.map((p) => ({ title: platformName(p.key), modes: { ...ctx, [OS_COLLECTION!]: p.mode }, on: ctx[OS_COLLECTION!] === p.mode }))
+  // Mobile Adaptive: ONE platform at a time (Abdul, 2026-10-05): a single value column resolved for the platform in the
+  // toolbar; the user switches Platform to see the other one. Never iOS and Android side by side.
+  const platform = usePlatform();
+  const columns = (c: string): { title: string; modes: Modes; on: boolean }[] => IS_ADAPTIVE
+    ? [{ title: `Value on ${platformName(platform)}`, modes: ctx, on: false }]
     : (COLLECTIONS[c]?.modes || []).map((m) => ({ title: m, modes: { ...ctx, [c]: m }, on: (COLLECTIONS[c]?.modes.length || 0) > 1 && ctx[c] === m }));
   return (
     <DocsRoot>
@@ -676,9 +679,8 @@ export function CodeExport({ file: oneFile, source: oneSource, rules: oneRules =
 }) {
   const platform = usePlatform();
   const list: CodeFile[] = files?.length ? files : [{ key: PLATFORM, label: PLATFORM_LABEL, file: oneFile || '', source: oneSource || '', rules: oneRules }];
-  const [pick, setPick] = React.useState(platform);
-  React.useEffect(() => setPick(platform), [platform]);
-  const cur = list.find((f) => f.key === pick) || list[0];
+  // Mobile Adaptive: only the file of the platform in the toolbar (switch Platform to get the other one)
+  const cur = list.find((f) => f.key === platform) || list[0];
   const { file, source } = cur;
   const rules = cur.rules || [];
   const codeList = (c: CodeName[] | Record<string, CodeName[]>) => (Array.isArray(c) ? c : c[cur.key] || []);
@@ -692,9 +694,7 @@ export function CodeExport({ file: oneFile, source: oneSource, rules: oneRules =
   const copy = async () => { try { await navigator.clipboard.writeText(source); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* clipboard blocked */ } };
   return (
     <DocsRoot>
-      {list.length > 1 ? (
-        <div className="dsd-tabs">{list.map((f) => <button key={f.key} type="button" className={f.key === cur.key ? 'is-on' : ''} onClick={() => setPick(f.key)}>{f.file}</button>)}</div>
-      ) : null}
+      {list.length > 1 ? <p className="dsd-p dsd-muted">Showing the {platformName(cur.key)} file. Switch <strong>Platform</strong> in the toolbar for the other platform.</p> : null}
       <div className="dsd-card dsd-type-intro">
         <div className="dsd-eyebrow">{cur.label}</div>
         <div className="dsd-type-font">{file}</div>
@@ -758,20 +758,6 @@ function ModePanels({ children }: { children: React.ReactNode }) {
     </div>
   );
 }
-/** Mobile Adaptive: the same component side by side on each platform (OS mode), in the toolbar's Color and Language. */
-function PlatformPanels({ children }: { children: React.ReactNode }) {
-  if (!IS_ADAPTIVE) return null;
-  return (
-    <div className="dsd-modes">
-      {PLATFORMS.map((p) => (
-        <ModeScope key={p.key} modes={{ [OS_COLLECTION!]: p.mode }} className="dsd-mode" style={themeStyle}>
-          <div className="dsd-mode-name">{platformName(p.key)} · {p.label}</div>
-          {children}
-        </ModeScope>
-      ))}
-    </div>
-  );
-}
 function Gallery({ stories, axis, items }: { stories: StoriesModule; axis: string; items: { value: string; meaning?: string }[] }) {
   return (
     <div className="dsd-gallery">
@@ -792,7 +778,6 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
   const code: CodeBlock | undefined = d.code && ('call' in d.code ? (d.code as CodeBlock) : (d.code as Record<string, CodeBlock>)[platform]);
   const toc: [string, string, boolean][] = [
     ['overview', 'Overview', true],
-    ['platforms', 'iOS and Android', IS_ADAPTIVE],
     ['when-to-use', 'When to use', !!(d.when_to_use?.length || d.when_not_to_use?.length)],
     ['anatomy', 'Anatomy', !!d.anatomy?.length],
     ['variants', 'Variants', !!d.variants?.length],
@@ -823,7 +808,7 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
       <section>
         <H2 id="overview">Overview</H2>
         {playground && <Canvas of={playground} sourceState={PLATFORM === 'web' ? 'hidden' : 'none'} />}
-        {IS_ADAPTIVE ? <p className="dsd-p dsd-muted">Switch <strong>Platform</strong>, Color and Language in the toolbar: the same component takes the iOS or Android look from the Figma OS mode, never from a separate component.</p> : null}
+        {IS_ADAPTIVE ? <p className="dsd-p dsd-muted" data-platform-view={platform}>Showing <strong>{platformName(platform)}</strong> ({platformLabel(platform)}). Switch <strong>Platform</strong> in the toolbar to see the other platform: the same component takes its iOS or Android look from the Figma OS mode (collection <Code>{OS_COLLECTION}</Code>), never from a separate component.</p> : null}
         {d.use_cases?.length ? (
           <>
             <h3 className="dsd-h3">Use cases</h3>
@@ -831,14 +816,6 @@ export function ComponentDocs({ docs, stories }: { docs: ComponentDocsData; stor
           </>
         ) : null}
       </section>
-
-      {IS_ADAPTIVE ? (
-        <section>
-          <H2 id="platforms">iOS and Android</H2>
-          <p className="dsd-p">One Figma component, two platforms: height, radius, type, colors and platform-only parts come from the OS mode (Figma collection <Code>{OS_COLLECTION}</Code>).</p>
-          <PlatformPanels><div className="dsd-stage"><Example stories={stories} /></div></PlatformPanels>
-        </section>
-      ) : null}
 
       {(d.when_to_use?.length || d.when_not_to_use?.length) ? (
         <section>

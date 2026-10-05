@@ -4,6 +4,8 @@
 // - unreadable: visible text whose contrast against its real background is below 3:1 (docs chrome or component text
 //   that did not follow Light / Dark). Must be empty in every mode.
 // - ltrInRtl: when the Language mode is right to left, docs blocks still laid out left to right. Must be empty.
+// - bothPlatforms (Mobile Adaptive): the page shows iOS and Android at the same time (side-by-side panels, both
+//   platform files, or a code name of the other platform). Only the platform in the toolbar may show. Must be false.
 (() => {
   const parse = (c) => { const m = c.match(/[\d.]+/g); return m ? m.map(Number) : [0, 0, 0, 0]; };
   const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
@@ -31,6 +33,11 @@
   const html = document.documentElement;
   const rtl = html.getAttribute('data-dir') === 'rtl';
   const ltrInRtl = rtl ? [...document.querySelectorAll('.dsd, .sb-canvas')].filter((n) => getComputedStyle(n).direction !== 'rtl').map((n) => n.className) : [];
+  const os = html.getAttribute('data-os');
+  const text = document.body.innerText;
+  const other = os === 'iOS' ? /Jetpack Compose|MaterialTheme\.|DesignTokens\.kt/ : os === 'Android' ? /SwiftUI|\.font\(\.|DesignTokens\.swift/ : null;
+  const views = new Set([...document.querySelectorAll('[data-platform-view]')].map((n) => n.getAttribute('data-platform-view')));
+  const bothPlatforms = views.size > 1 || (other ? other.test(text) : false);
   const mode = [...html.attributes].filter((a) => a.name.startsWith('data-') && a.name !== 'data-mode-scope').map((a) => `${a.name}=${a.value}`).join(' ');
-  return { mode, dir: rtl ? 'rtl' : 'ltr', unreadable: unreadable.slice(0, 25), unreadableCount: unreadable.length, ltrInRtl };
+  return { mode, dir: rtl ? 'rtl' : 'ltr', unreadable: unreadable.slice(0, 25), unreadableCount: unreadable.length, ltrInRtl, bothPlatforms, otherPlatformHit: other && (text.match(other) || [])[0] };
 })();
