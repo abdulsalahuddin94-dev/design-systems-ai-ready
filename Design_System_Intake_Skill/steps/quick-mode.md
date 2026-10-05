@@ -24,7 +24,7 @@ If the file belongs to a project in `My Projects/` (its key or exact name is in 
 ### 13.2 Load only what the task needs
 
 - Platform Main Skill: the matching sections only (Web: 3 Token architecture, 5 Icons, 6 Component conventions, 9 Mistakes; the same sections in the iOS / Android skills).
-- Build: figma-use + figma-generate-library (figma-swiftui for iOS), plus Impeccable / ui-ux-pro-max for visual quality. Audit: audit-design-system through `ds-auditor`.
+- Build: figma-use + figma-generate-library (figma-swiftui for iOS), plus Impeccable / ui-ux-pro-max for visual quality (and the platform quality skill, section 11 of the iOS/Android Main Skill, when installed). Audit: audit-design-system through `ds-auditor`.
 - `tools/figma_helpers.figma.js` once per file, as usual (section 0c).
 
 ### 13.3 Steps

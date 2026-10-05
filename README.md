@@ -27,7 +27,7 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
      ```
      In Figma Desktop: Plugins > Development > Import plugin from manifest..., pick `~/.figma-console-mcp/plugin/manifest.json`, and run the plugin in your file. Details: https://github.com/southleft/figma-console-mcp
    - **and/or FigCli (figma-cli)**: download https://github.com/silships/figma-cli into a `Tools` folder at a drive root (outside this folder), run `npm install` inside it, then connect in **Yolo mode** (Recommended): run `node src/index.js connect` in a terminal opened as administrator (it patches Figma, which reopens with local debugging port 9222; undo with `node src/index.js unpatch`), then `node src/index.js daemon restart`. No plugin needed. With several files open, set `FIGMA_FILE="<exact file name>"` on each command. Do not use Safe mode (not stable) or Browser mode. Risks and details: `Figma_Tools/README.md`.
-4. **Recommended skills and connectors**: the official Figma MCP / Figma plugin (figma-use, figma-generate-library, figma-generate-design), audit-design-system, ui-ux-pro-max, Impeccable.
+4. **Recommended skills and connectors**: the official Figma MCP / Figma plugin (figma-use, figma-generate-library, figma-generate-design), audit-design-system, ui-ux-pro-max, Impeccable. Optional per platform: heyimjames iOS Design Engineering Skills (iOS) and material-design-3-ui (Android); see section 11 of each platform Main Skill.
 5. **Get this folder**: clone the repository (or copy the folder) anywhere on your machine. Paths inside are relative, so any location works.
 6. **Templates (optional)**: duplicate a reference design system for your platform from `References.md` into your Figma workspace.
 

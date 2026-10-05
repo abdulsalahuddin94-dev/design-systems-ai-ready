@@ -93,6 +93,7 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Real icons always, as instances of an Icon component with a swap property and color bound to icon tokens.
 - Audit (ds-auditor / audit-design-system) after every build step; report numbers.
 - Impeccable skills guide visual quality; Figma work goes through figma-use / figma-generate-library / figma-generate-design.
+- Platform quality skills (Abdul, 2026-10-05, optional, never installed for the user): iOS = heyimjames iOS Design Engineering Skills (the-final-5-percent first), Android = skydashnet material-design-3-ui. They guide component choice, states, docs text and screen review; their values still snap to our tokens, and their component-token tier is not adopted. Exact M3 values can be checked in material-components-android `tokens.xml` (Views library, maintenance mode since I/O 2026; Compose Material 3 is current). Not adopted: compose-hig and liquid_glass_widgets (code libraries for developers), LibreTube (an app, not a DS). Details: section 11 of the iOS and Android Main Skills.
 
 ## Tooling and repo
 - Figma access through figma-cli (FigCli, Yolo mode only, Recommended; never Safe or Browser mode) or figma-console-mcp (Desktop Bridge). Find nodes by name; node IDs are only valid in their original file.

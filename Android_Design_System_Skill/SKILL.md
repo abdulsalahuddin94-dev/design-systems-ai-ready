@@ -205,8 +205,9 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 8. Shape collection underused - radii raw; FAB bound to a remote corner variable.
 9. Duplicate icon names without `_filled`; no dark previews; baseline and expressive generations mixed without deprecation notes; research board inside the DS file.
 
+
 ## Screens (Design files)
-- Screens are built only from the published DS library, section by section (figma-generate-design + figma-use + ui-ux-pro-max), at the sizes in Design_System_Intake_Skill section 7d.
+- Screens are built only from the published DS library, section by section (figma-generate-design + figma-use + ui-ux-pro-max, plus the platform quality skill in section 11 when installed), at the sizes in Design_System_Intake_Skill section 7d.
 - **Screen fidelity (Abdul's rule):** follow Design_System_Intake_Skill section 7f (`Design_System_Intake_Skill/steps/screens.md`): screen spec from every source image first, real content in every instance, one section per script, side-by-side check after each screen (run in ds-auditor), `tools/check_screens.figma.js`, checkpoint stays `Ready for review` until the user approves.
 - **Multi-screen flows (Abdul's rule):** follow Design_System_Intake_Skill section 7e (`steps/screens.md`) in order: approved gap table, missing components in the DS file, publish + Accept updates + verify, screens one by one with a Design file audit after each, changelog + Storybook question.
 - **Scenario C, imperfect DS + Design file (Abdul's rule):** follow Design_System_Intake_Skill section 7 (`steps/brownfield-3-scenario-c.md`) in order: Variable Map, DS fixes (safe ones as Fix on create, the rest after approval) + publish, screen-by-screen audit report, raw-value rules, fixes after approval, log + Accept updates. Android mapping: colors map to `md.sys.color` roles (section 3), text to `md.sys.typescale`, radius to `md.sys.shape.corner`, shadows to the elevation levels; raw overlay colors on pressed/hover map to state layers.
@@ -228,3 +229,16 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - [ ] `tokens.json > recolor_readiness.ready` is true (0 raw hex in Semantic/Brand tokens) and a test run of `tools/recolor.py` on the brand ramp shows no NEW contrast failures.
 - [ ] `data/tokens.json`, `component-registry.json`, `rules.json`, `screen-templates.json` and `docs/decisions.md` are generated for the new DS.
 - [ ] `python tools/fix_tokens.py <folder>` returns an empty plan (0 operations).
+- [ ] When the platform quality skill (section 11) is installed, its accessibility and anti-patterns references pass on the components and screens.
+
+## 11. Platform quality skill (optional, Material 3)
+
+Impeccable stays the general quality reference. For Android the workflow adds **material-design-3-ui** (skydashnet, MIT, https://github.com/skydashnet/material-design-3-ui-skill): a decision system for M3 and M3 Expressive (component choice by behavior, states, adaptive layouts, accessibility, anti-patterns). Abdul approved it on 2026-10-05 after comparing six public iOS/Android repos; none of them is a Figma kit, so they guide decisions and never replace the reference entry, this skill's structure or the intake answers.
+- **Install (never on the user's behalf; show the steps):** `curl -fsSL https://raw.githubusercontent.com/skydashnet/material-design-3-ui-skill/main/install.sh | bash` (macOS/Linux) or `irm https://raw.githubusercontent.com/skydashnet/material-design-3-ui-skill/main/install.ps1 | iex` (Windows PowerShell). When it is not installed, say so once at the first build step and continue without it.
+- **Which reference, when** (it loads its references one at a time; load only the row you need):
+  - Component scope approval and each component build: `component-selection.md`, `navigation.md`, `forms-and-input.md`, `feedback-and-overlays.md` (which component, which states, error recovery). Write the result into the component description (Purpose, Usage Rules).
+  - Foundation: `color-system.md`, `typography.md`, `shape-and-elevation.md`, `spacing-and-layout.md`, and `m3-expressive.md` when the project uses Expressive.
+  - Screens: `adaptive-design.md` (window size classes, list-detail, foldables) plus the component references.
+  - Before every checkpoint and in Scenario C/D audits: `accessibility.md` and `anti-patterns.md` ("fake Material": cards everywhere, max radius everywhere, chips as buttons, FAB for minor actions).
+- **Where it does not apply:** its token hierarchy ends in component tokens; this workflow keeps Primitives + Semantics only (no Component-specific tier unless the user asks, or Mobile Adaptive). Intake answers (fonts, modes, brand color, RTL) and this skill's md.sys names always win.
+- **Exact M3 values:** check numbers against the official `tokens.xml` files in material-components-android (`lib/java/com/google/android/material/<component>/res/values/tokens.xml`, color in `color/res/values*/tokens.xml`). That library (Views) is in maintenance mode since Google I/O 2026; Compose Material 3 is the current implementation, so new components and Expressive changes come from Compose Material 3 docs and m3.material.io first.

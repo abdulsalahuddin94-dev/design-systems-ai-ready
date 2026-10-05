@@ -210,8 +210,9 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 13. Non-native checkbox/radio used without guidance; 20pt controls without 44pt hit areas.
 14. Focus border contrast < 3:1.
 
+
 ## Screens (Design files)
-- Screens are built only from the published DS library, section by section (figma-generate-design + figma-use + ui-ux-pro-max), at the sizes in Design_System_Intake_Skill section 7d.
+- Screens are built only from the published DS library, section by section (figma-generate-design + figma-use + ui-ux-pro-max, plus the platform quality skill in section 11 when installed), at the sizes in Design_System_Intake_Skill section 7d.
 - **Screen fidelity (Abdul's rule):** follow Design_System_Intake_Skill section 7f (`Design_System_Intake_Skill/steps/screens.md`): screen spec from every source image first, real content in every instance, one section per script, side-by-side check after each screen (run in ds-auditor), `tools/check_screens.figma.js`, checkpoint stays `Ready for review` until the user approves.
 - **Multi-screen flows (Abdul's rule):** follow Design_System_Intake_Skill section 7e (`steps/screens.md`) in order: approved gap table, missing components in the DS file, publish + Accept updates + verify, screens one by one with a Design file audit after each, changelog + Storybook question.
 - **Scenario C, imperfect DS + Design file (Abdul's rule):** follow Design_System_Intake_Skill section 7 (`steps/brownfield-3-scenario-c.md`) in order: Variable Map, DS fixes (safe ones as Fix on create, the rest after approval) + publish, screen-by-screen audit report, raw-value rules, fixes after approval, log + Accept updates. iOS mapping: colors map to the Apple semantic roles in section 3 (System Background, Label...), text to the Dynamic Type text styles, spacing to the pt scale; a fixed font size that should scale with Dynamic Type is flagged.
@@ -232,3 +233,16 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - [ ] `tokens.json > recolor_readiness.ready` is true (0 raw hex in Semantic/Brand tokens) and a test run of `tools/recolor.py` on the brand ramp shows no NEW contrast failures.
 - [ ] `data/tokens.json`, `component-registry.json`, `rules.json`, `screen-templates.json` and `docs/decisions.md` are generated for the new DS.
 - [ ] `python tools/fix_tokens.py <folder>` returns an empty plan (0 operations).
+- [ ] When the platform quality skill (section 11) is installed, its §21 checklist and §22 anti-patterns pass on the components and screens.
+
+## 11. Platform quality skill (optional, iOS polish)
+
+Impeccable stays the general quality reference. For iOS the workflow adds **heyimjames iOS Design Engineering Skills** (MIT, https://github.com/heyimjames/ios-design-skills), written for native SwiftUI apps with exact values (springs, radii, haptics, Liquid Glass). Abdul approved it on 2026-10-05 after comparing six public iOS/Android repos; none of them is a Figma kit, so they guide decisions and never replace the reference entry, this skill's structure or the intake answers.
+- **Install (never on the user's behalf; show the steps):** in Claude Code `/plugin marketplace add heyimjames/ios-design-skills`, then `/plugin install heyimjames@heyimjames`. Other agents: `./install.sh codex|cursor|windsurf` from a clone. When it is not installed, say so once at the first build step and continue without it.
+- **Which skill, when:**
+  - `heyimjames:the-final-5-percent` (always, from Components on): §4 Typography (tracking, optical sizes, Dynamic Type), §5 Color & material, §6 Spacing rhythm, *Buttons & CTAs*, *Sheets, detents, popovers*, §12 Loading states, §13 Empty states, §17 Settings, §18 Microcopy, §19 Accessibility, §20 Liquid Glass, §21 checklist, §22 anti-patterns. Use it to choose component variants and states, to write the Usage Rules and Accessibility text in each component description, and to review screens before the checkpoint.
+  - `heyimjames:interaction-primitives`: only when the project has widgets, Live Activities, Dynamic Island, Action Button or symbol effects.
+  - `heyimjames:chat-and-messaging` / `heyimjames:camera-and-photos`: only for apps in those domains (bubble, composer, viewfinder patterns for the screen spec).
+  - `heyimjames:macos-app-design`: not used (iOS only).
+- **How its values enter Figma:** its numbers are SwiftUI literals. In Figma every value still goes through this skill's tokens: a radius, spacing, color or shadow it suggests snaps to the nearest existing token, or becomes a proposed new Primitive/Semantic token with approval (raw-value rules, Intake section 7). Motion, haptics and sound values go into the component description (Usage Rules) and Storybook docs, not into variables. No Component-specific token tier because of it.
+- **Platform version check:** at the start of an iOS project, check the newest Apple iOS UI Kit / HIG release. The reference entry and this skill are iOS 26; if Apple has shipped a newer kit (one public library already targets iOS 27 HIG as of 2026-10-05), tell the user once and list what changed before Foundation starts.
