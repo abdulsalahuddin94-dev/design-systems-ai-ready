@@ -1,6 +1,6 @@
 ---
 name: design-system-intake
-description: Main entry skill for every use of "Design systems Ai Ready". Runs first, before any other skill or Figma call. Interviews the user one question at a time (in English) to collect the project basics, platform, and whether the work is Greenfield or Brownfield, then routes to the right path (new DS, screens without a DS, live product without Figma, imperfect DS with a Design file that follows it partly or not at all, Scenario C), loads the matching platform Main Skill (Web_Design_System_Skill, iOS_Design_System_Skill, Android_Design_System_Skill), enforces the approval checkpoints (Foundation, Components, Screens) and always ends by writing the project skills and running the final audit.
+description: Main entry skill for every use of "Design systems Ai Ready". Runs first, before any other skill or Figma call. Interviews the user one question at a time (in English) to collect the project basics, platform, and whether the work is Greenfield or Brownfield, then routes to the right path (new DS, screens without a DS, Code to Design from a coded app into an existing or a new DS (Scenario D), imperfect DS with a Design file that follows it partly or not at all, Scenario C), loads the matching platform Main Skill (Web_Design_System_Skill, iOS_Design_System_Skill, Android_Design_System_Skill), enforces the approval checkpoints (Foundation, Components, Screens) and always ends by writing the project skills and running the final audit.
 ---
 
 # Design System Intake (Main Skill - runs first, every time)
@@ -25,6 +25,12 @@ Never touch Figma while this intake is running. Figma work starts only after the
   - **Show first, then ask:** summaries, tables, screenshots and audit numbers go in the message before the AskUserQuestion call; the question itself stays one line.
   - **Typed questions stay plain text:** names, links, paths with no default, hex colors, a repo URL, "what is `<variable>` for" when there is no guess. Where the user must put files on disk, always show the full path of each folder in the message (0.3b). If such a question has a sensible default (a default folder, a default font), it becomes a choice with the default first and "Other" for the typed answer.
   - Fallback for tools without AskUserQuestion (Cursor, Codex, Antigravity, Gemini, or a remote chat): a numbered list, recommended option first; the user replies with the number, several numbers for `Ask (multi)`, or free text.
+- **Back on every menu (Abdul, 2026-10-05).** Every `Ask (choice)` and `Ask (multi)` in the whole workflow (this router, every `steps/*.md` file, quick mode, the platform Main Skills, the Storybook and study-reference skills, checkpoints, approvals and confirmations; also 1.3 with its Mobile Adaptive option and 1.6) gets a **"Back"** option, so a wrong pick can be undone and the user can move between steps. The skills do not write it in each menu; this rule adds it.
+  - **Where:** always the last option, label "Back", description "Return to the previous question: <its short name>". Never on the first question of a flow (0.0 in the intake, the first question of quick mode or of a skill run on its own), where there is nothing to go back to.
+  - **Option count:** Back counts toward the 4-option limit. A menu that already has 4 options keeps its 3 most likely and moves the rest to "Other" (say so in the question), or splits the question. In `Ask (multi)`, Back is a normal option; if it is ticked, ignore the other ticks and go back.
+  - **What Back does:** re-ask the previous question with the earlier answer shown as "(current)" in its description, undo what that answer recorded (`Project_Brief.md`, `status.json`, loaded step files and Main Skills) and continue forward from the new answer, skipping questions whose answers still hold. Pressing Back again goes one more step back, up to the first question. Moving to any earlier step by name is typed in Other ("back to 0.4", "back to the platform").
+  - **After Figma or file work:** Back never undoes Figma changes by itself. If the step being left already changed Figma or created files, say in one line what was done and Ask (choice): "Keep it and go back (Recommended)" / "Undo it, then go back" (description: list exactly what will be removed; nothing in a shared DS or an original reference template is ever removed) before going back.
+  - Fallback numbered lists end with "Back" as the last number (not on the first question).
 - Skip a question when the user already answered it (in this conversation, in the project folder's `Project_Brief.md`, or in memory). Say what you reused in one line.
 - If the user says "you decide", pick the recommended option, say which, and continue.
 - If the user only asks to **change a color** in an existing DS, skip the intake questions: run the Recolor procedure in the platform Main Skill (section 3b) with `tools/recolor.py`.
@@ -99,7 +105,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 | 1.6 Mobile Adaptive | `steps/mobile-adaptive.md` | 1.3 = Mobile Adaptive |
 | 4 (3a-3d) | `steps/greenfield.md` | 2.1 = Greenfield |
 | 5 | `steps/brownfield-1-screens.md` | 2.2 = 1 |
-| 6 | `steps/brownfield-2-code.md` | 2.2 = 2 |
+| 6 (Scenario D) | `steps/code-to-design.md` | 2.1 = Code to Design |
 | 7 (Scenario C) | `steps/brownfield-3-scenario-c.md` | 2.2 = 3 |
 | 7g | `steps/single-file-ds.md` | 2.3 = the DS is inside the Design file |
 | 7b | `steps/fix-on-create.md` | a project starts from an existing file; last foundation step of a new build |
@@ -150,7 +156,7 @@ Until the project folder exists (0.3), keep the answers in the conversation; rig
 | 0.5 | Ask (choice): "Do you need Arabic / RTL support?" "No" / "Yes" (nothing marked recommended; put first the answer the inputs point to) | If Yes: mirrored layouts, RTL auto layout checks, directional icons (arrows, chevrons, back) get mirrored variants, Arabic font pairing, and text styles tested with Arabic copy. |
 | 0.6 | Ask (choice): "Which fonts should the system use?" "<platform default> (Recommended)" (description: the Latin default, plus the Arabic default when 0.5 = Yes) / "The brand font" (description: type its name, and the Arabic font if RTL is needed, in Other). | Say the one default for the chosen platform in the question: Web = Poppins (org default) or the brand font; iOS = SF Pro; Android = Roboto / Roboto Flex. Arabic default pairing: IBM Plex Sans Arabic (Web/Android), SF Arabic (iOS). Confirm the fonts are installed / available in Figma (a read-only `figma_execute` of `figma.listAvailableFontsAsync()` is fine). |
 | 0.7 | Ask (choice): "Do you also want a live Storybook for developers?" "Yes, after components (Recommended)" (description: browse components, try variants and properties, read use cases, link back to Figma; recommended when developers will use the DS) / "Later" / "No" | Optional. Yes -> run section 12 after the Components checkpoint. Default stack for every platform: React + Storybook. iOS and Android projects get a web Storybook (React + CSS) styled like the native components. Record the answer in `Project_Brief.md` and in `status.json > storybook_plan` (`yes`, `later`, `no`). **Later** always gets a trigger in `status.json > storybook_ask_at` (default `components-approved`; after a second "Later", `screens-approved`; after a third, `next-session`). Ask again when that point is reached; the SessionStart hook lists projects whose plan is `later`. |
-| 0.8 | Ask (choice): "Do you also want example screens built from the design system?" "Yes, after components (Recommended)" (description: e.g. login, list, detail, in a separate Design file) / "No, design system only" | Yes -> the Screens phase and checkpoint 3 run. Screens are built in a separate Design file (`<Project>`) that uses the published DS library, so the user will be asked to publish the library at the Components checkpoint (section 8). Skip for Brownfield paths that already rebuild screens. |
+| 0.8 | Ask (choice): "Do you also want example screens built from the design system?" "Yes, after components (Recommended)" (description: e.g. login, list, detail, in a separate Design file) / "No, design system only" | Yes -> the Screens phase and checkpoint 3 run. Screens are built in a separate Design file (`<Project>`) that uses the published DS library, so the user will be asked to publish the library at the Components checkpoint (section 8). Skip for Brownfield and Code to Design paths that already rebuild screens. |
 
 ---
 
@@ -181,8 +187,8 @@ Platform rules (never mix):
 
 | # | Question | Next |
 |---|---|---|
-| 2.1 | Ask (choice): "Is this a new product, or does something already exist?" "Greenfield" (description: new product, nothing designed yet) / "Brownfield" (description: screens, code or a design system already exist) | Greenfield -> section 4. Brownfield -> 2.2 |
-| 2.2 | Ask (choice): "What already exists?" "Screens, no design system" (description: 1, screens in Figma or screenshots) / "Live code, no Figma" (description: 2, a live product in code with no Figma at all) / "Imperfect DS + screens" (description: 3, a design system exists, possibly imperfect, and the screens follow it only partly or not at all) | 1 -> section 5. 2 -> section 6. 3 -> 2.3 |
+| 2.1 | Ask (choice): "Is this a new product, or does something already exist?" "Greenfield" (description: new product, nothing designed yet) / "Brownfield" (description: screens or a design system already exist in Figma) / "Code to Design" (description: a coded app, e.g. a GitHub repo, is the source; its screens are built in Figma from an existing or a new DS) | Greenfield -> section 4. Brownfield -> 2.2. Code to Design -> section 6 (Scenario D, `steps/code-to-design.md`), which asks 2.5 (existing DS or new DS from the code) |
+| 2.2 | Ask (choice): "What already exists?" "Screens, no design system" (description: 1, screens in Figma or screenshots) / "Imperfect DS + screens" (description: 3, a design system exists, possibly imperfect, and the screens follow it only partly or not at all) | 1 -> section 5. 3 -> 2.3. (Type 2, live code with no Figma, is now Scenario D branch b.) |
 | 2.3 | Ask (choice): "Where does the design system live?" "In its own library file" (description: a separate DS file that the Design files enable as a library) / "Inside the Design file" (description: variables, styles and components sit on pages next to the screens, no library) (nothing marked recommended; put first the answer the files point to) | Library file -> section 7. Inside the Design file -> section 7 with section 7g (`steps/single-file-ds.md`), which asks the path (2.4: split into a library, or keep one file) after the Variable Map |
 
 ### Decision tree
@@ -201,15 +207,17 @@ Intake basics 0.0-0.2 -> Platform (1.1-1.5) -> load platform Main Skill(s) -> ba
       │  │     ├─ Inspiration folder has files? -> set design direction
       │  │     │  └─ empty -> ask industry (3.4) -> derive style
       │  │     └─ Build per platform Main Skill build order
+      ├─ Code to Design (Scenario D) -> repo/path -> read code (tokens, routes, popups, states) -> which DS? (2.5)
+      │  ├─ a. Existing DS -> links -> editable DS page (2.6), other pages read only -> study DS -> token map code->DS -> gap table + specs -> missing components on the editable page only -> publish (ask) -> screens in the Design file -> audit; manual edits kept
+      │  └─ b. New DS from the code -> merge summary -> "<Project>" + "<Project> Design System" files -> Primitives + Semantics + components (build order) -> publish -> screens per module -> audit
       └─ Brownfield (2.2)
          ├─ Type 1: screens, no DS  -> register the Design file as the source -> open it -> extract (frames or screenshots) -> merge approval -> "<Project> Design System" file -> build -> publish -> link the Design file to the library -> rebuild screens
-         ├─ Type 2: live code, no Figma -> repo/path -> extract tokens from code -> "<Project>" + "<Project> Design System" files -> build -> rebuild screens per module
          └─ Type 3: imperfect DS + Design file -> where is the DS? (2.3)
             ├─ Own library file -> Scenario C: Variable Map -> fix DS + publish -> audit screens -> approve report -> fix screens -> log + Accept updates
             └─ Inside the Design file (7g) -> version -> DS pages -> Variable Map -> path? (2.4)
                ├─ Split into a library (recommended) -> publish this file -> screens move to a new Design file -> audit -> Scenario C from step 2
                └─ Keep one file -> Scenario C with history versions instead of publish / Accept updates
-Every path from an existing file: Fix on create (section 7b)
+Every path from an existing file: Fix on create (section 7b), except a shared DS in Scenario D branch a (read only; issues are reported, not fixed)
 Every path: linked Figma files, publish and file check (section 7c)
 Every path: checkpoints Foundation -> Components -> Screens (section 8)
 Every path ends: write project skills + final audit (section 11)
@@ -221,7 +229,7 @@ Optional (0.7 = Yes): Storybook after the Components checkpoint (section 12)
 
 ## 4-7f. Path steps and shared rules
 
-Sections 4 (Greenfield), 5-7 (Brownfield types 1-3), 7b (Fix on create), 7c (linked Figma files), 7d-7f (screens) live in `steps/` (map in section 0c). Load the file of the chosen path, plus the shared files it names.
+Sections 4 (Greenfield), 5 and 7 (Brownfield types 1 and 3), 6 (Scenario D, Code to Design), 7b (Fix on create), 7c (linked Figma files), 7d-7f (screens) live in `steps/` (map in section 0c). Load the file of the chosen path, plus the shared files it names.
 
 ---
 
@@ -254,7 +262,7 @@ Project: <name>            Local folder: <path>
 Figma: <links and roles>
 Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base) / Both Mobile Adaptive (EN or EN+AR)> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
-Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
+Path: <Greenfield 3a/3b-3d | Brownfield type 1/3 | Code to Design a (existing DS, editable page: <name>) / b (new DS)>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>, Research <n / empty>
 Direction: <style, corner/density/elevation, brand contrast result and fix>
 Screens: <Yes after components (Design file, needs published library) / No>

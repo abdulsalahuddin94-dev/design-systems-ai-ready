@@ -1,6 +1,6 @@
 # Finish: skills, final audit, Storybook
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load at the end of a build (Step 8) or when the Storybook step runs (Step 9).
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load at the end of a build (Step 8) or when the Storybook step runs (Step 9). Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 11. Step 8 - Always finish with skills and the final audit
 

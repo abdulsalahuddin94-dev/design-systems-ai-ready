@@ -1,6 +1,6 @@
 # Brownfield type 3: imperfect DS + Design file (Scenario C)
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md. When 2.3 = "Inside the Design file", also load `single-file-ds.md` (section 7g): it sets up the file first, splits the Variable Map's "Used in" column into DS pages and screen pages, asks the path (2.4) after step 1, and says which publish steps change.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 3. Also load figma-files.md, fix-on-create.md and screens.md. When 2.3 = "Inside the Design file", also load `single-file-ds.md` (section 7g): it sets up the file first, splits the Variable Map's "Used in" column into DS pages and screen pages, asks the path (2.4) after step 1, and says which publish steps change. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 7. Step 6 - Brownfield type 3: imperfect DS + Design file (Scenario C)
 

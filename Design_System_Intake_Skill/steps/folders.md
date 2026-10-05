@@ -1,6 +1,6 @@
 # Folder conventions
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load at question 0.3 (creating the project folder) or when unsure where a file goes.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load at question 0.3 (creating the project folder) or when unsure where a file goes. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 10. Folder conventions
 
@@ -28,8 +28,8 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
       │  ├─ Inspiration\                       (reference screenshots, links)
       │  ├─ Screens\                           (screenshots of existing UI)
       │  ├─ Research\                          (research, personas, PRDs, notes about the product)
-      │  ├─ Extracted_Tokens.md                (Brownfield types 1 and 2)
-      │  └─ Code_Inventory.md                  (Brownfield type 2)
+      │  ├─ Extracted_Tokens.md                (Brownfield type 1, Code to Design)
+      │  └─ Code_Inventory.md                  (Code to Design, Scenario D)
       ├─ data\                                 (tokens.json, component-registry.json, rules.json, screen-templates.json, source\, recolor\)
       ├─ docs\decisions.md                     (why each decision was made; recolor log)
       ├─ audits\                              (ds-auditor reports)

@@ -1,6 +1,6 @@
 # Brownfield type 1: screens exist, no DS
 
-Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 1. Also load figma-files.md and screens.md.
+Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "section 7c" etc. still resolve; the map is in `SKILL.md` section 0c). Load when 2.2 = 1. Also load figma-files.md and screens.md. Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
 
 ## 5. Step 4 - Brownfield type 1: screens exist, no DS
 
