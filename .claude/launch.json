@@ -27,6 +27,20 @@
         "My Projects/ClinicSoft/storybook/.storybook"
       ],
       "port": 6007
+    },
+    {
+      "name": "native-one-file-pilot-storybook",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "My Projects/Native_One_File_Pilot/storybook/node_modules/storybook/dist/bin/dispatcher.js",
+        "dev",
+        "-p",
+        "6008",
+        "--no-open",
+        "--config-dir",
+        "My Projects/Native_One_File_Pilot/storybook/.storybook"
+      ],
+      "port": 6008
     }
   ]
 }

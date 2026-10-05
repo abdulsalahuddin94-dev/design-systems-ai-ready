@@ -5,6 +5,9 @@ Reads   <folder>/data/component-registry.json and <folder>/storybook/src/compone
 Checks  - every registry component has a stories file whose title ends with the Figma name
         - every Figma variant and property name appears as an argTypes key (quoted, exact case)
         - every variant value appears in the story file
+        - docs completeness (lesson from the Mobile Adaptive pilot, 2026-10-05): every component Docs page (<name>.mdx)
+          has Overview, Use cases, When to use, Do not use, Do and don't, Accessibility and the Figma description.
+          Fill a gap in the registry "docs" block (docs-writer) or the Figma description, never by hand in the .mdx.
 Exit code 1 when anything is missing, so it can gate a build.
 """
 import json
@@ -46,7 +49,20 @@ def main():
                     problems.append(f"{name}: value '{key}={v}' missing ({rel})")
         ok += 1
 
-    print(f"{ok}/{len(registry['components'])} components have stories; {len(problems)} name problems")
+    # docs completeness: the sections every component page must show
+    required = {"overview": "Overview", "use_cases": "Use cases", "when_to_use": "When to use", "when_not_to_use": "Do not use",
+                "guidelines": "Do and don't", "accessibility": "Accessibility", "figma_description": "Description from Figma"}
+    docs_gaps = []
+    for f in (folder / "storybook" / "src" / "stories").rglob("*.mdx"):
+        m = re.search(r"export const docs = (\{.*?\});\n", f.read_text(encoding="utf-8"), re.S)
+        if not m:
+            continue
+        d = json.loads(m.group(1))
+        missing = [label for k, label in required.items() if not d.get(k)]
+        if missing:
+            docs_gaps.append(f"{d.get('name', f.stem)}: missing {', '.join(missing)}")
+    problems += docs_gaps
+    print(f"{ok}/{len(registry['components'])} components have stories; {len(problems) - len(docs_gaps)} name problems; {len(docs_gaps)} docs pages with missing sections")
     for p in problems:
         print(" - " + p)
     return 1 if problems else 0

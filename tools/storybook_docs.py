@@ -92,11 +92,15 @@ def read_component_md(folder):
     return out
 
 
+DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?"
+
+
 def parse_description(desc):
-    """Split a Figma description into Purpose / Usage rules / Accessibility (the house format)."""
+    """Split a Figma description into Purpose / Usage rules / Accessibility (the house format). Labels match in any case
+    ("Usage Rules:"), so a description never ends up whole in the overview (lesson from the Mobile Adaptive pilot)."""
     parts = {}
-    for label, key in (("Purpose", "purpose"), ("Usage rules", "usage"), ("Accessibility", "a11y")):
-        m = re.search(label + r"\s*:\s*(.+?)(?=\n?\s*(Purpose|Usage rules|Accessibility)\s*:|\Z)", desc or "", re.S)
+    for label, key in (("Purpose", "purpose"), (r"Usage rules?|Usage", "usage"), ("Accessibility", "a11y")):
+        m = re.search(r"(?:^|\n|\.\s)\s*(?:" + label + r")\s*:\s*(.+?)(?=(?:\n|\.\s)\s*(?:" + DESC_LABELS + r")\s*:|\Z)", desc or "", re.S | re.I)
         if m:
             parts[key] = " ".join(m.group(1).split())
     return parts

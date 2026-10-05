@@ -9,7 +9,12 @@
 // - untranslated (Language mode other than the default, e.g. AR): docs text still in the default language. Each entry is
 //   a missing key for src/i18n/<mode>.json (translate it, or map it to itself when it must stay as is). Must be empty.
 (() => {
-  const parse = (c) => { const m = c.match(/[\d.]+/g); return m ? m.map(Number) : [0, 0, 0, 0]; };
+  // rgb()/rgba() and color(srgb r g b / a) (what color-mix() computes to; channels 0-1)
+  const parse = (c) => {
+    const m = (c.match(/[\d.]+/g) || []).map(Number);
+    if (/^color\(srgb/.test(c)) return [m[0] * 255, m[1] * 255, m[2] * 255, m[3] ?? 1];
+    return m.length ? m : [0, 0, 0, 0];
+  };
   const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
   const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
   const bgOf = (el) => {

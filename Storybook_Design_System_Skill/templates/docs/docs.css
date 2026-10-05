@@ -62,8 +62,8 @@
 @media (max-width: 720px) { .dsd-two { grid-template-columns: 1fr; } }
 .dsd-good { border-top: 3px solid var(--dsd-success-c); }
 .dsd-bad { border-top: 3px solid var(--dsd-error-c); }
-.dsd-good .dsd-verdict { color: var(--dsd-success-c); font-weight: 700; margin: 8px 0 4px; }
-.dsd-bad .dsd-verdict { color: var(--dsd-error-c); font-weight: 700; margin: 8px 0 4px; }
+.dsd-good .dsd-verdict { color: color-mix(in srgb, var(--dsd-success-c) 55%, var(--dsd-text-c)); /* readable on light and dark cards */ font-weight: 700; margin: 8px 0 4px; }
+.dsd-bad .dsd-verdict { color: color-mix(in srgb, var(--dsd-error-c) 70%, var(--dsd-text-c)); font-weight: 700; margin: 8px 0 4px; }
 
 /* live samples, stages, galleries */
 .dsd-samples { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
