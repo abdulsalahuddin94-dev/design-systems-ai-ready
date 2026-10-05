@@ -148,6 +148,7 @@ Tell the user up front which file to open: "Please open '<DS file name>' in Figm
 5. `python tools/storybook_parity.py "<folder>"` (names must match Figma exactly; fix every mismatch).
 6. `npm --prefix "<folder>/storybook" run build-storybook`, then a visual check of the changed components in each mode against the Figma screenshots.
 7. `python tools/project_status.py "<folder>" --mark-synced`.
+8. If the project is published (`status.json > storybook_publish` = `pages` or `chromatic`): commit and push the project repo so the same link redeploys, wait for the deploy, and tell the user in one line that the link is updated.
 - Never edit `src/tokens/*` by hand; they are generated.
 - A rename in Figma is a rename in Storybook (same day), because names must match.
 
