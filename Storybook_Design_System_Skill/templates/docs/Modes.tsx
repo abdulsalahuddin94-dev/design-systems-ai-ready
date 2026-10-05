@@ -98,6 +98,9 @@ function useHtmlModes(modes: Modes) {
     el.setAttribute('data-mode-scope', '');
     Object.entries(attrsFor(modes)).forEach(([k, v]) => el.setAttribute(k, v));
     if (LANGUAGE_COLLECTION) el.setAttribute('lang', String(modes[LANGUAGE_COLLECTION]).toLowerCase());
+    // the docs wrapper and the story canvas sit outside any ModeScope: mirror the direction there as well
+    el.setAttribute('data-dir', isRtl(modes) ? 'rtl' : 'ltr');
+    document.querySelectorAll('.sbdocs-wrapper, #storybook-root, #storybook-docs').forEach((n) => n.setAttribute('dir', isRtl(modes) ? 'rtl' : 'ltr'));
   }, [key]);
 }
 
@@ -132,7 +135,7 @@ export const withModes = (Story: React.ComponentType, ctx: { globals?: Record<st
   return <ModeScope modes={modes} className="sb-canvas"><Story /></ModeScope>;
 };
 
-/** Docs container: docs pages follow the same toolbar (docs chrome stays left to right). */
+/** Docs container: docs pages follow the same toolbar, including the direction of the Language mode (AR = right to left). */
 export function ModesDocsContainer(props: { context: any; children?: React.ReactNode; theme?: any }) {
   const { context } = props;
   const read = () => {
@@ -151,7 +154,7 @@ export function ModesDocsContainer(props: { context: any; children?: React.React
   useHtmlModes(modes);
   return (
     <DocsContainer {...(props as any)}>
-      <ModeScope modes={modes} dir={false}>{props.children}</ModeScope>
+      <ModeScope modes={modes} className="sb-docs-scope">{props.children}</ModeScope>
     </DocsContainer>
   );
 }

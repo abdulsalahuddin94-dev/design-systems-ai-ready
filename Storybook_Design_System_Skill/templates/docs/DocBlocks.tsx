@@ -13,7 +13,7 @@ import { Canvas, Controls, ArgTypes } from '@storybook/addon-docs/blocks';
 import { tokens } from '../tokens/tokens';
 import { Icon, iconNames } from '../lib/Icon';
 import {
-  ALL_TOKENS, COLLECTIONS, IS_ADAPTIVE, PLATFORMS, OS_COLLECTION, LANGUAGE_COLLECTION, RTL_MODE, ModeScope,
+  ALL_TOKENS, COLLECTIONS, IS_ADAPTIVE, PLATFORMS, OS_COLLECTION, LANGUAGE_COLLECTION, RTL_MODE, ModeScope, isRtl,
   useModes, usePlatform, usePlatformLabel, platformLabel, codesFor, resolveToken, type CodeName, type Modes, type Token,
 } from './Modes';
 import './docs.css';
@@ -61,7 +61,7 @@ const THEME: Record<string, string | undefined> = {
   '--dsd-text': pick([/(^|\/)text\/primary$/i, /label\/primary$/i, /(^|\/)on-surface$/i, /(^|\/)text$/i]),
   '--dsd-muted': pick([/(^|\/)text\/(secondary|muted)$/i, /label\/secondary$/i, /on-surface-variant$/i]),
   '--dsd-bg': pick([/(^|\/)bg\/primary$/i, /background\/primary$/i, /system-?background$/i, /(^|\/)surface$/i, /(^|\/)background$/i]),
-  '--dsd-surface': pick([/(^|\/)bg\/secondary$/i, /background\/secondary$/i, /secondary-?system-?background$/i, /surface-container$/i, /(^|\/)bg\/subtle$/i]),
+  '--dsd-surface': pick([/(^|\/)bg\/secondary$/i, /background\/(secondary|grouped|elevated)$/i, /secondary-?system-?background$/i, /surface[-/ ]container$/i, /(^|\/)bg\/subtle$/i, /(^|\/)surface$/i]),
   '--dsd-border': pick([/(^|\/)border\/default$/i, /separator/i, /outline-variant$/i, /(^|\/)border\/muted$/i]),
   '--dsd-brand': pick([/(^|\/)bg\/brand$/i, /action\/primary\/bg$/i, /btn\/primary\/bg/i, /(^|\/)accent/i, /(^|\/)primary$/i, /brand\/(600|500)$/i]),
   '--dsd-success': pick([/(^|\/)text\/success$/i, /(^|\/)icon\/success$/i, /success/i]),
@@ -78,6 +78,10 @@ if (typeof document !== 'undefined' && !document.getElementById('dsd-page')) {
   el.textContent = `
     .sbdocs-wrapper:has(.dsd) { background: ${bg}; padding: 40px 48px 64px; }
     .sbdocs-wrapper:has(.dsd) .sbdocs-content { max-width: 1280px; width: 100%; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content :is(h1, h2, h3, h4, strong, th, td, li) { color: ${THEME['--dsd-text'] || 'inherit'}; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content :is(p, blockquote) { color: ${THEME['--dsd-muted'] || THEME['--dsd-text'] || 'inherit'}; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content :is(h1, h2, h3) { border-color: ${THEME['--dsd-border'] || 'currentColor'}; }
+    .sbdocs-wrapper:has(.dsd) .sbdocs-content code:not(.dsd code) { color: inherit; background: transparent; border-color: ${THEME['--dsd-border'] || 'currentColor'}; }
     .dsd .docs-story { background: ${bg}; }
     @media (max-width: 720px) { .sbdocs-wrapper:has(.dsd) { padding: 24px 16px 48px; } }
   `;
@@ -295,7 +299,7 @@ const ROLES: [string, RegExp][] = [
 ];
 type Kind = 'fill' | 'text' | 'border' | 'icon';
 const kindOf = (name: string): Kind =>
-  /(^|\/)(text|label|on-[a-z]+|foreground)(\/|$|-)|\/text$/i.test(name) ? 'text'
+  /(^|\/)(text|label|on[- ][a-z]+|foreground)(\/|$|-)|\/text$/i.test(name) ? 'text'
   : /border|outline|separator|stroke|divider|ring/i.test(name) ? 'border'
   : /(^|\/)icon/i.test(name) ? 'icon' : 'fill';
 const KIND_ORDER: Kind[] = ['fill', 'text', 'border', 'icon'];
@@ -307,7 +311,7 @@ function hexOf(t: AnyTok, mode: string, modes?: Modes) {
   return valueOf(t, mode, modes).hex;
 }
 // Text and icon colors meant for a filled surface (on-brand, inverse, a button's text) are shown on that surface.
-const onSurface = (name: string) => /(^|\/)on-|inverse|(action|btn|button)\/[^/]+\/(text|icon)/i.test(name);
+const onSurface = (name: string) => /(^|\/)on[- ]|inverse|(action|btn|button)\/[^/]+\/(text|icon)/i.test(name);
 function Swatch({ t, mode, onToken, label, surface }: { t: AnyTok; mode: string; onToken?: AnyTok; label?: string; surface?: AnyTok }) {
   const kind = kindOf(t.name);
   const platform = usePlatform();
@@ -508,15 +512,17 @@ export type TypeData = {
   scales?: { name: string; note?: string; styles: string[] }[];
   codes?: Record<string, CodeName[] | Record<string, CodeName[]>>;
 };
+const SAMPLE_RTL = 'نص تجريبي يوضح شكل الخط وحجمه في هذا النمط';
 export function TypeSpecimen({ data }: { data: TypeData }) {
   const platform = usePlatform();
+  const rtl = isRtl(useModes());
   // Mobile Adaptive: codes per platform ({ ios: [...], android: [...] }), the Platform switch picks one
   const codesOfStyle = (s: string): CodeName[] | undefined => {
     const c = data.codes?.[s];
     return Array.isArray(c) ? c : c?.[platform];
   };
   const groups = data.groups?.length ? data.groups : [{ name: 'Text styles', styles: data.styles }];
-  const sample = data.sample || 'The quick brown fox jumps over the lazy dog';
+  const sample = rtl ? SAMPLE_RTL : data.sample || 'The quick brown fox jumps over the lazy dog';
   return (
     <DocsRoot>
       <div className="dsd-card dsd-type-intro">
@@ -533,7 +539,7 @@ export function TypeSpecimen({ data }: { data: TypeData }) {
           <div className="dsd-type-group">
             {sc.styles.map((s) => (
               <div key={s} className="dsd-type-row dsd-type-row-compact">
-                <Measured cls={textClass(s)} sample={data.sample || 'The quick brown fox jumps over the lazy dog'} compact code={PLATFORM !== 'web' ? codesOfStyle(s)?.[0]?.name : undefined} />
+                <Measured cls={textClass(s)} sample={sample} compact code={PLATFORM !== 'web' ? codesOfStyle(s)?.[0]?.name : undefined} />
               </div>
             ))}
           </div>
