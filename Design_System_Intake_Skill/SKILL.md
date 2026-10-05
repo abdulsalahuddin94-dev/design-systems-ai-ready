@@ -25,7 +25,7 @@ Never touch Figma while this intake is running. Figma work starts only after the
   - **Show first, then ask:** summaries, tables, screenshots and audit numbers go in the message before the AskUserQuestion call; the question itself stays one line.
   - **Typed questions stay plain text:** names, links, paths with no default, hex colors, a repo URL, "what is `<variable>` for" when there is no guess. Where the user must put files on disk, always show the full path of each folder in the message (0.3b). If such a question has a sensible default (a default folder, a default font), it becomes a choice with the default first and "Other" for the typed answer.
   - Fallback for tools without AskUserQuestion (Cursor, Codex, Antigravity, Gemini, or a remote chat): a numbered list, recommended option first; the user replies with the number, several numbers for `Ask (multi)`, or free text.
-- **Back on every menu (Abdul, 2026-10-05).** Every `Ask (choice)` and `Ask (multi)` in the whole workflow (this router, every `steps/*.md` file, quick mode, the platform Main Skills, the Storybook and study-reference skills, checkpoints, approvals and confirmations) gets a **"Back"** option, so a wrong pick can be undone and the user can move between steps. The skills do not write it in each menu; this rule adds it.
+- **Back on every menu (Abdul, 2026-10-05).** Every `Ask (choice)` and `Ask (multi)` in the whole workflow (this router, every `steps/*.md` file, quick mode, the platform Main Skills, the Storybook and study-reference skills, checkpoints, approvals and confirmations; also 1.3 with its Mobile Adaptive option and 1.6) gets a **"Back"** option, so a wrong pick can be undone and the user can move between steps. The skills do not write it in each menu; this rule adds it.
   - **Where:** always the last option, label "Back", description "Return to the previous question: <its short name>". Never on the first question of a flow (0.0 in the intake, the first question of quick mode or of a skill run on its own), where there is nothing to go back to.
   - **Option count:** Back counts toward the 4-option limit. A menu that already has 4 options keeps its 3 most likely and moves the rest to "Other" (say so in the question), or splits the question. In `Ask (multi)`, Back is a normal option; if it is ticked, ignore the other ticks and go back.
   - **What Back does:** re-ask the previous question with the earlier answer shown as "(current)" in its description, undo what that answer recorded (`Project_Brief.md`, `status.json`, loaded step files and Main Skills) and continue forward from the new answer, skipping questions whose answers still hold. Pressing Back again goes one more step back, up to the first question. Moving to any earlier step by name is typed in Other ("back to 0.4", "back to the platform").
@@ -102,6 +102,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 |---|---|---|
 | 0b install steps | `steps/preflight-install.md`, `Figma_Tools/README.md` | preflight finds no tool installed or none connected |
 | 1.3-1.5 detail | `steps/both-native.md` | 1.2 = Both |
+| 1.6 Mobile Adaptive | `steps/mobile-adaptive.md` | 1.3 = Mobile Adaptive |
 | 4 (3a-3d) | `steps/greenfield.md` | 2.1 = Greenfield |
 | 5 | `steps/brownfield-1-screens.md` | 2.2 = 1 |
 | 6 (Scenario D) | `steps/code-to-design.md` | 2.1 = Code to Design |
@@ -165,17 +166,19 @@ Until the project folder exists (0.3), keep the answers in the conversation; rig
 |---|---|---|
 | 1.1 | Ask (choice): "Which platform is this design system for?" "Web" / "Mobile" | Web -> load `Web_Design_System_Skill`. Mobile -> 1.2 |
 | 1.2 | Ask (choice): "Which mobile platform?" "iOS" / "Android" / "Both" | iOS -> `iOS_Design_System_Skill`. Android -> `Android_Design_System_Skill`. Both -> 1.3 |
-| 1.3 | Ask (choice): "Native, or cross-platform with one shared design?" "Native" (description: two systems, each app looks native) / "Cross-platform" (description: one shared design, Flutter / React Native custom UI) | Native -> 1.4. Cross-platform -> 1.5. See "Both: native or cross-platform" below. |
+| 1.3 | Ask (choice): "Native, cross-platform or Mobile Adaptive?" "Native" (description: two DS files, iOS and Android, each app looks native) / "Cross-platform" (description: Flutter, React Native: one DS, one shared look) / "Mobile Adaptive (Native, one file)" (description: one DS file; the OS mode keeps each platform native, optional EN/AR) | Native -> 1.4. Cross-platform -> 1.5. Mobile Adaptive -> 1.6. See "Both: native or cross-platform" below. |
 | 1.4 | Native only. Ask (choice): "Do you want a shared Brand Foundation file that both systems copy from?" "Yes (Recommended)" (description: brand Primitives only: color ramps, font families, raw values; recommended when one brand drives both apps) / "No" | Yes -> create `<Project> Brand Foundation` (Primitives only). Then load **both** `iOS_Design_System_Skill` and `Android_Design_System_Skill`, two independent systems. |
 | 1.5 | Cross-platform only. Two questions in one AskUserQuestion call: Ask (choice) "Which framework?" "Flutter" / "React Native"; Ask (choice) "Which base should the shared design follow?" "Material 3 (Recommended)" (description: best for one codebase) / "Apple HIG" / "Custom brand UI" (description: custom look on a Material 3 structure) | Load the matching Main Skill as the base (Material 3 or custom -> `Android_Design_System_Skill`; Apple HIG -> `iOS_Design_System_Skill`). One DS, one Design file, folder `<Project>_Mobile\`. |
 
-Both: native vs cross-platform rules (DS files, Brand Foundation, Design files, folders, `status.json` fields): `steps/both-native.md`.
+| 1.6 | Mobile Adaptive only. Ask (choice): "Which languages?" "English only" / "English + Arabic (RTL)" | Load `steps/mobile-adaptive.md` and **both** `iOS_Design_System_Skill` and `Android_Design_System_Skill` as platform references. One DS file, folder `<Project>_Mobile\`. |
+
+Both: native vs cross-platform rules (DS files, Brand Foundation, Design files, folders, `status.json` fields): `steps/both-native.md`. Mobile Adaptive (Native, one file: collections, platform/direction techniques, Figma limits): `steps/mobile-adaptive.md`.
 
 Platform rules (never mix):
 - **Web** = Tailwind conventions, web breakpoints (Desktop 1440 / iPad 768 / Mobile 375), Hover / Focus / Active states, Lucide icons.
 - **iOS** = Apple HIG, Dynamic Type, iOS semantic names (System Background, Label...), SF Symbols style icons, pt units.
 - **Android** = Material Design 3, `md.sys.color` tokens, state layers, elevation levels, Material Symbols, dp units.
-- Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system.
+- Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system. "Both" + Mobile Adaptive (Native, one file) is the one exception where iOS and Android share a DS file: platform differences live only in OS-mode variables (`steps/mobile-adaptive.md`).
 - After choosing, load the platform Main Skill. Its required skills (figma-use + figma-generate-library; figma-swiftui for iOS; figma-code-connect when mapping to code) load at the first Figma build step of the session (section 0c), not during the intake questions. Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
 
 ---
@@ -257,7 +260,7 @@ One approval covers the whole plan, including the design direction (3.4 is not a
 ```
 Project: <name>            Local folder: <path>
 Figma: <links and roles>
-Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base)> -> Main Skill(s): <names>
+Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base) / Both Mobile Adaptive (EN or EN+AR)> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/3 | Code to Design a (existing DS, editable page: <name>) / b (new DS)>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>, Research <n / empty>
