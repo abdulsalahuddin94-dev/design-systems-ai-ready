@@ -20,6 +20,7 @@ Ask (choice): "Which design system should the screens use?" "An existing DS" (de
    - Per screen and popup: sections top to bottom, every state the code renders (loading, empty, error, disabled, hover, selected, validation), exact texts, icons (by library and name, e.g. Lucide), item counts, responsive breakpoints.
    - Components used (shared UI folder, e.g. `components/ui/`) and where each is used.
    Save `[Project folder]\Inputs\Code_Inventory.md` (screens, popups, states, components, grouped by module) and `Inputs\Extracted_Tokens.md` (every token with its source file and line).
+   Then confirm the intake answers it holds (0.3c): post the color modes, RTL and fonts found in the code (`:root` / `.dark` or a theme switch, `dir="rtl"` or Arabic strings, the font setup), then Ask (choice): "Use these (Recommended)" / "Change something". Record them in `Project_Brief.md` with their source.
 3. The code is the source of truth for structure, texts and states. A live preview or captures of it are the **visual reference** only, never the frames: screens are always rebuilt from DS instances (section 7f). If the code has no tokens, ask for screenshots of the live app and extract from them (Brownfield type 1, section 5 step 2).
 
 ### 6a. Branch a: existing DS (only missing components go into the DS)
