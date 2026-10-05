@@ -24,7 +24,7 @@ When intake 1.3 answers **Native** for Both, this skill builds only the iOS half
 - Optional Brand Foundation (`<Project> Brand Foundation`, Primitives only): copy its Primitives into this file's local Primitives collection (same names and values), never enable it as a library. A brand change goes into the Brand Foundation first, then `tools/recolor.py` on this folder.
 - The iOS Design file (`<Project> iOS`) enables only the iOS DS library. The file check rejects the Android library in it.
 - `status.json`: `mobile_setup: native`, `sibling_project: My Projects/<Project>_Android/`, `figma.brand_foundation` when used.
-- Native, one file (intake 1.3, `mobile_setup: native-one-file`): this skill is the platform reference for the OS-mode values in a shared iOS + Android file; build rules in `Design_System_Intake_Skill/steps/native-one-file.md`.
+- Mobile Adaptive (Native, one file; intake 1.3, `mobile_setup: mobile-adaptive`): this skill is the platform reference for the OS-mode values in a shared iOS + Android file; build rules in `Design_System_Intake_Skill/steps/mobile-adaptive.md`.
 - **Cross-platform** (one shared design) is not this path: one DS in `<Project>_Mobile/`; this skill applies there only when intake 1.5 chose Apple HIG as the base.
 
 ## 1. File structure (pages, in this order)

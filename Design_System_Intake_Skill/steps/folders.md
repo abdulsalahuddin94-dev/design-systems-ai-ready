@@ -19,7 +19,7 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 ├─ Android_Design_System_Skill\SKILL.md
 └─ My Projects\                            (every project; README.md explains how to add one)
    ├─ _Project_Template\                   (copied for each new project, never edited per project)
-   └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (Both, cross-platform or native one file) | <Project>_Brand\ (Both native, optional Brand Foundation)
+   └─ <Project>\                           (Web)   | <Project>_iOS\ | <Project>_Android\ | <Project>_Mobile\ (Both, cross-platform or Mobile Adaptive) | <Project>_Brand\ (Both native, optional Brand Foundation)
       ├─ Project_Brief.md                      (intake answers, links, decisions)
       ├─ CHANGELOG.md                          (dated Figma changes, each marked Storybook synced yes/no)
       ├─ status.json                           (last change, unsynced count, last Storybook sync; tools/project_status.py)
