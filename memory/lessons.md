@@ -2,6 +2,10 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+## Figma comments (2026-10-06)
+1. **Comments could not be read (401 Invalid token).** `figma_get_comments` failed on PMO SYSTEM even after the token was replaced.
+   Cause: comments come only from the Figma REST API (FigCli Yolo and the Plugin API cannot read them), and figma-console reads `FIGMA_ACCESS_TOKEN` only when Claude Code starts. Rule: the token needs `file_comments:read`; after changing it, quit Claude Code fully and start a new session; the user edits the token, Claude never reads or writes it. Check: one `figma_get_comments` call before planning comment work; 401 -> stop and ask for a new token. Fixed in `Design_System_Intake_Skill/steps/figma-comments.md` (14.1).
+
 ## Tool install steps (2026-10-06)
 1. **Material 3 skill installer failed on Windows.** The command given was `powershell -ExecutionPolicy Bypass -File .\install.ps1 -Agent claude,codex,antigravity`; PowerShell rejected `-Agent`.
    Cause: with `-File`, a comma list reaches the script as one string, not an array, so the `ValidateSet` check fails. Rule: Windows install steps run the script in the open PowerShell window after `Set-ExecutionPolicy -Scope Process Bypass -Force;` (process only), never through `powershell -File` with list arguments. Check: before giving a PowerShell install command, read the script's `param()` block; any `[string[]]` parameter means no `-File`. Fixed in `Android_Design_System_Skill/SKILL.md` section 11.

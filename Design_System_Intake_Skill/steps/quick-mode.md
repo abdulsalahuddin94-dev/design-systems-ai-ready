@@ -50,6 +50,8 @@ If the file belongs to a project in `My Projects/` (its key or exact name is in 
 
 **Fix one thing** (one variant, one state, one binding, one rename): steps 2, 5, 6 and 7 of Build.
 
+Comments: if the user asks to read the file's Figma comments or act on them, follow `steps/figma-comments.md` (section 14); never otherwise.
+
 ### 13.4 Logging and handoff
 
 - Unregistered file: no folder, no files. The result and the audit numbers stay in the chat. If the user wants the report saved, ask where (typed).
