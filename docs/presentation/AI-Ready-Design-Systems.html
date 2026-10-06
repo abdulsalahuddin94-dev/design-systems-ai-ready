@@ -200,6 +200,25 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
 .steps3 div::before{content:counter(s);font:500 16px var(--mono);color:#111;background:var(--fg);width:28px;height:28px;border-radius:50%;display:grid;place-items:center}
 
 /* Process */
+.avs{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:34px}
+.avs-col{background:var(--frame-2);border:1px solid var(--line);padding:24px 28px}
+.avs-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px}
+.avs-t{font-family:var(--serif);font-style:italic;font-size:40px;line-height:1;color:var(--fg)}
+.avs-col ul{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.avs-col li{font-size:21px;color:var(--muted)}
+.avs-col li::before{content:"→ ";color:var(--sel);font-family:var(--mono)}
+.avs-ex{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line)}
+.avs-ex>div{padding:16px 18px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.avs-ex>div:last-child{border-right:0}
+.avs-ex b{font:500 17px var(--mono);color:var(--fg)}
+.avs-ex span{font-size:16px;color:var(--muted);line-height:1.4}
+.avs-rule{margin-top:24px;font-size:22px;color:var(--fg)}
+.avs-rule em{font-family:var(--serif);font-size:26px;color:var(--claude)}
+.loop{display:flex;align-items:center;gap:16px;margin-top:18px;font-size:19px;color:var(--muted)}
+.loop .lp-a{font:500 15px var(--mono);color:var(--sel);white-space:nowrap}
+.loop .lp-line{flex:0 0 80px;height:0;border-top:1px dashed var(--sel);position:relative}
+.loop .lp-line::after{content:"↺";position:absolute;right:-4px;top:-14px;color:var(--sel);font-size:18px}
+.loop b{color:var(--fg);font-weight:500}
 .proc{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line)}
 .ph{padding:26px 22px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:14px;position:relative}
 .ph:last-child{border-right:0}
@@ -597,6 +616,33 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
   <div class="slide-foot"><span>Not just a model in a terminal: a platform for agentic systems</span><span>09</span></div>
 </section>
 
+<!-- ========== AGENTS VS SKILLS ========== -->
+<section class="slide" aria-label="Agents vs skills">
+  <div class="frame-label"><span class="hash">#</span><b>04 Agents vs skills</b></div>
+  <div class="kicker rise">04 · Agents vs skills</div>
+  <h2 class="rise d1">Who does the work, and <em>how it gets done.</em></h2>
+  <div class="avs rise d2">
+    <div class="avs-col">
+      <div class="avs-h"><span class="lab">Agent</span><span class="avs-t">a persona</span></div>
+      <ul><li>has a role and its own tools</li><li>owns a domain: audit, tokens, docs</li><li>decides what to do next</li><li>works in its own context window, then reports back</li></ul>
+    </div>
+    <div class="avs-col sel" data-name="Skill">
+      <div class="avs-h"><span class="lab">Skill</span><span class="avs-t">a recipe</span></div>
+      <ul><li>a SKILL.md with steps and rules</li><li>solves one kind of task</li><li>knows how to do it, the same way every time</li><li>reusable by any agent, even Codex or Cursor</li></ul>
+    </div>
+  </div>
+  <div class="lab rise d3" style="margin:30px 0 14px">In this repo</div>
+  <div class="avs-ex rise d3">
+    <div><b>main agent</b><span>uses intake + Web / iOS / Android skills, figma-use, figma-generate-library</span></div>
+    <div><b>ds-auditor</b><span>uses audit-design-system · read-only, never edits Figma</span></div>
+    <div><b>token-extractor</b><span>runs build_tokens.py · writes data/tokens.json</span></div>
+    <div><b>docs-writer</b><span>writes the project's own skills from what is in Figma</span></div>
+  </div>
+  <p class="avs-rule rise d4">The main agent runs a skill; the skill says when to hand work to a specialist. <em>One agent, many skills. One skill, many agents.</em></p>
+  <div class="cur" data-name="Claude" data-c="claude" style="left:1250px;top:770px"></div>
+  <div class="slide-foot"><span>.claude/agents/ · */SKILL.md</span><span>10</span></div>
+</section>
+
 <!-- ========== OTHER AGENTS ========== -->
 <section class="slide" aria-label="Other agents">
   <div class="frame-label"><span class="hash">#</span><b>04 Any agent</b></div>
@@ -617,7 +663,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
   </div>
   <div class="cur" data-name="Codex" data-c="codex" style="left:520px;top:300px"></div>
   <div class="cur" data-name="Gemini" data-c="gemini" style="left:860px;top:250px"></div>
-  <div class="slide-foot"><span>Switching tools mid-project is safe</span><span>10</span></div>
+  <div class="slide-foot"><span>Switching tools mid-project is safe</span><span>11</span></div>
 </section>
 
 <!-- ========== PROCESS ========== -->
@@ -632,7 +678,8 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <div class="ph"><span class="n">04</span><h3>automate</h3><p class="q">Repeatable work runs as code, not memory.</p><ul><li>22 tools: tokens, recolor, contrast</li><li>icons fetched from 7 libraries</li><li>docs + Storybook generated</li><li>hooks on every session</li></ul></div>
     <div class="ph"><span class="n">05</span><h3>govern</h3><p class="q">People approve. Audits prove it.</p><ul><li>3 checkpoints, no self-approval</li><li>audit after every build step</li><li>rules.json off-limits</li><li>guard: never detach</li></ul></div>
   </div>
-  <div class="slide-foot"><span>Source: the workflow repository</span><span>11</span></div>
+  <div class="loop rise d3"><span class="lp-a">05 govern</span><span class="lp-line"></span><span class="lp-txt">feeds back into <b>01 context</b>: every fixed mistake becomes a rule in lessons.md, and the next run reads it first.</span></div>
+  <div class="slide-foot"><span>Source: the workflow repository</span><span>12</span></div>
 </section>
 
 <!-- ========== WORKFLOW MAP ========== -->
@@ -746,7 +793,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     </div>
   
   </div>
-  <div class="slide-foot"><span>Tap a stage · Back is offered on every menu except the first question</span><span>12</span></div>
+  <div class="slide-foot"><span>Tap a stage · Back is offered on every menu except the first question</span><span>13</span></div>
 </section>
 
 <!-- ========== CASES ========== -->
@@ -765,7 +812,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <div class="card"><h3>Quick mode</h3><p>One task on a live file, like one component or one audit, without the full intake. Same rules and audit.</p></div>
     <div class="card"><h3>Extras</h3><p>A DS hidden inside a Design file gets split into a library. Figma comments are read, fixed and marked ✅.</p></div>
   </div>
-  <div class="slide-foot"><span>Source: Design_System_Intake_Skill, 16 step files</span><span>13</span></div>
+  <div class="slide-foot"><span>Source: Design_System_Intake_Skill, 16 step files</span><span>14</span></div>
 </section>
 
 <!-- ========== METHODS ========== -->
@@ -790,7 +837,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <div><span class="t">Organisms</span><p>Top Bar, Nav Bar, Cards</p><span class="sz">nested props exposed</span></div>
     <div><span class="t">Patterns</span><p>Sign Up Form, OTP, Lists</p><span class="sz">page-level templates</span></div>
   </div>
-  <div class="slide-foot"><span>Variant, State, Size and Icon are properties, never separate components</span><span>14</span></div>
+  <div class="slide-foot"><span>Variant, State, Size and Icon are properties, never separate components</span><span>15</span></div>
 </section>
 
 <!-- ========== NUMBERS ========== -->
@@ -808,7 +855,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <div class="stat"><span class="n">22</span><span class="k">Tools and scripts</span><span class="d">Tokens, contrast, recolor, bindings, parity</span></div>
     <div class="stat"><span class="n">25</span><span class="k">Pull requests merged</span><span class="d">125 commits · 44 of 44 trial findings fixed</span></div>
   </div>
-  <div class="slide-foot"><span>Source: references.json, tools/icon_libraries.json, Reference_Library/*/data, git log</span><span>15</span></div>
+  <div class="slide-foot"><span>Source: references.json, tools/icon_libraries.json, Reference_Library/*/data, git log</span><span>16</span></div>
 </section>
 
 <!-- ========== REFERENCES ========== -->
@@ -829,7 +876,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
   </table>
   </div>
   <p class="muted rise d3" style="font-size:18px;margin-top:auto">Lessons adopted from them: slots for content areas, a Size collection, role-based radius, a <span class="tok">Code:</span> line in every component description.</p>
-  <div class="slide-foot"><span>Source: Reference_Library/*/data</span><span>16</span></div>
+  <div class="slide-foot"><span>Source: Reference_Library/*/data</span><span>17</span></div>
 </section>
 
 <!-- ========== PROOF + DEMOS ========== -->
@@ -851,9 +898,9 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
   </div>
   <div class="links2 rise d3">
     <a class="lk" href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready" target="_blank" rel="noopener"><span class="logo"><svg viewBox="0 0 24 24" role="img" aria-label="github"><path fill="#EEEFF3" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span><div><b>The workflow repository</b><span>skills, tools, rules and this deck</span></div></a>
-    <a class="lk" href="#s12"><span class="logo"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="7" cy="20" r="4" fill="#0D99FF"/><circle cx="20" cy="20" r="4" fill="#5C6070"/><circle cx="33" cy="20" r="4" fill="#0D99FF"/><path d="M11 20h5M24 20h5" stroke="#5C6070" stroke-width="2"/></svg></span><div><b>The workflow map</b><span>jumps to slide 12 in this deck</span></div></a>
+    <a class="lk" href="#s13"><span class="logo"><svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="7" cy="20" r="4" fill="#0D99FF"/><circle cx="20" cy="20" r="4" fill="#5C6070"/><circle cx="33" cy="20" r="4" fill="#0D99FF"/><path d="M11 20h5M24 20h5" stroke="#5C6070" stroke-width="2"/></svg></span><div><b>The workflow map</b><span>jumps to slide 12 in this deck</span></div></a>
   </div>
-  <div class="slide-foot"><span>Storybook links open in a new tab</span><span>17</span></div>
+  <div class="slide-foot"><span>Storybook links open in a new tab</span><span>18</span></div>
 </section>
 
 <!-- ========== TIME SAVED ========== -->
@@ -872,7 +919,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <div class="crow" style="border-top:1px solid var(--line);padding-top:12px"><div class="l">Total</div><div class="muted" style="font-size:17px">≈ 37 working days → ≈ 4 working days, about 89% less</div><div class="v" style="font-size:17px">296 h → <b style="color:var(--sel)">34 h</b></div></div>
   </div>
   <p class="muted" style="font-size:15px;margin-top:auto">Basis: the Web trial (33 components, 434 variants, 2 screens, Storybook) was built in one trial run of about two working days, including fixing the workflow itself. Manual hours assume about 4 hours per component set with variants, states and docs.</p>
-  <div class="slide-foot"><span>Estimates, to be replaced by measured phase times on the next project</span><span>18</span></div>
+  <div class="slide-foot"><span>Estimates, to be replaced by measured phase times on the next project</span><span>19</span></div>
 </section>
 
 <!-- ========== VALUE ========== -->
@@ -891,7 +938,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <div><h3>Reusable for every client</h3><p>Brand-neutral. Start from a studied reference and swap the brand.</p></div>
     <div><h3>It learns</h3><p>Every fixed mistake becomes a written rule, so the next project starts better.</p></div>
   </div>
-  <div class="slide-foot"><span>AI-Ready Design Systems</span><span>19</span></div>
+  <div class="slide-foot"><span>AI-Ready Design Systems</span><span>20</span></div>
 </section>
 
 <!-- ========== Q&A ========== -->
@@ -906,7 +953,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     <a class="repo sel" data-name="Repository" href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready" target="_blank" rel="noopener"><span class="logo"><svg viewBox="0 0 24 24" role="img" aria-label="github"><path fill="#EEEFF3" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg></span>github.com/abdulsalahuddin94-dev/design-systems-ai-ready</a>
   </div>
   <div class="cur" data-name="Claude" data-c="claude" style="right:220px;top:300px"></div>
-  <div class="slide-foot"><span>docs/presentation/AI-Ready-Design-Systems.html</span><span>20</span></div>
+  <div class="slide-foot"><span>docs/presentation/AI-Ready-Design-Systems.html</span><span>21</span></div>
 </section>
 
 </div></div>
