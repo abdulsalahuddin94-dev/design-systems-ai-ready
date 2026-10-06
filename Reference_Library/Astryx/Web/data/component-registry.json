@@ -1,0 +1,3923 @@
+{
+ "meta": {
+  "platform": "Web",
+  "figma_file": "Astryx Library DS",
+  "figma_url": "https://www.figma.com/design/kiygMAdfsXmLfxlP8i7ueN/Astryx-Library-DS",
+  "source": {
+   "method": "FigCli Yolo eval (read-only scripts); Light screenshots with verify",
+   "extracted_at": "2026-10-06",
+   "needs_resync": false
+  },
+  "naming": "Find components by page + set name. Node ids and keys are not stored: they change in a duplicate. Two sets are named \"Avatar\" (legacy 60-variant set with Size Tiny..Large, newer 15-variant set with Size xsm..xl): pick by variant property names.",
+  "group_mapping": "Astryx pages -> our groups: Data Input + value controls (SegmentedControl, Chat composer parts) -> Form Elements; Action + Navigation pages, command palette and chat buttons -> Navigation; Container, Content, Feedback & Status, Layout, Overlay, Table & List and chat messages -> Data Display.",
+  "contrast_check": "contrast_fails = text layers under 4.5:1 (3:1 for 24px+) against their resolved background, computed from bound variables in Neutral Light and Neutral Dark (no screenshots of Dark: the file is read only and has no Dark preview frames). Text over images or scrims can be false positives.",
+  "counts": {
+   "boolean_properties": 119,
+   "text_properties": 95,
+   "instance_swap_properties": 3,
+   "slot_properties": 74,
+   "component_sets": 110,
+   "variants": 1988,
+   "with_description": 40,
+   "standalone_components": 21,
+   "icons": 1694,
+   "icon_component_set": "Icon (Size xsm 12 / sm 16 / md 20 / lg 24)",
+   "text_styles": 14,
+   "effect_styles": 8,
+   "template_examples": 33
+  }
+ },
+ "pages": [
+  "Foundation",
+  "Action",
+  "Chat",
+  "Container",
+  "Content",
+  "Data Input",
+  "Feedback & Status",
+  "Layout",
+  "Navigation",
+  "Overlay",
+  "Table & List",
+  "Icons",
+  "About",
+  "Templates"
+ ],
+ "components": [
+  {
+   "name": "Button",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 576,
+   "variants": {
+    "Variant": [
+     "Primary",
+     "Secondary",
+     "Ghost",
+     "Destructive"
+    ],
+    "Size": [
+     "SM",
+     "MD",
+     "LG"
+    ],
+    "State": [
+     "Rest",
+     "Hover",
+     "Pressed",
+     "Disabled",
+     "Focused",
+     "Loading"
+    ],
+    "Type": [
+     "Default",
+     "Icon Only"
+    ],
+    "Elevation": [
+     "none",
+     "low",
+     "med",
+     "high"
+    ]
+   },
+   "properties": {
+    "Icon": "BOOLEAN=true",
+    "Label": "TEXT=\"Button\"",
+    "Icon Source": "INSTANCE_SWAP",
+    "Has End Content": "BOOLEAN=false",
+    "End Content": "SLOT=undefined"
+   },
+   "slots": [
+    "End Content"
+   ],
+   "internal": false,
+   "figma_description": "XDS Button component with 4 variants (Primary, Secondary, Ghost, Destructive), 3 sizes (SM, MD, LG), interaction states, and icon-only mode. Toggle the Icon boolean to show a leading icon. Supports label text override."
+  },
+  {
+   "name": "Link",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 64,
+   "variants": {
+    "Color": [
+     "active",
+     "primary",
+     "secondary",
+     "inherit"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Disabled"
+    ],
+    "Underline": [
+     "No",
+     "Yes"
+    ],
+    "External": [
+     "No",
+     "Yes"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "SegmentedControl",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 18,
+   "variants": {
+    "Size": [
+     "SM",
+     "LG",
+     "MD"
+    ],
+    "State": [
+     "Default",
+     "Disabled"
+    ],
+    "Content": [
+     "Text",
+     "Icon + Text",
+     "Icon Only"
+    ]
+   },
+   "properties": {
+    "Segment 1": "TEXT=\"Day\"",
+    "Segment 2": "TEXT=\"Week\"",
+    "Segment 3": "TEXT=\"Month\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "Segmented button group for single selection with radio group semantics. Visually resembles a tab bar but controls a value, not a view. Supports text, icon + text, and icon-only content modes.",
+   "contrast_fails": {
+    "Light": 12,
+    "Dark": 0,
+    "examples": [
+     "Light Size=SM, State=Default, Content=Text \"Week\" Text/Secondary 4.20",
+     "Light Size=SM, State=Default, Content=Text \"Month\" Text/Secondary 4.20",
+     "Light Size=SM, State=Default, Content=Icon + Text \"Week\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "SegmentedControl / SegmentedControlItem",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 45,
+   "variants": {
+    "Size": [
+     "SM",
+     "MD",
+     "LG"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Selected",
+     "Disabled",
+     "Focus"
+    ],
+    "Content": [
+     "Text",
+     "Icon + Text",
+     "Icon Only"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Label\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "Individual segment item within a segmented control. Supports text, icon + text, and icon-only content modes with default, hover, selected, disabled, and focus states."
+  },
+  {
+   "name": "Button / ToggleButton",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 12,
+   "variants": {
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ],
+    "isPressed": [
+     "false",
+     "true"
+    ],
+    "isIconOnly": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Label\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "A button that toggles between pressed and unpressed states. Ghost-style button with overlay-pressed background when active, semibold text emphasis, and icon swap support. Use for toolbar actions, view mode switches, and formatting controls. Works standalone or inside XDSToggleButtonGroup."
+  },
+  {
+   "name": "DropdownMenu / DropdownMenuItem",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 6,
+   "variants": {
+    "State": [
+     "Rest",
+     "Highlighted",
+     "Disabled"
+    ],
+    "hasIcon": [
+     "true",
+     "false"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "DropdownMenu",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 12,
+   "variants": {
+    "State": [
+     "Closed",
+     "Open"
+    ],
+    "Size": [
+     "sm",
+     "md",
+     "lg"
+    ],
+    "Trigger": [
+     "Label",
+     "Icon Only"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "DropdownMenu / DropdownMenuCheckboxItem",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "Checked": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "DropdownMenu / DropdownMenuRadioItem",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "Selected": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "MoreMenu",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 24,
+   "variants": {
+    "Variant": [
+     "Ghost",
+     "Secondary"
+    ],
+    "Size": [
+     "SM",
+     "MD",
+     "LG"
+    ],
+    "State": [
+     "Rest",
+     "Hover",
+     "Disabled",
+     "Open"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Toolbar",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 12,
+   "variants": {
+    "Layout": [
+     "Start + End",
+     "Start + Center + End"
+    ],
+    "Density": [
+     "Default",
+     "Compact"
+    ],
+    "Variant": [
+     "Transparent",
+     "Section",
+     "Wash"
+    ]
+   },
+   "properties": {
+    "Start Content": "SLOT=undefined",
+    "End Content": "SLOT=undefined",
+    "Center Content": "SLOT=undefined",
+    "Bottom Divider": "BOOLEAN=false"
+   },
+   "slots": [
+    "Start Content",
+    "End Content",
+    "Center Content"
+   ],
+   "internal": false,
+   "figma_description": "Prop-driven Toolbar (overhaul). Content areas are native SLOTS (Start / Center / End) â€” drop Buttons, IconButtons, Dividers, SegmentedControls, etc. Bottom Divider is a boolean. VARIANT axes: Layout (Start + End | Start + Center + End), Density (Default | Compact), Variant (Transparent | Section | Wash). Replaces the deprecated 48-variant matrix.",
+   "contrast_fails": {
+    "Light": 12,
+    "Dark": 0,
+    "examples": [
+     "Light Layout=Start + Center + End, Density=Default, Variant=Transp \"Week\" Text/Secondary 4.20",
+     "Light Layout=Start + Center + End, Density=Default, Variant=Transp \"Month\" Text/Secondary 4.20",
+     "Light Layout=Start + Center + End, Density=Default, Variant=Sectio \"Week\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": ".ContextMenuItem",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 3,
+   "variants": {
+    "Variant": [
+     "Default",
+     "Disabled",
+     "Destructive"
+    ]
+   },
+   "properties": {
+    "hasDescription": "BOOLEAN=false",
+    "hasShortcut": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Action / ButtonGroup",
+   "kind": "component_set",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 6,
+   "variants": {
+    "Orientation": [
+     "Horizontal",
+     "Vertical"
+    ],
+    "Size": [
+     "MD",
+     "SM",
+     "LG"
+    ]
+   },
+   "properties": {
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "Groups Button/IconButton children with connected styling â€” shared 1px dividers, rounded outer corners only, horizontal or vertical. Orientation and Size cascade to children. Default children = Secondary."
+  },
+  {
+   "name": "DropdownMenu / DropdownMenuRadioGroup",
+   "kind": "component",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "ContextMenu",
+   "kind": "component",
+   "astryx_page": "Action",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 2,
+    "Dark": 8,
+    "examples": [
+     "Dark ContextMenu \"Cut\" Text/Primary 1.04",
+     "Dark ContextMenu \"âŒکX\" Text/Secondary 2.52",
+     "Dark ContextMenu \"Copy\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "Chat / ChatMessageBubble",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "sender": [
+     "assistant",
+     "user"
+    ],
+    "variant": [
+     "filled",
+     "ghost"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Chat / ChatMessageMetadata",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 6,
+   "variants": {
+    "status": [
+     "none",
+     "sending",
+     "sent",
+     "delivered",
+     "read",
+     "error"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Chat / ChatComposer",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Form Elements",
+   "tier": "Organism",
+   "variant_count": 3,
+   "variants": {
+    "state": [
+     "empty",
+     "typing",
+     "streaming"
+    ]
+   },
+   "properties": {
+    "Footer": "SLOT=undefined",
+    "Header": "SLOT=undefined"
+   },
+   "slots": [
+    "Footer",
+    "Header"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 1,
+    "examples": [
+     "Light state = empty \"Type a messageâ€¦\" Text/Disabled 2.52",
+     "Dark state = empty \"Type a messageâ€¦\" Text/Disabled 2.20"
+    ]
+   }
+  },
+  {
+   "name": "Chat / ChatSystemMessage",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "variant": [
+     "default",
+     "divider"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Chat / ChatMessage",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "sender": [
+     "assistant",
+     "user"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Chat / ChatSendButton",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 6,
+   "variants": {
+    "State": [
+     "send",
+     "stop",
+     "disabled"
+    ],
+    "Size": [
+     "sm",
+     "md"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "Circular send/stop toggle button for the chat composer (reuses Button). State: send (primary, arrow-up), stop (secondary, square), disabled (primary disabled). Size: sm/md."
+  },
+  {
+   "name": "Chat / ChatDictationButton",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 4,
+   "variants": {
+    "state": [
+     "idle",
+     "listening"
+    ],
+    "size": [
+     "sm",
+     "md"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Chat / ChatToolCalls",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 8,
+   "variants": {
+    "status": [
+     "pending",
+     "running",
+     "success",
+     "error"
+    ],
+    "state": [
+     "collapsed",
+     "expanded"
+    ]
+   },
+   "properties": {
+    "Tool Name": "TEXT=\"run_tests\"",
+    "Target": "TEXT=\"yarn test\"",
+    "Show Target": "BOOLEAN=true",
+    "Show Duration": "BOOLEAN=true",
+    "Details": "SLOT=undefined"
+   },
+   "slots": [
+    "Details"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 34,
+    "Dark": 34,
+    "examples": [
+     "Light status = pending, state = collapsed \"yarn test\" Text/Disabled 2.52",
+     "Dark status = pending, state = collapsed \"yarn test\" Text/Disabled 1.94",
+     "Light status = pending, state = collapsed \"3\" Text/Disabled 2.52"
+    ]
+   }
+  },
+  {
+   "name": "Chat / ChatComposerTokenElement",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 4,
+   "variants": {
+    "Type": [
+     "Mention",
+     "Command",
+     "Attachment",
+     "Text"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "Renders a single token chip (a Badge) for the chat composer input â€” e.g. an @mention, / command, attachment, or pasted-text token. Wraps a badge config or custom render so the token serializes and stays visually consistent with tokens inside the composer. Type variants illustrate common composer tokens; underlying visual is the Badge component."
+  },
+  {
+   "name": "Chat / ChatLayoutScrollButton",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Collapsed",
+     "Expanded"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "Floating scroll-to-bottom button for ChatLayout. Fades in as a compact icon button (Collapsed) and expands to show a label (Expanded) when new messages arrive."
+  },
+  {
+   "name": "Chat / ChatComposerInput",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "state": [
+     "empty",
+     "filled",
+     "focused",
+     "disabled"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined",
+    "Placeholder": "TEXT=\"Type a messageâ€¦\""
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "Rich text input for the chat composer. The editable content area is a native slot supporting placeholder text, typed text, and inline tokens rendered as badges (@ mentions, / commands). States: empty (placeholder), filled (typed value + token), focused (active caret), disabled. Source: packages/core/src/Chat/ChatComposerInput.tsx"
+  },
+  {
+   "name": "Chat / ChatComposerDrawer",
+   "kind": "component_set",
+   "astryx_page": "Chat",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Expanded",
+     "Collapsed"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined",
+    "Label": "TEXT=\"Attachments\"",
+    "Collapsible": "BOOLEAN=true"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "Collapsible drawer panel above the chat input inside ChatComposer. Pass to the composer drawer slot for attachments, context chips, or previews. Expanded shows a drag handle + content; Collapsed shows a count badge + label. Content is a freeform slot.",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 0,
+    "examples": [
+     "Light State=Collapsed \"Attachments\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "Chat / ChatLayout",
+   "kind": "component",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Pattern",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 1,
+    "examples": [
+     "Light Chat / ChatLayout \"Type a messageâ€¦\" Text/Disabled 2.52",
+     "Dark Chat / ChatLayout \"Type a messageâ€¦\" Text/Disabled 2.20"
+    ]
+   }
+  },
+  {
+   "name": "Chat / ChatMessageList",
+   "kind": "component",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "Scrolling container that stacks Chat / ChatMessage rows in a vertical auto-layout with density-based spacing (balanced). Content is a native slot; gap and padding bound to Spacing."
+  },
+  {
+   "name": "Chat / ChatTokenizedText",
+   "kind": "component",
+   "astryx_page": "Chat",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Card",
+   "kind": "component_set",
+   "astryx_page": "Container",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 16,
+   "variants": {
+    "Padding": [
+     "none",
+     "compact",
+     "default",
+     "spacious"
+    ],
+    "Elevation": [
+     "none",
+     "low",
+     "med",
+     "high"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "A card container with border and themed styling. Use the Padding property to control internal spacing. The Content slot accepts any content."
+  },
+  {
+   "name": "Collapsible",
+   "kind": "component_set",
+   "astryx_page": "Container",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Collapsed",
+     "Expanded"
+    ]
+   },
+   "properties": {
+    "triggerLabel": "TEXT=\"Collapsible Section\"",
+    "Content": "SLOT=undefined",
+    "isDisabled": "BOOLEAN=false"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "ClickableCard",
+   "kind": "component_set",
+   "astryx_page": "Container",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 20,
+   "variants": {
+    "State": [
+     "Rest",
+     "Hover",
+     "Pressed",
+     "Focused",
+     "Disabled"
+    ],
+    "Elevation": [
+     "none",
+     "low",
+     "med",
+     "high"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "ClickableCard â€” an interactive Card used as a navigation or action target (onClick / href). Built on the Card surface (bg variant, container radius, border, padding). State axis: Rest, Hover (5% overlay + emphasized border), Pressed (10% overlay + emphasized border), Focused (2px accent focus ring), Disabled (50% opacity). The Content slot accepts any card content; nested interactive elements work",
+   "contrast_fails": {
+    "Light": 16,
+    "Dark": 16,
+    "examples": [
+     "Light State=Hover, Elevation=none \"Card title\" Text/Primary 1.14",
+     "Dark State=Hover, Elevation=none \"Card title\" Text/Primary 1.10",
+     "Light State=Hover, Elevation=none \"Supporting descripti\" Text/Secondary 3.33"
+    ]
+   }
+  },
+  {
+   "name": "SelectableCard",
+   "kind": "component_set",
+   "astryx_page": "Container",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "Selected": [
+     "false",
+     "true"
+    ],
+    "State": [
+     "rest",
+     "hover",
+     "disabled"
+    ],
+    "Elevation": [
+     "none",
+     "low",
+     "med",
+     "high"
+    ]
+   },
+   "properties": {
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 32,
+    "examples": [
+     "Dark Selected=false, State=rest, Elevation=none \"Card Title\" Text/Primary 1.04",
+     "Dark Selected=false, State=rest, Elevation=none \"Card content goes he\" Text/Secondary 2.52",
+     "Dark Selected=false, State=hover, Elevation=none \"Card Title\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "Carousel",
+   "kind": "component",
+   "astryx_page": "Container",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Children": "SLOT=undefined",
+    "Has Edge Fade": "BOOLEAN=true",
+    "Has Buttons": "BOOLEAN=true"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "Horizontal scroll container (Carousel).\nâ€¢ Children â€” native slot: the horizontal scroll row of items (default = Card instances).\nâ€¢ Has Edge Fade â€” gradient fade masks at both edges signalling off-screen items.\nâ€¢ Has Buttons â€” prev/next circular nav buttons (ghost icon-only), shown when scrollable.\nâ€¢"
+  },
+  {
+   "name": "Avatar",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 60,
+   "variants": {
+    "Size": [
+     "Tiny",
+     "XSmall",
+     "Small",
+     "Medium",
+     "Large"
+    ],
+    "Content": [
+     "Image",
+     "Initials",
+     "Icon"
+    ],
+    "Status": [
+     "None",
+     "Positive",
+     "Neutral",
+     "Negative"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Avatar / AvatarStatusDot",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 9,
+   "variants": {
+    "Variant": [
+     "Positive",
+     "Neutral",
+     "Negative"
+    ],
+    "Size Tier": [
+     "Small",
+     "Medium",
+     "Large"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Avatar",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 15,
+   "variants": {
+    "Size": [
+     "lg",
+     "md",
+     "sm",
+     "xl",
+     "xsm"
+    ],
+    "Content": [
+     "Image",
+     "Initials",
+     "Icon"
+    ]
+   },
+   "properties": {
+    "Status": "BOOLEAN=false",
+    "Initials": "TEXT=\"JD\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Citation",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 3,
+   "variants": {
+    "Variant": [
+     "Label",
+     "Number"
+    ],
+    "Icon": [
+     "No",
+     "Yes"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 0,
+    "examples": [
+     "Light Variant=Number, Icon=No \"1\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "Code",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 3,
+   "variants": {
+    "Color": [
+     "Primary",
+     "Secondary",
+     "Inherit"
+    ],
+    "Size": [
+     "inherit"
+    ]
+   },
+   "properties": {
+    "Code": "TEXT=\"const x = 42\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 0,
+    "examples": [
+     "Light Color=Secondary, Size=inherit \"const x = 42\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "CodeBlock",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 2,
+   "variants": {
+    "size": [
+     "md",
+     "sm"
+    ]
+   },
+   "properties": {
+    "header": "BOOLEAN=true",
+    "lineNumbers": "BOOLEAN=true",
+    "copyButton": "BOOLEAN=true",
+    "title": "TEXT=\"typescript â€” useUser.ts\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 24,
+    "Dark": 22,
+    "examples": [
+     "Light size = md \"typescript â€” useUser\" Text/Secondary 4.20",
+     "Light size = md \"1\" Text/Disabled 2.23",
+     "Dark size = md \"1\" Text/Disabled 2.20"
+    ]
+   }
+  },
+  {
+   "name": "EmptyState",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "Size": [
+     "Default",
+     "Compact"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT=\"No results found\"",
+    "Description": "TEXT=\"Try adjusting your search or filters.\"",
+    "Has Description": "BOOLEAN=true",
+    "Has Icon": "BOOLEAN=true",
+    "Has Actions": "BOOLEAN=false",
+    "Icon": "SLOT=undefined",
+    "Actions": "SLOT=undefined"
+   },
+   "slots": [
+    "Icon",
+    "Actions"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Heading",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 4,
+   "variants": {
+    "Level": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ]
+   },
+   "properties": {
+    "Content": "TEXT=\"Heading text\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "Semantic heading component. Renders h1â€“h6 elements with themed styling.\n\nProps: level (required), color, accessibilityLevel, display, maxLines, hasStrikethrough, hasCapsize"
+  },
+  {
+   "name": "Kbd",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 4,
+   "variants": {
+    "Keys": [
+     "Single",
+     "Double",
+     "Triple",
+     "Quad"
+    ]
+   },
+   "properties": {
+    "Key Label": "TEXT=\"K\"",
+    "Key 1 Label": "TEXT=\"âŒک\"",
+    "Key 2 Label": "TEXT=\"K\"",
+    "Key 1 Label2": "TEXT=\"âŒک\"",
+    "Key 2 Label2": "TEXT=\"â‡§\"",
+    "Key 3 Label": "TEXT=\"P\"",
+    "Key 1 Label3": "TEXT=\"âŒƒ\"",
+    "Key 2 Label3": "TEXT=\"âŒ¥\"",
+    "Key 3 Label2": "TEXT=\"â‡§\"",
+    "Key 4 Label": "TEXT=\"K\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "Displays keyboard shortcuts as styled key badges. Use \"Keys\" variant to set number of keys.\n\nSymbols: âŒک Cmd, âŒƒ Ctrl, âŒ¥ Alt, â‡§ Shift, â†µ Enter, âŒ« Backspace, â‡¥ Tab, â†‘â†“â†گâ†’ Arrows"
+  },
+  {
+   "name": "Markdown",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 2,
+   "variants": {
+    "density": [
+     "default",
+     "compact"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "Renders a markdown string as XDS-styled components. Supports headings, paragraphs, bold/italic, inline code, code blocks, blockquotes, lists, tables, links, and horizontal rules. Use for AI responses, documentation, and user-generated content.",
+   "contrast_fails": {
+    "Light": 22,
+    "Dark": 22,
+    "examples": [
+     "Light density = default \"1\" Text/Disabled 2.20",
+     "Dark density = default \"1\" Text/Disabled 3.24",
+     "Light density = default \"2\" Text/Disabled 2.20"
+    ]
+   }
+  },
+  {
+   "name": "Text",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "Truncation": [
+     "none",
+     "single-line"
+    ]
+   },
+   "properties": {
+    "Content": "TEXT=\"Text content\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "Semantic text component. Renders text with type-based styling from the theme. Supports 8 text types, 5 color options, and truncation. Use type=\"body\" for paragraphs, \"label\" for form labels, \"supporting\" for helper text, \"code\" for inline code, and \"display-*\" for hero headings."
+  },
+  {
+   "name": "Thumbnail",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 4,
+   "variants": {
+    "State": [
+     "Image",
+     "Placeholder",
+     "Loading",
+     "Uploading"
+    ]
+   },
+   "properties": {
+    "Remove": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Timestamp",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 32,
+   "variants": {
+    "Format": [
+     "Relative",
+     "Auto",
+     "Date",
+     "Date Time",
+     "Time",
+     "System Date",
+     "System Date Time",
+     "System Time"
+    ],
+    "Color": [
+     "Primary",
+     "Secondary",
+     "Disabled",
+     "Active"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "Displays formatted timestamps. Supports relative, absolute, and system formats with configurable color."
+  },
+  {
+   "name": "Token",
+   "kind": "component_set",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 44,
+   "variants": {
+    "Color": [
+     "Default",
+     "Red",
+     "Orange",
+     "Yellow",
+     "Green",
+     "Teal",
+     "Cyan",
+     "Blue",
+     "Purple",
+     "Pink",
+     "Gray"
+    ],
+    "Size": [
+     "SM",
+     "MD"
+    ],
+    "State": [
+     "Default",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Has Icon": "BOOLEAN=false",
+    "Removable": "BOOLEAN=false",
+    "Label": "TEXT=\"Token\"",
+    "[Slot: endContent]": "SLOT=undefined",
+    "End Content": "BOOLEAN=false"
+   },
+   "slots": [
+    "[Slot: endContent]"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Blockquote",
+   "kind": "component",
+   "astryx_page": "Content",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Has Cite": "BOOLEAN=true",
+    "Cite": "TEXT=\"Steve Jobs\"",
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "A styled quotation (<blockquote>) with a left accent rule and optional attribution. Content slot holds the quote; toggle \"Has Cite\" to show the citation footer."
+  },
+  {
+   "name": "Calendar",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Organism",
+   "variant_count": 4,
+   "variants": {
+    "Mode": [
+     "Single",
+     "Range"
+    ],
+    "Number Of Months": [
+     "1",
+     "2"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Calendar / .CalendarDay",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 8,
+   "variants": {
+    "State": [
+     "Default",
+     "Today",
+     "Selected",
+     "In Range",
+     "Range Start",
+     "Range End",
+     "Outside",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Checkbox / CheckboxInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 24,
+   "variants": {
+    "Value": [
+     "Unchecked",
+     "Checked",
+     "Indeterminate"
+    ],
+    "Size": [
+     "sm",
+     "md"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Focused",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "hasDescription": "BOOLEAN=false",
+    "Label": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "DateInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Field",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "status": [
+     "none",
+     "error",
+     "warning",
+     "success"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Field / .FieldLabel",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 3,
+   "variants": {
+    "Indicator": [
+     "Default",
+     "Optional",
+     "Required"
+    ]
+   },
+   "properties": {
+    "hasIcon": "BOOLEAN=false",
+    "hasTooltip": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Selector / MultiSelector",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Organism",
+   "variant_count": 192,
+   "variants": {
+    "Size": [
+     "Small",
+     "Medium",
+     "Large"
+    ],
+    "State": [
+     "Rest",
+     "Hovered",
+     "Focused",
+     "Disabled"
+    ],
+    "Display": [
+     "Placeholder",
+     "Count",
+     "Labels",
+     "Badges"
+    ],
+    "Status": [
+     "None",
+     "Error",
+     "Warning",
+     "Success"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "NumberInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {
+    "Show Labels": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "PowerSearch / Trigger",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 6,
+   "variants": {
+    "State": [
+     "Rest",
+     "Focused",
+     "Disabled"
+    ],
+    "Content": [
+     "Placeholder",
+     "With Filters"
+    ]
+   },
+   "properties": {
+    "Filters": "SLOT=undefined",
+    "Placeholder": "TEXT=\"Add filter...\"",
+    "Query": "TEXT=\"flagged\"",
+    "Has Clear": "BOOLEAN=false",
+    "Has Result Count": "BOOLEAN=false"
+   },
+   "slots": [
+    "Filters"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "PowerSearch / Popover",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Organism",
+   "variant_count": 4,
+   "variants": {
+    "Mode": [
+     "Fields",
+     "Value Editor",
+     "Results",
+     "Empty"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Radio / RadioListItem",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "State": [
+     "Default",
+     "Hovered",
+     "Disabled"
+    ],
+    "Selected": [
+     "true",
+     "false"
+    ],
+    "Size": [
+     "sm",
+     "md"
+    ],
+    "Description": [
+     "true",
+     "false"
+    ]
+   },
+   "properties": {
+    "label": "TEXT=\"Label\"",
+    "description": "TEXT=\"Description text\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Radio / RadioList",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "Orientation": [
+     "Vertical",
+     "Horizontal"
+    ],
+    "Size": [
+     "sm",
+     "md"
+    ]
+   },
+   "properties": {
+    "label": "TEXT=\"Label\"",
+    "description": "TEXT=\"Description text\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Selector",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {
+    "hasSearch": "BOOLEAN=false",
+    "searchPlaceholder": "TEXT=\"Search...\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Switch",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 16,
+   "variants": {
+    "State": [
+     "off",
+     "on",
+     "disabled-off",
+     "disabled-on",
+     "focused-off",
+     "focused-on",
+     "hover-off",
+     "hover-on"
+    ],
+    "Label Position": [
+     "end",
+     "start"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Switch label\"",
+    "Has Description": "BOOLEAN=false",
+    "Description": "TEXT=\"Description text\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "TextArea",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "TextInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "error",
+     "disabled",
+     "warning",
+     "success",
+     "loading",
+     "hover"
+    ],
+    "size": [
+     "md",
+     "sm",
+     "lg"
+    ]
+   },
+   "properties": {
+    "descriptionText": "TEXT=\"Description text\"",
+    "placeholder": "TEXT=\"Placeholder text\"",
+    "statusText": "TEXT=\"Error message goes here\"",
+    "description": "BOOLEAN=true",
+    "startIcon": "BOOLEAN=false",
+    "startIconType": "INSTANCE_SWAP",
+    "statusMessage": "BOOLEAN=false",
+    "showLabel": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "TimeInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Tokenizer",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Typeahead",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "FileInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 16,
+   "variants": {
+    "mode": [
+     "input",
+     "dropzone"
+    ],
+    "state": [
+     "rest",
+     "hover",
+     "focused",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Checkbox / CheckboxList",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "Orientation": [
+     "Vertical",
+     "Horizontal"
+    ],
+    "Size": [
+     "sm",
+     "md"
+    ]
+   },
+   "properties": {
+    "label": "TEXT=\"Label\"",
+    "description": "TEXT=\"Description text\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Checkbox / CheckboxListItem",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 24,
+   "variants": {
+    "State": [
+     "Default",
+     "Hovered",
+     "Disabled"
+    ],
+    "Selected": [
+     "true",
+     "false"
+    ],
+    "Size": [
+     "sm",
+     "md"
+    ],
+    "Description": [
+     "true",
+     "false"
+    ]
+   },
+   "properties": {
+    "label": "TEXT=\"Label\"",
+    "description": "TEXT=\"Description text\"",
+    "[Slot: startContent]": "SLOT=undefined",
+    "[Slot: endContent]": "SLOT=undefined",
+    "Start Content": "BOOLEAN=false",
+    "End Content": "BOOLEAN=false"
+   },
+   "slots": [
+    "[Slot: startContent]",
+    "[Slot: endContent]"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Slider",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 14,
+   "variants": {
+    "state": [
+     "rest",
+     "hover",
+     "focus",
+     "disabled",
+     "error",
+     "warning",
+     "success"
+    ],
+    "type": [
+     "single",
+     "range"
+    ]
+   },
+   "properties": {
+    "Show Description": "BOOLEAN=true",
+    "Show Marks": "BOOLEAN=false",
+    "Show Value": "BOOLEAN=true",
+    "Description": "TEXT=\"Adjust the output volume\"",
+    "Value": "TEXT=\"50\"",
+    "Status Message": "TEXT=\"Status message goes here\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "Slider â€” a draggable control for selecting a numeric value or range. Track rail (Effects/Track) + filled portion (Core/Accent) + thumb. Wrapped in the Field pattern (label, description, status). Variants: state (rest/hover/focus/disabled/error/warning/success) x type (single/range). Toggles: Show Marks (ticks), Show Value (tooltip bubble), Show Description. Maps to packages/core/src/Slider.",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 6,
+    "examples": [
+     "Dark state=rest, type=single \"50\" Text/On Dark 1.00",
+     "Dark state=rest, type=range \"50\" Text/On Dark 1.00",
+     "Dark state=hover, type=single \"50\" Text/On Dark 1.00"
+    ]
+   }
+  },
+  {
+   "name": "DateRangeInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Organism",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "DateRangeInput â€” a startâ€“end date range field. Trigger shows the formatted range (e.g. \"Jul 1 â€“ Jul 15\") or the placeholder \"Select date range\", with a trailing calendar icon that opens a dual-month calendar popover. Variants: state (rest/focused/hover/error/warning/success/loading/disabled) أ— size (sm/md/lg). Built on Field + FieldLabel, mirroring DateInput."
+  },
+  {
+   "name": "DateTimeInput",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Organism",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "hover",
+     "error",
+     "warning",
+     "success",
+     "loading",
+     "disabled"
+    ],
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "DateTimeInput â€” combined date + time field under one label. Date field (calendar icon) + time field (clock icon) side by side. Mirrors DateInput/TimeInput anatomy. Variants: state (rest, focused, hover, error, warning, success, loading, disabled) x size (sm, md, lg)."
+  },
+  {
+   "name": "InputGroup",
+   "kind": "component_set",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Molecule",
+   "variant_count": 15,
+   "variants": {
+    "state": [
+     "rest",
+     "focused",
+     "error",
+     "disabled",
+     "hover"
+    ],
+    "size": [
+     "md",
+     "sm",
+     "lg"
+    ]
+   },
+   "properties": {
+    "descriptionText": "TEXT=\"Description text\"",
+    "placeholder": "TEXT=\"Placeholder text\"",
+    "statusText": "TEXT=\"Error message goes here\"",
+    "description": "BOOLEAN=true",
+    "startIcon": "BOOLEAN=false",
+    "startIconType": "INSTANCE_SWAP",
+    "showLabel": "BOOLEAN=true",
+    "Prefix": "SLOT=undefined",
+    "Suffix": "SLOT=undefined",
+    "hasPrefix": "BOOLEAN=true",
+    "hasSuffix": "BOOLEAN=true"
+   },
+   "slots": [
+    "Prefix",
+    "Suffix"
+   ],
+   "internal": false,
+   "figma_description": "Groups an input with prefix/suffix addons in a visually connected container with shared border. Prefix and Suffix are slots â€” drop an InputGroupText or a Button; toggle with hasPrefix/hasSuffix. Mirrors TextInput field anatomy (label, description, states, sizes, status).",
+   "contrast_fails": {
+    "Light": 24,
+    "Dark": 0,
+    "examples": [
+     "Light state=rest, size=sm \"https://\" Text/Secondary 4.20",
+     "Light state=rest, size=sm \".com\" Text/Secondary 4.20",
+     "Light state=rest, size=md \"https://\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "InputGroupText",
+   "kind": "component",
+   "astryx_page": "Data Input",
+   "group": "Form Elements",
+   "tier": "Atom",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "text": "TEXT=\"https://\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 0,
+    "examples": [
+     "Light InputGroupText \"https://\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "Badge",
+   "kind": "component_set",
+   "astryx_page": "Feedback & Status",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 28,
+   "variants": {
+    "Variant": [
+     "Neutral",
+     "Info",
+     "Success",
+     "Warning",
+     "Error",
+     "Blue",
+     "Cyan",
+     "Green",
+     "Orange",
+     "Pink",
+     "Purple",
+     "Red",
+     "Teal",
+     "Yellow"
+    ],
+    "Shape": [
+     "Pill",
+     "Dot"
+    ]
+   },
+   "properties": {
+    "Icon": "BOOLEAN=false",
+    "Label": "TEXT=\"Badge\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "XDS Badge â€” status indicator in pill or dot shape. 5 semantic variants (Neutral, Info, Success, Warning, Error). Pill shows label + optional icon; Dot is a minimal 8px circle.",
+   "contrast_fails": {
+    "Light": 1,
+    "Dark": 0,
+    "examples": [
+     "Light Variant=Error, Shape=Pill \"Badge\" Component/Badge/On Vivid 4.14"
+    ]
+   }
+  },
+  {
+   "name": "Banner",
+   "kind": "component_set",
+   "astryx_page": "Feedback & Status",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 8,
+   "variants": {
+    "Status": [
+     "info",
+     "success",
+     "warning",
+     "error"
+    ],
+    "Container": [
+     "card",
+     "section"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT=\"Banner Title\"",
+    "Description": "TEXT=\"Description text goes here.\"",
+    "Has Description": "BOOLEAN=false",
+    "Is Dismissable": "BOOLEAN=false",
+    "Has Content Area": "BOOLEAN=false",
+    "Content": "SLOT=undefined",
+    "End Content": "SLOT=undefined",
+    "Is Collapsible": "BOOLEAN=false"
+   },
+   "slots": [
+    "Content",
+    "End Content"
+   ],
+   "internal": false,
+   "figma_description": "Persistent status notification for info, warning, error, or success messages. Supports optional description, dismissible behavior, collapsible content area, and end-area slot for action buttons."
+  },
+  {
+   "name": "ProgressBar",
+   "kind": "component_set",
+   "astryx_page": "Feedback & Status",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 10,
+   "variants": {
+    "Variant": [
+     "accent",
+     "warning",
+     "error",
+     "success",
+     "neutral"
+    ],
+    "Mode": [
+     "Determinate",
+     "Indeterminate"
+    ]
+   },
+   "properties": {
+    "Label": "BOOLEAN=true",
+    "Value Label": "BOOLEAN=false",
+    "Label Text": "TEXT=\"Progress\"",
+    "Value Text": "TEXT=\"75%\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Skeleton",
+   "kind": "component_set",
+   "astryx_page": "Feedback & Status",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 7,
+   "variants": {
+    "Radius": [
+     "none",
+     "0",
+     "1",
+     "2",
+     "3",
+     "4",
+     "rounded"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "A placeholder shape that indicates content is loading. Renders a pulsing block with configurable width, height, and border radius. Use the Radius property to control corner rounding."
+  },
+  {
+   "name": "Spinner",
+   "kind": "component_set",
+   "astryx_page": "Feedback & Status",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 16,
+   "variants": {
+    "Size": [
+     "sm",
+     "md",
+     "lg",
+     "xl"
+    ],
+    "Shade": [
+     "default",
+     "onMedia"
+    ],
+    "Label": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 4,
+    "Dark": 0,
+    "examples": [
+     "Light Size=xl, Shade=onMedia, Label=true \"Loading...\" Text/On Dark 1.00",
+     "Light Size=lg, Shade=onMedia, Label=true \"Loading...\" Text/On Dark 1.00",
+     "Light Size=sm, Shade=onMedia, Label=true \"Loading...\" Text/On Dark 1.00"
+    ]
+   }
+  },
+  {
+   "name": "StatusDot",
+   "kind": "component_set",
+   "astryx_page": "Feedback & Status",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 10,
+   "variants": {
+    "Variant": [
+     "positive",
+     "warning",
+     "negative",
+     "info",
+     "neutral"
+    ],
+    "isPulsing": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "A small colored dot indicator for status display (online/offline, severity, etc). Fixed 8px size. isPulsing shows the mid-pulse state at 50% opacity â€” in code, this animates between 100% and 50% opacity."
+  },
+  {
+   "name": "AppShell",
+   "kind": "component_set",
+   "astryx_page": "Layout",
+   "group": "Data Display",
+   "tier": "Pattern",
+   "variant_count": 16,
+   "variants": {
+    "Variant": [
+     "Elevated",
+     "Wash",
+     "Surface",
+     "Section"
+    ],
+    "Nav Layout": [
+     "TopNav + SideNav",
+     "SideNav Only",
+     "TopNav Only",
+     "Content Only"
+    ]
+   },
+   "properties": {
+    "Banner": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 24,
+    "Dark": 0,
+    "examples": [
+     "Light Variant=Elevated, Nav Layout=TopNav + SideNav \"Analytics\" Text/Secondary 4.20",
+     "Light Variant=Elevated, Nav Layout=TopNav + SideNav \"Settings\" Text/Secondary 4.20",
+     "Light Variant=Elevated, Nav Layout=TopNav + SideNav \"Main\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "AspectRatio",
+   "kind": "component_set",
+   "astryx_page": "Layout",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 3,
+   "variants": {
+    "Ratio": [
+     "4:3",
+     "1:1",
+     "16:9"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 3,
+    "Dark": 0,
+    "examples": [
+     "Light Ratio=1:1 \"1:1\" Text/On Dark 1.00",
+     "Light Ratio=16:9 \"16:9\" Text/On Dark 1.00",
+     "Light Ratio=4:3 \"4:3\" Text/On Dark 1.00"
+    ]
+   }
+  },
+  {
+   "name": "Divider",
+   "kind": "component_set",
+   "astryx_page": "Layout",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 8,
+   "variants": {
+    "Orientation": [
+     "horizontal",
+     "vertical"
+    ],
+    "Variant": [
+     "subtle",
+     "strong"
+    ],
+    "Label": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Layout / FormLayout",
+   "kind": "component_set",
+   "astryx_page": "Layout",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 3,
+   "variants": {
+    "Direction": [
+     "Vertical",
+     "Horizontal",
+     "Horizontal Labels"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Layout / Section",
+   "kind": "component_set",
+   "astryx_page": "Layout",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 3,
+   "variants": {
+    "Variant": [
+     "section",
+     "transparent",
+     "wash"
+    ]
+   },
+   "properties": {
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 2,
+    "examples": [
+     "Dark Variant=section \"Section content goes\" Text/Primary 1.04",
+     "Dark Variant=transparent \"Section content goes\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "ResizeHandle",
+   "kind": "component_set",
+   "astryx_page": "Layout",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 12,
+   "variants": {
+    "Direction": [
+     "Horizontal",
+     "Vertical"
+    ],
+    "State": [
+     "Default",
+     "Active"
+    ],
+    "Pill Placement": [
+     "Center",
+     "Start",
+     "End"
+    ]
+   },
+   "properties": {
+    "Has Divider": "BOOLEAN=true",
+    "Always Visible": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Breadcrumbs / BreadcrumbItem",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 12,
+   "variants": {
+    "Type": [
+     "Link",
+     "Current"
+    ],
+    "Variant": [
+     "Default",
+     "Supporting"
+    ],
+    "State": [
+     "Rest",
+     "Hovered"
+    ],
+    "Separator": [
+     "Chevron",
+     "Slash"
+    ]
+   },
+   "properties": {
+    "Show Separator": "BOOLEAN=true",
+    "Has Icon": "BOOLEAN=false",
+    "Has Menu": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Breadcrumbs",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "Variant": [
+     "Default",
+     "Supporting"
+    ],
+    "Icons": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {
+    "Items": "SLOT=undefined"
+   },
+   "slots": [
+    "Items"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Navigation / MobileNav",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 4,
+   "variants": {
+    "Side": [
+     "Start",
+     "End"
+    ],
+    "Header": [
+     "True",
+     "False"
+    ]
+   },
+   "properties": {
+    "Children": "SLOT=undefined",
+    "Header Content": "SLOT=undefined",
+    "header": "TEXT=\"Navigation\""
+   },
+   "slots": [
+    "Children",
+    "Header Content"
+   ],
+   "internal": false,
+   "figma_description": "Slide-out drawer overlay for mobile navigation. The mobile counterpart to SideNav â€” accepts the same children (SideNavSection, SideNavItem, or any ReactNode).\n\nProps:\nâ€¢ side: 'start' | 'end' â€” which side the drawer slides from\nâ€¢ header: string â€” simple text heading (default 'Navigation')\nâ€¢ Header Content: slot â€” custom header ReactNode (logo, SideNavHeading, search)\nâ€¢ children: slot â€” drawer conte",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 28,
+    "examples": [
+     "Dark Side=Start, Header=True \"Main\" Text/Secondary 2.52",
+     "Dark Side=Start, Header=True \"AI Chat\" Text/Primary 1.04",
+     "Dark Side=Start, Header=True \"Projects\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "Navigation / .MobileNavToggle",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Rest",
+     "Hover"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": true,
+   "figma_description": "Hamburger toggle button that opens/closes the mobile nav drawer. Ghost, icon-only Button with the Lucide menu (hamburger) icon. Accessible label ('Open navigation') is set at runtime â€” no Figma prop. Reads open state from AppShell context in code."
+  },
+  {
+   "name": ".OutlineItem",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 16,
+   "variants": {
+    "State": [
+     "Rest",
+     "Active"
+    ],
+    "Density": [
+     "Default",
+     "Compact"
+    ],
+    "Level": [
+     "1",
+     "2",
+     "3",
+     "4"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Section\""
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Pagination",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 10,
+   "variants": {
+    "Variant": [
+     "Pages",
+     "Count",
+     "Compact",
+     "Dots",
+     "None"
+    ],
+    "Size": [
+     "md",
+     "sm"
+    ]
+   },
+   "properties": {
+    "Pages": "SLOT=undefined",
+    "Has Prev": "BOOLEAN=true",
+    "Has Next": "BOOLEAN=true",
+    "Show Page Size Selector": "BOOLEAN=false"
+   },
+   "slots": [
+    "Pages"
+   ],
+   "internal": false,
+   "figma_description": "Prop-driven pagination. VARIANT: Size (md/sm). SLOT: Pages â€” compose page-number Button instances (current page = Secondary variant), ellipsis, first/last. BOOLEAN: Has Prev / Has Next gate the prev/next chevron buttons; Show Page Size Selector reveals the page-size Selector. Prev/Next use real Ghost icon-only Buttons with Lucide chevron-left/right.",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 8,
+    "examples": [
+     "Dark Variant=Pages, Size=md \"1\" Text/Primary 1.04",
+     "Dark Variant=Pages, Size=md \"2\" Text/Primary 1.04",
+     "Dark Variant=Pages, Size=md \"3\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "Navigation / SideNav",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Expanded",
+     "Collapsed"
+    ]
+   },
+   "properties": {
+    "Top Content": "SLOT=undefined",
+    "Items": "SLOT=undefined",
+    "Footer": "SLOT=undefined"
+   },
+   "slots": [
+    "Top Content",
+    "Items",
+    "Footer"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Navigation / .SideNavItem",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 12,
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Selected",
+     "Disabled"
+    ],
+    "Size": [
+     "md",
+     "sm",
+     "lg"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Dashboard\"",
+    "Show Icon": "BOOLEAN=false",
+    "Show EndContent": "BOOLEAN=false",
+    "Nested": "BOOLEAN=false",
+    "Has Expand": "BOOLEAN=false",
+    "Expanded": "BOOLEAN=false",
+    "EndContent": "SLOT=undefined"
+   },
+   "slots": [
+    "EndContent"
+   ],
+   "internal": true,
+   "figma_description": "Navigation item for XDSSideNav. Supports icon, selected state, end content."
+  },
+  {
+   "name": "Navigation / .SideNavHeading",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Default",
+     "Open"
+    ]
+   },
+   "properties": {
+    "Heading": "TEXT=\"My App\"",
+    "Superheading": "TEXT=\"Suite Name\"",
+    "Has Superheading": "BOOLEAN=true",
+    "Subheading": "TEXT=\"Business Account\"",
+    "Has Subheading": "BOOLEAN=true",
+    "Has Menu": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Navigation / .SideNavCollapseButton",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Expanded",
+     "Collapsed"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Tabs / TabList",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 6,
+   "variants": {
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ],
+    "hasDivider": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "Tab navigation wrapper. Provides size context to XDSTab children. Optional bottom divider. Default size is md."
+  },
+  {
+   "name": "Tabs / .Tab",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 6,
+   "variants": {
+    "size": [
+     "sm",
+     "md",
+     "lg"
+    ],
+    "state": [
+     "default",
+     "selected"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Tab\"",
+    "Show Icon": "BOOLEAN=false",
+    "Show End Content": "BOOLEAN=false",
+    "End Content": "SLOT=undefined",
+    "isLabelHidden": "BOOLEAN=false"
+   },
+   "slots": [
+    "End Content"
+   ],
+   "internal": true,
+   "figma_description": "Tab item component. Renders inside XDSTabList. Selected state shows primary text with semibold weight and a bottom indicator bar. Uses textSecondary for default state."
+  },
+  {
+   "name": "Navigation / .TopNavItem",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 24,
+   "variants": {
+    "state": [
+     "default",
+     "hover",
+     "selected",
+     "disabled"
+    ],
+    "Size": [
+     "md",
+     "sm",
+     "lg"
+    ],
+    "isIconOnly": [
+     "false",
+     "true"
+    ]
+   },
+   "properties": {
+    "label": "TEXT=\"Nav Item\"",
+    "hasIcon": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Navigation / TopNavMegaMenu",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Closed",
+     "Open"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 2,
+    "Dark": 1,
+    "examples": [
+     "Light State=Open \"AI-powered analytics\" Text/Secondary 4.20",
+     "Light State=Open \"Optional content slo\" Text/Disabled 2.23",
+     "Dark State=Open \"Optional content slo\" Text/Disabled 2.20"
+    ]
+   }
+  },
+  {
+   "name": "Navigation / TopNavMenu",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Closed",
+     "Open"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined",
+    "Label": "TEXT=\"Products\""
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Navigation / .TopNavMegaMenuItem",
+   "kind": "component_set",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "State": [
+     "Rest",
+     "Hover"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Outline",
+   "kind": "component",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Navigation / .SideNavSection",
+   "kind": "component",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Title": "TEXT=\"Navigation\"",
+    "Subtitle": "TEXT=\"Optional description\"",
+    "Has Subtitle": "BOOLEAN=false",
+    "Show EndContent": "BOOLEAN=false",
+    "Show Header": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": "Section grouping for XDSSideNav items with title header."
+  },
+  {
+   "name": "Navigation / TopNav",
+   "kind": "component",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Heading": "SLOT=undefined",
+    "Start Content": "SLOT=undefined",
+    "Center Content": "SLOT=undefined",
+    "End Content": "SLOT=undefined",
+    "Has Center Content": "BOOLEAN=false"
+   },
+   "slots": [
+    "Heading",
+    "Start Content",
+    "Center Content",
+    "End Content"
+   ],
+   "internal": false,
+   "figma_description": "Slot-based top navigation bar (maps to packages/core TopNav.tsx). Fill Heading, Start Content, Center Content, End Content. Toggle 'Has Center Content' for the centered 3-section layout (code centerContent -> 1fr auto 1fr grid). End Content is pushed to the right edge."
+  },
+  {
+   "name": "Navigation / .TopNavMegaMenuFeaturedCard",
+   "kind": "component",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": true,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 2,
+    "Dark": 1,
+    "examples": [
+     "Light Navigation / .TopNavMegaMenuFeaturedCard \"AI-powered analytics\" Text/Secondary 4.20",
+     "Light Navigation / .TopNavMegaMenuFeaturedCard \"Optional content slo\" Text/Disabled 2.23",
+     "Dark Navigation / .TopNavMegaMenuFeaturedCard \"Optional content slo\" Text/Disabled 2.20"
+    ]
+   }
+  },
+  {
+   "name": "Navigation / TopNavHeading",
+   "kind": "component",
+   "astryx_page": "Navigation",
+   "group": "Navigation",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Heading": "TEXT=\"Product Name\"",
+    "Superheading": "TEXT=\"Suite Name\"",
+    "Subheading": "TEXT=\"Account context\"",
+    "Has Superheading": "BOOLEAN=false",
+    "Has Subheading": "BOOLEAN=false",
+    "Has Menu": "BOOLEAN=false"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Dialog",
+   "kind": "component_set",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 2,
+   "variants": {
+    "Variant": [
+     "Standard",
+     "Fullscreen"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT=\"Dialog Title\"",
+    "Has Subtitle": "BOOLEAN=false",
+    "Subtitle Text": "TEXT=\"Optional subtitle\"",
+    "Has Close Button": "BOOLEAN=true",
+    "Has Header Divider": "BOOLEAN=true",
+    "Has Footer": "BOOLEAN=true",
+    "Body": "SLOT=undefined",
+    "Footer Actions": "SLOT=undefined",
+    "Header Start": "SLOT=undefined",
+    "Header End": "SLOT=undefined",
+    "Has Footer Divider": "BOOLEAN=true"
+   },
+   "slots": [
+    "Body",
+    "Footer Actions",
+    "Header Start",
+    "Header End"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 2,
+    "examples": [
+     "Dark Variant=Standard \"Cancel\" Text/Primary 1.04",
+     "Dark Variant=Fullscreen \"Cancel\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "Toast",
+   "kind": "component_set",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "type": [
+     "default",
+     "error"
+    ]
+   },
+   "properties": {},
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": ".CommandPaletteItem",
+   "kind": "component_set",
+   "astryx_page": "Overlay",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 3,
+   "variants": {
+    "State": [
+     "Rest",
+     "Highlighted",
+     "Selected"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Command label\"",
+    "Has End Content": "BOOLEAN=false",
+    "End Content": "SLOT=undefined"
+   },
+   "slots": [
+    "End Content"
+   ],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Overlay",
+   "kind": "component_set",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 9,
+   "variants": {
+    "Scrim": [
+     "dark",
+     "light",
+     "none"
+    ],
+    "Align": [
+     "end",
+     "start",
+     "center"
+    ]
+   },
+   "properties": {
+    "DATA-UNSPLASH-@manrason-Nature": "SLOT=undefined",
+    "Overlay Content": "SLOT=undefined"
+   },
+   "slots": [
+    "DATA-UNSPLASH-@manrason-Nature",
+    "Overlay Content"
+   ],
+   "internal": false,
+   "figma_description": "Overlay â€” renders `content` on top of base media (image/card/video) with a scrim. Base slot = base content; Overlay Content slot = content shown over the scrim.\n\nVariants:\nâ€¢ Scrim: dark (Core/Overlay token) | light (light translucent) | none (transparent)\nâ€¢ Align: start (top-left) | center | end (top-right) â€” matches CSS flex mapping for position=fill.\n\nDefaults: scrim=dark, align=end, position=fi",
+   "contrast_fails": {
+    "Light": 6,
+    "Dark": 6,
+    "examples": [
+     "Light Scrim = dark, Align = end \"Overlay title\" Text/On Dark 1.84",
+     "Light Scrim = dark, Align = end \"Supporting subtitle \" Text/On Dark 1.84",
+     "Light Scrim = dark, Align = start \"Overlay title\" Text/On Dark 1.84"
+    ]
+   }
+  },
+  {
+   "name": "HoverCard",
+   "kind": "component",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 3,
+    "examples": [
+     "Dark HoverCard \"Jane Doe\" Text/Primary 1.04",
+     "Dark HoverCard \"Software Engineer\" Text/Secondary 2.52",
+     "Dark HoverCard \"Building great produ\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": "Popover",
+   "kind": "component",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "hasCloseButton": "BOOLEAN=true",
+    "title": "TEXT=\"Popover Title\"",
+    "Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 2,
+    "examples": [
+     "Dark Popover \"Popover content goes\" Text/Secondary 2.52",
+     "Dark Popover \"Close\" Text/Primary 1.07"
+    ]
+   }
+  },
+  {
+   "name": "Tooltip",
+   "kind": "component",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Content": "TEXT=\"Tooltip text\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "CommandPalette",
+   "kind": "component",
+   "astryx_page": "Overlay",
+   "group": "Navigation",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Input": "SLOT=undefined",
+    "List": "SLOT=undefined",
+    "Footer": "SLOT=undefined"
+   },
+   "slots": [
+    "Input",
+    "List",
+    "Footer"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": ".CommandPaletteEmpty",
+   "kind": "component",
+   "astryx_page": "Overlay",
+   "group": "Navigation",
+   "tier": "Atom",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Message": "TEXT=\"No results\""
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "Lightbox",
+   "kind": "component",
+   "astryx_page": "Overlay",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Media": "SLOT=undefined",
+    "Has Navigation": "BOOLEAN=true",
+    "Has Caption": "BOOLEAN=true",
+    "Has Zoom": "BOOLEAN=false",
+    "Has Thumbnails": "BOOLEAN=false"
+   },
+   "slots": [
+    "Media"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 2,
+    "Dark": 0,
+    "examples": [
+     "Light Lightbox \"A scenic coastline w\" Text/On Dark 1.84",
+     "Light Lightbox \"2 / 5\" Text/On Dark 1.84"
+    ]
+   }
+  },
+  {
+   "name": "List / .ListItem",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 12,
+   "variants": {
+    "Density": [
+     "Compact",
+     "Balanced",
+     "Spacious"
+    ],
+    "State": [
+     "Default",
+     "Hovered",
+     "Selected",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Description": "BOOLEAN=true",
+    "Has Start Content": "BOOLEAN=true",
+    "Has End Content": "BOOLEAN=true",
+    "Label Text": "TEXT=\"Label\"",
+    "Description Text": "TEXT=\"Description text\"",
+    "Divider": "BOOLEAN=false",
+    "Start Content": "SLOT=undefined",
+    "End Content": "SLOT=undefined"
+   },
+   "slots": [
+    "Start Content",
+    "End Content"
+   ],
+   "internal": true,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 3,
+    "Dark": 0,
+    "examples": [
+     "Light Density=Compact, State=Selected \"Description text\" Text/Secondary 4.20",
+     "Light Density=Balanced, State=Selected \"Description text\" Text/Secondary 4.20",
+     "Light Density=Spacious, State=Selected \"Description text\" Text/Secondary 4.20"
+    ]
+   }
+  },
+  {
+   "name": "MetadataList",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 8,
+   "variants": {
+    "Orientation": [
+     "Vertical",
+     "Horizontal"
+    ],
+    "Label Position": [
+     "Start",
+     "Top"
+    ],
+    "Columns": [
+     "Single",
+     "Multi"
+    ]
+   },
+   "properties": {
+    "title": "BOOLEAN=true",
+    "showMore": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "MetadataList / MetadataListItem",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 2,
+   "variants": {
+    "Layout": [
+     "Inline",
+     "Stacked"
+    ]
+   },
+   "properties": {
+    "Icon": "BOOLEAN=true",
+    "Label": "TEXT=\"Label\"",
+    "Value": "TEXT=\"Value\"",
+    "Value Slot": "SLOT=undefined"
+   },
+   "slots": [
+    "Value Slot"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "OverflowList",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 4,
+   "variants": {
+    "State": [
+     "All Visible",
+     "Overflowed"
+    ],
+    "Collapse From": [
+     "End",
+     "Start"
+    ]
+   },
+   "properties": {
+    "overflowLabel": "TEXT=\"+3 more\"",
+    "item1Label": "TEXT=\"React\"",
+    "item2Label": "TEXT=\"TypeScript\"",
+    "item3Label": "TEXT=\"Node.js\"",
+    "item4Label": "TEXT=\"GraphQL\"",
+    "item5Label": "TEXT=\"Vitest\""
+   },
+   "slots": [],
+   "internal": false,
+   "figma_description": "A horizontal list that hides items that don't fit and shows an overflow indicator. Items that overflow are collapsed from either end. The overflow indicator (e.g. \"+3 more\") appears when items don't fit.\n\nProps: children, gap (SpacingStep, default 2), collapseFrom (start|end), minVisibleItems, behavior (observeSelf|observeParent), overflowRenderer"
+  },
+  {
+   "name": "TableHeaderCell",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 9,
+   "variants": {
+    "Density": [
+     "Compact",
+     "Balanced",
+     "Spacious"
+    ],
+    "Sort": [
+     "None",
+     "Ascending",
+     "Descending"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined",
+    "Label": "TEXT=\"Column\"",
+    "Sortable": "BOOLEAN=false",
+    "Align Right": "BOOLEAN=false",
+    "Has Checkbox": "BOOLEAN=false",
+    "Has Filter": "BOOLEAN=false",
+    "Resizable": "BOOLEAN=false"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "TableCell",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 9,
+   "variants": {
+    "Density": [
+     "Compact",
+     "Balanced",
+     "Spacious"
+    ],
+    "State": [
+     "Default",
+     "Hovered",
+     "Selected"
+    ]
+   },
+   "properties": {
+    "Content": "SLOT=undefined",
+    "Align Right": "BOOLEAN=false",
+    "Leading Checkbox": "BOOLEAN=false",
+    "Leading Expand": "BOOLEAN=false",
+    "Divider Bottom": "BOOLEAN=false",
+    "Divider Right": "BOOLEAN=false"
+   },
+   "slots": [
+    "Content"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "TreeList / .TreeListItem",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 9,
+   "variants": {
+    "Node": [
+     "Expanded",
+     "Collapsed",
+     "Leaf"
+    ],
+    "State": [
+     "Default",
+     "Selected",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Start Content": "SLOT=undefined",
+    "End Content": "SLOT=undefined",
+    "Label": "TEXT=\"Label\"",
+    "Description": "TEXT=\"Description\"",
+    "Has Description": "BOOLEAN=false",
+    "Has Start Content": "BOOLEAN=true",
+    "Has End Content": "BOOLEAN=false",
+    "Rails": "SLOT=undefined"
+   },
+   "slots": [
+    "Start Content",
+    "End Content",
+    "Rails"
+   ],
+   "internal": true,
+   "figma_description": ""
+  },
+  {
+   "name": "TreeList",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 2,
+   "variants": {
+    "variant": [
+     "lineGuides",
+     "noGuides"
+    ]
+   },
+   "properties": {
+    "Children": "SLOT=undefined",
+    "Header": "TEXT=\"Files\"",
+    "Has Header": "BOOLEAN=false"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": ""
+  },
+  {
+   "name": "Item",
+   "kind": "component_set",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Molecule",
+   "variant_count": 6,
+   "variants": {
+    "Density": [
+     "Compact",
+     "Balanced",
+     "Spacious"
+    ],
+    "Align": [
+     "Center",
+     "Start"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT=\"Item label\"",
+    "Description": "TEXT=\"Supporting description\"",
+    "Has Description": "BOOLEAN=true",
+    "Marker": "SLOT=undefined",
+    "Start Content": "SLOT=undefined",
+    "End Content": "SLOT=undefined",
+    "Has Marker": "BOOLEAN=false",
+    "Has Start Content": "BOOLEAN=true",
+    "Has End Content": "BOOLEAN=true"
+   },
+   "slots": [
+    "Marker",
+    "Start Content",
+    "End Content"
+   ],
+   "internal": false,
+   "figma_description": "Generic row/list-item layout primitive: [Marker] [Start Content] [Label + Description] [End Content]. Density controls block padding (Compact/Balanced/Spacious); Align controls vertical alignment of leading/trailing content. Slots: Marker, Start Content, End Content. Gated by Has Marker/Start Content/Description/End Content. Basis for List and MetadataList rows."
+  },
+  {
+   "name": "List",
+   "kind": "component",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Organism",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Header": "BOOLEAN=true",
+    "Header Text": "TEXT=\"List Header\"",
+    "Children": "SLOT=undefined"
+   },
+   "slots": [
+    "Children"
+   ],
+   "internal": false,
+   "figma_description": "",
+   "contrast_fails": {
+    "Light": 0,
+    "Dark": 6,
+    "examples": [
+     "Dark List \"Notifications\" Text/Primary 1.04",
+     "Dark List \"Manage your alerts\" Text/Secondary 2.52",
+     "Dark List \"Privacy\" Text/Primary 1.04"
+    ]
+   }
+  },
+  {
+   "name": ".TreeRail",
+   "kind": "component",
+   "astryx_page": "Table & List",
+   "group": "Data Display",
+   "tier": "Atom",
+   "variant_count": 1,
+   "variants": {},
+   "properties": {
+    "Line": "BOOLEAN=true"
+   },
+   "slots": [],
+   "internal": true,
+   "figma_description": ""
+  }
+ ],
+ "icons": {
+  "set": "Lucide",
+  "count": 1694,
+  "naming": "icon/<lucide-name> (kebab case), standalone components on the Icons page",
+  "wrapper": "Icon component set (Size xsm 12, sm 16, md 20, lg 24) with a nested icon instance to swap",
+  "color": "Icon/* semantic tokens; the Icon description says to override the fill on the instance"
+ },
+ "slots": {
+  "Button": [
+   "End Content"
+  ],
+  "Toolbar": [
+   "Start Content",
+   "End Content",
+   "Center Content"
+  ],
+  "Action / ButtonGroup": [
+   "Children"
+  ],
+  "ContextMenu": [
+   "Children"
+  ],
+  "Chat / ChatComposer": [
+   "Footer",
+   "Header"
+  ],
+  "Chat / ChatToolCalls": [
+   "Details"
+  ],
+  "Chat / ChatComposerInput": [
+   "Content"
+  ],
+  "Chat / ChatComposerDrawer": [
+   "Content"
+  ],
+  "Chat / ChatMessageList": [
+   "Content"
+  ],
+  "Card": [
+   "Content"
+  ],
+  "Collapsible": [
+   "Content"
+  ],
+  "ClickableCard": [
+   "Content"
+  ],
+  "SelectableCard": [
+   "Children"
+  ],
+  "Carousel": [
+   "Children"
+  ],
+  "EmptyState": [
+   "Icon",
+   "Actions"
+  ],
+  "Token": [
+   "[Slot: endContent]"
+  ],
+  "Blockquote": [
+   "Content"
+  ],
+  "PowerSearch / Trigger": [
+   "Filters"
+  ],
+  "PowerSearch / Popover": [
+   "Content"
+  ],
+  "Checkbox / CheckboxListItem": [
+   "[Slot: startContent]",
+   "[Slot: endContent]"
+  ],
+  "InputGroup": [
+   "Prefix",
+   "Suffix"
+  ],
+  "Banner": [
+   "Content",
+   "End Content"
+  ],
+  "Layout / Section": [
+   "Children"
+  ],
+  "Breadcrumbs": [
+   "Items"
+  ],
+  "Navigation / MobileNav": [
+   "Children",
+   "Header Content"
+  ],
+  "Pagination": [
+   "Pages"
+  ],
+  "Navigation / SideNav": [
+   "Top Content",
+   "Items",
+   "Footer"
+  ],
+  "Navigation / .SideNavItem": [
+   "EndContent"
+  ],
+  "Tabs / TabList": [
+   "Children"
+  ],
+  "Tabs / .Tab": [
+   "End Content"
+  ],
+  "Navigation / TopNavMegaMenu": [
+   "Content"
+  ],
+  "Navigation / TopNavMenu": [
+   "Content"
+  ],
+  "Outline": [
+   "Children"
+  ],
+  "Navigation / TopNav": [
+   "Heading",
+   "Start Content",
+   "Center Content",
+   "End Content"
+  ],
+  "Navigation / .TopNavMegaMenuFeaturedCard": [
+   "Content"
+  ],
+  "Dialog": [
+   "Body",
+   "Footer Actions",
+   "Header Start",
+   "Header End"
+  ],
+  ".CommandPaletteItem": [
+   "End Content"
+  ],
+  "Overlay": [
+   "DATA-UNSPLASH-@manrason-Nature",
+   "Overlay Content"
+  ],
+  "HoverCard": [
+   "Content"
+  ],
+  "Popover": [
+   "Content"
+  ],
+  "CommandPalette": [
+   "Input",
+   "List",
+   "Footer"
+  ],
+  "Lightbox": [
+   "Media"
+  ],
+  "List / .ListItem": [
+   "Start Content",
+   "End Content"
+  ],
+  "MetadataList / MetadataListItem": [
+   "Value Slot"
+  ],
+  "TableHeaderCell": [
+   "Content"
+  ],
+  "TableCell": [
+   "Content"
+  ],
+  "TreeList / .TreeListItem": [
+   "Start Content",
+   "End Content",
+   "Rails"
+  ],
+  "TreeList": [
+   "Children"
+  ],
+  "Item": [
+   "Marker",
+   "Start Content",
+   "End Content"
+  ],
+  "List": [
+   "Children"
+  ]
+ },
+ "slots_rule": "Astryx uses native Figma SLOT properties for content areas (Content, Start/End Content, Footer, Body...). Place DS components inside slots; never draw content. \"Has X\" booleans gate each slot."
+}

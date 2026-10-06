@@ -1,0 +1,1203 @@
+{
+ "meta": {
+  "platform": "Web",
+  "source": "Templates page of Astryx Library DS (33 Example/* components), read 2026-10-06",
+  "rule": "Screens are assembled only from components in component-registry.json and tokens in tokens.json. Use these as layout references for our projects; rebuild them with our DS components, at our screen sizes (Desktop 1440 / Mobile 375).",
+  "frames_observed": "every template is 1920 x 1080 (no mobile versions); Color mode set explicitly to Neutral Light on each",
+  "dark_mode": "set the Color mode (or a theme extension mode) on the frame; never duplicate components",
+  "skills": [
+   "figma-generate-design",
+   "figma-use",
+   "ui-ux-pro-max",
+   "audit-design-system"
+  ],
+  "note": "Some templates still nest old XDSFieldLabel / XDSIcon parts through their TextInput instances (leftover names from the XDS library Astryx came from)."
+ },
+ "sections": {
+  "Table": "Data tables with grouping, search, filters (PowerSearch), sorting and pagination",
+  "Form": "Data entry forms: single column, two columns, checkout with order summary",
+  "Settings": "Settings as a long form, inside a Dialog with Tabs, or as side-by-side panels",
+  "Login": "Sign in: card, basic, split screen with image, SSO buttons",
+  "Tools": "Dense app tools: page editor, file explorer, IDE layout, kanban board",
+  "Content": "Content and commerce pages: order detail, documentation (catalog, design, technical), card grid, product detail",
+  "AI Chat": "AI assistant: conversation with tool calls and code, landing with composer and suggestion cards",
+  "Gallery": "Marketing and media: hero layouts and galleries with AspectRatio media",
+  "Shell": "App shells with content slot: top nav + tree, side nav, top nav only"
+ },
+ "templates": {
+  "grouped_table": {
+   "name": "Example/Grouped Table",
+   "section": "Table",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "Checkbox / CheckboxInput",
+    "Heading",
+    "Icon",
+    "Layout / Section",
+    "StatusDot",
+    "TableCell",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Heading": 1,
+    "Button": 2,
+    "Icon": 8,
+    "Badge": 5,
+    "TextInput": 1,
+    "XDSFieldLabel": 133,
+    "XDSIcon": 266,
+    "Layout / Section": 1,
+    "TableCell": 132,
+    "Checkbox / CheckboxInput": 132,
+    "StatusDot": 22,
+    "Avatar": 22
+   }
+  },
+  "searchable_table": {
+   "name": "Example/Searchable Table",
+   "section": "Table",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Avatar",
+    "Avatar / AvatarStatusDot",
+    "Badge",
+    "Button",
+    "Checkbox / CheckboxInput",
+    "Field / .FieldLabel",
+    "Heading",
+    "Icon",
+    "Layout / Section",
+    "Pagination",
+    "PowerSearch / Trigger",
+    "Selector",
+    "TableCell",
+    "TableHeaderCell",
+    "Text",
+    "Token"
+   ],
+   "component_counts": {
+    "Heading": 1,
+    "Button": 9,
+    "Badge": 22,
+    "Icon": 34,
+    "PowerSearch / Trigger": 1,
+    "Token": 2,
+    "Layout / Section": 1,
+    "TableHeaderCell": 4,
+    "Checkbox / CheckboxInput": 72,
+    "XDSFieldLabel": 72,
+    "XDSIcon": 144,
+    "TableCell": 68,
+    "Avatar": 17,
+    "Avatar / AvatarStatusDot": 17,
+    "Text": 17,
+    "Pagination": 1,
+    "Selector": 1,
+    "Field / .FieldLabel": 1
+   }
+  },
+  "contact_form": {
+   "name": "Example/Contact Form",
+   "section": "Form",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1081
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Checkbox / CheckboxInput",
+    "Divider",
+    "Field / .FieldLabel",
+    "Icon",
+    "Link",
+    "Radio / RadioList",
+    "Radio / RadioListItem",
+    "Selector",
+    "Spinner",
+    "TextArea",
+    "TextInput",
+    "Token"
+   ],
+   "component_counts": {
+    "Card": 3,
+    "TextInput": 4,
+    "XDSFieldLabel": 5,
+    "XDSIcon": 10,
+    "Icon": 34,
+    "Divider": 1,
+    "Token": 10,
+    "Selector": 2,
+    "Field / .FieldLabel": 3,
+    "Radio / RadioList": 1,
+    "Radio / RadioListItem": 5,
+    "TextArea": 1,
+    "Spinner": 1,
+    "Checkbox / CheckboxInput": 1,
+    "Button": 1,
+    "Badge": 1,
+    "Link": 1
+   }
+  },
+  "two_column_form": {
+   "name": "Example/Two-column Form",
+   "section": "Form",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "AspectRatio",
+    "Badge",
+    "Button",
+    "Card",
+    "Divider",
+    "Field / .FieldLabel",
+    "Icon",
+    "Layout / Section",
+    "Link",
+    "Selector",
+    "Spinner",
+    "Text",
+    "TextArea",
+    "TextInput",
+    "Token"
+   ],
+   "component_counts": {
+    "Layout / Section": 1,
+    "Text": 7,
+    "AspectRatio": 1,
+    "Card": 1,
+    "TextInput": 5,
+    "XDSFieldLabel": 5,
+    "XDSIcon": 10,
+    "Icon": 27,
+    "Token": 7,
+    "Selector": 1,
+    "Field / .FieldLabel": 2,
+    "TextArea": 1,
+    "Spinner": 1,
+    "Button": 1,
+    "Badge": 1,
+    "Divider": 1,
+    "Link": 3
+   }
+  },
+  "checkout_form": {
+   "name": "Example/Checkout Form",
+   "section": "Form",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Badge",
+    "Banner",
+    "Button",
+    "Card",
+    "Checkbox / CheckboxInput",
+    "Collapsible",
+    "Divider",
+    "Field / .FieldLabel",
+    "Icon",
+    "Link",
+    "NumberInput",
+    "Radio / RadioList",
+    "Radio / RadioListItem",
+    "Selector",
+    "Spinner",
+    "TextInput",
+    "Thumbnail"
+   ],
+   "component_counts": {
+    "Divider": 8,
+    "Button": 11,
+    "Icon": 46,
+    "Badge": 7,
+    "TextInput": 11,
+    "XDSFieldLabel": 15,
+    "XDSIcon": 30,
+    "Checkbox / CheckboxInput": 4,
+    "Selector": 3,
+    "Field / .FieldLabel": 6,
+    "Radio / RadioList": 1,
+    "Radio / RadioListItem": 3,
+    "Link": 10,
+    "Card": 1,
+    "Collapsible": 1,
+    "Thumbnail": 3,
+    "NumberInput": 3,
+    "Spinner": 3,
+    "Banner": 1
+   }
+  },
+  "settings_form": {
+   "name": "Example/Settings Form",
+   "section": "Settings",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Checkbox / CheckboxInput",
+    "Divider",
+    "Field / .FieldLabel",
+    "Icon",
+    "List / .ListItem",
+    "TextInput",
+    "Typeahead"
+   ],
+   "component_counts": {
+    "Typeahead": 1,
+    "Field / .FieldLabel": 1,
+    "Icon": 27,
+    "Divider": 3,
+    "List / .ListItem": 6,
+    "TextInput": 7,
+    "XDSFieldLabel": 10,
+    "XDSIcon": 20,
+    "Button": 3,
+    "Badge": 3,
+    "Checkbox / CheckboxInput": 3
+   }
+  },
+  "settings_dialog": {
+   "name": "Example/Settings Dialog",
+   "section": "Settings",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Dialog",
+    "Divider",
+    "Field / .FieldLabel",
+    "Heading",
+    "Icon",
+    "Link",
+    "List",
+    "List / .ListItem",
+    "Selector",
+    "Switch",
+    "Tabs / .Tab",
+    "Tabs / TabList",
+    "Text",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Dialog": 1,
+    "Button": 6,
+    "Heading": 7,
+    "List": 2,
+    "List / .ListItem": 11,
+    "Icon": 41,
+    "Divider": 12,
+    "Tabs / TabList": 1,
+    "Tabs / .Tab": 3,
+    "Badge": 8,
+    "Text": 11,
+    "TextInput": 1,
+    "XDSFieldLabel": 3,
+    "XDSIcon": 6,
+    "Link": 4,
+    "Selector": 1,
+    "Field / .FieldLabel": 1,
+    "Switch": 2,
+    "Card": 1
+   }
+  },
+  "settings_panels": {
+   "name": "Example/Settings Panels",
+   "section": "Settings",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "HORIZONTAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Divider",
+    "Icon",
+    "Link",
+    "List",
+    "List / .ListItem",
+    "TextInput"
+   ],
+   "component_counts": {
+    "List": 2,
+    "List / .ListItem": 9,
+    "Icon": 14,
+    "Divider": 11,
+    "TextInput": 1,
+    "XDSFieldLabel": 1,
+    "XDSIcon": 2,
+    "Button": 2,
+    "Badge": 2,
+    "Link": 6,
+    "Card": 1
+   }
+  },
+  "login_card": {
+   "name": "Example/Login Card",
+   "section": "Login",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Divider",
+    "Heading",
+    "Icon",
+    "Link",
+    "Text",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Text": 6,
+    "Card": 1,
+    "Heading": 1,
+    "TextInput": 2,
+    "XDSFieldLabel": 2,
+    "XDSIcon": 4,
+    "Icon": 6,
+    "Button": 3,
+    "Badge": 3,
+    "Divider": 1,
+    "logo/Apple": 1,
+    "logo/Google": 1,
+    "Link": 3
+   }
+  },
+  "basic_login": {
+   "name": "Example/Basic Login",
+   "section": "Login",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Heading",
+    "Icon",
+    "Text",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Text": 2,
+    "Card": 1,
+    "Heading": 1,
+    "TextInput": 2,
+    "XDSFieldLabel": 2,
+    "XDSIcon": 4,
+    "Icon": 4,
+    "Button": 1,
+    "Badge": 1
+   }
+  },
+  "login_split": {
+   "name": "Example/Login Split",
+   "section": "Login",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Divider",
+    "Icon",
+    "Layout / Section",
+    "Link",
+    "Text",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Card": 2,
+    "Layout / Section": 1,
+    "Text": 7,
+    "TextInput": 2,
+    "XDSFieldLabel": 2,
+    "XDSIcon": 4,
+    "Icon": 6,
+    "Button": 3,
+    "Badge": 3,
+    "Divider": 1,
+    "logo/Apple": 1,
+    "logo/Google": 1,
+    "Link": 3
+   }
+  },
+  "login_sso": {
+   "name": "Example/Login SSO",
+   "section": "Login",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Divider",
+    "Icon",
+    "Link",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Card": 1,
+    "TextInput": 2,
+    "XDSFieldLabel": 2,
+    "XDSIcon": 4,
+    "Icon": 6,
+    "Link": 2,
+    "Button": 2,
+    "Badge": 2,
+    "Divider": 1
+   }
+  },
+  "page_editor": {
+   "name": "Example/Page Editor",
+   "section": "Tools",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "HORIZONTAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Checkbox / CheckboxInput",
+    "Divider",
+    "EmptyState",
+    "Heading",
+    "Icon",
+    "List / .ListItem",
+    "SegmentedControl",
+    "Spinner",
+    "TableCell",
+    "TableHeaderCell",
+    "Tabs / .Tab",
+    "Text"
+   ],
+   "component_counts": {
+    "Heading": 4,
+    "SegmentedControl": 1,
+    "Button": 18,
+    "Icon": 17,
+    "Badge": 5,
+    "Tabs / .Tab": 2,
+    "Divider": 1,
+    "List / .ListItem": 10,
+    "Card": 3,
+    "Text": 1,
+    "TableHeaderCell": 4,
+    "Checkbox / CheckboxInput": 24,
+    "XDSFieldLabel": 24,
+    "XDSIcon": 48,
+    "TableCell": 20,
+    "EmptyState": 1,
+    "Spinner": 1
+   }
+  },
+  "file_explorer": {
+   "name": "Example/File Explorer",
+   "section": "Tools",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Avatar",
+    "Avatar / AvatarStatusDot",
+    "Button",
+    "Icon",
+    "List / .ListItem",
+    "MetadataList / MetadataListItem",
+    "SegmentedControl",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Button": 6,
+    "SegmentedControl": 1,
+    "Icon": 18,
+    "TextInput": 1,
+    "XDSFieldLabel": 1,
+    "XDSIcon": 2,
+    "List / .ListItem": 22,
+    "Avatar": 1,
+    "Avatar / AvatarStatusDot": 1,
+    "MetadataList / MetadataListItem": 3
+   }
+  },
+  "ide": {
+   "name": "Example/IDE",
+   "section": "Tools",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Icon",
+    "MetadataList / MetadataListItem",
+    "SegmentedControl",
+    "Tabs / .Tab",
+    "TextInput",
+    "TreeList / .TreeListItem"
+   ],
+   "component_counts": {
+    "TextInput": 1,
+    "XDSFieldLabel": 1,
+    "XDSIcon": 2,
+    "Icon": 40,
+    "TreeList / .TreeListItem": 14,
+    "Badge": 21,
+    "Tabs / .Tab": 4,
+    "SegmentedControl": 1,
+    "MetadataList / MetadataListItem": 8,
+    "Button": 3
+   }
+  },
+  "kanban_board": {
+   "name": "Example/Kanban Board",
+   "section": "Tools",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "Card",
+    "EmptyState",
+    "Heading",
+    "Icon",
+    "StatusDot"
+   ],
+   "component_counts": {
+    "Heading": 12,
+    "Badge": 21,
+    "Icon": 29,
+    "Button": 5,
+    "StatusDot": 4,
+    "Card": 7,
+    "Avatar": 7,
+    "EmptyState": 1
+   }
+  },
+  "order_detail": {
+   "name": "Example/Order Detail",
+   "section": "Content",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Avatar",
+    "Avatar / AvatarStatusDot",
+    "Badge",
+    "Button",
+    "Collapsible",
+    "Divider",
+    "Heading",
+    "Icon",
+    "Link",
+    "List",
+    "List / .ListItem",
+    "MetadataList / MetadataListItem",
+    "ProgressBar",
+    "Tabs / .Tab",
+    "Tabs / TabList",
+    "Text",
+    "Thumbnail"
+   ],
+   "component_counts": {
+    "Link": 3,
+    "Heading": 4,
+    "Text": 73,
+    "Avatar": 5,
+    "Avatar / AvatarStatusDot": 5,
+    "Badge": 12,
+    "Icon": 36,
+    "Button": 13,
+    "Tabs / TabList": 1,
+    "Tabs / .Tab": 4,
+    "List": 1,
+    "List / .ListItem": 5,
+    "Thumbnail": 5,
+    "MetadataList / MetadataListItem": 11,
+    "Divider": 3,
+    "Collapsible": 3,
+    "ProgressBar": 1
+   }
+  },
+  "documentation_catalog": {
+   "name": "Example/Documentation Catalog",
+   "section": "Content",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "ClickableCard",
+    "Heading",
+    "Icon",
+    "Text"
+   ],
+   "component_counts": {
+    "Card": 1,
+    "Text": 64,
+    "Button": 1,
+    "Icon": 2,
+    "Badge": 1,
+    "Heading": 4,
+    "ClickableCard": 31
+   }
+  },
+  "documentation_design": {
+   "name": "Example/Documentation Design",
+   "section": "Content",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    ".OutlineItem",
+    "Badge",
+    "Button",
+    "Card",
+    "Checkbox / CheckboxInput",
+    "Divider",
+    "Icon",
+    "Outline",
+    "TableCell",
+    "TableHeaderCell",
+    "Tabs / .Tab",
+    "Tabs / TabList"
+   ],
+   "component_counts": {
+    "Card": 3,
+    "Button": 12,
+    "Icon": 33,
+    "Badge": 17,
+    "TableHeaderCell": 2,
+    "Checkbox / CheckboxInput": 8,
+    "XDSFieldLabel": 8,
+    "XDSIcon": 16,
+    "TableCell": 6,
+    "Divider": 3,
+    "Tabs / TabList": 2,
+    "Tabs / .Tab": 4,
+    "Outline": 1,
+    ".OutlineItem": 3
+   }
+  },
+  "documentation_technical": {
+   "name": "Example/Documentation Technical",
+   "section": "Content",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    ".OutlineItem",
+    "Badge",
+    "Button",
+    "Card",
+    "CodeBlock",
+    "Divider",
+    "Heading",
+    "Icon",
+    "List",
+    "List / .ListItem",
+    "Outline",
+    "Text"
+   ],
+   "component_counts": {
+    "Text": 12,
+    "Card": 1,
+    "Button": 2,
+    "Badge": 1,
+    "Icon": 19,
+    "Heading": 4,
+    "List": 2,
+    "List / .ListItem": 13,
+    "Divider": 3,
+    "CodeBlock": 4,
+    "Outline": 1,
+    ".OutlineItem": 5
+   }
+  },
+  "card_grid": {
+   "name": "Example/Card Grid",
+   "section": "Content",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Button",
+    "Button / ToggleButton",
+    "ClickableCard",
+    "Divider",
+    "DropdownMenu",
+    "Heading",
+    "Icon",
+    "TextInput"
+   ],
+   "component_counts": {
+    "Heading": 4,
+    "Divider": 4,
+    "TextInput": 1,
+    "XDSFieldLabel": 1,
+    "XDSIcon": 2,
+    "Icon": 8,
+    "Button / ToggleButton": 6,
+    "DropdownMenu": 1,
+    "Button": 1,
+    "ClickableCard": 18
+   }
+  },
+  "product_detail": {
+   "name": "Example/Product Detail",
+   "section": "Content",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "AspectRatio",
+    "Badge",
+    "Button",
+    "Collapsible",
+    "Divider",
+    "Field / .FieldLabel",
+    "Icon",
+    "NumberInput",
+    "SegmentedControl",
+    "SelectableCard",
+    "Spinner",
+    "Text"
+   ],
+   "component_counts": {
+    "AspectRatio": 1,
+    "SelectableCard": 6,
+    "Text": 9,
+    "Badge": 3,
+    "Icon": 12,
+    "SegmentedControl": 2,
+    "Button": 4,
+    "NumberInput": 1,
+    "Field / .FieldLabel": 1,
+    "Spinner": 1,
+    "Divider": 4,
+    "Collapsible": 3
+   }
+  },
+  "ai_chat_conversation": {
+   "name": "Example/AI Chat Conversation",
+   "section": "AI Chat",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Avatar",
+    "Badge",
+    "Button",
+    "Chat / ChatComposer",
+    "Chat / ChatMessage",
+    "Chat / ChatMessageBubble",
+    "Chat / ChatMessageMetadata",
+    "Chat / ChatSendButton",
+    "Chat / ChatSystemMessage",
+    "Chat / ChatToolCalls",
+    "CodeBlock",
+    "Icon",
+    "Spinner",
+    "Timestamp",
+    "Token"
+   ],
+   "component_counts": {
+    "Chat / ChatSystemMessage": 2,
+    "Token": 2,
+    "Icon": 10,
+    "Chat / ChatMessageBubble": 10,
+    "Timestamp": 1,
+    "Avatar": 4,
+    "Chat / ChatToolCalls": 4,
+    "CodeBlock": 2,
+    "Chat / ChatMessageMetadata": 7,
+    "Chat / ChatMessage": 1,
+    "Spinner": 1,
+    "Chat / ChatComposer": 1,
+    "Chat / ChatSendButton": 1,
+    "Button": 5,
+    "Badge": 3
+   }
+  },
+  "ai_chat_landing": {
+   "name": "Example/AI Chat Landing",
+   "section": "AI Chat",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Button",
+    "Button / ToggleButton",
+    "Chat / ChatComposer",
+    "Chat / ChatComposerDrawer",
+    "Chat / ChatDictationButton",
+    "Chat / ChatSendButton",
+    "ClickableCard",
+    "DropdownMenu",
+    "Icon",
+    "Text",
+    "Token"
+   ],
+   "component_counts": {
+    "Icon": 8,
+    "Text": 2,
+    "Chat / ChatComposerDrawer": 1,
+    "Token": 3,
+    "Chat / ChatComposer": 1,
+    "DropdownMenu": 3,
+    "Button": 5,
+    "Chat / ChatDictationButton": 1,
+    "Chat / ChatSendButton": 1,
+    "Button / ToggleButton": 4,
+    "ClickableCard": 4
+   }
+  },
+  "centered_hero": {
+   "name": "Example/Centered Hero",
+   "section": "Gallery",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "AspectRatio",
+    "Badge",
+    "Button",
+    "Heading",
+    "Icon",
+    "Layout / Section",
+    "Text"
+   ],
+   "component_counts": {
+    "Heading": 1,
+    "Text": 1,
+    "Button": 2,
+    "Icon": 3,
+    "Badge": 1,
+    "Layout / Section": 1,
+    "AspectRatio": 1
+   }
+  },
+  "classic_gallery": {
+   "name": "Example/Classic Gallery",
+   "section": "Gallery",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "HORIZONTAL",
+   "components": [
+    "Badge",
+    "Heading",
+    "Icon",
+    "Layout / Section",
+    "Tabs / .Tab",
+    "Tabs / TabList",
+    "Text"
+   ],
+   "component_counts": {
+    "Layout / Section": 1,
+    "Heading": 1,
+    "Text": 1,
+    "Tabs / TabList": 1,
+    "Tabs / .Tab": 4,
+    "Icon": 8,
+    "Badge": 4
+   }
+  },
+  "gallery_hero": {
+   "name": "Example/Gallery Hero",
+   "section": "Gallery",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "AspectRatio",
+    "Badge",
+    "Button",
+    "Heading",
+    "Icon",
+    "Text"
+   ],
+   "component_counts": {
+    "Heading": 1,
+    "Text": 1,
+    "Button": 2,
+    "Icon": 3,
+    "Badge": 1,
+    "AspectRatio": 3
+   }
+  },
+  "mixed_gallery": {
+   "name": "Example/Mixed Gallery",
+   "section": "Gallery",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "AspectRatio",
+    "Heading",
+    "Text"
+   ],
+   "component_counts": {
+    "Heading": 1,
+    "Text": 1,
+    "AspectRatio": 5
+   }
+  },
+  "product_gallery": {
+   "name": "Example/Product Gallery",
+   "section": "Gallery",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "AspectRatio",
+    "Badge",
+    "Button",
+    "Card",
+    "Heading",
+    "Icon",
+    "Text"
+   ],
+   "component_counts": {
+    "Heading": 7,
+    "Text": 13,
+    "Button": 1,
+    "Icon": 2,
+    "Badge": 1,
+    "Card": 6,
+    "AspectRatio": 6
+   }
+  },
+  "side_gallery": {
+   "name": "Example/Side Gallery",
+   "section": "Gallery",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "HORIZONTAL",
+   "components": [
+    "AspectRatio",
+    "Badge",
+    "Button",
+    "Divider",
+    "Heading",
+    "Icon",
+    "Text"
+   ],
+   "component_counts": {
+    "Text": 8,
+    "Heading": 1,
+    "Button": 1,
+    "Icon": 2,
+    "Badge": 1,
+    "Divider": 1,
+    "AspectRatio": 9
+   }
+  },
+  "shell_nav": {
+   "name": "Example/Shell Nav",
+   "section": "Shell",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "VERTICAL",
+   "components": [
+    "Badge",
+    "Button",
+    "Icon",
+    "Skeleton",
+    "TextInput",
+    "TreeList / .TreeListItem"
+   ],
+   "component_counts": {
+    "Button": 7,
+    "Icon": 27,
+    "Badge": 20,
+    "TextInput": 1,
+    "XDSFieldLabel": 1,
+    "XDSIcon": 2,
+    "TreeList / .TreeListItem": 14,
+    "Skeleton": 27
+   }
+  },
+  "shell_side_nav": {
+   "name": "Example/Shell Side Nav",
+   "section": "Shell",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Badge",
+    "Button",
+    "Card",
+    "Divider",
+    "Icon",
+    "MoreMenu",
+    "Navigation / .SideNavCollapseButton",
+    "Navigation / .SideNavHeading",
+    "Navigation / .SideNavItem",
+    "Navigation / .SideNavItem/selected",
+    "Navigation / .SideNavSection",
+    "Navigation / SideNav",
+    "Skeleton",
+    "StatusDot"
+   ],
+   "component_counts": {
+    "Navigation / SideNav": 1,
+    "Navigation / .SideNavHeading": 1,
+    "Navigation / .SideNavSection": 3,
+    "Badge": 17,
+    "Icon": 42,
+    "Navigation / .SideNavItem/selected": 3,
+    "Navigation / .SideNavItem": 26,
+    "Divider": 1,
+    "StatusDot": 11,
+    "MoreMenu": 1,
+    "Button": 5,
+    "Navigation / .SideNavCollapseButton": 1,
+    "Card": 5,
+    "Skeleton": 11
+   }
+  },
+  "shell_top_nav": {
+   "name": "Example/Shell Top Nav",
+   "section": "Shell",
+   "tier": "Pattern",
+   "size": [
+    1920,
+    1080
+   ],
+   "auto_layout": "NONE",
+   "components": [
+    "Badge",
+    "Button",
+    "Icon",
+    "Navigation / .TopNavItem",
+    "Navigation / TopNavHeading",
+    "Skeleton"
+   ],
+   "component_counts": {
+    "Navigation / TopNavHeading": 1,
+    "Navigation / .TopNavItem": 4,
+    "Icon": 7,
+    "Button": 3,
+    "Badge": 2,
+    "Skeleton": 40
+   }
+  }
+ }
+}

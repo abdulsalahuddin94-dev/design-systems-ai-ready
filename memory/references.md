@@ -2,22 +2,25 @@
 name: references
 description: Reference library of studied design systems (references.json): entries, Figma file keys, folders, known open items
 type: reference
-updated: 2026-10-01
+updated: 2026-10-06
 ---
 
 # Reference library
 
 Studied design systems live in one library indexed by `references.json` (Root): one entry per company and platform (`web`, `ios`, `android`, `cross-platform`), with folder, Figma file key and link, Storybook and a per-platform `default`. Skills, intake and docs read the entry and never hardcode a company name (Abdul, 2026-10-01: more companies' systems, for all three platforms and cross-platform, will be studied later). Human list and "how to add one": `References.md`. Never edit the originals; duplicate them.
 
-Current entries (one company today, Trianglz, default for all three platforms):
+Current entries (Trianglz is the default for all three platforms; Astryx is a second Web template):
 
 | Entry id | Figma file key | Folder |
 |---|---|---|
 | `trianglz-web` | `7qsOqckanKwGDbkljD3rb9` | `Reference_Library/Trianglz/Web/` |
 | `trianglz-ios` | `q5nQHGEGzZ94WN0wilJwLW` | `Reference_Library/Trianglz/iOS/` |
 | `trianglz-android` | `JUs2c8IO6ybFcGRZjcQzr9` | `Reference_Library/Trianglz/Android/` |
+| `astryx-web` | `kiygMAdfsXmLfxlP8i7ueN` (Abdul's duplicate of the Astryx community file) | `Reference_Library/Astryx/Web/` |
 
 Each folder has `Foundation_Skill/` and `Component_Skills/{Form_Elements,Navigation,Data_Display}_Skill/` (SKILL.md, references/components.md, gaps.md, screens/), plus `data/` (tokens.json, component-registry.json, rules.json, screen-templates.json, source/). Tools: `tools/build_tokens.py`, `tools/recolor.py` (see `tools/README.md`). New companies go in `Reference_Library/<Company>/<Platform>/` (`tools/add_reference.py`); the Trianglz folders moved there on 2026-10-01 (Abdul).
+
+Astryx (studied 2026-10-06, read only, FigCli Yolo): code-first library (React + StyleX) synced to Figma by an agent; best for coverage, slots, AI chat kit, multi-brand themes (extended collections). No Primitives, ALL_SCOPES, Dark broken on 10 components, so always Fix on create. Lessons for our workflow are proposals in `Reference_Library/Astryx/Web/docs/decisions.md` (not yet adopted). Dark screenshots still open (needs a copy or a mode set on a scratch page).
 
 Open items:
 - `data/` files were built from the skill reference files, not a live export (`needs_resync: true`). Re-export with figma-console `figma_export_tokens` when the file is open in the Desktop Bridge (token-extractor subagent).
