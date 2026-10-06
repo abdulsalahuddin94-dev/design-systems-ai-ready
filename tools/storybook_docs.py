@@ -92,7 +92,7 @@ def read_component_md(folder):
     return out
 
 
-DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?"
+DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?|Code"
 
 
 def parse_description(desc):

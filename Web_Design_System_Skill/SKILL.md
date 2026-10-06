@@ -72,7 +72,7 @@ Create a new `➜` page inside the matching group when no existing page fits, an
 
 1. **Primitives** - raw values.
 2. **Semantic** variables aliased to Primitives (Light / Dark).
-3. **Spacing, Radius, Typography** variables (Desktop / iPad / Mobile where responsive).
+3. **Spacing, Radius (+ role aliases), Size, Typography** variables (Desktop / iPad / Mobile where responsive).
 4. **Styles** from those variables: text styles, effect styles, grid styles.
 5. **Icons** (atoms) bound to icon tokens, and the **➜ App Icon** page (section 5b).
 6. **Components**: Atoms -> Molecules -> Organisms -> Patterns.
@@ -111,6 +111,8 @@ Before each component: state its tier, list dependencies, build missing lower ti
 
 ### Spacing (modes Desktop / iPad / Mobile) - `space/{0,1,2,3,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,48,56,64}` = n x 4px on Desktop; 0-4 fixed across modes, 5+ compress on iPad/Mobile. Scopes GAP (+ WIDTH_HEIGHT).
 ### Radius (1 mode) - `radius/{none 0, sm 2, base 4, md 6, lg 8, xl 12, 2xl 16, 3xl 24, full 9999}` with usage descriptions (base default, lg inputs/cards, xl panels, 2xl modals, full pills/avatars).
+- **Role radius (Abdul, 2026-10-06, from Astryx):** aliases named by where they go, so an agent never guesses a step: `radius/role/inner` -> `radius/base` (parts inside a control: checkbox box, chip inside a field), `radius/role/element` -> `radius/lg` (buttons, inputs, selects), `radius/role/container` -> `radius/xl` (cards, panels, menus, popovers), `radius/role/page` -> `radius/2xl` (modals, drawers, sheets), `radius/role/full` -> `radius/full` (pills, avatars). Components bind the role alias, not the scale step; changing a role re-points one alias. Same collection, scope CORNER_RADIUS.
+### Size (1 mode, Abdul, 2026-10-06, from Astryx) - `size/control/{xs 32, sm 36, base 40, lg 48, xl 56}` (the Button heights) + `size/icon/{xs 12, sm 16, base 18, lg 20}`. Scope WIDTH_HEIGHT. Button, Icon Button, Input, Select, Search and every control of the same size bind their height to `size/control/*`, so a field and a button next to it always line up and a density change is one edit.
 ### Opacity - `opacity/disabled` = 0.5 (use for all disabled states).
 
 ## 3b. Recolor-ready colors (Abdul's rule: a color change must update every shade cleanly)
@@ -162,6 +164,8 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - Names: `Family / Variant` (Input / Text, OTP / Cell, Menu / Item, Tabs / Item — Underline). Unique set names.
 - Variant properties in Title Case: `State`, `Type`, `Size`, `Status`, `Open`; values Title Case (`Default, Hover, Focus, Filled, Error, Success, Disabled`). Never `Property 1`, `Variant5`, `Status4`, `folled`, `dimmed`.
 - Every set: description with tier + purpose + when to use / not use.
+- **Description format:** `Purpose:` / `Usage rules:` / `Accessibility:`, plus `Code:` when the component has a code counterpart (Scenario D, code sync or Code Connect): the import or file path and the main prop names, e.g. `Code: components/ui/button.tsx (variant, size)`. Name the tokens it uses in Usage rules when a choice depends on them. Agents read the description to go from Figma to code (Abdul, 2026-10-06, from Astryx).
+- **Slots, not variant matrices (Abdul, 2026-10-06, from Astryx):** a content area that holds other components (card body and footer, dialog / modal body and actions, list item leading and trailing, toolbar and top bar actions, sidebar sections, popover and sheet content) is a SLOT property, with its accepted components listed in `data/component-registry.json > slots`. Variants stay for what changes the anatomy or the state, never for "which content is inside" (Astryx's Toolbar dropped 48 variants for 3 slots). Slots are created with the Desktop Bridge (`figma_add_slot_property`); everything else stays on FigCli Yolo.
 - TEXT properties for every visible string (label, hint, error, title, message, placeholder where constant), BOOLEAN for optional parts (show hint, show optional, show tooltip, show close, show icon), INSTANCE_SWAP for icons. Every property must be wired to a layer (no dead properties, no property that hides the wrong layer).
 - 100% bound: fills, strokes, padding, gap, radius, text styles, effect styles. No raw values, no remote variables/styles.
 - Auto layout everywhere; instances set to Fill container in forms.
@@ -192,6 +196,17 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 | Molecule | Alert, Toast, Menu, Tab bar, Pagination bar, Breadcrumb, Avatar Upload | Status variants; built from atoms |
 | Molecule | Nav Item | Icon + Label + optional Badge · Default, Hover, Active, Focus, Disabled · built before Sidebar and Top Bar (⭐Navigation > ➜ Navigation Bars) |
 | Organism | Select / Dropdown, Confirmation Popup / Modal, Top bar, Sidebar | open/closed; exposed nested props; Top bar and Sidebar nest Nav Item |
+
+Optional, built when the product needs them (Abdul, 2026-10-06, missing from the default reference, seen in Astryx). Ask at the gap table; never added silently:
+
+| Tier | Component | Required variants / states |
+|---|---|---|
+| Molecule | Metadata List | label / value rows built from one `List / Item` row (the same row behind Menu and List): Default, Hover, Selected, Disabled · optional leading icon and trailing action slot |
+| Organism | Tree List | nested rows with Expand / Collapse · Default, Hover, Selected, Focus, Disabled · indent per level from `space/*` |
+| Organism | Command Palette | Search input + grouped results (`List / Item`) + keyboard hints · Empty, Loading, Results, No results |
+| Molecule | Chat / Message | Role User / Assistant / System · State Default, Streaming, Error · slots for attachments and actions (copy, retry) |
+| Molecule | Chat / Prompt Input | Textarea + attach + send; Send becomes Stop while streaming · Default, Focus, Disabled, Sending |
+| Pattern | Chat / Thread | Message list + Prompt Input + suggestion chips (Filter Chip) · Empty (with suggestions), Conversation, Loading |
 
 Required states follow this table, not a blanket rule: Pressed and Loading are required on Button (and Icon Button) only; other interactive atoms need Default, Hover, Focus, Disabled (+ Selected/Error where listed). Keep the project's `data/rules.json > components.required_states_interactive` in line with this table.
 
