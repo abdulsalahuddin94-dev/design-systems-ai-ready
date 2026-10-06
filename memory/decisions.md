@@ -49,6 +49,9 @@ updated: 2026-09-30
 ## Lessons from Astryx (Abdul, 2026-10-06)
 - Studied as a Web reference (`references.json > astryx-web`, not the default). Adopted in all three platform Main Skills: (1) content areas are SLOT properties, variants only for anatomy and state; (2) a Size collection binds control, row and icon heights; (3) role radius aliases (`radius/role/inner, element, container, page, full`) that components bind instead of scale steps; (4) the component description adds `Code:` (file or import + main props) when a code counterpart exists. Web only: (5) optional Metadata List, Tree List, Command Palette and the Chat kit (Message, Prompt Input, Thread), offered at the gap table. Not adopted: Astryx's missing Primitive tier, ALL_SCOPES, component-specific color tokens and variant bloat.
 
+## Figma comments (Abdul, 2026-10-06)
+- Optional, any path: only when the user asks to read a file's comments or act on them; never run by default, offered or asked, and never a blocking step. A ✅ reaction (`:white_check_mark:`) on a comment means it is already fixed: resolved or ✅ threads are skipped, the rest become a fix list (fix / decision / info) approved before any change, and Claude adds ✅ to each comment it fixed after the audit passes. Never resolve, delete or reply unless asked. Read through figma-console `figma_get_comments` (REST API, token with `file_comments:read`; ✅ needs `file_comments:write`, else the user reacts by hand). Rules: Intake section 14 (`steps/figma-comments.md`).
+
 ## Radio vs Select (Abdul, 2026-09-30)
 - Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.
 

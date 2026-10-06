@@ -119,6 +119,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 | 10 | `steps/folders.md` | question 0.3, or unsure where a file goes |
 | 11, 12 | `steps/finish.md` | end of a build, Storybook step |
 | 13 | `steps/quick-mode.md` | `/ds-quick`, or one task on a live file without a project setup (section 0) |
+| 14 (optional) | `steps/figma-comments.md` | only when the user asks to read a file's Figma comments or act on them; never offered or asked |
 
 - The platform Main Skill loads after 1.1 / 1.2. The Figma skills (figma-use, figma-generate-library, figma-generate-design, ui-ux-pro-max) load at the first Figma build step of a session, never during the intake questions; load each once per session.
 - Read the knowledge base before Figma: names, keys and values come from `data/tokens.json` and `data/component-registry.json`. Re-read Figma only for what the files do not hold, or when `CHANGELOG.md` shows a Figma change after the last export.
