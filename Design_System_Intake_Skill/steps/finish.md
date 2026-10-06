@@ -8,7 +8,7 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
 2. Screenshot every variant (each mode the project has) into the skills' `references\screens\`.
 3. Write / update the project skills (usually through the docs-writer agent, which keeps `data/docs-progress.json` so a run cut off by a rate limit can resume where it stopped):
    - `Foundation_Skill`: variables (names, values per mode, scopes, code syntax), styles, grids, icon rules, direction decisions from the intake.
-   - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies.
+   - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies. The usage lines come from the registry `docs` blocks: `python tools/component_docs.py "My Projects/<Project>" check` must report 0 missing, then `... skills`.
    - `gaps.md` in each: anything left open.
    - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the reference entry's versions as the starting shape, `references.json`) and `docs/decisions.md`.
    - Check `tokens.json > recolor_readiness.ready` is true.

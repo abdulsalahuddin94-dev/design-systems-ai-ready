@@ -106,8 +106,8 @@ Story titles follow the Figma groups: `Foundations/Colors`, `Form Elements/Input
    - Read exact specs first with a read-only `figma_execute` walk (layout, padding, gap, radius, fills/strokes as variable names, text style names, effect styles) of each component set, then write the replica. Screenshots in `references/screens/` are the visual check.
    - Generate the stories: `python tools/storybook_stories.py <folder>` (Playground, one story per value of the main variant property, States and Sizes rows, an "All variants" grid, and an interactive "In use" example when `component-map.json` has one). When `src/docs/DocBlocks.tsx` exists it also writes each component's Docs page and turns autodocs off for those stories.
 
-### 4b. Registry `docs` block (optional, per component)
-Written by docs-writer from the Figma description and Component_Skills; every key is optional and overrides the derived value:
+### 4b. Registry `docs` block (the one docs source per component)
+Written once, while the component is built (before its Figma description), and the source for everything else: `python tools/component_docs.py <folder> figma` generates the Figma description (written by `tools/apply_descriptions.figma.js`), `... skills` refreshes the usage lines in `components.md`, and `storybook_docs.py` reads it first. `... check` lists components missing a required key (`overview`, `when_to_use`, `when_not_to_use`, `accessibility`, `keywords`; plus `anatomy` from Molecule up). For a DS documented before this block existed, docs-writer fills it from the Figma description and Component_Skills. Every key overrides the derived value:
 ```json
 "docs": {
   "overview": "One sentence: what it is for.",
@@ -119,9 +119,15 @@ Written by docs-writer from the Figma description and Component_Skills; every ke
   "states": [{ "value": "Disabled", "meaning": "..." }],
   "guidelines": [{ "do": "...", "dont": "...", "do_args": { "Type": "Filled" }, "dont_args": { "Type": "Danger" } }],
   "content": ["Sentence case", "Start with a verb", "At most 3 words"],
-  "accessibility": ["..."]
+  "accessibility": [
+    { "part": "Label", "criterion": "1.4.3", "requirement": "4.5:1", "states": ["Default", "Hover", "Pressed"], "detail": "Measure on the final fill." },
+    "Touch target at least 44px"
+  ],
+  "keywords": ["button", "btn", "cta", "submit", "action"],
+  "code": "components/ui/button.tsx (variant, size)"
 }
 ```
+`accessibility` items are a sentence or a row per part (WCAG criterion, required ratio, the states it is checked in); rows make the audit's contrast check per state explicit. `keywords` are the words people and agents search with (synonyms, abbreviations, the old name), so a search for "cta" or "btn" finds Button. `when_not_to_use` items name the component to use instead in brackets. `code` (only when a code counterpart exists) becomes the description's `Code:` line. After the Storybook is generated, `tools/storybook_parity.py` checks that every Docs page shows these sections.
 `do_args` / `dont_args` render the component with those Figma property values next to the guideline. Keep the wording brand-neutral; product-specific examples go in `use_cases`.
 6b. **Mobile Adaptive (one Storybook, Platform switch).** For `mobile_setup: mobile-adaptive` (Intake `steps/mobile-adaptive.md`):
    - `data/tokens.json > meta.platform` and the registry's `meta.platform` are `Mobile Adaptive`; collections carry roles (`primitive`, `semantic` = Color, `language`, `os`, `component`) and Figma's default mode. Export the variables with their Code syntax (token-extractor, or a read-only FigCli eval) so `code_syntax` is filled.

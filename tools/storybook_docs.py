@@ -34,6 +34,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import platform_names as pn  # noqa: E402
+from component_docs import a11y_text  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TEMPLATES = ROOT / "Storybook_Design_System_Skill" / "templates" / "docs"
@@ -92,7 +93,7 @@ def read_component_md(folder):
     return out
 
 
-DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?|Code"
+DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?|Code|Keywords"
 
 
 def parse_description(desc):
@@ -122,7 +123,7 @@ def component_docs(c, live, usage, rules, url, rtl=False, platform="Web"):
 
     rules_text = d.get("usage", "")
     sentences = split_items(rules_text)
-    negative = re.compile(r"^(do not|don't|never|avoid)\b", re.I)
+    negative = re.compile(r"^(do not|don't|never|avoid|not for)\b", re.I)
     when = [s for s in sentences if not negative.search(s)]
     when_not = [s for s in sentences if negative.search(s)]
     when_not += [strip_md(s) for s in split_items(u.get("dont", ""))]
@@ -201,6 +202,7 @@ def component_docs(c, live, usage, rules, url, rtl=False, platform="Web"):
         docs[k] = [cap(x) for x in docs[k]]
     docs["guidelines"] = [{"do": cap(g["do"]), "dont": cap(g["dont"])} for g in docs["guidelines"]]
     docs.update({k: v for k, v in over.items() if v is not None})
+    docs["accessibility"] = [a11y_text(x) for x in docs.get("accessibility", [])]
     return {k: v for k, v in docs.items() if v not in (None, "", [])} | {"name": name, "group": docs["group"], "tier": docs["tier"]}
 
 

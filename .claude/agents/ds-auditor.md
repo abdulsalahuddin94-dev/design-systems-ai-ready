@@ -63,6 +63,7 @@ Compare Figma against the project's `data/tokens.json`, `data/component-registry
 - variables added, removed, renamed or with changed values per mode;
 - components or variants added, removed or renamed; properties changed;
 - components used in screens that are not in the registry;
+- Figma descriptions that differ from `python tools/component_docs.py <folder> figma` output (someone edited Figma or the registry `docs` block without regenerating), and `... check` gaps;
 - the build-mode checklist numbers compared with the last report.
 If a Storybook project exists (`My Projects/<Project>/storybook/`), also list component, variant, property and token names that no longer match Figma exactly.
 
