@@ -36,6 +36,12 @@ What users see afterwards: Greenfield 3.1 offers "Start from a reference templat
 
 Rules: platforms stay independent (one entry per platform, nothing shared or merged between entries); a cross-platform entry (one shared design for Flutter / React Native custom UI) is offered when intake 1.3 picks cross-platform; never edit the original file.
 
+## Platform quality skills (optional)
+Not Figma kits: agent skills that guide decisions (component choice, states, accessibility, polish). Values they suggest still map to the project's tokens. How each is used: section 11 of the iOS and Android Main Skills.
+- iOS: heyimjames iOS Design Engineering Skills (MIT): https://github.com/heyimjames/ios-design-skills. Its Figma-relevant rules are already in `iOS_Design_System_Skill/references/ios-polish.md`; the plugin is optional.
+- Android: material-design-3-ui (MIT): https://github.com/skydashnet/material-design-3-ui-skill
+- Android exact M3 values: material-components-android `tokens.xml` files: https://github.com/material-components/material-components-android (Views, maintenance mode; Compose Material 3 is current)
+
 ## Figma tooling
 Setup guide, which tool fits which step, Yolo setup and risks, switching: `Figma_Tools/README.md`.
 - figma-console-mcp: https://github.com/southleft/figma-console-mcp
