@@ -2,6 +2,11 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+## Screens phase (2026-10-06)
+1. **Screen frame height was not set.** The rule gave widths only (375 / 1440), so screen frames could be created at any height, and Impeccable was not named in the Screens phase skill order.
+   Cause: section 7d and decisions.md defined width only; the Screens skills list stopped at figma-generate-design + ui-ux-pro-max. Rule: Desktop 1440 wide, height at least 900, default 1024; Mobile 375 x 812; Brownfield keeps designed sizes; Impeccable is the quality pass after figma-generate-design + ui-ux-pro-max on every screen. Check: ds-auditor `screens` mode and `tools/check_screens.figma.js` report screen frames outside these sizes. Fixed in `Design_System_Intake_Skill/steps/screens.md` (7d, 7e), the three platform Main Skills (Screens), `AGENTS.md`, `steps/code-to-design.md`, the default Web `screen-templates.json` and `tools/check_screens.figma.js` (`frameSize`).
+2. **No prototype step after a flow.** Finished flows were left as static screens; Abdul wants to be asked each time. Rule: after every flow, Ask (choice) "Do you want to create the prototype?"; Yes wires the screens with Figma prototype interactions. Check: the flow's CHANGELOG entry has a `Prototype: yes / no` line. Fixed in `Design_System_Intake_Skill/steps/screens.md` (7e step 5), `memory/decisions.md`, `AGENTS.md`.
+
 ## Figma comments (2026-10-06)
 1. **Comments could not be read (401 Invalid token).** `figma_get_comments` failed on PMO SYSTEM even after the token was replaced.
    Cause: comments come only from the Figma REST API (FigCli Yolo and the Plugin API cannot read them), and figma-console reads `FIGMA_ACCESS_TOKEN` only when Claude Code starts. Rule: the token needs `file_comments:read`; after changing it, quit Claude Code fully and start a new session; the user edits the token, Claude never reads or writes it. Check: one `figma_get_comments` call before planning comment work; 401 -> stop and ask for a new token. Fixed in `Design_System_Intake_Skill/steps/figma-comments.md` (14.1).

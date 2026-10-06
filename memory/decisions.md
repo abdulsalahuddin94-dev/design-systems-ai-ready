@@ -80,7 +80,9 @@ updated: 2026-09-30
 - A raw color with alpha < 100% is flattened on its real background (color*alpha + bg*(1-alpha)), matched to the nearest opaque Semantic by OKLCH deltaE, rechecked in the other mode; same token in both modes with deltaE < 2 -> bind, else `needs decision`. Scrims/overlays, elements over images and hover/pressed state layers stay transparent; a new alpha token needs approval. Rule: Design_System_Intake_Skill section 7 step 4; helper `tools/flatten_alpha.py`.
 
 ## Screen sizes (Abdul, 2026-09-30)
-- Screens are Mobile 375px and Desktop 1440px wide. Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 / 1440. Details: Design_System_Intake_Skill section 7d.
+- Screens are Mobile 375 x 812 and Desktop 1440 wide with a height of at least 900px, default 1024px (Abdul, 2026-10-06: heights added). Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 x 812 / 1440 x 1024. Details: Design_System_Intake_Skill section 7d.
+- Prototype per flow (Abdul, 2026-10-06): after each flow is fully designed, Ask (choice) "Do you want to create the prototype?" Yes / No. Yes -> wire the flow's screens as a Figma prototype (flow start on the first screen, On click -> Navigate to between frames, popups as overlays, interactions on screen instances only). Rule: Design_System_Intake_Skill section 7e step 5.
+- Screens skills order (Abdul, 2026-10-06): figma-generate-design + figma-use build, ui-ux-pro-max for layout and hierarchy, then Impeccable as the quality pass on every screen; fixes snap to DS tokens and components. Then the Design file audit.
 
 ## Group placement (Figma pages and skill files)
 - Foundations -> ⭐Setup / Foundation_Skill.
