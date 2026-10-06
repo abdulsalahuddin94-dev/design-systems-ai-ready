@@ -83,7 +83,7 @@ Cover
 
 1. **Primitives** - raw palette, **1 mode** (Apple system grays and hues + brand ramp).
 2. **Semantic** colors aliased to Primitives, modes **Light / Dark** (optionally Increased Contrast).
-3. **Spacing, Radius, Typography** variables (Typography with **Dynamic Type modes**).
+3. **Spacing, Radius (+ role aliases), Size, Typography** variables (Typography with **Dynamic Type modes**).
 4. **Styles**: text styles bound to Typography vars; effect styles for Liquid Glass, blur and shadows; grid styles.
 5. **Icons** (atoms) and the **➜ App Icon** page (section 5b), then components **Atoms -> Molecules -> Organisms -> Patterns**.
 6. **Documentation pages** linked to variables/styles.
@@ -119,6 +119,8 @@ Default (Large) values: 34/41 +0.40 · 28/34 +0.38 · 22/28 -0.26 · 20/25 -0.45
 
 ### Spacing (pt) - `space/{0, 2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48}` + `space/margin-compact 16`, `space/margin-regular 20`, `space/list-row-inset 16`. Scopes GAP + WIDTH_HEIGHT (padding allowed). Names spelled right (`spacnig` in the reference).
 ### Radius - `radius/{none 0, xs 4, sm 8, md 12, lg 16, xl 20, xxl 26, sheet 38, full 999}` with usage descriptions (md fields/cells groups, xxl alerts, sheet sheets/cards in iOS 26). Apply **corner smoothing ~60%** (continuous corners).
+- **Role radius (Abdul, 2026-10-06, from Astryx):** `radius/role/inner` -> `radius/sm` (parts inside a control), `radius/role/element` -> `radius/md` (fields, cell groups, buttons that are not capsules), `radius/role/container` -> `radius/lg` (cards, popovers), `radius/role/page` -> `radius/sheet` (sheets, full-screen cards), `radius/role/full` -> `radius/full` (capsule buttons, avatars). Components bind the role alias.
+### Size (pt, 1 mode, Abdul, 2026-10-06, from Astryx) - `size/control/{small 28, medium 34, large 50}` (the Button sizes), `size/row/{default 44, subtitle 60}`, `size/touch-target 44`. Scope WIDTH_HEIGHT. Buttons, fields and list rows bind their height to these.
 ### Opacity - `opacity/disabled` 0.3-0.4 (Apple dims disabled content, not recolors).
 
 ## 3b. Recolor-ready colors (Abdul's rule: a color change must update every shade cleanly)
@@ -171,6 +173,8 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - Touch targets **44x44pt** minimum; list rows 44pt min (52-60 with subtitle).
 - Disabled = content at `opacity/disabled` or Apple disabled label colors.
 - Every set: description with tier + purpose + when to use / not use. Component docs are written once: the `docs` block of its `data/component-registry.json` entry (Storybook_Design_System_Skill/SKILL.md section 4b: overview, when to use / not use, anatomy, do/don't, accessibility rows, keywords), filled when the component is built; `python tools/component_docs.py <folder> figma` turns it into the description (Purpose / Usage rules / Accessibility / Keywords) and `tools/apply_descriptions.figma.js` writes it to the set. Never type a description by hand.
+- **Description format:** `Purpose:` / `Usage rules:` / `Accessibility:` / `Keywords:`, plus `Code:` (the docs block's `code` key) when the component has a code counterpart (Scenario D, code sync or Code Connect): the import or file path and the main prop names, e.g. `Code: Sources/DesignSystem/PrimaryButton.swift (style, size)`. Name the tokens it uses in Usage rules when a choice depends on them. Agents read the description to go from Figma to code (Abdul, 2026-10-06, from Astryx).
+- **Slots, not variant matrices (Abdul, 2026-10-06, from Astryx):** a content area that holds other components (card body and footer, dialog / modal body and actions, list item leading and trailing, toolbar and top bar actions, sidebar sections, popover and sheet content) is a SLOT property, with its accepted components listed in `data/component-registry.json > slots`. Variants stay for what changes the anatomy or the state, never for "which content is inside" (Astryx's Toolbar dropped 48 variants for 3 slots). Slots are created with the Desktop Bridge (`figma_add_slot_property`); everything else stays on FigCli Yolo. Alerts and sheets already use SLOT content.
 
 ### Required inventory and states (iOS)
 | Tier | Component | Variants / states |

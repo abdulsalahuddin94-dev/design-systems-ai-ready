@@ -16,7 +16,11 @@
       "figma_file_key": "7qsOqckanKwGDbkljD3rb9",
       "figma_url": "https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System",
       "status": "ready",
-      "storybook": { "folder": "Reference_Library/Trianglz/Web/storybook", "port": 6006, "mcp_name": "trianglz-web-storybook" },
+      "storybook": {
+        "folder": "Reference_Library/Trianglz/Web/storybook",
+        "port": 6006,
+        "mcp_name": "trianglz-web-storybook"
+      },
       "notes": "Page layout (Cover, Setup, groups with topic pages) is the default file structure for every platform."
     },
     {
@@ -40,6 +44,18 @@
       "figma_url": "https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System",
       "status": "ready",
       "storybook": null
+    },
+    {
+      "id": "astryx-web",
+      "company": "Astryx",
+      "name": "Astryx Library DS",
+      "platform": "web",
+      "folder": "Reference_Library/Astryx/Web",
+      "figma_file_key": "kiygMAdfsXmLfxlP8i7ueN",
+      "figma_url": "https://www.figma.com/design/kiygMAdfsXmLfxlP8i7ueN/Astryx-Library-DS",
+      "storybook": null,
+      "status": "ready",
+      "notes": "Studied read only 2026-10-06 (v0.1.9). Strong coverage for data-heavy and AI apps (110 sets, 1,988 variants, 74 slots, 33 templates, AI chat kit, multi-brand themes via extended collections). No Primitive tier, ALL_SCOPES, Dark broken on 10 components: always Fix on create. Lessons: docs/decisions.md."
     }
   ]
 }

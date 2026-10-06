@@ -80,7 +80,7 @@ Page convention (from the kit): one Section per family with `Header`, the public
 ## 2. Build order (each layer only uses the layers before it)
 1. **Primitives** = tonal palettes (tones 0, 4, 6, 10, 12, 17, 20, 22, 24, 30, 40, 50, 60, 70, 80, 87, 90, 92, 94, 95, 96, 98, 99, 100) per key color, generated with Material Color Utilities (HCT) from the brand seeds. 1 mode.
 2. **Semantic** = md.sys.color scheme roles aliased to palette tones, modes **Light / Dark** (+ **Light Medium/High Contrast**, **Dark Medium/High Contrast** when required); **state layers** as aliases + opacity variables.
-3. **Spacing, Shape, Typography** variables (md.sys.typescale: font, size, line height, tracking, weight per role/size).
+3. **Spacing, Shape (+ role aliases), Size, Typography** variables (md.sys.typescale: font, size, line height, tracking, weight per role/size).
 4. **Styles**: text styles bound to the typescale variables; **Elevation 1-5** effect styles; grid styles per window size class.
 5. **Icons** (Material Symbols, atoms) and the **➜ App Icon** page (section 5b), then components **Atoms -> Molecules -> Organisms -> Patterns**.
 6. **Documentation pages** linked. 7. **Audit** + write the project skills.
@@ -118,6 +118,8 @@ M3 values: display 57/64 -0.25, 45/52, 36/44 · headline 32/40, 28/36, 24/32 · 
 Font: Roboto Flex by default, or the brand font (the reference uses Google Sans Flex - confirm licensing).
 
 ### Shape (md.sys.shape.corner) - `Corner/{None 0, Extra-small 4, Small 8, Medium 12, Large 16, Large-increased 20, Extra-large 28, Extra-large-increased 32, Extra-extra-large 48, Full}`, CORNER_RADIUS scope, usage descriptions (text field top XS, chip S, card M, FAB L, dialog/sheet XL, button Full).
+- **Role radius (Abdul, 2026-10-06, from Astryx):** `radius/role/inner` -> `Corner/Extra-small` (text field top, parts inside a control), `radius/role/element` -> `Corner/Small` (chips, menus), `radius/role/container` -> `Corner/Medium` (cards), `radius/role/page` -> `Corner/Extra-large` (dialogs, bottom sheets), `radius/role/full` -> `Corner/Full` (buttons, FAB pills, avatars). Components bind the role alias; the md.sys.shape names stay the scale.
+### Size (dp, 1 mode, Abdul, 2026-10-06, from Astryx) - `size/control/{xsmall 32, small 40, medium 56, large 96, xlarge 136}` (M3 button heights), `size/text-field 56`, `size/list-item/{one-line 56, two-line 72, three-line 88}`, `size/touch-target 48`. Scope WIDTH_HEIGHT. Buttons, fields and list items bind their height to these.
 ### Spacing (dp) - `space/{0, 2, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64}` + `space/margin-compact 16`, `space/margin-medium 24`, `space/gutter`. Scopes GAP + WIDTH_HEIGHT. (Missing entirely in the reference.)
 ### Elevation - `elevation/level-{0..5}` = 0, 1, 3, 6, 8, 12 dp (documented), effect styles Elevation 1-5.
 
@@ -171,6 +173,8 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - Touch target 48x48dp (visual 40dp controls inside 48 targets).
 - Disabled per M3 recipe: container on-surface 12%, content on-surface 38%.
 - Descriptions on every set (M3 kit text is fine) + when to use / not use. Component docs are written once: the `docs` block of its `data/component-registry.json` entry (Storybook_Design_System_Skill/SKILL.md section 4b: overview, when to use / not use, anatomy, do/don't, accessibility rows, keywords), filled when the component is built; `python tools/component_docs.py <folder> figma` turns it into the description (Purpose / Usage rules / Accessibility / Keywords) and `tools/apply_descriptions.figma.js` writes it to the set. Never type a description by hand.
+- **Description format:** `Purpose:` / `Usage rules:` / `Accessibility:` / `Keywords:`, plus `Code:` (the docs block's `code` key) when the component has a code counterpart (Scenario D, code sync or Code Connect): the import or file path and the main prop names, e.g. `Code: ui/components/AppButton.kt (style, size)`. Name the tokens it uses in Usage rules when a choice depends on them. Agents read the description to go from Figma to code (Abdul, 2026-10-06, from Astryx).
+- **Slots, not variant matrices (Abdul, 2026-10-06, from Astryx):** a content area that holds other components (card body and footer, dialog / modal body and actions, list item leading and trailing, toolbar and top bar actions, sidebar sections, popover and sheet content) is a SLOT property, with its accepted components listed in `data/component-registry.json > slots`. Variants stay for what changes the anatomy or the state, never for "which content is inside" (Astryx's Toolbar dropped 48 variants for 3 slots). Slots are created with the Desktop Bridge (`figma_add_slot_property`); everything else stays on FigCli Yolo. M3 sets already expose SLOT `Content`.
 
 ### Required inventory and states (Android)
 | Tier | Component | Variants / states |

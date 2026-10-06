@@ -1,0 +1,88 @@
+{
+  "meta": {
+    "source": "Web_Design_System_Skill/SKILL.md + Reference_Library/Astryx/Web/Foundation_Skill (studied 2026-10-06)",
+    "entry": "astryx-web",
+    "platform": "Web",
+    "units": "px",
+    "how_to_read": "observed = what the Astryx file does today. our_rule = what a project built from this reference must do (Web_Design_System_Skill wins). When they differ, the project copy is fixed (Fix on create)."
+  },
+  "accessibility": {
+    "contrast_min": { "text": 4.5, "large_text": 3.0, "ui_boundary": 3.0, "focus_indicator": 3.0 },
+    "observed": {
+      "control_border": "Border/Emphasized 1.48:1 Light, 1.94:1 Dark (fails 3:1)",
+      "placeholder_or_hint_on_Text_Disabled": "2.2-2.5:1 (fails 4.5:1)",
+      "secondary_text_on_Background_Muted": "4.20:1 Light (fails 4.5:1)",
+      "focus": "Inputs: Input Ring/* inner shadow 3px. Buttons: 1px Core/Accent stroke, invisible on Primary",
+      "disabled": "variant look at 50% opacity (matches our rule)",
+      "dark_mode_raw_fills": ["SelectableCard", "Dialog", "Popover", "HoverCard", "List", "Layout / Section", "Toast", "ContextMenu", "Navigation / MobileNav", "Pagination"]
+    },
+    "our_rule": "border/input >= 3:1, placeholder and muted text >= 4.5:1, focus-ring / focus-ring-offset effect styles, every surface bound to a Semantic token so Dark works"
+  },
+  "color": {
+    "observed": {
+      "collections": "Color (Neutral Light / Neutral Dark), 108 variables, raw hex, ALL_SCOPES, no descriptions, no code syntax",
+      "primitives": "none in Figma; code has an OKLCH palette with stops 0-100 by 5 and a dark chroma taper",
+      "role_groups": ["Core", "Text", "Icon", "Surface", "Status", "Border", "Effects", "Blue..Yellow hue families (Background, Border, Icon, Text)", "Syntax", "Component/*"],
+      "themes": "Figma extended collections of Color, Radius and Typography: Chocolate, Butter, Stone, Y2K, Gothic, Matcha (90 color overrides each)"
+    },
+    "our_rule": {
+      "semantic_must_alias_primitive": true,
+      "raw_hex_allowed_in": ["Primitives"],
+      "primitive_ramp_suggestion": "OKLCH ramps with steps 0-100 by 5 (Astryx code) or our 0-950 Tailwind steps; pick one per project and record it",
+      "explicit_scopes": true,
+      "code_syntax": "WEB var(--...)",
+      "multi_brand": "base Semantic collection + one Figma extended collection per brand (Astryx pattern), only after the user approves"
+    }
+  },
+  "spacing": {
+    "observed": "Spacing/0, half 2, 1 4, 1-half 6, 2 8 ... 12 48 (n x 4px); 72% of component padding and gap values bound, 2,677 raw",
+    "our_rule": "every padding and gap bound to space/*"
+  },
+  "size": {
+    "observed": "Size/Element/Small 28, Medium 32, Large 36: control heights bound on Button and inputs (SM, MD, LG)",
+    "lesson": "a Size collection for control heights keeps every control on the same 3 heights"
+  },
+  "radius": {
+    "observed": "Radius/None 4, Inner 6, Element 10, Container 12, Page 28, Full 9999 (role names, not t-shirt sizes); 86% bound",
+    "usage": { "Element": "buttons, inputs, list items", "Container": "cards, popovers, modals", "Inner": "inner corners of grouped controls", "Page": "page sections, large panels", "Full": "pills, avatars, status dots", "None": "sections, headers, dividers (but the value is 4)" },
+    "our_rule": "radius/{none 0, sm, base, md, lg, xl, 2xl, 3xl, full}; role names may be added as Semantic aliases if the project wants them"
+  },
+  "border_width": { "observed": "Border Width 1 exists; 8 of 807 component strokes bound", "our_rule": "bind stroke weights" },
+  "typography": {
+    "observed": {
+      "families": "Figtree (Heading, Body), JetBrains Mono (Code); variables hold CSS font stacks, not bindable",
+      "styles": ["Display/Display 1-3", "Heading/Heading 1-6", "Text/Body", "Text/Large", "Text/Label", "Text/Code", "Text/Supporting"],
+      "bound": ["fontSize", "lineHeight"],
+      "not_bound": ["fontFamily", "fontWeight", "letterSpacing"],
+      "single_mode": "no responsive modes; body 14px"
+    },
+    "our_rule": "bind family, weight, size, line height and letter spacing; Desktop / iPad / Mobile modes; body never below 16px on mobile"
+  },
+  "icons": {
+    "observed": { "set": "Lucide", "count": 1694, "naming": "icon/<lucide-name>", "wrapper": "Icon set Size xsm 12, sm 16, md 20, lg 24", "color": "override on the instance (not tokenized)", "instance_swap_properties_in_file": 3 },
+    "our_rule": "Icon/<Title Case Name> or keep the Lucide names consistently; color bound to icon tokens; every icon in a component exposed as an instance swap"
+  },
+  "components": {
+    "observed": {
+      "naming": "Category-free names (Button, TextInput) and Family / Part (Tabs / .Tab); `.` prefix marks internal parts",
+      "properties": "variant axes for State, Size, Variant; booleans for optional parts; native SLOT properties for content areas (74 slots); property names mix Title Case and React camelCase",
+      "states_inputs": ["rest", "hover", "focused", "error", "warning", "success", "loading", "disabled"],
+      "states_button": ["Rest", "Hover", "Pressed", "Disabled", "Focused", "Loading"],
+      "sizes": ["SM 28", "MD 32", "LG 36"],
+      "descriptions": "40 of 131 components; the good ones list anatomy, axes, token names and the code path"
+    },
+    "our_rule": {
+      "naming": "Category / Component, Title Case properties and values, no abbreviations",
+      "descriptions": "Purpose, Usage Rules, Accessibility on every component",
+      "dark_mode": "switch the Color mode on the frame; never duplicate components",
+      "bound": "fills, strokes, padding, gap, radius, text styles, effect styles: 100% bound, 0 remote"
+    }
+  },
+  "build_order": ["Primitives", "Semantic (Light/Dark)", "Spacing, Size, Radius, Typography variables", "Text and effect styles", "Icons + App Icon page", "Atoms", "Molecules", "Organisms", "Patterns", "Linked documentation", "Audit + project skills"],
+  "off_limits": {
+    "original_template_file_keys": {
+      "kiygMAdfsXmLfxlP8i7ueN": "Astryx Library DS"
+    },
+    "note": "Read only. This is Abdul's duplicate of the Astryx community file; its content is synced from code by the Astryx agent upstream. Never write to it; fixes go into a project copy. The full prohibition list is the default Web reference's rules.json > off_limits.rules (ds-auditor applies it to every project)."
+  }
+}

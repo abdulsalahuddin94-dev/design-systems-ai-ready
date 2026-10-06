@@ -34,7 +34,7 @@ updated: 2026-09-30
 - Before costly steps (full build, full audit, Brownfield extract, multi-screen builds), and only when both are installed, say in 2-3 lines which tool fits and let the user pick (FigCli Yolo by default; the Desktop Bridge only for slots). Tools live outside the Root (`<drive>:\Tools`) and are never copied into the repo. Trial numbers: FigCli check 4/5 defects, about 16 s and 300 tokens; Desktop Bridge audit 5/5, about 52 s and 6-10K tokens. The final audit-design-system stays mandatory.
 
 ## Build order (always)
-1. Primitives (raw values). 2. Semantic variables aliasing Primitives (Light/Dark). 3. Spacing, Radius, Typography variables. 4. Text and effect styles built from those variables. 5. Icons + the ➜ App Icon page. 6. Components built only on those variables and styles: Atoms, Molecules, Organisms, Patterns. 7. Linked docs pages. 8. Audit. 9. Project skills.
+1. Primitives (raw values). 2. Semantic variables aliasing Primitives (Light/Dark). 3. Spacing, Radius (scale + role aliases), Size and Typography variables. 4. Text and effect styles built from those variables. 5. Icons + the ➜ App Icon page. 6. Components built only on those variables and styles: Atoms, Molecules, Organisms, Patterns. 7. Linked docs pages. 8. Audit. 9. Project skills.
 
 ## Atomic design (strict)
 - Never build a complex component or screen if its sub-components do not exist yet; build the missing lower tier first as separate main components.
@@ -45,6 +45,9 @@ updated: 2026-09-30
 
 ## One docs source per component (Abdul, 2026-10-05, idea from Astryx `*.doc.mjs`)
 - Each component's docs live once, in its registry `docs` block (overview, when to use / not use with the alternative, anatomy, do/don't, accessibility rows per part with WCAG criterion, ratio and states, keywords), written while the component is built. The Figma description (`tools/component_docs.py figma` + `tools/apply_descriptions.figma.js`), the `components.md` usage lines (`... skills`) and the Storybook Docs page are generated from it; nobody edits them by hand. `... check` must be 0 missing at the Components checkpoint. Rules: Storybook_Design_System_Skill section 4b.
+
+## Lessons from Astryx (Abdul, 2026-10-06)
+- Studied as a Web reference (`references.json > astryx-web`, not the default). Adopted in all three platform Main Skills: (1) content areas are SLOT properties, variants only for anatomy and state; (2) a Size collection binds control, row and icon heights; (3) role radius aliases (`radius/role/inner, element, container, page, full`) that components bind instead of scale steps; (4) the component description adds `Code:` (file or import + main props) when a code counterpart exists. Web only: (5) optional Metadata List, Tree List, Command Palette and the Chat kit (Message, Prompt Input, Thread), offered at the gap table. Not adopted: Astryx's missing Primitive tier, ALL_SCOPES, component-specific color tokens and variant bloat.
 
 ## Radio vs Select (Abdul, 2026-09-30)
 - Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.
