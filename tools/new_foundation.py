@@ -37,7 +37,7 @@ TW = {k: dict(zip(STEPS, v.split())) for k, v in TW.items()}
 SINGLES = {'white': '#FFFFFF', 'black': '#000000'}
 ALPHAS = {'alpha/black-50': ('#000000', 0.5), 'alpha/black-70': ('#000000', 0.7), 'alpha/white-10': ('#FFFFFF', 0.1)}
 
-# Semantic mapping per mode (values are Primitive names). Dark = the mapping approved in the ClinicSoft trial.
+# Semantic mapping per mode (values are Primitive names). Dark = the mapping approved in the first Web trial.
 SEMANTIC = {
     'Light': {
         'text': {'primary': 'gray/900', 'secondary': 'gray/700', 'muted': 'gray/600', 'placeholder': 'gray/500',

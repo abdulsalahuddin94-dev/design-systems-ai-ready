@@ -1,7 +1,7 @@
 # Mobile "Both": Mobile Adaptive (Native, one file)
 
 Part of `Design_System_Intake_Skill` (section 1.6; the map is in `SKILL.md` section 0c). Load only when 1.3 = "Mobile Adaptive (Native, one file)". Every `Ask (choice)` / `Ask (multi)` here also gets a "Back" option (`SKILL.md` section 0, Back on every menu).
-Proven by the Native_One_File_Pilot (Abdul, 2026-10-05): 263 variables, 10 of 11 components with zero platform variants, Settings screen correct in iOS / Android x Light / Dark x EN / AR, audit 0.
+Proven by a pilot project (Abdul, 2026-10-05): 263 variables, 10 of 11 components with zero platform variants, Settings screen correct in iOS / Android x Light / Dark x EN / AR, audit 0.
 
 iOS and Android (and optionally EN / AR) live in ONE DS file. Each component exists once; the platform look comes only from variable modes set on a frame. Use the iOS and Android Main Skills as the reference for the values of each OS mode (HIG names, Dynamic Type, SF Symbols / M3 type scale, `md.sys` roles, Material Symbols).
 
@@ -39,4 +39,3 @@ Code syntax on every variable: SwiftUI for iOS, Jetpack Compose / M3 for Android
 
 ## 5. Record
 - `status.json`: `mobile_setup: mobile-adaptive`, no `sibling_project`, one `figma.design_system`. Folder `<Project>_Mobile\`.
-- Figma limits and counts of the pilot: `My Projects/Native_One_File_Pilot/docs/findings.md` (local).
