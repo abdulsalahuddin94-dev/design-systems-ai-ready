@@ -98,7 +98,7 @@ Before each component: state its tier, list dependencies, build missing lower ti
 | action (buttons) | `action/{primary,secondary,danger}/{bg,bg-hover,bg-active,text,border}` | per role |
 
 - Status UI (alerts, badges, toasts) uses `bg/{status}`, `text/{status}`, `border/{status}`, `icon/{status}` - never button tokens.
-- **Paired state tokens alias different steps:** `border/input` vs `border/strong` (Hover), `bg/brand` vs `bg/brand-hover` vs `bg/brand-active`, `action/*/bg` vs `bg-hover` vs `bg-active`, `border/default` vs `border/focus`. Two roles on the same step make the state invisible (the ClinicSoft trial had an invisible input Hover). `tools/new_foundation.py` checks this.
+- **Paired state tokens alias different steps:** `border/input` vs `border/strong` (Hover), `bg/brand` vs `bg/brand-hover` vs `bg/brand-active`, `action/*/bg` vs `bg-hover` vs `bg-active`, `border/default` vs `border/focus`. Two roles on the same step make the state invisible (a trial had an invisible input Hover). `tools/new_foundation.py` checks this.
 - `data/rules.json > contrast_pairs` always includes the `action/{primary,secondary,danger}/border` pairs against `bg/primary` and `bg/secondary` (>= 3:1), so a faint Outline border fails at foundation level, not at component level.
 - Contrast targets decided at token level: `text/muted` and `text/placeholder` >= 4.5:1 on `bg/primary` (gray-500 light, gray-400 dark); `border/input` >= 3:1 (gray-400/500); status text on status bg >= 4.5:1 (use 700 shades for warning/success text).
 - **Every variable** gets explicit scopes (never ALL_SCOPES), WEB code syntax `var(--color-text-primary)`, and a description.

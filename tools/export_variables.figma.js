@@ -1,7 +1,7 @@
 // read-only
 // Export every local variable of the open Figma file as DTCG JSON, in the same shape as
 // figma-console `figma_export_tokens` (format dtcg), so tools/build_tokens.py reads it unchanged.
-// Use it when figma_export_tokens returns 0 tokens (seen in the ClinicSoft trial for a file with 200 variables).
+// Use it when figma_export_tokens returns 0 tokens (seen in a trial for a file with 200 variables).
 //
 // Run with figma-console `figma_execute` (paste the whole file). It returns a JSON string: save it as
 // <folder>/data/source/figma-variables.dtcg.json, then run `python tools/build_tokens.py "<folder>"`.

@@ -36,5 +36,9 @@ My Projects/*
 !My Projects/_Project_Template/
 !My Projects/README.md
 
-# Storybook cache when a project Storybook is started from the Root (clinicsoft-web-storybook preview)
+# Storybook cache when a project Storybook is started from the Root (a project preview in .claude/launch.json)
 node_modules/
+
+# Private notes and local-only Claude instructions (kept on the owner's machine)
+private/
+CLAUDE.local.md

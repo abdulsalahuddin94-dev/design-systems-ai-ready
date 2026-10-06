@@ -8,14 +8,14 @@ Every mistake Abdul reports or a check finds gets one entry here in the session 
 2. **No prototype step after a flow.** Finished flows were left as static screens; Abdul wants to be asked each time. Rule: after every flow, Ask (choice) "Do you want to create the prototype?"; Yes wires the screens with Figma prototype interactions. Check: the flow's CHANGELOG entry has a `Prototype: yes / no` line. Fixed in `Design_System_Intake_Skill/steps/screens.md` (7e step 5), `memory/decisions.md`, `AGENTS.md`.
 
 ## Figma comments (2026-10-06)
-1. **Comments could not be read (401 Invalid token).** `figma_get_comments` failed on PMO SYSTEM even after the token was replaced.
+1. **Comments could not be read (401 Invalid token).** `figma_get_comments` failed on a DS file even after the token was replaced.
    Cause: comments come only from the Figma REST API (FigCli Yolo and the Plugin API cannot read them), and figma-console reads `FIGMA_ACCESS_TOKEN` only when Claude Code starts. Rule: the token needs `file_comments:read`; after changing it, quit Claude Code fully and start a new session; the user edits the token, Claude never reads or writes it. Check: one `figma_get_comments` call before planning comment work; 401 -> stop and ask for a new token. Fixed in `Design_System_Intake_Skill/steps/figma-comments.md` (14.1).
 
 ## Tool install steps (2026-10-06)
 1. **Material 3 skill installer failed on Windows.** The command given was `powershell -ExecutionPolicy Bypass -File .\install.ps1 -Agent claude,codex,antigravity`; PowerShell rejected `-Agent`.
    Cause: with `-File`, a comma list reaches the script as one string, not an array, so the `ValidateSet` check fails. Rule: Windows install steps run the script in the open PowerShell window after `Set-ExecutionPolicy -Scope Process Bypass -Force;` (process only), never through `powershell -File` with list arguments. Check: before giving a PowerShell install command, read the script's `param()` block; any `[string[]]` parameter means no `-File`. Fixed in `Android_Design_System_Skill/SKILL.md` section 11.
 
-## Storybook (Native_One_File_Pilot, 2026-10-05)
+## Storybook (Mobile Adaptive pilot, 2026-10-05)
 These rules live in the one Storybook skill and its shared generator and templates, so they apply to every platform: Web, iOS, Android and Mobile Adaptive.
 6. **Do / Don't, When to use and a clean Description were missing.** The component pages had none of the sections the Web Storybook has, and the whole Figma description sat in the overview.
    Cause: the Figma descriptions used "Usage Rules:" and the parser only knew "Usage rules:"; the pilot had no registry `docs` block. Rule: labels match in any case; every component gets a registry `docs` block (use cases, when to use, do not use, do / don't with `do_args` / `dont_args` examples, content) from docs-writer. Check: `tools/storybook_parity.py` fails when a Docs page misses Overview, Use cases, When to use, Do not use, Do and don't, Accessibility or the Figma description.
