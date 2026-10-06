@@ -151,6 +151,7 @@ Recolor procedure (when the user asks to change a color):
 - No color styles (utility paint styles only if needed).
 
 ## 5. Icons
+- **Which set (intake 0.6b, Abdul 2026-10-06):** use the library in `status.json > icons` (ids, licenses and fetch ids in `tools/icon_libraries.json`). No answer recorded (quick mode, an old project): the file's own icon components if it has any, else the platform default below. `existing` = reuse the icon components found in the DS file or its linked libraries as they are; missing icons are drawn in the same style. Another library (Phosphor, Tabler, Heroicons, Remix Icon) keeps every rule in this section: same `Icon/<Name>` names, sizes, swap properties and token binding; its line / fill pair becomes the outline / fill variant.
 - Material Symbols (Rounded or Outlined - pick one), weight 400, grade 0, optical size 24; names snake_case as in Google Fonts (`arrow_back`, `more_vert`), filled versions with `_filled` suffix (never two components with the same name).
 - 24dp default (18 chips, 20 small buttons, 36 large FAB), single vector bound to `Schemes/On Surface` and recolored per component with on-roles.
 - Exposed as INSTANCE_SWAP `Icon` / `Icon (selected)` with `Show icon` booleans (M3 kit convention). Components use the **local** icon set only (reference uses remote kit icons).

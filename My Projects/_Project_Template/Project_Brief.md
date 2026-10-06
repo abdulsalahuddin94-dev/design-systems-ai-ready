@@ -12,6 +12,7 @@ Order asked: 0.0-0.2, then Platform 1.1-1.4, then 0.3-0.8, then Path.
 | 0.4 | Color modes (Light only / Light and Dark / Dark only) | |
 | 0.5 | Arabic / RTL | |
 | 0.6 | Fonts (Latin / Arabic) | |
+| 0.6b | Icon library (platform default / existing set in the Figma project / Phosphor / Tabler / Heroicons / Remix Icon / other) | |
 | 0.7 | Storybook (Yes / Later, ask at: ... / No) | |
 | 0.8 | Example screens (Yes after components / No) | |
 
@@ -53,6 +54,7 @@ Project: <name>            Local folder: <path>
 Figma: <links and roles>
 Platform: <Web / iOS / Android / Both native (+ Brand Foundation yes/no) / Both cross-platform (Flutter / RN, base) / Both Mobile Adaptive (EN or EN+AR)> -> Main Skill(s): <names>
 Modes: <Light / Dark>      RTL: <Yes/No>      Fonts: <Latin / Arabic>
+Icons: <library (license)> / existing set in <file or library>
 Path: <Greenfield 3a/3b-3d | Brownfield type 1/2/3>
 Inputs found: Brand <n files / empty>, Inspiration <n / empty>, Screens <n / link>, Research <n / empty>
 Direction: <style, corner/density/elevation, brand contrast result and fix>
