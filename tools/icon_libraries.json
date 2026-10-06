@@ -1,0 +1,87 @@
+{
+  "_help": "Icon libraries offered at intake 0.6b (Abdul, 2026-10-06). The chosen id is saved in status.json > icons.library. All are free, ship as SVG and allow commercial use (license checked 2026-10-06 on the npm package). The workflow fetches the SVGs itself (Iconify API or the npm package, without a color parameter) and builds the Icon component set in Figma; the user does nothing. 'existing' means the project's Figma file or a linked library already has icon components, which are reused.",
+  "platform_defaults": {
+    "web": "lucide",
+    "ios": "sf-symbols-style",
+    "android": "material-symbols"
+  },
+  "libraries": [
+    {
+      "id": "lucide",
+      "name": "Lucide",
+      "license": "ISC",
+      "commercial_use": true,
+      "npm": "lucide-static",
+      "iconify_prefix": "lucide",
+      "style": "outline, stroke 2 on a 24 grid, round caps",
+      "variants": "outline only",
+      "notes": "Web default. Fetch without the color parameter (it fills stroke-only paths); keep fill none and bind the stroke."
+    },
+    {
+      "id": "sf-symbols-style",
+      "name": "SF Symbols style",
+      "license": "Apple SF Symbols license (Xcode and SF Symbols app agreement)",
+      "commercial_use": "only in designs and apps for Apple platforms; never as a logo or app icon",
+      "npm": null,
+      "iconify_prefix": null,
+      "style": "outline and fill, weights matched to the text (Regular default)",
+      "variants": "Style = Outline | Fill",
+      "notes": "iOS default. Export the real symbols from the SF Symbols app into vectors, or draw matching glyphs (iOS Main Skill section 5). Not offered for Web or Android."
+    },
+    {
+      "id": "material-symbols",
+      "name": "Material Symbols",
+      "license": "Apache-2.0",
+      "commercial_use": true,
+      "npm": "@material-symbols/svg-400",
+      "iconify_prefix": "material-symbols",
+      "style": "Rounded or Outlined, weight 400, grade 0, optical size 24",
+      "variants": "outline and _filled",
+      "notes": "Android default (Android Main Skill section 5)."
+    },
+    {
+      "id": "phosphor",
+      "name": "Phosphor",
+      "license": "MIT",
+      "commercial_use": true,
+      "npm": "@phosphor-icons/core",
+      "iconify_prefix": "ph",
+      "style": "six weights (Thin, Light, Regular, Bold, Fill, Duotone); use Regular, plus Fill for selected states",
+      "variants": "Style = Regular | Fill",
+      "notes": "Large set (about 1,500 icons per weight), friendly rounded look."
+    },
+    {
+      "id": "tabler",
+      "name": "Tabler",
+      "license": "MIT",
+      "commercial_use": true,
+      "npm": "@tabler/icons",
+      "iconify_prefix": "tabler",
+      "style": "outline, stroke 2 on a 24 grid, plus a smaller filled set",
+      "variants": "outline, and filled where it exists",
+      "notes": "Largest set (about 5,900 icons); close to Lucide in look, good for dashboards."
+    },
+    {
+      "id": "heroicons",
+      "name": "Heroicons",
+      "license": "MIT",
+      "commercial_use": true,
+      "npm": "heroicons",
+      "iconify_prefix": "heroicons",
+      "style": "outline (stroke 1.5, 24) and solid (24, 20 mini, 16 micro)",
+      "variants": "Style = Outline | Solid",
+      "notes": "Small set (about 320 icons) by the Tailwind team; a missing icon is drawn in the same style or taken from Lucide and logged in the CHANGELOG."
+    },
+    {
+      "id": "remix",
+      "name": "Remix Icon",
+      "license": "Remix Icon License v1.0 (npm says Apache-2.0)",
+      "commercial_use": "yes inside apps, websites and design systems; never sold as a standalone icon pack, used to make a competing icon set, or used as a logo or app icon",
+      "npm": "remixicon",
+      "iconify_prefix": "ri",
+      "style": "line and fill pairs on a 24 grid",
+      "variants": "Style = Line | Fill",
+      "notes": "About 3,000 icons, every icon has a line and a fill version."
+    }
+  ]
+}

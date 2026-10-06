@@ -151,6 +151,7 @@ Recolor procedure (when the user asks to change a color):
 - No color styles.
 
 ## 5. Icons
+- **Which set (intake 0.6b, Abdul 2026-10-06):** use the library in `status.json > icons` (ids, licenses and fetch ids in `tools/icon_libraries.json`). No answer recorded (quick mode, an old project): the file's own icon components if it has any, else the platform default below. `existing` = reuse the icon components found in the DS file or its linked libraries as they are; missing icons are drawn in the same style. Another library (Phosphor, Tabler, Heroicons, Remix Icon) keeps every rule in this section: same `Icon/<Name>` names, sizes, swap properties and token binding; its line / fill pair becomes the outline / fill variant.
 - `Icon/<Name>` component set in **SF Symbols style** (export the real symbols from the SF Symbols app into vectors, or draw matching glyphs), variants `Style = Outline | Fill`, weights matching text (Regular default), sizes 17/22/24/28pt frames with symbol centered on the text baseline.
 - Colors bound to `icon/*`; exposed through INSTANCE_SWAP (leading/trailing icon on buttons, fields, rows, tab items with `Icon` + `Icon (selected)`).
 - Never text glyphs (private-use SF Symbols characters) - they vanish without SF Pro and cannot be swapped (reference mistake).
@@ -229,7 +230,7 @@ Flow (create, notice a drop, check, present, Storybook): Design_System_Intake_Sk
 - [ ] Every variable: scope, iOS code syntax, description. Every set: description, Title Case props, wired props, no `Mode` variant.
 - [ ] Apple semantic roles present (label 1-4, background + grouped 1-3, fill 1-4, separator, tint, scrim, status).
 - [ ] Typography: local tracking, Dynamic Type modes, styles fully bound.
-- [ ] Icons are SF Symbols-style instances with swap properties; colors from `icon/*`.
+- [ ] Icons are instances of the intake 0.6b set (SF Symbols style by default) with swap properties; colors from `icon/*`.
 - [ ] ➜ App Icon exists in ⭐Setup (drop zones, or the presented icon with Default/Dark/Tinted, masked previews and export settings).
 - [ ] Touch targets >= 44pt; contrast text >= 4.5:1, UI >= 3:1 in each mode the project has.
 - [ ] Light and Dark preview frames per family; Colors/Typography docs linked.
