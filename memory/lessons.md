@@ -2,6 +2,10 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+## Tool install steps (2026-10-06)
+1. **Material 3 skill installer failed on Windows.** The command given was `powershell -ExecutionPolicy Bypass -File .\install.ps1 -Agent claude,codex,antigravity`; PowerShell rejected `-Agent`.
+   Cause: with `-File`, a comma list reaches the script as one string, not an array, so the `ValidateSet` check fails. Rule: Windows install steps run the script in the open PowerShell window after `Set-ExecutionPolicy -Scope Process Bypass -Force;` (process only), never through `powershell -File` with list arguments. Check: before giving a PowerShell install command, read the script's `param()` block; any `[string[]]` parameter means no `-File`. Fixed in `Android_Design_System_Skill/SKILL.md` section 11.
+
 ## Storybook (Native_One_File_Pilot, 2026-10-05)
 These rules live in the one Storybook skill and its shared generator and templates, so they apply to every platform: Web, iOS, Android and Mobile Adaptive.
 6. **Do / Don't, When to use and a clean Description were missing.** The component pages had none of the sections the Web Storybook has, and the whole Figma description sat in the overview.
