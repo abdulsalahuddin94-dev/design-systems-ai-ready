@@ -82,7 +82,7 @@ updated: 2026-09-30
 ## Screen sizes (Abdul, 2026-09-30)
 - Screens are Mobile 375 x 812 and Desktop 1440 wide with a height of at least 900px, default 1024px (Abdul, 2026-10-06: heights added). Brownfield: keep the sizes of screens already designed in the file; if the existing screens are only screenshots, use 375 x 812 / 1440 x 1024. Details: Design_System_Intake_Skill section 7d.
 - Prototype per flow (Abdul, 2026-10-06): after each flow is fully designed, Ask (choice) "Do you want to create the prototype?" Yes / No. Yes -> wire the flow's screens as a Figma prototype (flow start on the first screen, On click -> Navigate to between frames, popups as overlays, interactions on screen instances only). Rule: Design_System_Intake_Skill section 7e step 5.
-- Screens skills order (Abdul, 2026-10-06): figma-generate-design + figma-use build, ui-ux-pro-max for layout and hierarchy, then Impeccable as the quality pass on every screen; fixes snap to DS tokens and components. Then the Design file audit.
+- Screens skills (Abdul, 2026-10-06): Impeccable leads the screen design: `shape` plans each screen before it is built, `critique` + `polish` (and `layout` / `typeset` / `colorize` when needed) run after it; ui-ux-pro-max is a second reference; figma-generate-design + figma-use do the Figma work; every decision snaps to DS components and variables. Impeccable's code paths (craft build, live, generate) are not used for Figma screens. Then the Design file audit. Rule: Design_System_Intake_Skill section 7e.
 
 ## Group placement (Figma pages and skill files)
 - Foundations -> ⭐Setup / Foundation_Skill.
