@@ -1,0 +1,15 @@
+{
+  "platform": "Web",
+  "figma_file": "Astryx Library DS",
+  "figma_url": "https://www.figma.com/design/kiygMAdfsXmLfxlP8i7ueN/Astryx-Library-DS",
+  "$comment": "Astryx has no Primitive collection in Figma: Color holds raw hex per mode (Neutral Light / Neutral Dark). Themes (Chocolate, Butter, Stone, Y2K, Gothic, Matcha) are Figma extended collections of Color, Radius and Typography; their override values are in theme-extensions.json (not read by build_tokens.py).",
+  "collections": {
+    "VariableCollectionId:1:2": { "name": "Color", "role": "semantic" },
+    "VariableCollectionId:1:651": { "name": "Spacing", "role": "spacing" },
+    "VariableCollectionId:1:667": { "name": "Size", "role": "size" },
+    "VariableCollectionId:1:671": { "name": "Border", "role": "border" },
+    "VariableCollectionId:1:673": { "name": "Radius", "role": "radius" },
+    "VariableCollectionId:1:680": { "name": "Typography", "role": "typography" }
+  },
+  "ramp": { "method": "oklch", "base_step": "50", "order": "ascending" }
+}

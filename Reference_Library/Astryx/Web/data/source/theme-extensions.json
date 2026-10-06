@@ -1,0 +1,2900 @@
+{
+ "Chocolate (Color)": {
+  "collection": "Chocolate",
+  "extends": "Color",
+  "id": "VariableCollectionId:2042:14",
+  "modes": [
+   "Neutral Light",
+   "Neutral Dark",
+   "Chocolate Light",
+   "Chocolate Dark"
+  ],
+  "theme_modes": [
+   "Chocolate Light",
+   "Chocolate Dark"
+  ],
+  "overridden": {
+   "Core/Accent": {
+    "Chocolate Light": "#8C5927",
+    "Chocolate Dark": "#D4A06A"
+   },
+   "Core/Accent Muted": {
+    "Chocolate Light": "#8C592714",
+    "Chocolate Dark": "#D4A06A20"
+   },
+   "Core/On Accent": {
+    "Chocolate Light": "#FFFFFF",
+    "Chocolate Dark": "#4A3520"
+   },
+   "Core/Neutral": {
+    "Chocolate Light": "#8C59270F",
+    "Chocolate Dark": "#EDE4D41A"
+   },
+   "Core/Background Surface": {
+    "Chocolate Light": "#FFFCF7",
+    "Chocolate Dark": "#1C1610"
+   },
+   "Core/Background Body": {
+    "Chocolate Light": "#FFFCF7",
+    "Chocolate Dark": "#141010"
+   },
+   "Core/Overlay": {
+    "Chocolate Light": "#4A352080",
+    "Chocolate Dark": "#140E0ACC"
+   },
+   "Core/Overlay Hover": {
+    "Chocolate Light": "#4A35200D",
+    "Chocolate Dark": "#EDE4D40D"
+   },
+   "Core/Overlay Pressed": {
+    "Chocolate Light": "#4A35201A",
+    "Chocolate Dark": "#EDE4D41A"
+   },
+   "Core/Background Muted": {
+    "Chocolate Light": "#EDE4D4",
+    "Chocolate Dark": "#2A2018"
+   },
+   "Text/Primary": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#EDE4D4"
+   },
+   "Text/Secondary": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#C4A882"
+   },
+   "Text/Disabled": {
+    "Chocolate Light": "#C4AC95",
+    "Chocolate Dark": "#6B5540"
+   },
+   "Text/Accent": {
+    "Chocolate Light": "#8C5927",
+    "Chocolate Dark": "#D4A06A"
+   },
+   "Text/On Dark": {
+    "Chocolate Light": "#FFFCF7",
+    "Chocolate Dark": "#FFFCF7"
+   },
+   "Text/On Light": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#4A3520"
+   },
+   "Icon/Accent": {
+    "Chocolate Light": "#8C5927",
+    "Chocolate Dark": "#D4A06A"
+   },
+   "Icon/Primary": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#EDE4D4"
+   },
+   "Icon/Secondary": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#C4A882"
+   },
+   "Icon/Disabled": {
+    "Chocolate Light": "#C4AC95",
+    "Chocolate Dark": "#6B5540"
+   },
+   "Surface/Card": {
+    "Chocolate Light": "#EDE4D4",
+    "Chocolate Dark": "#2A2018"
+   },
+   "Surface/Popover": {
+    "Chocolate Light": "#FFFCF7",
+    "Chocolate Dark": "#2A2018"
+   },
+   "Status/Success": {
+    "Chocolate Light": "#709900",
+    "Chocolate Dark": "#96BF2A"
+   },
+   "Status/Success Muted": {
+    "Chocolate Light": "#70990020",
+    "Chocolate Dark": "#96BF2A20"
+   },
+   "Status/On Success": {
+    "Chocolate Light": "#FFFFFF",
+    "Chocolate Dark": "#4A3520"
+   },
+   "Status/Error": {
+    "Chocolate Light": "#FD0000",
+    "Chocolate Dark": "#FF5C5C"
+   },
+   "Status/Error Muted": {
+    "Chocolate Light": "#FD000020",
+    "Chocolate Dark": "#FF5C5C20"
+   },
+   "Status/On Error": {
+    "Chocolate Light": "#FFFFFF",
+    "Chocolate Dark": "#4A3520"
+   },
+   "Status/Warning": {
+    "Chocolate Light": "#FFB600",
+    "Chocolate Dark": "#FFC940"
+   },
+   "Status/Warning Muted": {
+    "Chocolate Light": "#FFB60020",
+    "Chocolate Dark": "#FFC94020"
+   },
+   "Status/On Warning": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#4A3520"
+   },
+   "Border/Default": {
+    "Chocolate Light": "#C4AC95",
+    "Chocolate Dark": "#EDE4D41A"
+   },
+   "Border/Emphasized": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#6B5540"
+   },
+   "Effects/Skeleton": {
+    "Chocolate Light": "#C4AC95",
+    "Chocolate Dark": "#6B5540"
+   },
+   "Effects/Shadow": {
+    "Chocolate Light": "#4A35201A",
+    "Chocolate Dark": "#0000004D"
+   },
+   "Effects/Tint Hover": {
+    "Chocolate Light": "#000000",
+    "Chocolate Dark": "#FFFFFF"
+   },
+   "Blue/Background": {
+    "Chocolate Light": "#3A5E8C33",
+    "Chocolate Dark": "#3A5E8C33"
+   },
+   "Blue/Border": {
+    "Chocolate Light": "#3A5E8C",
+    "Chocolate Dark": "#7BA8D4"
+   },
+   "Blue/Icon": {
+    "Chocolate Light": "#3A5E8C",
+    "Chocolate Dark": "#7BA8D4"
+   },
+   "Blue/Text": {
+    "Chocolate Light": "#2E4A6E",
+    "Chocolate Dark": "#8DBCE0"
+   },
+   "Cyan/Background": {
+    "Chocolate Light": "#3A7C7C33",
+    "Chocolate Dark": "#3A7C7C33"
+   },
+   "Cyan/Border": {
+    "Chocolate Light": "#3A7C7C",
+    "Chocolate Dark": "#70C4C4"
+   },
+   "Cyan/Icon": {
+    "Chocolate Light": "#3A7C7C",
+    "Chocolate Dark": "#70C4C4"
+   },
+   "Cyan/Text": {
+    "Chocolate Light": "#2E6060",
+    "Chocolate Dark": "#82D4D4"
+   },
+   "Gray/Background": {
+    "Chocolate Light": "#B8885933",
+    "Chocolate Dark": "#6B554033"
+   },
+   "Gray/Border": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#B88859"
+   },
+   "Gray/Icon": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#C4A882"
+   },
+   "Gray/Text": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#EDE4D4"
+   },
+   "Green/Background": {
+    "Chocolate Light": "#70990033",
+    "Chocolate Dark": "#96BF2A33"
+   },
+   "Green/Border": {
+    "Chocolate Light": "#709900",
+    "Chocolate Dark": "#96BF2A"
+   },
+   "Green/Icon": {
+    "Chocolate Light": "#709900",
+    "Chocolate Dark": "#96BF2A"
+   },
+   "Green/Text": {
+    "Chocolate Light": "#5A7A00",
+    "Chocolate Dark": "#A8D43A"
+   },
+   "Orange/Background": {
+    "Chocolate Light": "#C4762033",
+    "Chocolate Dark": "#D4903A33"
+   },
+   "Orange/Border": {
+    "Chocolate Light": "#C47620",
+    "Chocolate Dark": "#D4903A"
+   },
+   "Orange/Icon": {
+    "Chocolate Light": "#C47620",
+    "Chocolate Dark": "#D4903A"
+   },
+   "Orange/Text": {
+    "Chocolate Light": "#A06018",
+    "Chocolate Dark": "#E0A04A"
+   },
+   "Pink/Background": {
+    "Chocolate Light": "#C44A7033",
+    "Chocolate Dark": "#E07A9A33"
+   },
+   "Pink/Border": {
+    "Chocolate Light": "#C44A70",
+    "Chocolate Dark": "#E07A9A"
+   },
+   "Pink/Icon": {
+    "Chocolate Light": "#C44A70",
+    "Chocolate Dark": "#E07A9A"
+   },
+   "Pink/Text": {
+    "Chocolate Light": "#A03A5A",
+    "Chocolate Dark": "#F08AAA"
+   },
+   "Purple/Background": {
+    "Chocolate Light": "#6B4A8C33",
+    "Chocolate Dark": "#B08ED433"
+   },
+   "Purple/Border": {
+    "Chocolate Light": "#6B4A8C",
+    "Chocolate Dark": "#B08ED4"
+   },
+   "Purple/Icon": {
+    "Chocolate Light": "#6B4A8C",
+    "Chocolate Dark": "#B08ED4"
+   },
+   "Purple/Text": {
+    "Chocolate Light": "#553A70",
+    "Chocolate Dark": "#C0A0E0"
+   },
+   "Red/Background": {
+    "Chocolate Light": "#FD000033",
+    "Chocolate Dark": "#FF5C5C33"
+   },
+   "Red/Border": {
+    "Chocolate Light": "#FD0000",
+    "Chocolate Dark": "#FF5C5C"
+   },
+   "Red/Icon": {
+    "Chocolate Light": "#FD0000",
+    "Chocolate Dark": "#FF5C5C"
+   },
+   "Red/Text": {
+    "Chocolate Light": "#CC0000",
+    "Chocolate Dark": "#FF7A7A"
+   },
+   "Teal/Background": {
+    "Chocolate Light": "#2E6B5A33",
+    "Chocolate Dark": "#5AB89833"
+   },
+   "Teal/Border": {
+    "Chocolate Light": "#2E6B5A",
+    "Chocolate Dark": "#5AB898"
+   },
+   "Teal/Icon": {
+    "Chocolate Light": "#2E6B5A",
+    "Chocolate Dark": "#5AB898"
+   },
+   "Teal/Text": {
+    "Chocolate Light": "#245546",
+    "Chocolate Dark": "#6CCAAA"
+   },
+   "Yellow/Background": {
+    "Chocolate Light": "#FFB60033",
+    "Chocolate Dark": "#FFC94033"
+   },
+   "Yellow/Border": {
+    "Chocolate Light": "#FFB600",
+    "Chocolate Dark": "#FFC940"
+   },
+   "Yellow/Icon": {
+    "Chocolate Light": "#FFB600",
+    "Chocolate Dark": "#FFC940"
+   },
+   "Yellow/Text": {
+    "Chocolate Light": "#CC9200",
+    "Chocolate Dark": "#FFD960"
+   },
+   "Syntax/Keyword": {
+    "Chocolate Light": "#8C5927",
+    "Chocolate Dark": "#D4A06A"
+   },
+   "Syntax/String": {
+    "Chocolate Light": "#2E6B4A",
+    "Chocolate Dark": "#7BC49E"
+   },
+   "Syntax/Comment": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#B88859"
+   },
+   "Syntax/Number": {
+    "Chocolate Light": "#A06018",
+    "Chocolate Dark": "#D4B870"
+   },
+   "Syntax/Function": {
+    "Chocolate Light": "#3A5E8C",
+    "Chocolate Dark": "#7BA8D4"
+   },
+   "Syntax/Type": {
+    "Chocolate Light": "#6B4A8C",
+    "Chocolate Dark": "#B08ED4"
+   },
+   "Syntax/Variable": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#EDE4D4"
+   },
+   "Syntax/Operator": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#C4A882"
+   },
+   "Syntax/Constant": {
+    "Chocolate Light": "#A06018",
+    "Chocolate Dark": "#D4B870"
+   },
+   "Syntax/Tag": {
+    "Chocolate Light": "#8C3A3A",
+    "Chocolate Dark": "#D47A7A"
+   },
+   "Syntax/Attribute": {
+    "Chocolate Light": "#8C5927",
+    "Chocolate Dark": "#D4A06A"
+   },
+   "Syntax/Property": {
+    "Chocolate Light": "#3A7C6B",
+    "Chocolate Dark": "#70C4B0"
+   },
+   "Syntax/Punctuation": {
+    "Chocolate Light": "#B88859",
+    "Chocolate Dark": "#6B5540"
+   },
+   "Component/Badge/Info Bg": {},
+   "Component/Badge/Success Bg": {},
+   "Component/Badge/Warning Bg": {},
+   "Component/Badge/Error Bg": {},
+   "Component/Badge/On Vivid": {},
+   "Effects/Elevation Shadow": {},
+   "Effects/Elevation Shadow Strong": {},
+   "Component/ProgressBar/Accent Fill": {},
+   "Component/ProgressBar/Success Fill": {},
+   "Component/ProgressBar/Warning Fill": {},
+   "Component/ProgressBar/Error Fill": {},
+   "Component/Input Ring/Focus": {},
+   "Component/Input Ring/Hover": {},
+   "Component/Input Ring/Success": {},
+   "Component/Input Ring/Warning": {},
+   "Component/Input Ring/Error": {},
+   "Core/Background Inverted": {
+    "Chocolate Light": "#4A3520",
+    "Chocolate Dark": "#EDE4D4"
+   },
+   "Status/Error Inverted": {},
+   "Effects/Track": {}
+  },
+  "override_count": 90
+ },
+ "Butter (Color)": {
+  "collection": "Butter",
+  "extends": "Color",
+  "id": "VariableCollectionId:2042:104",
+  "modes": [
+   "Neutral Light",
+   "Neutral Dark",
+   "Butter Light",
+   "Butter Dark"
+  ],
+  "theme_modes": [
+   "Butter Light",
+   "Butter Dark"
+  ],
+  "overridden": {
+   "Core/Accent": {
+    "Butter Light": "#225BFF",
+    "Butter Dark": "#FDEE8C"
+   },
+   "Core/Accent Muted": {
+    "Butter Light": "#225BFF33",
+    "Butter Dark": "#FDEE8C40"
+   },
+   "Core/On Accent": {
+    "Butter Light": "#FFFFFF",
+    "Butter Dark": "#1D1C11"
+   },
+   "Core/Neutral": {
+    "Butter Light": "#1D1C110F",
+    "Butter Dark": "#F3F2E21A"
+   },
+   "Core/Background Surface": {
+    "Butter Light": "#FFFFFF",
+    "Butter Dark": "#2E2117"
+   },
+   "Core/Background Body": {
+    "Butter Light": "#FDFBE4",
+    "Butter Dark": "#261A13"
+   },
+   "Core/Overlay": {
+    "Butter Light": "#1D1C1180",
+    "Butter Dark": "#261A13CC"
+   },
+   "Core/Overlay Hover": {
+    "Butter Light": "#1D1C110D",
+    "Butter Dark": "#F3F2E20D"
+   },
+   "Core/Overlay Pressed": {
+    "Butter Light": "#1D1C111A",
+    "Butter Dark": "#F3F2E21A"
+   },
+   "Core/Background Muted": {
+    "Butter Light": "#F3F2E2",
+    "Butter Dark": "#3A2A1F"
+   },
+   "Text/Primary": {
+    "Butter Light": "#1D1C11",
+    "Butter Dark": "#F3F2E2"
+   },
+   "Text/Secondary": {
+    "Butter Light": "#605F52",
+    "Butter Dark": "#ADAC9E"
+   },
+   "Text/Disabled": {
+    "Butter Light": "#ADAC9E",
+    "Butter Dark": "#605F52"
+   },
+   "Text/Accent": {
+    "Butter Light": "#225BFF",
+    "Butter Dark": "#FDEE8C"
+   },
+   "Text/On Dark": {
+    "Butter Light": "#FFFFFF",
+    "Butter Dark": "#FFFFFF"
+   },
+   "Text/On Light": {
+    "Butter Light": "#1D1C11",
+    "Butter Dark": "#1D1C11"
+   },
+   "Icon/Accent": {
+    "Butter Light": "#225BFF",
+    "Butter Dark": "#FDEE8C"
+   },
+   "Icon/Primary": {
+    "Butter Light": "#1D1C11",
+    "Butter Dark": "#F3F2E2"
+   },
+   "Icon/Secondary": {
+    "Butter Light": "#605F52",
+    "Butter Dark": "#ADAC9E"
+   },
+   "Icon/Disabled": {
+    "Butter Light": "#ADAC9E",
+    "Butter Dark": "#605F52"
+   },
+   "Surface/Card": {
+    "Butter Light": "#FFFFFF",
+    "Butter Dark": "#3A2A1F"
+   },
+   "Surface/Popover": {
+    "Butter Light": "#FFFFFF",
+    "Butter Dark": "#3A2A1F"
+   },
+   "Status/Success": {
+    "Butter Light": "#004700",
+    "Butter Dark": "#99D94B"
+   },
+   "Status/Success Muted": {
+    "Butter Light": "#00470033",
+    "Butter Dark": "#99D94B40"
+   },
+   "Status/On Success": {
+    "Butter Light": "#CCFF88",
+    "Butter Dark": "#0B2E00"
+   },
+   "Status/Error": {
+    "Butter Light": "#771210",
+    "Butter Dark": "#FFB4A6"
+   },
+   "Status/Error Muted": {
+    "Butter Light": "#77121033",
+    "Butter Dark": "#FFB4A640"
+   },
+   "Status/On Error": {
+    "Butter Light": "#FFE3DE",
+    "Butter Dark": "#600000"
+   },
+   "Status/Warning": {
+    "Butter Light": "#543700",
+    "Butter Dark": "#F7BE00"
+   },
+   "Status/Warning Muted": {
+    "Butter Light": "#54370033",
+    "Butter Dark": "#F7BE0040"
+   },
+   "Status/On Warning": {
+    "Butter Light": "#FFEEC3",
+    "Butter Dark": "#3B2200"
+   },
+   "Border/Default": {
+    "Butter Light": "#E5E3D4",
+    "Butter Dark": "#F3F2E21A"
+   },
+   "Border/Emphasized": {
+    "Butter Light": "#C7C4B2",
+    "Butter Dark": "#939184"
+   },
+   "Effects/Skeleton": {
+    "Butter Light": "#E5E3D4",
+    "Butter Dark": "#49473B"
+   },
+   "Effects/Shadow": {
+    "Butter Light": "#1D1C111A",
+    "Butter Dark": "#0000004D"
+   },
+   "Effects/Tint Hover": {
+    "Butter Light": "#000000",
+    "Butter Dark": "#FFFFFF"
+   },
+   "Blue/Background": {
+    "Butter Light": "#DBE1FF",
+    "Butter Dark": "#DBE1FF"
+   },
+   "Blue/Border": {
+    "Butter Light": "#BDC5EB",
+    "Butter Dark": "#BDC5EB"
+   },
+   "Blue/Icon": {
+    "Butter Light": "#203A6C",
+    "Butter Dark": "#203A6C"
+   },
+   "Blue/Text": {
+    "Butter Light": "#203A6C",
+    "Butter Dark": "#203A6C"
+   },
+   "Cyan/Background": {
+    "Butter Light": "#A9EFF0",
+    "Butter Dark": "#A9EFF0"
+   },
+   "Cyan/Border": {
+    "Butter Light": "#8DD2D3",
+    "Butter Dark": "#8DD2D3"
+   },
+   "Cyan/Icon": {
+    "Butter Light": "#004649",
+    "Butter Dark": "#004649"
+   },
+   "Cyan/Text": {
+    "Butter Light": "#004649",
+    "Butter Dark": "#004649"
+   },
+   "Gray/Background": {
+    "Butter Light": "#F0EDD4",
+    "Butter Dark": "#F0EDD4"
+   },
+   "Gray/Border": {
+    "Butter Light": "#D6D3B8",
+    "Butter Dark": "#D6D3B8"
+   },
+   "Gray/Icon": {
+    "Butter Light": "#4A4732",
+    "Butter Dark": "#4A4732"
+   },
+   "Gray/Text": {
+    "Butter Light": "#4A4732",
+    "Butter Dark": "#4A4732"
+   },
+   "Green/Background": {
+    "Butter Light": "#C1EFB8",
+    "Butter Dark": "#C1EFB8"
+   },
+   "Green/Border": {
+    "Butter Light": "#A5D29D",
+    "Butter Dark": "#A5D29D"
+   },
+   "Green/Icon": {
+    "Butter Light": "#004800",
+    "Butter Dark": "#004800"
+   },
+   "Green/Text": {
+    "Butter Light": "#004800",
+    "Butter Dark": "#004800"
+   },
+   "Orange/Background": {
+    "Butter Light": "#FFDCB6",
+    "Butter Dark": "#FFDCB6"
+   },
+   "Orange/Border": {
+    "Butter Light": "#F2BD81",
+    "Butter Dark": "#F2BD81"
+   },
+   "Orange/Icon": {
+    "Butter Light": "#622E00",
+    "Butter Dark": "#622E00"
+   },
+   "Orange/Text": {
+    "Butter Light": "#622E00",
+    "Butter Dark": "#622E00"
+   },
+   "Pink/Background": {
+    "Butter Light": "#FFD5FB",
+    "Butter Dark": "#FFD5FB"
+   },
+   "Pink/Border": {
+    "Butter Light": "#F0B3E8",
+    "Butter Dark": "#F0B3E8"
+   },
+   "Pink/Icon": {
+    "Butter Light": "#6C0A68",
+    "Butter Dark": "#6C0A68"
+   },
+   "Pink/Text": {
+    "Butter Light": "#6C0A68",
+    "Butter Dark": "#6C0A68"
+   },
+   "Purple/Background": {
+    "Butter Light": "#F2DAFF",
+    "Butter Dark": "#F2DAFF"
+   },
+   "Purple/Border": {
+    "Butter Light": "#DDB9F6",
+    "Butter Dark": "#DDB9F6"
+   },
+   "Purple/Icon": {
+    "Butter Light": "#52237B",
+    "Butter Dark": "#52237B"
+   },
+   "Purple/Text": {
+    "Butter Light": "#52237B",
+    "Butter Dark": "#52237B"
+   },
+   "Red/Background": {
+    "Butter Light": "#FFDAD3",
+    "Butter Dark": "#FFDAD3"
+   },
+   "Red/Border": {
+    "Butter Light": "#F4B8AE",
+    "Butter Dark": "#F4B8AE"
+   },
+   "Red/Icon": {
+    "Butter Light": "#6D211C",
+    "Butter Dark": "#6D211C"
+   },
+   "Red/Text": {
+    "Butter Light": "#6D211C",
+    "Butter Dark": "#6D211C"
+   },
+   "Teal/Background": {
+    "Butter Light": "#B0F0D7",
+    "Butter Dark": "#B0F0D7"
+   },
+   "Teal/Border": {
+    "Butter Light": "#94D3BB",
+    "Butter Dark": "#94D3BB"
+   },
+   "Teal/Icon": {
+    "Butter Light": "#00482D",
+    "Butter Dark": "#00482D"
+   },
+   "Teal/Text": {
+    "Butter Light": "#00482D",
+    "Butter Dark": "#00482D"
+   },
+   "Yellow/Background": {
+    "Butter Light": "#FEEE7B",
+    "Butter Dark": "#FEEE7B"
+   },
+   "Yellow/Border": {
+    "Butter Light": "#D6C957",
+    "Butter Dark": "#D6C957"
+   },
+   "Yellow/Icon": {
+    "Butter Light": "#413E00",
+    "Butter Dark": "#413E00"
+   },
+   "Yellow/Text": {
+    "Butter Light": "#413E00",
+    "Butter Dark": "#413E00"
+   },
+   "Syntax/Keyword": {
+    "Butter Light": "#52237B",
+    "Butter Dark": "#DDB9F6"
+   },
+   "Syntax/String": {
+    "Butter Light": "#004800",
+    "Butter Dark": "#A5D29D"
+   },
+   "Syntax/Comment": {
+    "Butter Light": "#605F52",
+    "Butter Dark": "#ADAC9E"
+   },
+   "Syntax/Number": {
+    "Butter Light": "#622E00",
+    "Butter Dark": "#F2BD81"
+   },
+   "Syntax/Function": {
+    "Butter Light": "#203A6C",
+    "Butter Dark": "#BDC5EB"
+   },
+   "Syntax/Type": {
+    "Butter Light": "#52237B",
+    "Butter Dark": "#DDB9F6"
+   },
+   "Syntax/Variable": {
+    "Butter Light": "#605F52",
+    "Butter Dark": "#ADAC9E"
+   },
+   "Syntax/Operator": {
+    "Butter Light": "#605F52",
+    "Butter Dark": "#ADAC9E"
+   },
+   "Syntax/Constant": {
+    "Butter Light": "#622E00",
+    "Butter Dark": "#F2BD81"
+   },
+   "Syntax/Tag": {
+    "Butter Light": "#6D211C",
+    "Butter Dark": "#F4B8AE"
+   },
+   "Syntax/Attribute": {
+    "Butter Light": "#413E00",
+    "Butter Dark": "#D6C957"
+   },
+   "Syntax/Property": {
+    "Butter Light": "#00482D",
+    "Butter Dark": "#94D3BB"
+   },
+   "Syntax/Punctuation": {
+    "Butter Light": "#605F52",
+    "Butter Dark": "#ADAC9E"
+   },
+   "Component/Badge/Info Bg": {},
+   "Component/Badge/Success Bg": {},
+   "Component/Badge/Warning Bg": {},
+   "Component/Badge/Error Bg": {},
+   "Component/Badge/On Vivid": {},
+   "Effects/Elevation Shadow": {},
+   "Effects/Elevation Shadow Strong": {},
+   "Component/ProgressBar/Accent Fill": {},
+   "Component/ProgressBar/Success Fill": {},
+   "Component/ProgressBar/Warning Fill": {},
+   "Component/ProgressBar/Error Fill": {},
+   "Component/Input Ring/Focus": {},
+   "Component/Input Ring/Hover": {},
+   "Component/Input Ring/Success": {},
+   "Component/Input Ring/Warning": {},
+   "Component/Input Ring/Error": {},
+   "Core/Background Inverted": {
+    "Butter Light": "#1D1C11",
+    "Butter Dark": "#FDFBE4"
+   },
+   "Status/Error Inverted": {},
+   "Effects/Track": {}
+  },
+  "override_count": 90
+ },
+ "Stone (Color)": {
+  "collection": "Stone",
+  "extends": "Color",
+  "id": "VariableCollectionId:2042:194",
+  "modes": [
+   "Neutral Light",
+   "Neutral Dark",
+   "Stone Light",
+   "Stone Dark"
+  ],
+  "theme_modes": [
+   "Stone Light",
+   "Stone Dark"
+  ],
+  "overridden": {
+   "Core/Accent": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#F3F3F5"
+   },
+   "Core/Accent Muted": {
+    "Stone Light": "#25252A14",
+    "Stone Dark": "#F3F3F520"
+   },
+   "Core/On Accent": {
+    "Stone Light": "#FFFFFF",
+    "Stone Dark": "#25252A"
+   },
+   "Core/Neutral": {
+    "Stone Light": "#25252A0F",
+    "Stone Dark": "#F3F3F51A"
+   },
+   "Core/Background Surface": {
+    "Stone Light": "#FFFFFF",
+    "Stone Dark": "#1B1B1F"
+   },
+   "Core/Background Body": {
+    "Stone Light": "#F3F3F5",
+    "Stone Dark": "#111015"
+   },
+   "Core/Overlay": {
+    "Stone Light": "#25252A80",
+    "Stone Dark": "#28282ACC"
+   },
+   "Core/Overlay Hover": {
+    "Stone Light": "#25252A0D",
+    "Stone Dark": "#F3F3F50D"
+   },
+   "Core/Overlay Pressed": {
+    "Stone Light": "#25252A1A",
+    "Stone Dark": "#F3F3F51A"
+   },
+   "Core/Background Muted": {
+    "Stone Light": "#E2E2E8",
+    "Stone Dark": "#3B3B3F"
+   },
+   "Text/Primary": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#F3F3F5"
+   },
+   "Text/Secondary": {
+    "Stone Light": "#83838A",
+    "Stone Dark": "#9D9DA3"
+   },
+   "Text/Disabled": {
+    "Stone Light": "#D7D7DA",
+    "Stone Dark": "#5E5E61"
+   },
+   "Text/Accent": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#F3F3F5"
+   },
+   "Text/On Dark": {
+    "Stone Light": "#FFFFFF",
+    "Stone Dark": "#FFFFFF"
+   },
+   "Text/On Light": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#28282A"
+   },
+   "Icon/Accent": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#F3F3F5"
+   },
+   "Icon/Primary": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#F3F3F5"
+   },
+   "Icon/Secondary": {
+    "Stone Light": "#83838A",
+    "Stone Dark": "#9D9DA3"
+   },
+   "Icon/Disabled": {
+    "Stone Light": "#D7D7DA",
+    "Stone Dark": "#5E5E61"
+   },
+   "Surface/Card": {
+    "Stone Light": "#FFFFFF",
+    "Stone Dark": "#242325"
+   },
+   "Surface/Popover": {
+    "Stone Light": "#FFFFFF",
+    "Stone Dark": "#25252A"
+   },
+   "Status/Success": {
+    "Stone Light": "#374C36",
+    "Stone Dark": "#B4CDB2"
+   },
+   "Status/Success Muted": {
+    "Stone Light": "#D0E9CE",
+    "Stone Dark": "#B4CDB2"
+   },
+   "Status/On Success": {
+    "Stone Light": "#374C36",
+    "Stone Dark": "#D0E9CE"
+   },
+   "Status/Error": {
+    "Stone Light": "#58413E",
+    "Stone Dark": "#DCC0BC"
+   },
+   "Status/Error Muted": {
+    "Stone Light": "#F9DCD7",
+    "Stone Dark": "#DCC0BC"
+   },
+   "Status/On Error": {
+    "Stone Light": "#58413E",
+    "Stone Dark": "#F9DCD7"
+   },
+   "Status/Warning": {
+    "Stone Light": "#524622",
+    "Stone Dark": "#D7C59C"
+   },
+   "Status/Warning Muted": {
+    "Stone Light": "#F4E1B7",
+    "Stone Dark": "#D7C59C"
+   },
+   "Status/On Warning": {
+    "Stone Light": "#524622",
+    "Stone Dark": "#F4E1B7"
+   },
+   "Border/Default": {
+    "Stone Light": "#E2E2E8",
+    "Stone Dark": "#F3F3F51A"
+   },
+   "Border/Emphasized": {
+    "Stone Light": "#83838A",
+    "Stone Dark": "#5E5E61"
+   },
+   "Effects/Skeleton": {
+    "Stone Light": "#D4D4DA",
+    "Stone Dark": "#5E5E64"
+   },
+   "Effects/Shadow": {
+    "Stone Light": "#25252A1A",
+    "Stone Dark": "#0000004D"
+   },
+   "Effects/Tint Hover": {
+    "Stone Light": "#000000",
+    "Stone Dark": "#FFFFFF"
+   },
+   "Blue/Background": {
+    "Stone Light": "#D7E4F5",
+    "Stone Dark": "#485362"
+   },
+   "Blue/Border": {
+    "Stone Light": "#C9D6E7",
+    "Stone Dark": "#313C4A"
+   },
+   "Blue/Icon": {
+    "Stone Light": "#3C4856",
+    "Stone Dark": "#D7E4F5"
+   },
+   "Blue/Text": {
+    "Stone Light": "#3C4856",
+    "Stone Dark": "#D7E4F5"
+   },
+   "Cyan/Background": {
+    "Stone Light": "#CCE8E5",
+    "Stone Dark": "#3E5755"
+   },
+   "Cyan/Border": {
+    "Stone Light": "#BEDAD7",
+    "Stone Dark": "#28403E"
+   },
+   "Cyan/Icon": {
+    "Stone Light": "#334B49",
+    "Stone Dark": "#CCE8E5"
+   },
+   "Cyan/Text": {
+    "Stone Light": "#334B49",
+    "Stone Dark": "#CCE8E5"
+   },
+   "Gray/Background": {
+    "Stone Light": "#E2E2E8",
+    "Stone Dark": "#525257"
+   },
+   "Gray/Border": {
+    "Stone Light": "#D4D4DA",
+    "Stone Dark": "#3B3B3F"
+   },
+   "Gray/Icon": {
+    "Stone Light": "#46464B",
+    "Stone Dark": "#E2E2E8"
+   },
+   "Gray/Text": {
+    "Stone Light": "#46464B",
+    "Stone Dark": "#E2E2E8"
+   },
+   "Green/Background": {
+    "Stone Light": "#D0E9CE",
+    "Stone Dark": "#425841"
+   },
+   "Green/Border": {
+    "Stone Light": "#C2DBC0",
+    "Stone Dark": "#2B402B"
+   },
+   "Green/Icon": {
+    "Stone Light": "#374C36",
+    "Stone Dark": "#D0E9CE"
+   },
+   "Green/Text": {
+    "Stone Light": "#374C36",
+    "Stone Dark": "#D0E9CE"
+   },
+   "Orange/Background": {
+    "Stone Light": "#FFDCBB",
+    "Stone Dark": "#684D32"
+   },
+   "Orange/Border": {
+    "Stone Light": "#F1CEAE",
+    "Stone Dark": "#4F361C"
+   },
+   "Orange/Icon": {
+    "Stone Light": "#5B4227",
+    "Stone Dark": "#FFDCBB"
+   },
+   "Orange/Text": {
+    "Stone Light": "#5B4227",
+    "Stone Dark": "#FFDCBB"
+   },
+   "Pink/Background": {
+    "Stone Light": "#F0DDE8",
+    "Stone Dark": "#5E4E57"
+   },
+   "Pink/Border": {
+    "Stone Light": "#E2CFDA",
+    "Stone Dark": "#463740"
+   },
+   "Pink/Icon": {
+    "Stone Light": "#52424C",
+    "Stone Dark": "#F0DDE8"
+   },
+   "Pink/Text": {
+    "Stone Light": "#52424C",
+    "Stone Dark": "#F0DDE8"
+   },
+   "Purple/Background": {
+    "Stone Light": "#E8DFF3",
+    "Stone Dark": "#564F60"
+   },
+   "Purple/Border": {
+    "Stone Light": "#D9D1E5",
+    "Stone Dark": "#3F3949"
+   },
+   "Purple/Icon": {
+    "Stone Light": "#4B4454",
+    "Stone Dark": "#E8DFF3"
+   },
+   "Purple/Text": {
+    "Stone Light": "#4B4454",
+    "Stone Dark": "#E8DFF3"
+   },
+   "Red/Background": {
+    "Stone Light": "#F9DCD7",
+    "Stone Dark": "#644D49"
+   },
+   "Red/Border": {
+    "Stone Light": "#EBCEC9",
+    "Stone Dark": "#4C3633"
+   },
+   "Red/Icon": {
+    "Stone Light": "#58413E",
+    "Stone Dark": "#F9DCD7"
+   },
+   "Red/Text": {
+    "Stone Light": "#58413E",
+    "Stone Dark": "#F9DCD7"
+   },
+   "Teal/Background": {
+    "Stone Light": "#D4E7DC",
+    "Stone Dark": "#46564D"
+   },
+   "Teal/Border": {
+    "Stone Light": "#C6D9CE",
+    "Stone Dark": "#303F36"
+   },
+   "Teal/Icon": {
+    "Stone Light": "#3B4A41",
+    "Stone Dark": "#D4E7DC"
+   },
+   "Teal/Text": {
+    "Stone Light": "#3B4A41",
+    "Stone Dark": "#D4E7DC"
+   },
+   "Yellow/Background": {
+    "Stone Light": "#F4E1B7",
+    "Stone Dark": "#5E512D"
+   },
+   "Yellow/Border": {
+    "Stone Light": "#E5D3A9",
+    "Stone Dark": "#463A18"
+   },
+   "Yellow/Icon": {
+    "Stone Light": "#524622",
+    "Stone Dark": "#F4E1B7"
+   },
+   "Yellow/Text": {
+    "Stone Light": "#524622",
+    "Stone Dark": "#F4E1B7"
+   },
+   "Syntax/Keyword": {
+    "Stone Light": "#645A72",
+    "Stone Dark": "#B2A7C1"
+   },
+   "Syntax/String": {
+    "Stone Light": "#4E6357",
+    "Stone Dark": "#9BB19A"
+   },
+   "Syntax/Comment": {
+    "Stone Light": "#5E5E5E",
+    "Stone Dark": "#ABABB0"
+   },
+   "Syntax/Number": {
+    "Stone Light": "#755752",
+    "Stone Dark": "#BEA792"
+   },
+   "Syntax/Function": {
+    "Stone Light": "#506072",
+    "Stone Dark": "#99ADC6"
+   },
+   "Syntax/Type": {
+    "Stone Light": "#645A72",
+    "Stone Dark": "#B2A7C1"
+   },
+   "Syntax/Variable": {
+    "Stone Light": "#5E5E5E",
+    "Stone Dark": "#ABABB0"
+   },
+   "Syntax/Operator": {
+    "Stone Light": "#5E5E5E",
+    "Stone Dark": "#ABABB0"
+   },
+   "Syntax/Constant": {
+    "Stone Light": "#755752",
+    "Stone Dark": "#BEA792"
+   },
+   "Syntax/Tag": {
+    "Stone Light": "#775751",
+    "Stone Dark": "#C7A39D"
+   },
+   "Syntax/Attribute": {
+    "Stone Light": "#79693F",
+    "Stone Dark": "#B6AA90"
+   },
+   "Syntax/Property": {
+    "Stone Light": "#4E6357",
+    "Stone Dark": "#94B2A0"
+   },
+   "Syntax/Punctuation": {
+    "Stone Light": "#5E5E5E",
+    "Stone Dark": "#ABABB0"
+   },
+   "Component/Badge/Info Bg": {},
+   "Component/Badge/Success Bg": {},
+   "Component/Badge/Warning Bg": {},
+   "Component/Badge/Error Bg": {},
+   "Component/Badge/On Vivid": {},
+   "Effects/Elevation Shadow": {},
+   "Effects/Elevation Shadow Strong": {},
+   "Component/ProgressBar/Accent Fill": {},
+   "Component/ProgressBar/Success Fill": {},
+   "Component/ProgressBar/Warning Fill": {},
+   "Component/ProgressBar/Error Fill": {},
+   "Component/Input Ring/Focus": {},
+   "Component/Input Ring/Hover": {},
+   "Component/Input Ring/Success": {},
+   "Component/Input Ring/Warning": {},
+   "Component/Input Ring/Error": {},
+   "Core/Background Inverted": {
+    "Stone Light": "#25252A",
+    "Stone Dark": "#F3F3F5"
+   },
+   "Status/Error Inverted": {},
+   "Effects/Track": {}
+  },
+  "override_count": 90
+ },
+ "Y2K (Color)": {
+  "collection": "Y2K",
+  "extends": "Color",
+  "id": "VariableCollectionId:2042:284",
+  "modes": [
+   "Neutral Light",
+   "Neutral Dark",
+   "Y2K Light",
+   "Y2K Dark"
+  ],
+  "theme_modes": [
+   "Y2K Light",
+   "Y2K Dark"
+  ],
+  "overridden": {
+   "Core/Accent": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Core/Accent Muted": {
+    "Y2K Light": "#2D241B14",
+    "Y2K Dark": "#EDEFFC20"
+   },
+   "Core/On Accent": {
+    "Y2K Light": "#FFFFFF",
+    "Y2K Dark": "#16182B"
+   },
+   "Core/Neutral": {
+    "Y2K Light": "#2D241B10",
+    "Y2K Dark": "#EDEFFC1A"
+   },
+   "Core/Background Surface": {
+    "Y2K Light": "#FFFFFF",
+    "Y2K Dark": "#16182B"
+   },
+   "Core/Background Body": {
+    "Y2K Light": "#CCCFFA",
+    "Y2K Dark": "#0E0F1A"
+   },
+   "Core/Overlay": {
+    "Y2K Light": "#2D241B80",
+    "Y2K Dark": "#0A0B14CC"
+   },
+   "Core/Overlay Hover": {
+    "Y2K Light": "#2D241B0D",
+    "Y2K Dark": "#EDEFFC0D"
+   },
+   "Core/Overlay Pressed": {
+    "Y2K Light": "#2D241B1A",
+    "Y2K Dark": "#EDEFFC1A"
+   },
+   "Core/Background Muted": {
+    "Y2K Light": "#EDE0D4",
+    "Y2K Dark": "#1F2238"
+   },
+   "Text/Primary": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Text/Secondary": {
+    "Y2K Light": "#675D52",
+    "Y2K Dark": "#A6ACD6"
+   },
+   "Text/Disabled": {
+    "Y2K Light": "#D1C5B8",
+    "Y2K Dark": "#4A4F6B"
+   },
+   "Text/Accent": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Text/On Dark": {
+    "Y2K Light": "#FFFFFF",
+    "Y2K Dark": "#FFFFFF"
+   },
+   "Text/On Light": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#2D241B"
+   },
+   "Icon/Accent": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Icon/Primary": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Icon/Secondary": {
+    "Y2K Light": "#675D52",
+    "Y2K Dark": "#A6ACD6"
+   },
+   "Icon/Disabled": {
+    "Y2K Light": "#D1C5B8",
+    "Y2K Dark": "#4A4F6B"
+   },
+   "Surface/Card": {
+    "Y2K Light": "#FFFFFF",
+    "Y2K Dark": "#16182B"
+   },
+   "Surface/Popover": {
+    "Y2K Light": "#FFFFFF",
+    "Y2K Dark": "#1F2238"
+   },
+   "Status/Success": {
+    "Y2K Light": "#C5E17A",
+    "Y2K Dark": "#C5E17A"
+   },
+   "Status/Success Muted": {
+    "Y2K Light": "#C5E17A",
+    "Y2K Dark": "#C5E17A"
+   },
+   "Status/On Success": {
+    "Y2K Light": "#3A5500",
+    "Y2K Dark": "#1E3200"
+   },
+   "Status/Error": {
+    "Y2K Light": "#FFC5C3",
+    "Y2K Dark": "#FFC5C3"
+   },
+   "Status/Error Muted": {
+    "Y2K Light": "#FFC5C3",
+    "Y2K Dark": "#FFC5C3"
+   },
+   "Status/On Error": {
+    "Y2K Light": "#8B1D24",
+    "Y2K Dark": "#5C0008"
+   },
+   "Status/Warning": {
+    "Y2K Light": "#FFE08A",
+    "Y2K Dark": "#FFE08A"
+   },
+   "Status/Warning Muted": {
+    "Y2K Light": "#FFE08A",
+    "Y2K Dark": "#FFE08A"
+   },
+   "Status/On Warning": {
+    "Y2K Light": "#614400",
+    "Y2K Dark": "#3F2600"
+   },
+   "Border/Default": {
+    "Y2K Light": "#2F292E",
+    "Y2K Dark": "#EDEFFC1A"
+   },
+   "Border/Emphasized": {
+    "Y2K Light": "#2F292E",
+    "Y2K Dark": "#3A3F5E"
+   },
+   "Effects/Skeleton": {
+    "Y2K Light": "#D1C5B8",
+    "Y2K Dark": "#2A2E47"
+   },
+   "Effects/Shadow": {
+    "Y2K Light": "#2D241B1A",
+    "Y2K Dark": "#0000004D"
+   },
+   "Effects/Tint Hover": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Blue/Background": {
+    "Y2K Light": "#B8E0FF",
+    "Y2K Dark": "#B8E0FF"
+   },
+   "Blue/Border": {
+    "Y2K Light": "#8ECFFF",
+    "Y2K Dark": "#8ECFFF"
+   },
+   "Blue/Icon": {
+    "Y2K Light": "#004E74",
+    "Y2K Dark": "#002C4D"
+   },
+   "Blue/Text": {
+    "Y2K Light": "#004E74",
+    "Y2K Dark": "#002C4D"
+   },
+   "Cyan/Background": {
+    "Y2K Light": "#A8F0E2",
+    "Y2K Dark": "#A8F0E2"
+   },
+   "Cyan/Border": {
+    "Y2K Light": "#70E8D0",
+    "Y2K Dark": "#70E8D0"
+   },
+   "Cyan/Icon": {
+    "Y2K Light": "#005548",
+    "Y2K Dark": "#003028"
+   },
+   "Cyan/Text": {
+    "Y2K Light": "#005548",
+    "Y2K Dark": "#003028"
+   },
+   "Gray/Background": {
+    "Y2K Light": "#EDE0D4",
+    "Y2K Dark": "#EDE0D4"
+   },
+   "Gray/Border": {
+    "Y2K Light": "#DFD2C6",
+    "Y2K Dark": "#DFD2C6"
+   },
+   "Gray/Icon": {
+    "Y2K Light": "#4F453B",
+    "Y2K Dark": "#2D241B"
+   },
+   "Gray/Text": {
+    "Y2K Light": "#4F453B",
+    "Y2K Dark": "#2D241B"
+   },
+   "Green/Background": {
+    "Y2K Light": "#C5E17A",
+    "Y2K Dark": "#C5E17A"
+   },
+   "Green/Border": {
+    "Y2K Light": "#B5D16A",
+    "Y2K Dark": "#B5D16A"
+   },
+   "Green/Icon": {
+    "Y2K Light": "#3A5500",
+    "Y2K Dark": "#1E3200"
+   },
+   "Green/Text": {
+    "Y2K Light": "#3A5500",
+    "Y2K Dark": "#1E3200"
+   },
+   "Orange/Background": {
+    "Y2K Light": "#FFCCA0",
+    "Y2K Dark": "#FFCCA0"
+   },
+   "Orange/Border": {
+    "Y2K Light": "#FFAA66",
+    "Y2K Dark": "#FFAA66"
+   },
+   "Orange/Icon": {
+    "Y2K Light": "#703500",
+    "Y2K Dark": "#4A1800"
+   },
+   "Orange/Text": {
+    "Y2K Light": "#703500",
+    "Y2K Dark": "#4A1800"
+   },
+   "Pink/Background": {
+    "Y2K Light": "#FFC8E0",
+    "Y2K Dark": "#FFC8E0"
+   },
+   "Pink/Border": {
+    "Y2K Light": "#FFA0C8",
+    "Y2K Dark": "#FFA0C8"
+   },
+   "Pink/Icon": {
+    "Y2K Light": "#822050",
+    "Y2K Dark": "#580030"
+   },
+   "Pink/Text": {
+    "Y2K Light": "#822050",
+    "Y2K Dark": "#580030"
+   },
+   "Purple/Background": {
+    "Y2K Light": "#DDD0FF",
+    "Y2K Dark": "#DDD0FF"
+   },
+   "Purple/Border": {
+    "Y2K Light": "#C0AAFF",
+    "Y2K Dark": "#C0AAFF"
+   },
+   "Purple/Icon": {
+    "Y2K Light": "#453080",
+    "Y2K Dark": "#201058"
+   },
+   "Purple/Text": {
+    "Y2K Light": "#453080",
+    "Y2K Dark": "#201058"
+   },
+   "Red/Background": {
+    "Y2K Light": "#FFC5C3",
+    "Y2K Dark": "#FFC5C3"
+   },
+   "Red/Border": {
+    "Y2K Light": "#FF9E9A",
+    "Y2K Dark": "#FF9E9A"
+   },
+   "Red/Icon": {
+    "Y2K Light": "#8B1D24",
+    "Y2K Dark": "#5C0008"
+   },
+   "Red/Text": {
+    "Y2K Light": "#8B1D24",
+    "Y2K Dark": "#5C0008"
+   },
+   "Teal/Background": {
+    "Y2K Light": "#A8EED0",
+    "Y2K Dark": "#A8EED0"
+   },
+   "Teal/Border": {
+    "Y2K Light": "#78E0B0",
+    "Y2K Dark": "#78E0B0"
+   },
+   "Teal/Icon": {
+    "Y2K Light": "#005530",
+    "Y2K Dark": "#003018"
+   },
+   "Teal/Text": {
+    "Y2K Light": "#005530",
+    "Y2K Dark": "#003018"
+   },
+   "Yellow/Background": {
+    "Y2K Light": "#FFE08A",
+    "Y2K Dark": "#FFE08A"
+   },
+   "Yellow/Border": {
+    "Y2K Light": "#FFCC55",
+    "Y2K Dark": "#FFCC55"
+   },
+   "Yellow/Icon": {
+    "Y2K Light": "#614400",
+    "Y2K Dark": "#3F2600"
+   },
+   "Yellow/Text": {
+    "Y2K Light": "#614400",
+    "Y2K Dark": "#3F2600"
+   },
+   "Syntax/Keyword": {
+    "Y2K Light": "#615A7A",
+    "Y2K Dark": "#AEA6CA"
+   },
+   "Syntax/String": {
+    "Y2K Light": "#586242",
+    "Y2K Dark": "#A5AF8B"
+   },
+   "Syntax/Comment": {
+    "Y2K Light": "#5E5E5E",
+    "Y2K Dark": "#ABABAB"
+   },
+   "Syntax/Number": {
+    "Y2K Light": "#775843",
+    "Y2K Dark": "#C8A48C"
+   },
+   "Syntax/Function": {
+    "Y2K Light": "#39637D",
+    "Y2K Dark": "#87B0CD"
+   },
+   "Syntax/Type": {
+    "Y2K Light": "#615A7A",
+    "Y2K Dark": "#AEA6CA"
+   },
+   "Syntax/Variable": {
+    "Y2K Light": "#5E5E5E",
+    "Y2K Dark": "#ABABAB"
+   },
+   "Syntax/Operator": {
+    "Y2K Light": "#5E5E5E",
+    "Y2K Dark": "#ABABAB"
+   },
+   "Syntax/Constant": {
+    "Y2K Light": "#775843",
+    "Y2K Dark": "#C8A48C"
+   },
+   "Syntax/Tag": {
+    "Y2K Light": "#7F5351",
+    "Y2K Dark": "#D19F9D"
+   },
+   "Syntax/Attribute": {
+    "Y2K Light": "#6C5C3E",
+    "Y2K Dark": "#BCA987"
+   },
+   "Syntax/Property": {
+    "Y2K Light": "#3C6755",
+    "Y2K Dark": "#87B5A1"
+   },
+   "Syntax/Punctuation": {
+    "Y2K Light": "#5E5E5E",
+    "Y2K Dark": "#ABABAB"
+   },
+   "Component/Badge/Info Bg": {},
+   "Component/Badge/Success Bg": {},
+   "Component/Badge/Warning Bg": {},
+   "Component/Badge/Error Bg": {},
+   "Component/Badge/On Vivid": {},
+   "Effects/Elevation Shadow": {},
+   "Effects/Elevation Shadow Strong": {},
+   "Component/ProgressBar/Accent Fill": {},
+   "Component/ProgressBar/Success Fill": {},
+   "Component/ProgressBar/Warning Fill": {},
+   "Component/ProgressBar/Error Fill": {},
+   "Component/Input Ring/Focus": {},
+   "Component/Input Ring/Hover": {},
+   "Component/Input Ring/Success": {},
+   "Component/Input Ring/Warning": {},
+   "Component/Input Ring/Error": {},
+   "Core/Background Inverted": {
+    "Y2K Light": "#2D241B",
+    "Y2K Dark": "#EDEFFC"
+   },
+   "Status/Error Inverted": {},
+   "Effects/Track": {}
+  },
+  "override_count": 90
+ },
+ "Gothic (Color)": {
+  "collection": "Gothic",
+  "extends": "Color",
+  "id": "VariableCollectionId:2042:374",
+  "modes": [
+   "Neutral Light",
+   "Neutral Dark",
+   "Gothic Light",
+   "Gothic Dark"
+  ],
+  "theme_modes": [
+   "Gothic Light",
+   "Gothic Dark"
+  ],
+  "overridden": {
+   "Core/Accent": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Core/Accent Muted": {
+    "Gothic Light": "#E8F1F620",
+    "Gothic Dark": "#E8F1F620"
+   },
+   "Core/On Accent": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Core/Neutral": {
+    "Gothic Light": "#E8F1F61A",
+    "Gothic Dark": "#E8F1F61A"
+   },
+   "Core/Background Surface": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Core/Background Body": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Core/Overlay": {
+    "Gothic Light": "#101314CC",
+    "Gothic Dark": "#101314CC"
+   },
+   "Core/Overlay Hover": {
+    "Gothic Light": "#E8F1F60D",
+    "Gothic Dark": "#E8F1F60D"
+   },
+   "Core/Overlay Pressed": {
+    "Gothic Light": "#E8F1F61A",
+    "Gothic Dark": "#E8F1F61A"
+   },
+   "Core/Background Muted": {
+    "Gothic Light": "#24292D",
+    "Gothic Dark": "#24292D"
+   },
+   "Text/Primary": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Text/Secondary": {
+    "Gothic Light": "#96A0AB",
+    "Gothic Dark": "#96A0AB"
+   },
+   "Text/Disabled": {
+    "Gothic Light": "#495056",
+    "Gothic Dark": "#495056"
+   },
+   "Text/Accent": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Text/On Dark": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Text/On Light": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Icon/Accent": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Icon/Primary": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Icon/Secondary": {
+    "Gothic Light": "#96A0AB",
+    "Gothic Dark": "#96A0AB"
+   },
+   "Icon/Disabled": {
+    "Gothic Light": "#495056",
+    "Gothic Dark": "#495056"
+   },
+   "Surface/Card": {
+    "Gothic Light": "#1A1D20",
+    "Gothic Dark": "#1A1D20"
+   },
+   "Surface/Popover": {
+    "Gothic Light": "#24292D",
+    "Gothic Dark": "#24292D"
+   },
+   "Status/Success": {
+    "Gothic Light": "#B3C79A",
+    "Gothic Dark": "#B3C79A"
+   },
+   "Status/Success Muted": {
+    "Gothic Light": "#B3C79A",
+    "Gothic Dark": "#B3C79A"
+   },
+   "Status/On Success": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Status/Error": {
+    "Gothic Light": "#C6A6A2",
+    "Gothic Dark": "#C6A6A2"
+   },
+   "Status/Error Muted": {
+    "Gothic Light": "#C6A6A2",
+    "Gothic Dark": "#C6A6A2"
+   },
+   "Status/On Error": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Status/Warning": {
+    "Gothic Light": "#D3C490",
+    "Gothic Dark": "#D3C490"
+   },
+   "Status/Warning Muted": {
+    "Gothic Light": "#D3C490",
+    "Gothic Dark": "#D3C490"
+   },
+   "Status/On Warning": {
+    "Gothic Light": "#101314",
+    "Gothic Dark": "#101314"
+   },
+   "Border/Default": {
+    "Gothic Light": "#E8F1F61A",
+    "Gothic Dark": "#E8F1F61A"
+   },
+   "Border/Emphasized": {
+    "Gothic Light": "#495056",
+    "Gothic Dark": "#495056"
+   },
+   "Effects/Skeleton": {
+    "Gothic Light": "#495056",
+    "Gothic Dark": "#495056"
+   },
+   "Effects/Shadow": {
+    "Gothic Light": "#0000004D",
+    "Gothic Dark": "#0000004D"
+   },
+   "Effects/Tint Hover": {
+    "Gothic Light": "#FFFFFF",
+    "Gothic Dark": "#FFFFFF"
+   },
+   "Blue/Background": {
+    "Gothic Light": "#A3B5D6",
+    "Gothic Dark": "#A3B5D6"
+   },
+   "Blue/Border": {
+    "Gothic Light": "#8696B8",
+    "Gothic Dark": "#8696B8"
+   },
+   "Blue/Icon": {
+    "Gothic Light": "#2A3B6E",
+    "Gothic Dark": "#2A3B6E"
+   },
+   "Blue/Text": {
+    "Gothic Light": "#1F2C54",
+    "Gothic Dark": "#1F2C54"
+   },
+   "Cyan/Background": {
+    "Gothic Light": "#A3C2CF",
+    "Gothic Dark": "#A3C2CF"
+   },
+   "Cyan/Border": {
+    "Gothic Light": "#86A4B1",
+    "Gothic Dark": "#86A4B1"
+   },
+   "Cyan/Icon": {
+    "Gothic Light": "#2A5E75",
+    "Gothic Dark": "#2A5E75"
+   },
+   "Cyan/Text": {
+    "Gothic Light": "#204858",
+    "Gothic Dark": "#204858"
+   },
+   "Gray/Background": {
+    "Gothic Light": "#3D4248",
+    "Gothic Dark": "#3D4248"
+   },
+   "Gray/Border": {
+    "Gothic Light": "#5D646B",
+    "Gothic Dark": "#5D646B"
+   },
+   "Gray/Icon": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Gray/Text": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Green/Background": {
+    "Gothic Light": "#B3C79A",
+    "Gothic Dark": "#B3C79A"
+   },
+   "Green/Border": {
+    "Gothic Light": "#96A880",
+    "Gothic Dark": "#96A880"
+   },
+   "Green/Icon": {
+    "Gothic Light": "#3A5E2C",
+    "Gothic Dark": "#3A5E2C"
+   },
+   "Green/Text": {
+    "Gothic Light": "#244023",
+    "Gothic Dark": "#244023"
+   },
+   "Orange/Background": {
+    "Gothic Light": "#D3B89A",
+    "Gothic Dark": "#D3B89A"
+   },
+   "Orange/Border": {
+    "Gothic Light": "#B6987D",
+    "Gothic Dark": "#B6987D"
+   },
+   "Orange/Icon": {
+    "Gothic Light": "#8A4818",
+    "Gothic Dark": "#8A4818"
+   },
+   "Orange/Text": {
+    "Gothic Light": "#6E3812",
+    "Gothic Dark": "#6E3812"
+   },
+   "Pink/Background": {
+    "Gothic Light": "#C89AAB",
+    "Gothic Dark": "#C89AAB"
+   },
+   "Pink/Border": {
+    "Gothic Light": "#AA7D8E",
+    "Gothic Dark": "#AA7D8E"
+   },
+   "Pink/Icon": {
+    "Gothic Light": "#8D2D4C",
+    "Gothic Dark": "#8D2D4C"
+   },
+   "Pink/Text": {
+    "Gothic Light": "#71223C",
+    "Gothic Dark": "#71223C"
+   },
+   "Purple/Background": {
+    "Gothic Light": "#B29BC4",
+    "Gothic Dark": "#B29BC4"
+   },
+   "Purple/Border": {
+    "Gothic Light": "#947DA6",
+    "Gothic Dark": "#947DA6"
+   },
+   "Purple/Icon": {
+    "Gothic Light": "#5A2370",
+    "Gothic Dark": "#5A2370"
+   },
+   "Purple/Text": {
+    "Gothic Light": "#481B58",
+    "Gothic Dark": "#481B58"
+   },
+   "Red/Background": {
+    "Gothic Light": "#C6A6A2",
+    "Gothic Dark": "#C6A6A2"
+   },
+   "Red/Border": {
+    "Gothic Light": "#A48581",
+    "Gothic Dark": "#A48581"
+   },
+   "Red/Icon": {
+    "Gothic Light": "#5E3A35",
+    "Gothic Dark": "#5E3A35"
+   },
+   "Red/Text": {
+    "Gothic Light": "#4A2520",
+    "Gothic Dark": "#4A2520"
+   },
+   "Teal/Background": {
+    "Gothic Light": "#A3C2B6",
+    "Gothic Dark": "#A3C2B6"
+   },
+   "Teal/Border": {
+    "Gothic Light": "#86A499",
+    "Gothic Dark": "#86A499"
+   },
+   "Teal/Icon": {
+    "Gothic Light": "#1F5E52",
+    "Gothic Dark": "#1F5E52"
+   },
+   "Teal/Text": {
+    "Gothic Light": "#174A40",
+    "Gothic Dark": "#174A40"
+   },
+   "Yellow/Background": {
+    "Gothic Light": "#D3C490",
+    "Gothic Dark": "#D3C490"
+   },
+   "Yellow/Border": {
+    "Gothic Light": "#B6A775",
+    "Gothic Dark": "#B6A775"
+   },
+   "Yellow/Icon": {
+    "Gothic Light": "#876515",
+    "Gothic Dark": "#876515"
+   },
+   "Yellow/Text": {
+    "Gothic Light": "#6C5010",
+    "Gothic Dark": "#6C5010"
+   },
+   "Syntax/Keyword": {
+    "Gothic Light": "#C39ADB",
+    "Gothic Dark": "#C39ADB"
+   },
+   "Syntax/String": {
+    "Gothic Light": "#A3C987",
+    "Gothic Dark": "#A3C987"
+   },
+   "Syntax/Comment": {
+    "Gothic Light": "#6B7079",
+    "Gothic Dark": "#6B7079"
+   },
+   "Syntax/Number": {
+    "Gothic Light": "#DEC074",
+    "Gothic Dark": "#DEC074"
+   },
+   "Syntax/Function": {
+    "Gothic Light": "#8AA1D8",
+    "Gothic Dark": "#8AA1D8"
+   },
+   "Syntax/Type": {
+    "Gothic Light": "#C39ADB",
+    "Gothic Dark": "#C39ADB"
+   },
+   "Syntax/Variable": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Syntax/Operator": {
+    "Gothic Light": "#96A0AB",
+    "Gothic Dark": "#96A0AB"
+   },
+   "Syntax/Constant": {
+    "Gothic Light": "#E6B85E",
+    "Gothic Dark": "#E6B85E"
+   },
+   "Syntax/Tag": {
+    "Gothic Light": "#D97580",
+    "Gothic Dark": "#D97580"
+   },
+   "Syntax/Attribute": {
+    "Gothic Light": "#DEC074",
+    "Gothic Dark": "#DEC074"
+   },
+   "Syntax/Property": {
+    "Gothic Light": "#7CC5B3",
+    "Gothic Dark": "#7CC5B3"
+   },
+   "Syntax/Punctuation": {
+    "Gothic Light": "#7A8290",
+    "Gothic Dark": "#7A8290"
+   },
+   "Component/Badge/Info Bg": {},
+   "Component/Badge/Success Bg": {},
+   "Component/Badge/Warning Bg": {},
+   "Component/Badge/Error Bg": {},
+   "Component/Badge/On Vivid": {},
+   "Effects/Elevation Shadow": {},
+   "Effects/Elevation Shadow Strong": {},
+   "Component/ProgressBar/Accent Fill": {},
+   "Component/ProgressBar/Success Fill": {},
+   "Component/ProgressBar/Warning Fill": {},
+   "Component/ProgressBar/Error Fill": {},
+   "Component/Input Ring/Focus": {},
+   "Component/Input Ring/Hover": {},
+   "Component/Input Ring/Success": {},
+   "Component/Input Ring/Warning": {},
+   "Component/Input Ring/Error": {},
+   "Core/Background Inverted": {
+    "Gothic Light": "#E8F1F6",
+    "Gothic Dark": "#E8F1F6"
+   },
+   "Status/Error Inverted": {},
+   "Effects/Track": {}
+  },
+  "override_count": 90
+ },
+ "Matcha (Color)": {
+  "collection": "Matcha",
+  "extends": "Color",
+  "id": "VariableCollectionId:2042:464",
+  "modes": [
+   "Neutral Light",
+   "Neutral Dark",
+   "Matcha Light",
+   "Matcha Dark"
+  ],
+  "theme_modes": [
+   "Matcha Light",
+   "Matcha Dark"
+  ],
+  "overridden": {
+   "Core/Accent": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Core/Accent Muted": {
+    "Matcha Light": "#3E481D14",
+    "Matcha Dark": "#C0CBA920"
+   },
+   "Core/On Accent": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#3E481D"
+   },
+   "Core/Neutral": {
+    "Matcha Light": "#3E481D0F",
+    "Matcha Dark": "#C0CBA91A"
+   },
+   "Core/Background Surface": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#1A1C14"
+   },
+   "Core/Background Body": {
+    "Matcha Light": "#F0F0E0",
+    "Matcha Dark": "#12140E"
+   },
+   "Core/Overlay": {
+    "Matcha Light": "#3E481D80",
+    "Matcha Dark": "#3E481DCC"
+   },
+   "Core/Overlay Hover": {
+    "Matcha Light": "#3E481D0D",
+    "Matcha Dark": "#C0CBA90D"
+   },
+   "Core/Overlay Pressed": {
+    "Matcha Light": "#3E481D1A",
+    "Matcha Dark": "#C0CBA91A"
+   },
+   "Core/Background Muted": {
+    "Matcha Light": "#F0F0E0",
+    "Matcha Dark": "#3E481D"
+   },
+   "Text/Primary": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Text/Secondary": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#94A468"
+   },
+   "Text/Disabled": {
+    "Matcha Light": "#C0CBA9",
+    "Matcha Dark": "#5A6440"
+   },
+   "Text/Accent": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Text/On Dark": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#FFFFFF"
+   },
+   "Text/On Light": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#3E481D"
+   },
+   "Icon/Accent": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Icon/Primary": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Icon/Secondary": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#94A468"
+   },
+   "Icon/Disabled": {
+    "Matcha Light": "#C0CBA9",
+    "Matcha Dark": "#5A6440"
+   },
+   "Surface/Card": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#1E2016"
+   },
+   "Surface/Popover": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#3E481D"
+   },
+   "Status/Success": {
+    "Matcha Light": "#4D9900",
+    "Matcha Dark": "#6DBF2A"
+   },
+   "Status/Success Muted": {
+    "Matcha Light": "#4D990020",
+    "Matcha Dark": "#6DBF2A20"
+   },
+   "Status/On Success": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#3E481D"
+   },
+   "Status/Error": {
+    "Matcha Light": "#FD0000",
+    "Matcha Dark": "#FF5C5C"
+   },
+   "Status/Error Muted": {
+    "Matcha Light": "#FD000020",
+    "Matcha Dark": "#FF5C5C20"
+   },
+   "Status/On Error": {
+    "Matcha Light": "#FFFFFF",
+    "Matcha Dark": "#3E481D"
+   },
+   "Status/Warning": {
+    "Matcha Light": "#FFB600",
+    "Matcha Dark": "#FFC940"
+   },
+   "Status/Warning Muted": {
+    "Matcha Light": "#FFB60020",
+    "Matcha Dark": "#FFC94020"
+   },
+   "Status/On Warning": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#3E481D"
+   },
+   "Border/Default": {
+    "Matcha Light": "#DCE3CE",
+    "Matcha Dark": "#C0CBA91A"
+   },
+   "Border/Emphasized": {
+    "Matcha Light": "#B7C29E",
+    "Matcha Dark": "#5A6440"
+   },
+   "Effects/Skeleton": {
+    "Matcha Light": "#C0CBA9",
+    "Matcha Dark": "#5A6440"
+   },
+   "Effects/Shadow": {
+    "Matcha Light": "#3E481D1A",
+    "Matcha Dark": "#0000004D"
+   },
+   "Effects/Tint Hover": {
+    "Matcha Light": "#000000",
+    "Matcha Dark": "#FFFFFF"
+   },
+   "Blue/Background": {
+    "Matcha Light": "#3A5E8C33",
+    "Matcha Dark": "#3A5E8C33"
+   },
+   "Blue/Border": {
+    "Matcha Light": "#3A5E8C",
+    "Matcha Dark": "#7BA8D4"
+   },
+   "Blue/Icon": {
+    "Matcha Light": "#3A5E8C",
+    "Matcha Dark": "#7BA8D4"
+   },
+   "Blue/Text": {
+    "Matcha Light": "#2E4A6E",
+    "Matcha Dark": "#8DBCE0"
+   },
+   "Cyan/Background": {
+    "Matcha Light": "#3A7C7C33",
+    "Matcha Dark": "#3A7C7C33"
+   },
+   "Cyan/Border": {
+    "Matcha Light": "#3A7C7C",
+    "Matcha Dark": "#70C4C4"
+   },
+   "Cyan/Icon": {
+    "Matcha Light": "#3A7C7C",
+    "Matcha Dark": "#70C4C4"
+   },
+   "Cyan/Text": {
+    "Matcha Light": "#2E6060",
+    "Matcha Dark": "#82D4D4"
+   },
+   "Gray/Background": {
+    "Matcha Light": "#707E4633",
+    "Matcha Dark": "#5A644033"
+   },
+   "Gray/Border": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#707E46"
+   },
+   "Gray/Icon": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#94A468"
+   },
+   "Gray/Text": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Green/Background": {
+    "Matcha Light": "#4D990033",
+    "Matcha Dark": "#6DBF2A33"
+   },
+   "Green/Border": {
+    "Matcha Light": "#4D9900",
+    "Matcha Dark": "#6DBF2A"
+   },
+   "Green/Icon": {
+    "Matcha Light": "#4D9900",
+    "Matcha Dark": "#6DBF2A"
+   },
+   "Green/Text": {
+    "Matcha Light": "#3D7A00",
+    "Matcha Dark": "#80D43A"
+   },
+   "Orange/Background": {
+    "Matcha Light": "#C4762033",
+    "Matcha Dark": "#D4903A33"
+   },
+   "Orange/Border": {
+    "Matcha Light": "#C47620",
+    "Matcha Dark": "#D4903A"
+   },
+   "Orange/Icon": {
+    "Matcha Light": "#C47620",
+    "Matcha Dark": "#D4903A"
+   },
+   "Orange/Text": {
+    "Matcha Light": "#A06018",
+    "Matcha Dark": "#E0A04A"
+   },
+   "Pink/Background": {
+    "Matcha Light": "#C44A7033",
+    "Matcha Dark": "#E07A9A33"
+   },
+   "Pink/Border": {
+    "Matcha Light": "#C44A70",
+    "Matcha Dark": "#E07A9A"
+   },
+   "Pink/Icon": {
+    "Matcha Light": "#C44A70",
+    "Matcha Dark": "#E07A9A"
+   },
+   "Pink/Text": {
+    "Matcha Light": "#A03A5A",
+    "Matcha Dark": "#F08AAA"
+   },
+   "Purple/Background": {
+    "Matcha Light": "#6B4A8C33",
+    "Matcha Dark": "#B08ED433"
+   },
+   "Purple/Border": {
+    "Matcha Light": "#6B4A8C",
+    "Matcha Dark": "#B08ED4"
+   },
+   "Purple/Icon": {
+    "Matcha Light": "#6B4A8C",
+    "Matcha Dark": "#B08ED4"
+   },
+   "Purple/Text": {
+    "Matcha Light": "#553A70",
+    "Matcha Dark": "#C0A0E0"
+   },
+   "Red/Background": {
+    "Matcha Light": "#FD000033",
+    "Matcha Dark": "#FF5C5C33"
+   },
+   "Red/Border": {
+    "Matcha Light": "#FD0000",
+    "Matcha Dark": "#FF5C5C"
+   },
+   "Red/Icon": {
+    "Matcha Light": "#FD0000",
+    "Matcha Dark": "#FF5C5C"
+   },
+   "Red/Text": {
+    "Matcha Light": "#CC0000",
+    "Matcha Dark": "#FF7A7A"
+   },
+   "Teal/Background": {
+    "Matcha Light": "#2E6B5A33",
+    "Matcha Dark": "#5AB89833"
+   },
+   "Teal/Border": {
+    "Matcha Light": "#2E6B5A",
+    "Matcha Dark": "#5AB898"
+   },
+   "Teal/Icon": {
+    "Matcha Light": "#2E6B5A",
+    "Matcha Dark": "#5AB898"
+   },
+   "Teal/Text": {
+    "Matcha Light": "#245546",
+    "Matcha Dark": "#6CCAAA"
+   },
+   "Yellow/Background": {
+    "Matcha Light": "#FFB60033",
+    "Matcha Dark": "#FFC94033"
+   },
+   "Yellow/Border": {
+    "Matcha Light": "#FFB600",
+    "Matcha Dark": "#FFC940"
+   },
+   "Yellow/Icon": {
+    "Matcha Light": "#FFB600",
+    "Matcha Dark": "#FFC940"
+   },
+   "Yellow/Text": {
+    "Matcha Light": "#CC9200",
+    "Matcha Dark": "#FFD960"
+   },
+   "Syntax/Keyword": {
+    "Matcha Light": "#5A6B2A",
+    "Matcha Dark": "#A8BF6A"
+   },
+   "Syntax/String": {
+    "Matcha Light": "#2E6B4A",
+    "Matcha Dark": "#7BC49E"
+   },
+   "Syntax/Comment": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#707E46"
+   },
+   "Syntax/Number": {
+    "Matcha Light": "#8C6B30",
+    "Matcha Dark": "#D4B870"
+   },
+   "Syntax/Function": {
+    "Matcha Light": "#3A5E8C",
+    "Matcha Dark": "#7BA8D4"
+   },
+   "Syntax/Type": {
+    "Matcha Light": "#6B4A8C",
+    "Matcha Dark": "#B08ED4"
+   },
+   "Syntax/Variable": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Syntax/Operator": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#94A468"
+   },
+   "Syntax/Constant": {
+    "Matcha Light": "#8C6B30",
+    "Matcha Dark": "#D4B870"
+   },
+   "Syntax/Tag": {
+    "Matcha Light": "#8C3A3A",
+    "Matcha Dark": "#D47A7A"
+   },
+   "Syntax/Attribute": {
+    "Matcha Light": "#7C5E3A",
+    "Matcha Dark": "#C4A882"
+   },
+   "Syntax/Property": {
+    "Matcha Light": "#3A7C6B",
+    "Matcha Dark": "#70C4B0"
+   },
+   "Syntax/Punctuation": {
+    "Matcha Light": "#707E46",
+    "Matcha Dark": "#5A6440"
+   },
+   "Component/Badge/Info Bg": {},
+   "Component/Badge/Success Bg": {},
+   "Component/Badge/Warning Bg": {},
+   "Component/Badge/Error Bg": {},
+   "Component/Badge/On Vivid": {},
+   "Effects/Elevation Shadow": {},
+   "Effects/Elevation Shadow Strong": {},
+   "Component/ProgressBar/Accent Fill": {},
+   "Component/ProgressBar/Success Fill": {},
+   "Component/ProgressBar/Warning Fill": {},
+   "Component/ProgressBar/Error Fill": {},
+   "Component/Input Ring/Focus": {},
+   "Component/Input Ring/Hover": {},
+   "Component/Input Ring/Success": {},
+   "Component/Input Ring/Warning": {},
+   "Component/Input Ring/Error": {},
+   "Core/Background Inverted": {
+    "Matcha Light": "#3E481D",
+    "Matcha Dark": "#C0CBA9"
+   },
+   "Status/Error Inverted": {},
+   "Effects/Track": {}
+  },
+  "override_count": 90
+ },
+ "Chocolate (Radius)": {
+  "collection": "Chocolate",
+  "extends": "Radius",
+  "id": "VariableCollectionId:2043:14",
+  "modes": [
+   "Neutral",
+   "Chocolate"
+  ],
+  "theme_modes": [
+   "Chocolate"
+  ],
+  "overridden": {
+   "Radius/None": {
+    "Chocolate": 2
+   },
+   "Radius/Inner": {
+    "Chocolate": 6
+   },
+   "Radius/Element": {
+    "Chocolate": 10
+   },
+   "Radius/Container": {
+    "Chocolate": 12
+   },
+   "Radius/Page": {
+    "Chocolate": 24
+   },
+   "Radius/Full": {
+    "Chocolate": 9999
+   }
+  },
+  "override_count": 6
+ },
+ "Chocolate (Typography)": {
+  "collection": "Chocolate",
+  "extends": "Typography",
+  "id": "VariableCollectionId:2043:21",
+  "modes": [
+   "Neutral",
+   "Chocolate"
+  ],
+  "theme_modes": [
+   "Chocolate"
+  ],
+  "overridden": {
+   "Font Size/4xs": {},
+   "Font Size/3xs": {},
+   "Font Size/2xs": {},
+   "Font Size/xs": {},
+   "Font Size/sm": {},
+   "Font Size/base": {},
+   "Font Size/lg": {},
+   "Font Size/xl": {},
+   "Font Size/2xl": {},
+   "Font Size/3xl": {},
+   "Font Size/4xl": {},
+   "Font Size/5xl": {},
+   "Font Weight/Normal": {},
+   "Font Weight/Medium": {},
+   "Font Weight/Semibold": {},
+   "Font Weight/Bold": {},
+   "Line Height/Heading 1": {},
+   "Line Height/Heading 2": {},
+   "Line Height/Heading 3": {},
+   "Line Height/Heading 4": {},
+   "Line Height/Heading 5": {},
+   "Line Height/Heading 6": {},
+   "Line Height/Body": {},
+   "Line Height/Large": {},
+   "Line Height/Label": {},
+   "Line Height/Code": {},
+   "Line Height/Supporting": {},
+   "Line Height/Display 1": {},
+   "Line Height/Display 2": {},
+   "Line Height/Display 3": {},
+   "Font Family/Body": {
+    "Chocolate": "Albert Sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   },
+   "Font Family/Code": {
+    "Chocolate": "JetBrains Mono, \"SF Mono\", Monaco, Consolas, monospace"
+   },
+   "Font Family/Heading": {
+    "Chocolate": "Fraunces, Georgia, \"Times New Roman\", Times, serif"
+   }
+  },
+  "override_count": 3
+ },
+ "Butter (Radius)": {
+  "collection": "Butter",
+  "extends": "Radius",
+  "id": "VariableCollectionId:2043:25",
+  "modes": [
+   "Neutral",
+   "Butter"
+  ],
+  "theme_modes": [
+   "Butter"
+  ],
+  "overridden": {
+   "Radius/None": {
+    "Butter": 2
+   },
+   "Radius/Inner": {
+    "Butter": 6
+   },
+   "Radius/Element": {
+    "Butter": 8
+   },
+   "Radius/Container": {
+    "Butter": 12
+   },
+   "Radius/Page": {
+    "Butter": 24
+   },
+   "Radius/Full": {
+    "Butter": 9999
+   }
+  },
+  "override_count": 6
+ },
+ "Butter (Typography)": {
+  "collection": "Butter",
+  "extends": "Typography",
+  "id": "VariableCollectionId:2043:32",
+  "modes": [
+   "Neutral",
+   "Butter"
+  ],
+  "theme_modes": [
+   "Butter"
+  ],
+  "overridden": {
+   "Font Size/4xs": {},
+   "Font Size/3xs": {},
+   "Font Size/2xs": {},
+   "Font Size/xs": {},
+   "Font Size/sm": {},
+   "Font Size/base": {},
+   "Font Size/lg": {},
+   "Font Size/xl": {},
+   "Font Size/2xl": {},
+   "Font Size/3xl": {},
+   "Font Size/4xl": {},
+   "Font Size/5xl": {},
+   "Font Weight/Normal": {},
+   "Font Weight/Medium": {},
+   "Font Weight/Semibold": {},
+   "Font Weight/Bold": {},
+   "Line Height/Heading 1": {},
+   "Line Height/Heading 2": {},
+   "Line Height/Heading 3": {},
+   "Line Height/Heading 4": {},
+   "Line Height/Heading 5": {},
+   "Line Height/Heading 6": {},
+   "Line Height/Body": {},
+   "Line Height/Large": {},
+   "Line Height/Label": {},
+   "Line Height/Code": {},
+   "Line Height/Supporting": {},
+   "Line Height/Display 1": {},
+   "Line Height/Display 2": {},
+   "Line Height/Display 3": {},
+   "Font Family/Body": {
+    "Butter": "Outfit, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   },
+   "Font Family/Code": {
+    "Butter": "JetBrains Mono, \"SF Mono\", Monaco, Consolas, monospace"
+   },
+   "Font Family/Heading": {
+    "Butter": "Outfit, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   }
+  },
+  "override_count": 3
+ },
+ "Stone (Radius)": {
+  "collection": "Stone",
+  "extends": "Radius",
+  "id": "VariableCollectionId:2043:36",
+  "modes": [
+   "Neutral",
+   "Stone"
+  ],
+  "theme_modes": [
+   "Stone"
+  ],
+  "overridden": {
+   "Radius/None": {
+    "Stone": 2
+   },
+   "Radius/Inner": {
+    "Stone": 4
+   },
+   "Radius/Element": {
+    "Stone": 8
+   },
+   "Radius/Container": {
+    "Stone": 12
+   },
+   "Radius/Page": {
+    "Stone": 24
+   },
+   "Radius/Full": {
+    "Stone": 9999
+   }
+  },
+  "override_count": 6
+ },
+ "Stone (Typography)": {
+  "collection": "Stone",
+  "extends": "Typography",
+  "id": "VariableCollectionId:2043:43",
+  "modes": [
+   "Neutral",
+   "Stone"
+  ],
+  "theme_modes": [
+   "Stone"
+  ],
+  "overridden": {
+   "Font Size/4xs": {},
+   "Font Size/3xs": {},
+   "Font Size/2xs": {},
+   "Font Size/xs": {},
+   "Font Size/sm": {},
+   "Font Size/base": {},
+   "Font Size/lg": {},
+   "Font Size/xl": {},
+   "Font Size/2xl": {},
+   "Font Size/3xl": {},
+   "Font Size/4xl": {},
+   "Font Size/5xl": {},
+   "Font Weight/Normal": {},
+   "Font Weight/Medium": {},
+   "Font Weight/Semibold": {},
+   "Font Weight/Bold": {},
+   "Line Height/Heading 1": {},
+   "Line Height/Heading 2": {},
+   "Line Height/Heading 3": {},
+   "Line Height/Heading 4": {},
+   "Line Height/Heading 5": {},
+   "Line Height/Heading 6": {},
+   "Line Height/Body": {},
+   "Line Height/Large": {},
+   "Line Height/Label": {},
+   "Line Height/Code": {},
+   "Line Height/Supporting": {},
+   "Line Height/Display 1": {},
+   "Line Height/Display 2": {},
+   "Line Height/Display 3": {},
+   "Font Family/Body": {
+    "Stone": "Figtree, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   },
+   "Font Family/Code": {
+    "Stone": "JetBrains Mono, \"SF Mono\", Monaco, Consolas, monospace"
+   },
+   "Font Family/Heading": {
+    "Stone": "Montserrat, \"Figtree\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   }
+  },
+  "override_count": 3
+ },
+ "Y2K (Radius)": {
+  "collection": "Y2K",
+  "extends": "Radius",
+  "id": "VariableCollectionId:2043:47",
+  "modes": [
+   "Neutral",
+   "Y2K"
+  ],
+  "theme_modes": [
+   "Y2K"
+  ],
+  "overridden": {
+   "Radius/None": {
+    "Y2K": 0
+   },
+   "Radius/Inner": {
+    "Y2K": 0
+   },
+   "Radius/Element": {
+    "Y2K": 0
+   },
+   "Radius/Container": {
+    "Y2K": 0
+   },
+   "Radius/Page": {
+    "Y2K": 0
+   },
+   "Radius/Full": {
+    "Y2K": 0
+   }
+  },
+  "override_count": 6
+ },
+ "Y2K (Typography)": {
+  "collection": "Y2K",
+  "extends": "Typography",
+  "id": "VariableCollectionId:2043:54",
+  "modes": [
+   "Neutral",
+   "Y2K"
+  ],
+  "theme_modes": [
+   "Y2K"
+  ],
+  "overridden": {
+   "Font Size/4xs": {},
+   "Font Size/3xs": {},
+   "Font Size/2xs": {},
+   "Font Size/xs": {},
+   "Font Size/sm": {},
+   "Font Size/base": {},
+   "Font Size/lg": {},
+   "Font Size/xl": {},
+   "Font Size/2xl": {},
+   "Font Size/3xl": {},
+   "Font Size/4xl": {},
+   "Font Size/5xl": {},
+   "Font Weight/Normal": {},
+   "Font Weight/Medium": {},
+   "Font Weight/Semibold": {},
+   "Font Weight/Bold": {},
+   "Line Height/Heading 1": {},
+   "Line Height/Heading 2": {},
+   "Line Height/Heading 3": {},
+   "Line Height/Heading 4": {},
+   "Line Height/Heading 5": {},
+   "Line Height/Heading 6": {},
+   "Line Height/Body": {},
+   "Line Height/Large": {},
+   "Line Height/Label": {},
+   "Line Height/Code": {},
+   "Line Height/Supporting": {},
+   "Line Height/Display 1": {},
+   "Line Height/Display 2": {},
+   "Line Height/Display 3": {},
+   "Font Family/Body": {
+    "Y2K": "Poppins, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   },
+   "Font Family/Code": {
+    "Y2K": "JetBrains Mono, \"SF Mono\", Monaco, Consolas, monospace"
+   },
+   "Font Family/Heading": {
+    "Y2K": "Poppins, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   }
+  },
+  "override_count": 3
+ },
+ "Gothic (Radius)": {
+  "collection": "Gothic",
+  "extends": "Radius",
+  "id": "VariableCollectionId:2043:58",
+  "modes": [
+   "Neutral",
+   "Gothic"
+  ],
+  "theme_modes": [
+   "Gothic"
+  ],
+  "overridden": {
+   "Radius/None": {
+    "Gothic": 2
+   },
+   "Radius/Inner": {
+    "Gothic": 4
+   },
+   "Radius/Element": {
+    "Gothic": 8
+   },
+   "Radius/Container": {
+    "Gothic": 12
+   },
+   "Radius/Page": {
+    "Gothic": 24
+   },
+   "Radius/Full": {
+    "Gothic": 9999
+   }
+  },
+  "override_count": 6
+ },
+ "Gothic (Typography)": {
+  "collection": "Gothic",
+  "extends": "Typography",
+  "id": "VariableCollectionId:2043:65",
+  "modes": [
+   "Neutral",
+   "Gothic"
+  ],
+  "theme_modes": [
+   "Gothic"
+  ],
+  "overridden": {
+   "Font Size/4xs": {},
+   "Font Size/3xs": {},
+   "Font Size/2xs": {},
+   "Font Size/xs": {},
+   "Font Size/sm": {},
+   "Font Size/base": {},
+   "Font Size/lg": {},
+   "Font Size/xl": {},
+   "Font Size/2xl": {},
+   "Font Size/3xl": {},
+   "Font Size/4xl": {},
+   "Font Size/5xl": {},
+   "Font Weight/Normal": {},
+   "Font Weight/Medium": {},
+   "Font Weight/Semibold": {},
+   "Font Weight/Bold": {},
+   "Line Height/Heading 1": {},
+   "Line Height/Heading 2": {},
+   "Line Height/Heading 3": {},
+   "Line Height/Heading 4": {},
+   "Line Height/Heading 5": {},
+   "Line Height/Heading 6": {},
+   "Line Height/Body": {},
+   "Line Height/Large": {},
+   "Line Height/Label": {},
+   "Line Height/Code": {},
+   "Line Height/Supporting": {},
+   "Line Height/Display 1": {},
+   "Line Height/Display 2": {},
+   "Line Height/Display 3": {},
+   "Font Family/Body": {
+    "Gothic": "Fustat, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   },
+   "Font Family/Code": {
+    "Gothic": "JetBrains Mono, \"SF Mono\", Monaco, Consolas, monospace"
+   },
+   "Font Family/Heading": {
+    "Gothic": "Fustat, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   }
+  },
+  "override_count": 3
+ },
+ "Matcha (Radius)": {
+  "collection": "Matcha",
+  "extends": "Radius",
+  "id": "VariableCollectionId:2043:69",
+  "modes": [
+   "Neutral",
+   "Matcha"
+  ],
+  "theme_modes": [
+   "Matcha"
+  ],
+  "overridden": {
+   "Radius/None": {
+    "Matcha": 0
+   },
+   "Radius/Inner": {
+    "Matcha": 6
+   },
+   "Radius/Element": {
+    "Matcha": 12
+   },
+   "Radius/Container": {
+    "Matcha": 18
+   },
+   "Radius/Page": {
+    "Matcha": 42
+   },
+   "Radius/Full": {
+    "Matcha": 9999
+   }
+  },
+  "override_count": 6
+ },
+ "Matcha (Typography)": {
+  "collection": "Matcha",
+  "extends": "Typography",
+  "id": "VariableCollectionId:2043:76",
+  "modes": [
+   "Neutral",
+   "Matcha"
+  ],
+  "theme_modes": [
+   "Matcha"
+  ],
+  "overridden": {
+   "Font Size/4xs": {},
+   "Font Size/3xs": {},
+   "Font Size/2xs": {},
+   "Font Size/xs": {},
+   "Font Size/sm": {},
+   "Font Size/base": {},
+   "Font Size/lg": {},
+   "Font Size/xl": {},
+   "Font Size/2xl": {},
+   "Font Size/3xl": {},
+   "Font Size/4xl": {},
+   "Font Size/5xl": {},
+   "Font Weight/Normal": {},
+   "Font Weight/Medium": {},
+   "Font Weight/Semibold": {},
+   "Font Weight/Bold": {},
+   "Line Height/Heading 1": {},
+   "Line Height/Heading 2": {},
+   "Line Height/Heading 3": {},
+   "Line Height/Heading 4": {},
+   "Line Height/Heading 5": {},
+   "Line Height/Heading 6": {},
+   "Line Height/Body": {},
+   "Line Height/Large": {},
+   "Line Height/Label": {},
+   "Line Height/Code": {},
+   "Line Height/Supporting": {},
+   "Line Height/Display 1": {},
+   "Line Height/Display 2": {},
+   "Line Height/Display 3": {},
+   "Font Family/Body": {
+    "Matcha": "DM Sans, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
+   },
+   "Font Family/Code": {
+    "Matcha": "JetBrains Mono, \"SF Mono\", Monaco, Consolas, monospace"
+   },
+   "Font Family/Heading": {
+    "Matcha": "Playwrite US Trad, Georgia, \"Times New Roman\", Times, serif"
+   }
+  },
+  "override_count": 3
+ }
+}
