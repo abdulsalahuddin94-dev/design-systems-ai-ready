@@ -139,6 +139,7 @@ tr.total td{border-bottom:0;font-weight:600}
 .link .u{font:400 15px var(--mono);color:var(--accent);word-break:break-all}
 .link p{color:var(--muted);font-size:18px}
 .link h3::after{content:" ↗";color:var(--accent)}
+.link.inner h3::after{content:" →"}
 
 /* Chart */
 .chart{display:flex;flex-direction:column;gap:14px}
@@ -158,6 +159,38 @@ tr.total td{border-bottom:0;font-weight:600}
 .value{display:grid;grid-template-columns:repeat(3,1fr);gap:26px}
 .value .card h3{font-size:24px}
 .big{font:800 140px/0.9 var(--display);letter-spacing:-.04em;color:var(--accent)}
+
+
+/* Workflow map slide */
+.map{padding-top:70px}
+.maphead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin-bottom:22px;flex-wrap:wrap}
+.opt{font:400 14px/1.3 var(--body);padding:3px 10px;border-radius:999px;border:1px solid var(--line);background:var(--bg);color:var(--fg);white-space:nowrap}
+.opt.rec{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--surface))}
+.mflow{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin-bottom:18px}
+.mst{font:inherit;color:var(--fg);text-align:left;cursor:pointer;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;position:relative}
+.mst:not(:last-child)::after{content:"→";position:absolute;right:-9px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:13px;z-index:1}
+.mst:hover{border-color:var(--accent)}
+.mst[aria-selected="true"]{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 35%,transparent)}
+.mst .n{font:500 12px var(--mono);color:var(--muted)}
+.mst .t{font:700 21px/1.1 var(--display)}
+.mst .s{font-size:13px;color:var(--muted);line-height:1.3}
+.mpanels{flex:1;min-height:0;background:var(--surface-2);border:1px solid var(--line);border-radius:6px;padding:22px 26px;overflow:auto}
+.mcols{display:grid;grid-template-columns:1fr 1fr;gap:16px 40px}
+.ms{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:11px}
+.ms li{position:relative;padding-left:24px;font-size:17px;line-height:1.35}
+.ms li::before{content:"";position:absolute;left:2px;top:6px;width:11px;height:11px;border-radius:3px;background:var(--muted);opacity:.6}
+.ms li.y::before{background:var(--accent);opacity:1}
+.ms li.c{color:var(--muted)}
+.ms li.y b{color:var(--accent);font-weight:600}
+.ms.wide li{font-size:20px}
+.ms .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.msub{font:500 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
+.mcards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.mc{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.mc .k{font:500 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.mc h3{font-size:21px}
+.mc .w{font-size:15px;color:var(--muted)}
+.mc .ms li{font-size:15px}
 
 /* Controls */
 .nav{position:fixed;right:16px;bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px;align-items:center;z-index:5}
@@ -189,6 +222,7 @@ tr.total td{border-bottom:0;font-weight:600}
   .row{grid-template-columns:1fr;gap:6px}
   .row .v{text-align:left}
   .big{font-size:80px}
+  .mflow{grid-template-columns:1fr 1fr}.mst::after{display:none}.mcols,.mcards{grid-template-columns:1fr}.mpanels{padding:16px}.opt{white-space:normal}
   .nav,.progress{display:none}
 }
 </style>
@@ -317,8 +351,120 @@ tr.total td{border-bottom:0;font-weight:600}
   <div class="foot"><span>Source: intake SKILL.md, memory/decisions.md</span><span>06</span></div>
 </section>
 
+<!-- map -->
+<section class="slide map" id="s7" aria-label="Workflow map">
+  <div class="frame">⭐Setup / <b>➜ Workflow map</b></div>
+  <div class="maphead">
+    <div><div class="eyebrow">The user flow</div><h2 style="margin:0">Every stage, every question</h2></div>
+    <div class="legend"><span><i style="background:var(--accent)"></i>You decide or do it</span><span><i style="background:var(--muted);opacity:.6"></i>Claude does it</span><span class="opt rec">Recommended</span></div>
+  </div>
+  <div class="mflow" role="tablist" aria-label="Workflow stages">
+    <button type="button" class="mst" role="tab" data-p="m1" aria-selected="true"><span class="n">1</span><span class="t">Start</span><span class="s">Tools check, quick or full</span></button>
+    <button type="button" class="mst" role="tab" data-p="m2" aria-selected="false"><span class="n">2</span><span class="t">Intake</span><span class="s">Project, platform, settings</span></button>
+    <button type="button" class="mst" role="tab" data-p="m3" aria-selected="false"><span class="n">3</span><span class="t">Path</span><span class="s">Scenario A, B, C or D</span></button>
+    <button type="button" class="mst" role="tab" data-p="m4" aria-selected="false"><span class="n">4</span><span class="t">Foundation</span><span class="s">Checkpoint 1</span></button>
+    <button type="button" class="mst" role="tab" data-p="m5" aria-selected="false"><span class="n">5</span><span class="t">Components</span><span class="s">Checkpoint 2</span></button>
+    <button type="button" class="mst" role="tab" data-p="m6" aria-selected="false"><span class="n">6</span><span class="t">Screens</span><span class="s">Checkpoint 3, optional</span></button>
+    <button type="button" class="mst" role="tab" data-p="m7" aria-selected="false"><span class="n">7</span><span class="t">Finish</span><span class="s">Audit, skills, Storybook</span></button>
+  </div>
+  <div class="mpanels">
+    <div class="mp" id="m1" role="tabpanel">
+      <div class="mcols">
+        <ol class="ms">
+          <li class="c">Checks which Figma tools are installed and connected. If none, it stops and helps you install one.</li>
+          <li class="y"><b>Pick the Figma tool</b> (only if both are installed)<div class="opts"><span class="opt rec">FigCli Yolo</span><span class="opt">Figma Desktop Bridge</span></div></li>
+          <li class="y"><b>Quick task or full project?</b><div class="opts"><span class="opt">Quick task on this file</span><span class="opt">Full project setup</span></div></li>
+        </ol>
+        <div><p class="msub">Quick task</p>
+        <ol class="ms">
+          <li class="y"><b>What should I do?</b><div class="opts"><span class="opt">Build one component</span><span class="opt">Audit a file or page</span><span class="opt">Fix one thing</span></div></li>
+          <li class="c">Does the task, then audits every variant in Light and Dark.</li>
+          <li class="y"><b>Approve the result</b><div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></li>
+        </ol></div>
+      </div>
+    </div>
+    <div class="mp" id="m2" role="tabpanel" hidden>
+      <div class="mcols">
+        <ol class="ms">
+          <li class="y"><b>Which project?</b><div class="opts"><span class="opt">An existing project</span><span class="opt">Start a new project</span></div></li>
+          <li class="y"><b>Existing project: resume</b> ("Last time … Next step …")<div class="opts"><span class="opt rec">Continue</span><span class="opt">Something else</span></div></li>
+          <li class="y"><b>Project name and Figma links</b> (typed)</li>
+          <li class="y"><b>Platform</b><div class="opts"><span class="opt">Web</span><span class="opt">iOS</span><span class="opt">Android</span><span class="opt">Both</span></div></li>
+          <li class="y"><b>Both mobile platforms: how?</b><div class="opts"><span class="opt">Native (two DS files)</span><span class="opt">Cross-platform (one DS)</span><span class="opt">Mobile Adaptive (one file)</span></div></li>
+          <li class="c">Creates the project folder and shows the Inputs path: Brand, Inspiration, Screens, Research</li>
+          <li class="y"><b>Add your files</b><div class="opts"><span class="opt">I added files, read them</span><span class="opt">Don't have inputs</span><span class="opt">Later</span></div></li>
+          <li class="y"><b>What do you start from?</b> (stage 3)<div class="opts"><span class="opt">Greenfield</span><span class="opt">Brownfield</span><span class="opt">Code to Design</span></div></li>
+        </ol>
+        <ol class="ms">
+          <li class="y"><b>Confirm what Claude found</b>: modes, RTL, fonts, icons, brand color<div class="opts"><span class="opt rec">Use these</span><span class="opt">Change something</span></div></li>
+          <li class="c">Asks only what was not found:</li>
+          <li class="y"><b>Color modes</b><div class="opts"><span class="opt rec">Light and Dark</span><span class="opt">Light only</span><span class="opt">Dark only</span></div></li>
+          <li class="y"><b>Arabic / RTL, then fonts</b><div class="opts"><span class="opt">No</span><span class="opt">Yes</span><span class="opt rec">Platform default font</span><span class="opt">Brand font</span></div></li>
+          <li class="y"><b>Icon library</b> (fetched and built by the workflow)<div class="opts"><span class="opt rec">Platform default</span><span class="opt">Already in the Figma project</span><span class="opt">Phosphor, Tabler, Heroicons, Remix</span></div></li>
+          <li class="y"><b>Storybook and example screens?</b><div class="opts"><span class="opt rec">Yes, after components</span><span class="opt">Later</span><span class="opt">No</span></div></li>
+          <li class="y"><b>Approve the Intake Summary</b> (before any Figma work)<div class="opts"><span class="opt rec">Yes, start</span><span class="opt">Change something</span></div></li>
+        </ol>
+      </div>
+    </div>
+    <div class="mp" id="m3" role="tabpanel" hidden>
+      <div class="mcards">
+        <div class="mc"><span class="k">Scenario A · Greenfield</span><h3>New product</h3><p class="w">Nothing designed yet.</p>
+          <ol class="ms"><li class="y"><b>Start from</b> scratch, your AI-ready DS, or a reference template</li><li class="c">Reads your brand and inspiration files, or asks a brand color and industry</li><li class="c">Builds the DS in build order</li></ol></div>
+        <div class="mc"><span class="k">Scenario B · Brownfield</span><h3>Screens, no DS</h3><p class="w">Screens or screenshots exist in Figma.</p>
+          <ol class="ms"><li class="c">Extracts colors, fonts, spacing from the screens</li><li class="y"><b>Approve the merges</b>, create the DS file</li><li class="c">Builds the DS, then rebuilds the screens on it</li></ol></div>
+        <div class="mc"><span class="k">Scenario C · Brownfield</span><h3>Imperfect DS + screens</h3><p class="w">A DS exists but screens follow it partly.</p>
+          <ol class="ms"><li class="y"><b>Where is the DS?</b> Own library, or inside the Design file</li><li class="c">Maps variables, fixes the DS, audits each screen</li><li class="y"><b>Approve the fixes</b>, publish, Accept updates</li></ol></div>
+        <div class="mc"><span class="k">Scenario D · Code to Design</span><h3>Coded app</h3><p class="w">A repo is the source; Figma screens are the goal.</p>
+          <ol class="ms"><li class="y"><b>Share the repo</b>, pick existing DS or new DS from the code</li><li class="c">Reads routes, popups, states and tokens</li><li class="c">Builds every screen and popup, keeps your manual edits</li></ol></div>
+      </div>
+    </div>
+    <div class="mp" id="m4" role="tabpanel" hidden>
+      <ol class="ms wide">
+        <li class="y"><b>Open the DS file in Figma</b></li>
+        <li class="c">Primitives, then Semantics (Light / Dark)</li>
+        <li class="c">Spacing, radius and typography variables, text and effect styles</li>
+        <li class="c">Icons from the library you picked, and linked Colors / Typography pages. Fixes any gaps.</li>
+        <li class="y"><b>Approve the Foundation</b><div class="opts"><span class="opt rec">Approve, go to components</span><span class="opt">Request changes</span></div></li>
+      </ol>
+    </div>
+    <div class="mp" id="m5" role="tabpanel" hidden>
+      <ol class="ms wide">
+        <li class="c">Atoms, then Molecules, Organisms, Patterns, each with its description and real icons</li>
+        <li class="c">Audits every variant in Light and Dark</li>
+        <li class="y"><b>Approve the components</b><div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></li>
+        <li class="y"><b>One to-do list</b>: rename the file if needed, publish the library, Accept updates in the Design files<div class="opts"><span class="opt rec">All done</span><span class="opt">Some are done</span><span class="opt">Not yet</span></div></li>
+      </ol>
+    </div>
+    <div class="mp" id="m6" role="tabpanel" hidden>
+      <ol class="ms wide">
+        <li class="y"><b>Pick the Design file</b> and open it</li>
+        <li class="c">Writes a spec per screen and lists missing components</li>
+        <li class="c">Builds missing components in the DS first (you publish again)</li>
+        <li class="c">Builds each screen section by section, compares it side by side, audits it</li>
+        <li class="y"><b>Approve the screens</b><div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></li>
+      </ol>
+    </div>
+    <div class="mp" id="m7" role="tabpanel" hidden>
+      <div class="mcols">
+        <ol class="ms">
+          <li class="c">Final audit of the DS and every changed Design file</li>
+          <li class="c">Writes the project skills and the changelog</li>
+        </ol>
+        <div><p class="msub">Storybook (if you said Yes)</p>
+        <ol class="ms">
+          <li class="y"><b>Allow the install</b><div class="opts"><span class="opt">Yes, install</span><span class="opt">Not now</span></div></li>
+          <li class="c">Builds the Storybook: welcome page, foundations, a docs page per component</li>
+          <li class="y"><b>How should developers open it?</b><div class="opts"><span class="opt rec">Public link on GitHub Pages</span><span class="opt">Private link with Chromatic</span><span class="opt">Keep it local</span></div></li>
+          <li class="c">Later Figma changes: asks you to update the Storybook at the next session</li>
+        </ol></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>Back is offered on every menu except the first question</span><span>07</span></div>
+</section>
+
 <!-- 7 -->
-<section class="slide" id="s7" aria-label="Methods">
+<section class="slide" id="s8" aria-label="Methods">
   <div class="frame">⭐Setup / <b>➜ Methods</b></div>
   <div class="eyebrow">Rules the agent cannot skip</div>
   <h2>Strict tokens, strict Atomic Design</h2>
@@ -347,11 +493,11 @@ tr.total td{border-bottom:0;font-weight:600}
   <div class="under" style="margin-top:auto">
     <span class="chip">Fix on create</span><span class="chip">Contrast checked per mode</span><span class="chip">Platform naming: Tailwind · HIG · md.sys</span><span class="chip">One docs source per component</span>
   </div>
-  <div class="foot"><span>Source: Main Skills, memory/decisions.md (96 rules)</span><span>07</span></div>
+  <div class="foot"><span>Source: Main Skills, memory/decisions.md (96 rules)</span><span>08</span></div>
 </section>
 
 <!-- 8 -->
-<section class="slide" id="s8" aria-label="Technology">
+<section class="slide" id="s9" aria-label="Technology">
   <div class="frame">⭐Setup / <b>➜ Technology</b></div>
   <div class="eyebrow">Stack</div>
   <h2>What it runs on</h2>
@@ -374,11 +520,11 @@ tr.total td{border-bottom:0;font-weight:600}
       <li><b>Storybook + GitHub Pages</b><span>Live docs, Dark and Arabic RTL, SwiftUI and Compose names</span></li>
     </ul></div>
   </div>
-  <div class="foot"><span>Source: .claude/, tools/, Figma_Tools/README.md</span><span>08</span></div>
+  <div class="foot"><span>Source: .claude/, tools/, Figma_Tools/README.md</span><span>09</span></div>
 </section>
 
 <!-- 9 -->
-<section class="slide" id="s9" aria-label="Delivered">
+<section class="slide" id="s10" aria-label="Delivered">
   <div class="frame">⭐Data display / <b>➜ Delivered work</b></div>
   <div class="eyebrow">Already built with the workflow</div>
   <h2>Two real systems, end to end</h2>
@@ -404,25 +550,25 @@ tr.total td{border-bottom:0;font-weight:600}
       <p style="font-size:21px">One component per thing. Light/Dark, iOS/Android and English/Arabic all switch from modes, never from variants. Audit clean.</p>
     </div>
   </div>
-  <div class="foot"><span>Source: project CHANGELOGs, pilot findings.md</span><span>09</span></div>
+  <div class="foot"><span>Source: project CHANGELOGs, pilot findings.md</span><span>10</span></div>
 </section>
 
 <!-- 10 -->
-<section class="slide" id="s10" aria-label="Live examples">
+<section class="slide" id="s11" aria-label="Live examples">
   <div class="frame">⭐Data display / <b>➜ Live examples</b></div>
   <div class="eyebrow">Open these during the talk</div>
   <h2>See it running</h2>
   <div class="links grow">
     <a class="link" href="https://abdulsalahuddin94-dev.github.io/clinicsoft-design-system/" target="_blank" rel="noopener"><span class="tag">Storybook · Web</span><h3>ClinicSoft design system</h3><p>33 components with docs pages, states and foundations.</p><span class="u">abdulsalahuddin94-dev.github.io/clinicsoft-design-system</span></a>
     <a class="link" href="https://abdulsalahuddin94-dev.github.io/native-one-file-pilot-design-system/" target="_blank" rel="noopener"><span class="tag">Storybook · iOS + Android</span><h3>Native One File Pilot</h3><p>Switch platform, Dark mode and Arabic RTL from the toolbar.</p><span class="u">abdulsalahuddin94-dev.github.io/native-one-file-pilot-design-system</span></a>
-    <a class="link" href="https://claude.ai/artifact/4SP3tJtmS1qw1y9p5Yqkbg" target="_blank" rel="noopener"><span class="tag">Workflow map</span><h3>Every stage, every question</h3><p>The full user flow from intake to final audit, tap a stage to expand it.</p><span class="u">claude.ai/artifact/4SP3tJtmS1qw1y9p5Yqkbg</span></a>
+    <a class="link inner" href="#s7"><span class="tag">Workflow map · in this deck</span><h3>Every stage, every question</h3><p>The full user flow from intake to final audit. Opens slide 7, tap a stage to see its steps.</p><span class="u">Go to slide 7</span></a>
     <a class="link" href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready" target="_blank" rel="noopener"><span class="tag">Source</span><h3>The workflow repository</h3><p>Skills, tools, reference library and rules, plus this presentation file. Clone it and run the intake.</p><span class="u">github.com/abdulsalahuddin94-dev/design-systems-ai-ready</span></a>
   </div>
-  <div class="foot"><span>Links open in a new tab</span><span>10</span></div>
+  <div class="foot"><span>Web links open in a new tab</span><span>11</span></div>
 </section>
 
 <!-- 11 -->
-<section class="slide" id="s11" aria-label="Cost to build">
+<section class="slide" id="s12" aria-label="Cost to build">
   <div class="frame">⭐Setup / <b>➜ Cost to build</b></div>
   <div class="eyebrow">What the workflow took to make</div>
   <h2>Eight days from first commit to today</h2>
@@ -436,11 +582,11 @@ tr.total td{border-bottom:0;font-weight:600}
     <div class="card"><span><span class="est">Estimate</span></span><span class="n" style="font:800 56px/1 var(--display)">~50 h</span><p>Hands-on time, from thread activity across the 8 days. Many threads ran in parallel while agents worked.</p></div>
     <div class="card"><span><span class="est">Estimate</span></span><span class="n" style="font:800 56px/1 var(--display)">~60–90 M</span><p>Tokens processed, most of it cached context re-read between steps. The usage dashboard has the exact figure.</p></div>
   </div>
-  <div class="foot"><span>Counted: git log, project threads. Estimates marked in amber.</span><span>11</span></div>
+  <div class="foot"><span>Counted: git log, project threads. Estimates marked in amber.</span><span>12</span></div>
 </section>
 
 <!-- 12 -->
-<section class="slide" id="s12" aria-label="Time saved">
+<section class="slide" id="s13" aria-label="Time saved">
   <div class="frame">⭐Setup / <b>➜ Time saved</b></div>
   <div class="eyebrow">One Web design system: ~33 components, 10 screens <span class="est" style="margin-left:10px">Estimate</span></div>
   <h2 style="margin-bottom:26px">From about 7 weeks to about 4 days</h2>
@@ -455,11 +601,11 @@ tr.total td{border-bottom:0;font-weight:600}
     <div class="row" style="border-top:1px solid var(--line);padding-top:12px"><div class="lbl">Total</div><div class="muted" style="font-size:17px">≈ 37 working days → ≈ 4 working days, about 89% less</div><div class="v">296 h → <b>34 h</b></div></div>
   </div>
   <p class="muted" style="font-size:15px;margin-top:auto">Basis: ClinicSoft (33 components, 434 variants, 2 screens, Storybook) was built in one trial run of about two working days, including fixing the workflow itself. Manual hours assume about 4 hours per component set with variants, states and docs. Real numbers get logged per phase on the next project.</p>
-  <div class="foot"><span>Estimates, to be replaced by measured phase times</span><span>12</span></div>
+  <div class="foot"><span>Estimates, to be replaced by measured phase times</span><span>13</span></div>
 </section>
 
 <!-- 13 -->
-<section class="slide" id="s13" aria-label="Value">
+<section class="slide" id="s14" aria-label="Value">
   <div class="frame">⭐Setup / <b>➜ The real value</b></div>
   <div class="eyebrow">Why it matters for the company</div>
   <div style="display:flex;gap:56px;align-items:flex-end;margin-bottom:40px">
@@ -474,11 +620,11 @@ tr.total td{border-bottom:0;font-weight:600}
     <div class="card"><h3>Reusable for every client</h3><p>Brand-neutral. Start from a studied reference and swap the brand in minutes.</p></div>
     <div class="card"><h3>It learns</h3><p>Every mistake fixed becomes a written rule, so the next project starts better than the last.</p></div>
   </div>
-  <div class="foot"><span>AI-Ready Design Systems</span><span>13</span></div>
+  <div class="foot"><span>AI-Ready Design Systems</span><span>14</span></div>
 </section>
 
 <!-- 14 -->
-<section class="slide" id="s14" aria-label="Next">
+<section class="slide" id="s15" aria-label="Next">
   <div class="frame">⭐Setup / <b>➜ Next</b></div>
   <div class="eyebrow">What comes next</div>
   <h2>Run it on the next real project</h2>
@@ -491,14 +637,14 @@ tr.total td{border-bottom:0;font-weight:600}
     <h1 style="font-size:96px">Questions?</h1>
     <a class="repo" href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready" target="_blank" rel="noopener" style="text-align:right;margin-top:0"><span class="muted">Get the workflow and this presentation</span> github.com/abdulsalahuddin94-dev/design-systems-ai-ready ↗<span class="muted" style="display:block;margin-top:6px">docs/presentation/AI-Ready-Design-Systems.html</span></a>
   </div>
-  <div class="foot"><span>AI-Ready Design Systems</span><span>14</span></div>
+  <div class="foot"><span>AI-Ready Design Systems</span><span>15</span></div>
 </section>
 
 </div></div>
 
 <nav class="nav" aria-label="Slide controls">
   <button type="button" id="prev" aria-label="Previous slide">←</button>
-  <span class="count" id="count">1 / 14</span>
+  <span class="count" id="count">1 / 15</span>
   <button type="button" id="next" aria-label="Next slide">→</button>
   <button type="button" id="full" aria-label="Full screen">Full screen</button>
 </nav>
@@ -531,6 +677,18 @@ tr.total td{border-bottom:0;font-weight:600}
     if(['ArrowRight','PageDown',' '].indexOf(e.key)>-1){e.preventDefault();show(i+1)}
     else if(['ArrowLeft','PageUp'].indexOf(e.key)>-1){e.preventDefault();show(i-1)}
     else if(e.key==='Home'){show(0)} else if(e.key==='End'){show(slides.length-1)}
+  });
+  document.querySelectorAll('.mst').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.mst').forEach(function(o){o.setAttribute('aria-selected',o===b?'true':'false')});
+      document.querySelectorAll('.mp').forEach(function(p){p.hidden=(p.id!==b.dataset.p)});
+    });
+  });
+  document.querySelectorAll('a[href^="#s"]').forEach(function(a){
+    a.addEventListener('click',function(e){
+      if(window.innerWidth<=820)return;
+      e.preventDefault(); show(parseInt(a.getAttribute('href').slice(2),10)-1);
+    });
   });
   window.addEventListener('resize',fit); fit();
 })();
