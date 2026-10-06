@@ -6,6 +6,7 @@
    "figma-generate-design",
    "figma-use",
    "ui-ux-pro-max",
+   "impeccable",
    "audit-design-system"
   ],
   "frames": {
@@ -22,6 +23,7 @@
     812
    ]
   },
+  "frame_rule": "Desktop 1440 wide, height at least 900, default 1024; Mobile 375 x 812; Brownfield keeps designed sizes (Design_System_Intake_Skill section 7d)",
   "dark_mode": "duplicate the frame and set the Semantic / Schemes mode to Dark; never duplicate components"
  },
  "templates": {

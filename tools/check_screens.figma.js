@@ -10,6 +10,8 @@
 //   - bars: app bars / mini player / navigation that are not full-bleed (narrower than the screen)
 //   - unboundFrame: raw fill, padding or gap on the screen frame itself
 //   - counts: instances per component (compare with the item counts in the screen spec)
+//   - frameSize: screen frame outside section 7d (Mobile 375 x 812; Desktop 1440 wide, height 900+, default 1024).
+//     Brownfield screens that keep their designed size are expected here: list them, do not fix them.
 // SCOPE: a section or frame name holding the screens, or 'page' for every top-level frame on the current page.
 const SCOPE = 'page';
 
@@ -19,11 +21,19 @@ const PLACEHOLDERS = ['label', 'filter', 'title', 'track title', 'subtitle', 'te
 const BAR_WORDS = ['app bar', 'top bar', 'navigation bar', 'bottom navigation', 'tab bar', 'status bar', 'toolbar', 'button docked'];
 const PAD = ['paddingLeft', 'paddingRight', 'paddingTop', 'paddingBottom', 'itemSpacing'];
 
+function frameSize(s) {
+  const w = Math.round(s.width), h = Math.round(s.height);
+  if (w === 375) return h === 812 ? null : 'Mobile ' + w + 'x' + h + ', expected 375x812 (long-scroll frame only when the user asked for one)';
+  if (w === 1440) return h >= 900 ? null : 'Desktop ' + w + 'x' + h + ', height below 900 (default 1024)';
+  return w + 'x' + h + ': not 375 or 1440 wide (ok only for Brownfield designed sizes)';
+}
+
 function box(n) { return n.absoluteBoundingBox || { x: n.x, y: n.y, width: n.width, height: n.height }; }
 
 async function checkScreen(screen) {
   const r = { screen: screen.name, size: Math.round(screen.width) + 'x' + Math.round(screen.height),
-    placeholders: [], repeatedTexts: [], overflow: [], squashed: [], bars: [], unboundFrame: [], counts: {} };
+    placeholders: [], repeatedTexts: [], overflow: [], squashed: [], bars: [], unboundFrame: [], counts: {}, frameSize: null };
+  r.frameSize = frameSize(screen);
   const sb = box(screen);
 
   const bv = screen.boundVariables || {};
@@ -66,7 +76,7 @@ async function checkScreen(screen) {
     if (out && !clipped && !belowOnly) r.overflow.push(n.name + ' (' + Math.round(b.width) + 'x' + Math.round(b.height) + ')');
   });
   r.overflow = r.overflow.slice(0, 20);
-  r.issues = r.placeholders.length + r.repeatedTexts.length + r.overflow.length + r.squashed.length + r.bars.length + r.unboundFrame.length;
+  r.issues = r.placeholders.length + r.repeatedTexts.length + r.overflow.length + r.squashed.length + r.bars.length + r.unboundFrame.length + (r.frameSize ? 1 : 0);
   return r;
 }
 
