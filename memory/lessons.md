@@ -39,3 +39,9 @@ These rules live in the one Storybook skill and its shared generator and templat
 4. **Dark mode unreadable.** Docs headings, MDX text, cards and Storybook's ArgTypes tables stayed light-themed on a dark page.
    Cause: fixed light fallbacks when the DS had no token with the expected name, and blocks outside the DS colors. Rule: docs colors fall back to mixes of the DS text and background; MDX and ArgTypes take the DS colors. Check: `mode_check.js` `unreadableCount` 0 in every mode.
 5. **Reported done after checking only Light / EN.** Rule: every docs page is checked in every combination of the toolbar modes before a Storybook is called done, plus one Dark and one RTL screenshot.
+
+## 2026-10-07 — Financials source charts and Yolo audits (Codex)
+- Figma instances reject vector path geometry changes. Build source geometry as editable mark masters in the authorized library page and nest their instances in chart organisms; split source mark sets below 30 variants. Never detach or flatten the screen.
+- A variable paint with a black fallback may render black when rebinding the same alias on an instance. `DS.paint(name, consumer)` must resolve the current consumer mode and supply the resolved RGB fallback while retaining the alias. Check Light and Dark screenshots.
+- FigCli Yolo truncates eval output at 20,000 characters and appends non-JSON text. Return compact audit counts/registry or chunk results. Validate saved JSON before using it as evidence; truncated files are not audit reports.
+- Changing a shared BOOLEAN property reference on one variant can change its shared default. Set the intended set default explicitly, then override Show Icon on screen/sample instances. Visually check both Card and Strip.
