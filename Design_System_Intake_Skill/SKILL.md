@@ -63,11 +63,7 @@ Figma work needs **one** of two tools, plus the Figma Desktop app open. Guide fo
 - When Figma reopens after the patch, the Desktop Bridge plugin may disconnect; if both tools are in use, ask the user to run it again.
 
 Checks, in order (detect first, ask later):
-0. **Python 3?** The scripts in `tools/` (including check 1) need it. The session-start hook says "Python 3 was not found" when it is missing; otherwise run `py -3 --version` (Windows) or `python3 --version`. Missing -> before any other check, say in one line that the workflow's scripts need Python 3 and Claude can install it, then Ask (choice): "Install Python 3 now?" "Install now (Recommended)" (description: Claude runs the installer; you approve the command) / "I'll install it myself" (description: python.org, tick Add python.exe to PATH) / "Later" (description: Figma work continues; token, recolor and Storybook scripts are skipped). Install now, only after that yes:
-   - Windows: `winget install -e --id Python.Python.3.12 --scope user --accept-package-agreements --accept-source-agreements --override "/quiet InstallAllUsers=0 PrependPath=1 Include_launcher=1"`. No winget -> give https://www.python.org/downloads/ with "tick Add python.exe to PATH".
-   - macOS: `brew install python` (no Homebrew -> the python.org installer).
-   - Then: the new PATH reaches Claude only after a restart, so ask the user to quit Claude Code fully and open it again, and stop until they are back. If `python` still opens the Microsoft Store or says "Python was not found", they turn off `python.exe` and `python3.exe` in Settings > Apps > Advanced app settings > App execution aliases. Until then run scripts with `py -3` instead of `python`.
-   Later / myself -> carry on; skip check 1's script (say so) and any step that needs a `tools/*.py` script, naming it. The hooks never need Python.
+0. **Machine setup?** The SessionStart hook `.claude/hooks/setup_check.cjs` checks the tools in `tools/dependencies.json` (Node.js, Python 3, Git, Figma Desktop) once per machine and records them. If the session-start context says something is missing, follow `steps/machine-setup.md` before any other check: one menu (Set up now (Recommended) / I'll install them myself / Later), installs only after the yes, then a Claude Code restart. Nothing said -> everything is installed; do not check again.
 1. **Installed?** Run `python tools/figma_tools_check.py` (read-only), and search this session for `figma_get_status`. Desktop Bridge counts as installed when the MCP server is configured; FigCli counts when its folder has `node_modules` and `--version` works. The script also says whether port 9222 is open (Figma running patched for Yolo). Say the result in one line.
 2. **None installed** -> **stop**. Do not ask intake questions yet. Point to `Figma_Tools/README.md`, explain that at least one tool is needed, and offer to help install in this session. Run a command such as `npm install` inside the tool folder only after the user says yes. The user runs the Yolo patch, adds the MCP server and creates the Figma token themselves (`steps/preflight-install.md`). Recommend FigCli in **Yolo mode**, with its risks in two lines; the Desktop Bridge is the alternative; never Safe or Browser mode. Then Ask (choice): "Tell me when the tools are installed." "Installed, check again" / "Help me install" (description: walk through `Figma_Tools/README.md` step by step).
 3. **One installed** -> no tool question. Say in one line which one was found and that you will use it; mention once that the other can be added later (`Figma_Tools/README.md`). Never offer a tool that is not installed.
@@ -109,6 +105,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 
 | Section | File | Load when |
 |---|---|---|
+| 0b check 0 | `steps/machine-setup.md` | the session-start context says machine dependencies are missing |
 | 0b install steps | `steps/preflight-install.md`, `Figma_Tools/README.md` | preflight finds no tool installed or none connected |
 | 1.3-1.5 detail | `steps/both-native.md` | 1.2 = Both |
 | 1.6 Mobile Adaptive | `steps/mobile-adaptive.md` | 1.3 = Mobile Adaptive |
@@ -207,7 +204,7 @@ Platform rules (never mix):
 ### Decision tree
 
 ```
-Tools preflight (0b) -> Python 3? No -> offer install (Install now / myself / Later) -> which Figma tools are installed? None -> stop, Figma_Tools/README.md; both -> tool question 0.0t after 0.0; then connected? No -> stop
+Tools preflight (0b) -> machine setup missing something? -> steps/machine-setup.md (Set up now / myself / Later) -> which Figma tools are installed? None -> stop, Figma_Tools/README.md; both -> tool question 0.0t after 0.0; then connected? No -> stop
 Intake basics 0.0-0.2 (existing project: resume line, Continue / Something else) -> Platform (1.1-1.6) -> load platform Main Skill(s) -> folder + Inputs 0.3-0.3b -> path 2.1 (below) -> prefill 0.3c -> 0.4-0.8 (Greenfield: only what the files did not answer; Brownfield / Code to Design: 0.4-0.6b confirmed from the source later)
    └─ Greenfield or Brownfield? (2.1)
       ├─ Greenfield

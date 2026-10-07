@@ -9,8 +9,7 @@
 // Reads the rules at run time, so editing rules.json changes what is enforced.
 const fs = require("fs");
 const path = require("path");
-const { readInput } = require("./_stdin.cjs");
-const { WRITE: ANY_WRITE } = require("./audit_reminder.cjs"); // broad write-API pattern
+const { readInput, WRITE: ANY_WRITE } = require("./_common.cjs"); // broad write-API pattern
 
 const ROOT = path.join(__dirname, "..", "..");
 const WRITE = new RegExp(

@@ -1,0 +1,55 @@
+{
+  "_help": "Machine dependencies of the workflow. .claude/hooks/setup_check.cjs checks them at session start once per machine and records the result in .claude/.state/machine-setup.json (git-ignored). Editing this file makes every machine check again. Install commands run only after the user's yes (Design_System_Intake_Skill/steps/machine-setup.md). Node.js is the one thing a user installs before anything else: the hooks themselves run on it.",
+  "dependencies": [
+    {
+      "id": "node",
+      "name": "Node.js 18+",
+      "why": "hooks, FigCli, Storybook",
+      "min_version": "18",
+      "check": { "commands": [["node", "--version"]] },
+      "install": {
+        "win32": "winget install -e --id OpenJS.NodeJS.LTS --accept-package-agreements --accept-source-agreements",
+        "darwin": "brew install node",
+        "manual": "https://nodejs.org/en/download"
+      }
+    },
+    {
+      "id": "python",
+      "name": "Python 3",
+      "why": "scripts in tools/ (tokens, recolor, project status, Storybook sync, Figma tools check)",
+      "min_version": "3.8",
+      "check": { "commands": [["py", "-3", "--version"], ["python3", "--version"], ["python", "--version"]] },
+      "install": {
+        "win32": "winget install -e --id Python.Python.3.12 --scope user --accept-package-agreements --accept-source-agreements --override \"/quiet InstallAllUsers=0 PrependPath=1 Include_launcher=1\"",
+        "darwin": "brew install python",
+        "manual": "https://www.python.org/downloads/ (Windows: tick Add python.exe to PATH)"
+      },
+      "note_win32": "If `python` still opens the Microsoft Store after the install, turn off python.exe and python3.exe in Settings > Apps > Advanced app settings > App execution aliases."
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "why": "handoff check (git log), project repos; on Windows it also gives Claude Code its Bash shell",
+      "check": { "commands": [["git", "--version"]] },
+      "install": {
+        "win32": "winget install -e --id Git.Git --accept-package-agreements --accept-source-agreements",
+        "darwin": "xcode-select --install",
+        "manual": "https://git-scm.com/downloads"
+      }
+    },
+    {
+      "id": "figma",
+      "name": "Figma Desktop",
+      "why": "every Figma tool (the web app is not enough)",
+      "check": { "paths": {
+        "win32": ["%LOCALAPPDATA%\\Figma\\Figma.exe", "%LOCALAPPDATA%\\Figma\\app.exe", "%ProgramFiles%\\Figma\\Figma.exe"],
+        "darwin": ["/Applications/Figma.app", "~/Applications/Figma.app"]
+      } },
+      "install": {
+        "win32": "winget install -e --id Figma.Figma --accept-package-agreements --accept-source-agreements",
+        "darwin": "brew install --cask figma",
+        "manual": "https://www.figma.com/downloads/"
+      }
+    }
+  ]
+}

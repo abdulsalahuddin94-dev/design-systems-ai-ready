@@ -115,7 +115,7 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Never install tools or packages on Abdul's behalf; show the steps or ask first.
 - Paths in skills, briefs, memory and data are relative to the Root. A hook blocks absolute machine paths.
 - Hooks are Node.js only (`.claude/hooks/*.cjs`, run with `node`), never Python: a fresh Windows machine has no Python and its `python` alias fails (2026-10-07). A hook that uses an optional tool skips that part silently when it is missing.
-- Missing Python 3 (Abdul, 2026-10-07): Claude offers to install it at intake 0b check 0 and runs the installer only after the user's yes.
+- Machine setup (Abdul, 2026-10-07): the tools a machine needs are listed once in `tools/dependencies.json`, checked at session start until all are found, then recorded per machine and not checked again. Missing ones are offered as one "Set up now" menu (intake 0b check 0, `steps/machine-setup.md`) and installed only after the user's yes.
 - Local git repo only; do not push or create a remote without asking.
 
 ## Storybook (2026-09-30)
