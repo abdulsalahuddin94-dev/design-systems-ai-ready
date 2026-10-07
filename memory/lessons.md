@@ -45,3 +45,10 @@ These rules live in the one Storybook skill and its shared generator and templat
 - A variable paint with a black fallback may render black when rebinding the same alias on an instance. `DS.paint(name, consumer)` must resolve the current consumer mode and supply the resolved RGB fallback while retaining the alias. Check Light and Dark screenshots.
 - FigCli Yolo truncates eval output at 20,000 characters and appends non-JSON text. Return compact audit counts/registry or chunk results. Validate saved JSON before using it as evidence; truncated files are not audit reports.
 - Changing a shared BOOLEAN property reference on one variant can change its shared default. Set the intended set default explicitly, then override Show Icon on screen/sample instances. Visually check both Card and Strip.
+
+## Financials fidelity repairs — Codex, 2026-10-07
+- Reuse existing Badge variants without paint overrides. Reset overrides before swapping the main component; resetting after swap restores the former main. Verify visible text and translucent fills in screenshots.
+- Load only required font family/styles and cache loaded fonts; loading all available Poppins variants can timeout and trigger duplicate CLI retries.
+- Set nested label text to HUG/auto width before composing a compact switcher. Check native-scale screenshots as well as geometry bounds.
+- Snapshot component variant names before adding a new axis; variantProperties can fail while siblings are temporarily inconsistent.
+- The screen checker must ignore invisible placeholder text and accept the genuine Filter label in known filter controls; all other visible placeholders remain findings.

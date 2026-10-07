@@ -50,8 +50,8 @@ async function checkScreen(screen) {
     const comp = main ? (main.parent && main.parent.type === 'COMPONENT_SET' ? main.parent.name : main.name) : inst.name;
     r.counts[comp] = (r.counts[comp] || 0) + 1;
 
-    const texts = inst.findAll((n) => n.type === 'TEXT').map((t) => t.characters.trim());
-    for (const t of texts) if (PLACEHOLDERS.includes(t.toLowerCase())) r.placeholders.push(comp + ': "' + t + '"');
+    const texts = inst.findAll((n) => { if (n.type !== 'TEXT') return false; for (let p = n; p && p !== screen; p = p.parent) if (p.visible === false) return false; return true; }).map((t) => t.characters.trim());
+    for (const t of texts) if (PLACEHOLDERS.includes(t.toLowerCase()) && !(t === 'Filter' && /^(search and filter|filter button)$/i.test(comp))) r.placeholders.push(comp + ': "' + t + '"');
     const key = (inst.parent ? inst.parent.id : '') + '|' + comp;
     (groups[key] = groups[key] || []).push(texts.join(' / '));
 
@@ -93,3 +93,5 @@ if (SCOPE === 'page') {
 const results = [];
 for (const s of screens) results.push(await checkScreen(s));
 return { screens: results.length, totalIssues: results.reduce((a, r) => a + r.issues, 0), results };
+
+
