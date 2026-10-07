@@ -40,7 +40,7 @@ It checks which Figma tools are installed first (FigCli = figma-cli, Yolo mode R
 
 Knowledge base (exact values, read these instead of re-deriving or re-reading Figma): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`).
 
-Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step and for weekly drift), `token-extractor` (Figma variables or screens to `data/tokens.json`), `docs-writer` (skills, registry and usage docs from Figma). Hooks in `.claude/settings.json` block absolute paths in files and remind you to run the audit after Figma changes. Weekly drift audit definition: `.claude/scheduled/weekly-drift-audit.md` (not enabled).
+Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step and for weekly drift), `token-extractor` (Figma variables or screens to `data/tokens.json`), `docs-writer` (skills, registry and usage docs from Figma). Hooks in `.claude/settings.json` check the machine's dependencies once (`tools/dependencies.json`), block absolute paths in files and remind you to run the audit after Figma changes. Weekly drift audit definition: `.claude/scheduled/weekly-drift-audit.md` (not enabled).
 
 Reference library: studied design systems (any company, Web / iOS / Android / cross-platform), one entry per company and platform in `references.json` (folder, Figma link, Storybook, platform default); each folder has Foundation_Skill + Component_Skills + data. Never hardcode a company name in skills, intake or docs; read the entry. How to add one: `/study-reference-ds` (`References.md` > "Adding a design system", scaffold with `tools/add_reference.py`).
 

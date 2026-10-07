@@ -2,7 +2,7 @@
 //
 // Skills, briefs, memory and data must use paths relative to the Root, so the folder
 // works on any machine. Exit code 2 blocks the write and shows the reason to Claude.
-const { readInput } = require("./_stdin.cjs");
+const { readInput } = require("./_common.cjs");
 
 const ABSOLUTE = new RegExp(
   String.raw`(?:(?<![A-Za-z0-9])[A-Za-z]:[\\/]+[A-Za-z0-9_]` + // D:\Work, C:/Users

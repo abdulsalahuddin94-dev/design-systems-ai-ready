@@ -55,7 +55,8 @@
       "Bash(python tools/new_foundation.py:*)",
       "Bash(python tools/project_status.py:*)",
       "Bash(npm run storybook:*)",
-      "Bash(npm run build-storybook:*)"
+      "Bash(npm run build-storybook:*)",
+      "Bash(node .claude/hooks/run.cjs setup_check:*)"
     ],
     "ask": [
       "Bash(npm install:*)",
@@ -67,6 +68,8 @@
       "Bash(pip install:*)",
       "Bash(python -m pip install:*)",
       "Bash(winget install:*)",
+      "Bash(xcode-select --install)",
+      "Bash(brew install:*)",
       "Bash(claude mcp add:*)",
       "Bash(git push:*)",
       "Bash(git remote add:*)",
@@ -85,7 +88,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_absolute_paths.cjs\""
+            "command": "node -e \"require(require('path').resolve(process.env.CLAUDE_PROJECT_DIR||'.','.claude/hooks/run.cjs'))\" block_absolute_paths"
           }
         ]
       },
@@ -94,7 +97,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_figma.cjs\""
+            "command": "node -e \"require(require('path').resolve(process.env.CLAUDE_PROJECT_DIR||'.','.claude/hooks/run.cjs'))\" guard_figma"
           }
         ]
       }
@@ -105,7 +108,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit_reminder.cjs\" mark"
+            "command": "node -e \"require(require('path').resolve(process.env.CLAUDE_PROJECT_DIR||'.','.claude/hooks/run.cjs'))\" audit_reminder mark"
           }
         ]
       }
@@ -115,7 +118,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit_reminder.cjs\" stop"
+            "command": "node -e \"require(require('path').resolve(process.env.CLAUDE_PROJECT_DIR||'.','.claude/hooks/run.cjs'))\" audit_reminder stop"
           }
         ]
       }
@@ -125,7 +128,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/storybook_notice.cjs\""
+            "command": "node -e \"require(require('path').resolve(process.env.CLAUDE_PROJECT_DIR||'.','.claude/hooks/run.cjs'))\" setup_check"
+          },
+          {
+            "type": "command",
+            "command": "node -e \"require(require('path').resolve(process.env.CLAUDE_PROJECT_DIR||'.','.claude/hooks/run.cjs'))\" storybook_notice"
           }
         ]
       }
