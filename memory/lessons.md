@@ -2,6 +2,9 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+## Code-to-Design source recovery (2026-10-07)
+1. **Work stopped at a remote browser failure despite an available GitHub source.** Cause: the visual comparison tool was treated as the only path to source references. Rule: continue the code inventory and component gap analysis independently; if remote preview automation fails, use the local source preview after package-install authorization. Match the repository's lockfile/tool rather than assuming npm ci can consume a Bun lockfile. Capture only after React hydration and chart animations finish; a server-rendered page can show labels while interactive charts are still blank. Check: current source commit recorded, complete chart geometry visible in source screenshots, and table counts exported from the hydrated local app. Recovery added to `Design_System_Intake_Skill/steps/code-to-design.md`.
+
 ## Hooks on a new machine (2026-10-07)
 3. **Node.js still had to be installed by hand.** The setup check runs on Node.js, so a machine without it got no offer at all; Abdul wants a non-technical user to install nothing by hand.
    Rule: `Setup-Windows.cmd` / `Setup-Mac.command` in the Root install every item of `tools/dependencies.json` with one double-click (winget / Homebrew; download pages when winget is missing). Inside Claude, a session start with no hook context means the hooks did not run: Claude checks `node --version` and installs Node.js itself after the yes (CLAUDE.md > Always start here, `steps/machine-setup.md`). Check: run `tools/setup_windows.ps1` with a tool missing: it is installed or its page opens; a new dependency needs only a `dependencies.json` entry on Windows, and the same line in `Setup-Mac.command`.

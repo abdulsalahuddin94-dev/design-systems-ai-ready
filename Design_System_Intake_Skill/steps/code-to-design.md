@@ -23,6 +23,8 @@ Ask (choice): "Which design system should the screens use?" "An existing DS" (de
    Then confirm the intake answers it holds (0.3c): post the color modes, RTL and fonts found in the code (`:root` / `.dark` or a theme switch, `dir="rtl"` or Arabic strings, the font setup), then Ask (choice): "Use these (Recommended)" / "Change something". Record them in `Project_Brief.md` with their source.
 3. The code is the source of truth for structure, texts and states. A live preview or captures of it are the **visual reference** only, never the frames: screens are always rebuilt from DS instances (section 7f). If the code has no tokens, ask for screenshots of the live app and extract from them (Brownfield type 1, section 5 step 2).
 
+**Preview recovery:** a failed remote browser session does not block reading the source, mapping tokens or inspecting the library. Use the fetched source locally for visual references when the user authorizes dependency installation; use the repository's actual package manager and lockfile (npm ci needs an npm lockfile, not bun.lock). Confirm React/native hydration and completed chart animation before capture; exported table row counts and non-empty chart geometry provide evidence that the source is fully rendered. Do not ask the user to repeatedly repair a remote browser when the authorized local source can provide the same reference. Required spec/gap approvals and fidelity comparisons still apply.
+
 ### 6a. Branch a: existing DS (only missing components go into the DS)
 
 The DS is an existing library, usually shared with other products and other designers. The screens go in a **Design file** linked to that library.
