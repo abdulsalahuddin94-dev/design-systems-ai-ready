@@ -6,7 +6,8 @@
 // intake 0.7 or when the user picks a project with pending Storybook work (trial finding 2/3). Also
 // runs the daily Storybook check (tools/project_status.py, when Python 3 is installed): projects whose
 // CHANGELOG.md has entries marked "Storybook synced: no". Output is JSON additionalContext (added to
-// the session, not shown as an error). Never fails: without Python it only adds a one-line note.
+// the session, not shown as an error). Never fails: without Python it tells Claude to offer the
+// Python install (intake 0b check 0).
 const fs = require("fs");
 const net = require("net");
 const path = require("path");
@@ -35,18 +36,19 @@ function python(code) {
   return null;
 }
 
+const NO_PYTHON =
+  "Python 3 was not found on this machine (the scripts in `tools/` need it; the hooks do not). Run intake 0b check 0 " +
+  "(Design_System_Intake_Skill/SKILL.md) before the other preflight checks: offer to install Python 3 with the user's yes.\n";
+
 function unsyncedProjects() {
   // Daily Storybook check: read each project's CHANGELOG.md only (Figma may be closed).
   const hasProjects = subdirs(path.join(ROOT, "My Projects")).some(
     (d) => path.basename(d) !== "_Project_Template" && fs.existsSync(path.join(d, "CHANGELOG.md")));
-  if (!hasProjects) return "";
-  const out = python(
-    "import json, sys; sys.path.insert(0, 'tools'); import project_status as p; " +
-    "print(json.dumps([p.pending(), p.library_pending(), p.storybook_later()], default=str))");
-  if (out === null) {
-    return "Python 3 was not found on this machine, so the daily Storybook check (tools/project_status.py) was skipped. " +
-      "Say once, in one line, that the tools in `tools/` need Python 3 (README.md > Setup) and carry on.\n";
-  }
+  const out = python(hasProjects
+    ? "import json, sys; sys.path.insert(0, 'tools'); import project_status as p; " +
+      "print(json.dumps([p.pending(), p.library_pending(), p.storybook_later()], default=str))"
+    : "print('[[], [], []]')");
+  if (out === null) return NO_PYTHON;
   let rows, libs, later;
   try { [rows, libs, later] = JSON.parse(out); } catch (e) { return ""; }
   const laterText = later.map(([rel, when]) => `- \`${rel}\`: Storybook plan is Later (ask again at: ${when}).\n`).join("");
