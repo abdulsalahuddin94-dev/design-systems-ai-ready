@@ -1,6 +1,6 @@
 // read-only
 // Binding and property-coverage check for component sets (used by ds-auditor; safe for any agent).
-// Run with figma-console `figma_execute` (paste the whole file). Reads only; guard_figma.py denies write
+// Run with figma-console `figma_execute` (paste the whole file). Reads only; guard_figma.cjs denies write
 // APIs in scripts that start with "// read-only".
 // Reports, per component set:
 //   - propertyCoverage: TEXT / BOOLEAN / INSTANCE_SWAP properties that some variants do not reference

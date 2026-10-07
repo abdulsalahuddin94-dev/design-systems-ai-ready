@@ -114,6 +114,7 @@ Web (Tailwind conventions), iOS (Apple HIG, Dynamic Type, SF Symbols), Android (
 - Figma access through figma-cli (FigCli, Yolo mode only, Recommended; never Safe or Browser mode) or figma-console-mcp (Desktop Bridge). Find nodes by name; node IDs are only valid in their original file.
 - Never install tools or packages on Abdul's behalf; show the steps or ask first.
 - Paths in skills, briefs, memory and data are relative to the Root. A hook blocks absolute machine paths.
+- Hooks are Node.js only (`.claude/hooks/*.cjs`, run with `node`), never Python: a fresh Windows machine has no Python and its `python` alias fails (2026-10-07). A hook that uses an optional tool skips that part silently when it is missing.
 - Local git repo only; do not push or create a remote without asking.
 
 ## Storybook (2026-09-30)

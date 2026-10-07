@@ -369,7 +369,7 @@
         "rule": "Never edit the original Trianglz template files. Duplicate them and work in the copy.",
         "check": "no write operation targets an original file key",
         "enforced_by": [
-          "hook:guard_figma.py (asks the user)",
+          "hook:guard_figma.cjs (asks the user)",
           "ds-auditor"
         ],
         "exception": "the user explicitly asks for a change in the original (e.g. deleting a leftover page)"
@@ -379,7 +379,7 @@
         "rule": "Never detach an instance. Use instance swaps, slots and exposed properties; if a needed swap is missing, fix the component.",
         "check": "0 detached instances; no detachInstance() in scripts",
         "enforced_by": [
-          "hook:guard_figma.py (blocks)",
+          "hook:guard_figma.cjs (blocks)",
           "ds-auditor"
         ]
       },
@@ -468,7 +468,7 @@
         "id": "relative-paths",
         "rule": "No absolute machine paths in skills, briefs, data or memory; paths are relative to the Root.",
         "enforced_by": [
-          "hook:block_absolute_paths.py"
+          "hook:block_absolute_paths.cjs"
         ]
       }
     ]

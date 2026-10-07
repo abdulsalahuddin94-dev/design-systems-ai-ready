@@ -159,7 +159,7 @@ Written once, while the component is built (before its Figma description), and t
 
 ### "Update from Figma" procedure
 Tell the user up front which file to open: "Please open '<DS file name>' in Figma Desktop and run the Desktop Bridge plugin in it.", then Ask (choice): "Done, plugin running" / "Not yet". The file is the project's `status.json > figma.design_system` (Trianglz Web: the key in `memory/references.md`). Then:
-1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original Trianglz template may be read freely; writing to it is guarded by `guard_figma.py` and never needed here.
+1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original Trianglz template may be read freely; writing to it is guarded by `guard_figma.cjs` and never needed here.
 2. **Tokens:** run the token-extractor agent (writes `data/source/` and `data/tokens.json`; fallback export: `tools/export_variables.figma.js`).
 3. `python tools/tokens_to_css.py "<folder>"` (regenerates `storybook/src/tokens/*`).
 4. `python tools/storybook_docs.py "<folder>"` (Welcome, Foundations, doc blocks), then `python tools/storybook_stories.py "<folder>"` (stories and component Docs pages from `data/component-registry.json`; refresh the registry with docs-writer first if components changed). When ➜ App Icon changed, re-export `public/app-icon/` as in section 4 step 4.
