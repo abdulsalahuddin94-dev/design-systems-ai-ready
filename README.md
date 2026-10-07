@@ -18,7 +18,9 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 - `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`.
 
 ## Setup
-1. **Install Claude Code** and Node.js 18+ (`node --version`).
+1. **Install Claude Code, Node.js 18+ and Python 3.**
+   - Node.js 18+ (`node --version`): required. The Claude hooks, FigCli and Storybook run on it.
+   - Python 3 (`python --version`, on Windows `py --version`): needed for the scripts in `tools/` (tokens, recolor, project status, Storybook sync). If it is missing, Claude offers to install it at the start of the intake (winget on Windows, Homebrew on macOS) and runs the installer only after you say yes; then restart Claude Code. Without it the workflow still opens and the hooks still work; only those scripts and the daily Storybook check are skipped. To install it yourself on Windows, use https://www.python.org/downloads/ and tick **Add python.exe to PATH**. If typing `python` opens the Microsoft Store or says "Python was not found", turn off the `python.exe` and `python3.exe` entries in Settings > Apps > Advanced app settings > App execution aliases.
 2. **Install Figma Desktop** (the web app is not enough).
 3. **Install at least one Figma tool, ideally both** (full guide: `Figma_Tools/README.md`; check with `python tools/figma_tools_check.py`). With both installed, Claude uses FigCli Yolo for everything and the Desktop Bridge only for what Yolo cannot do (creating slots):
    - **figma-console-mcp** (Desktop Bridge; works on its own for everything. With FigCli Yolo also installed, it is used only for slots): create a Figma personal access token (scopes: File content Read, File versions Read, Variables Read, Comments Read and write), then run
@@ -47,7 +49,7 @@ Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Pro
 
 None of them can edit Figma; they only have read tools.
 
-**Hooks** (`.claude/settings.json`, scripts in `.claude/hooks/`, need Python 3 on PATH).
+**Hooks** (`.claude/settings.json`, scripts in `.claude/hooks/`, run with Node.js; Python is not needed for them).
 - *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and mentions it in one line; it asks about the project first and about Storybook later (intake 0.7, or when you pick a project with pending Storybook work). The same hook is the daily Storybook check (there is no separate scheduled question): it reads each project's `CHANGELOG.md` and `status.json` (never Figma, which may be closed), lists projects whose Figma changes are not yet in Storybook and Design files that still need Accept updates for the library, and projects whose Storybook plan is Later; Claude asks whether to open the Figma plugin and update when you pick that project. Silent when everything is synced.
 - *Block absolute paths*: any write to a repo file that contains a machine path like `D:\Work\...` or `/Users/...` is stopped, so the folder keeps working on any computer.
 - *Audit reminder*: after Claude changes Figma, the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor or a Figma audit tool clears the reminder.

@@ -85,7 +85,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_absolute_paths.py\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/block_absolute_paths.cjs\""
           }
         ]
       },
@@ -94,7 +94,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_figma.py\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_figma.cjs\""
           }
         ]
       }
@@ -105,7 +105,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit_reminder.py\" mark"
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit_reminder.cjs\" mark"
           }
         ]
       }
@@ -115,7 +115,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit_reminder.py\" stop"
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/audit_reminder.cjs\" stop"
           }
         ]
       }
@@ -125,7 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/storybook_notice.py\""
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/storybook_notice.cjs\""
           }
         ]
       }
