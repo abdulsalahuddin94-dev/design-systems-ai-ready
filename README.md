@@ -15,6 +15,7 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 - `memory/`: shared project memory (decisions, references). `CLAUDE.md` imports it, so every Claude session in this folder starts with it.
 - `.claude/agents/`, `.claude/hooks/`, `.claude/settings.json`, `.claude/scheduled/`: the Claude toolkit (see below).
 - `References.md`: the reference library (entries, Figma links, how to add one) and tooling links.
+- `docs/`: pages for people, not for Claude: Getting started (with the Team guide), an interactive Workflow map, FAQ and troubleshooting, and the presentation. Start at `docs/README.md`.
 - `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`.
 
 ## Setup

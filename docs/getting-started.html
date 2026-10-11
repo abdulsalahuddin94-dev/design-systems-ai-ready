@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Getting Started</title>
+<meta name="description" content="From getting the workflow repo to your first intake question, alone or with a team.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="assets/docs.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Docs">
+  <a class="brand" href="getting-started.html">AI-Ready Design Systems · Docs</a>
+  <a href="getting-started.html" aria-current="page">Getting started</a>
+  <a href="workflow-map.html">Workflow map</a>
+  <a href="faq.html">FAQ</a>
+  <a href="presentation/AI-Ready-Design-Systems.html">Presentation</a>
+</nav>
+
+<main class="narrow">
+<header>
+  <div class="kicker">Getting started</div>
+  <h1>From zero to <em>"Start"</em></h1>
+  <p class="lead">Everything a new person does once on their computer, then how to work alone or with a team. Exact commands and versions live in the <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready/blob/master/README.md#setup" target="_blank" rel="noopener">README Setup</a>; this page is the short path through it.</p>
+</header>
+
+<section aria-labelledby="need">
+  <h2 id="need">What you need</h2>
+  <div class="cards">
+    <div class="card"><span class="k">Account</span><h3>Claude Code</h3><p>In the desktop app or the terminal. Other agents (Codex, Cursor, Gemini) also work through <code>AGENTS.md</code>.</p></div>
+    <div class="card"><span class="k">App</span><h3>Figma Desktop</h3><p>The web app is not enough: both Figma tools talk to the desktop app.</p></div>
+    <div class="card"><span class="k">Installed for you</span><h3>Node.js, Python, Git</h3><p>The setup file in step 2 installs whatever is missing.</p></div>
+  </div>
+</section>
+
+<section aria-labelledby="setup">
+  <h2 id="setup">Setup, once per computer</h2>
+  <ol class="howto">
+    <li>
+      <h3>Get the workflow</h3>
+      <p>Easiest: open Claude Code and paste the repo link <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready" target="_blank" rel="noopener">github.com/abdulsalahuddin94-dev/design-systems-ai-ready</a>, and ask it to clone it. You can also <code>git clone</code> it or download the ZIP. Any folder works, because every path inside is relative.</p>
+    </li>
+    <li>
+      <h3>Double-click the setup file</h3>
+      <p><code>Setup-Windows.cmd</code> on Windows (click <b>Yes</b> when Windows asks) or <code>Setup-Mac.command</code> on a Mac (type your password). It installs what is missing: Node.js 18+, Python 3, Git and Figma Desktop.</p>
+      <p>Skipped it? The first time you open the folder in Claude, it checks the same list and offers to install. Once everything is found, this computer is never checked again.</p>
+    </li>
+    <li>
+      <h3>Connect Figma</h3>
+      <p>You need at least one Figma tool. Paste its GitHub link to Claude and it walks you through the install.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Tool</th><th>Pick it when</th></tr></thead>
+        <tbody>
+          <tr><td><a href="https://github.com/silships/figma-cli" target="_blank" rel="noopener">FigCli, Yolo mode</a> <span class="opt rec">Recommended</span></td><td>You control the computer. Fast, no plugin to keep open, Figma can stay minimized, far fewer tokens. You run one patch command as administrator.</td></tr>
+          <tr><td><a href="https://github.com/southleft/figma-console-mcp" target="_blank" rel="noopener">Desktop Bridge</a></td><td>Patching Figma is not allowed on your computer, or you need slots (FigCli cannot create them). It does all the work on its own if it is your only tool.</td></tr>
+        </tbody>
+      </table></div>
+      <p>Risks of the Yolo patch and every install step: <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready/blob/master/Figma_Tools/README.md" target="_blank" rel="noopener">Figma_Tools/README.md</a>.</p>
+    </li>
+    <li>
+      <h3>Optional: a Figma token</h3>
+      <p>A Figma personal access token lets Claude notice edits made directly in Figma (so the Storybook can be resynced) and read file comments. You create it in Figma &gt; Settings &gt; Security and add it to the tool's config yourself; never paste it into the chat. Claude offers this once per computer.</p>
+    </li>
+    <li>
+      <h3>Say "Start"</h3>
+      <p>Open Claude Code in the workflow folder and say <b>Start</b> (or run <code>/design-system-intake</code>). Claude checks your Figma tools, then asks one question at a time with arrow-key menus. The recommended answer is always first, and every menu after the first has Back.</p>
+    </li>
+  </ol>
+</section>
+
+<section aria-labelledby="first">
+  <h2 id="first">Your first session</h2>
+  <ol class="steps">
+    <li class="you"><div><b>Quick task or full project?</b> A quick task (one component, one audit, one fix) skips the project setup. A full project builds a whole design system with three approval checkpoints.</div></li>
+    <li class="you"><div><b>Which project?</b> Start a new one, continue an existing one, or join a team project.</div></li>
+    <li class="claude">Creates <code>My Projects/&lt;Project&gt;/</code> from the template, with an <code>Inputs</code> folder for your brand files, inspiration, screens and research.</li>
+    <li class="you"><div><b>Answer the intake</b>, then approve the Intake Summary. Nothing in Figma changes before that "yes".</div></li>
+  </ol>
+  <p>Every question and stage is on the <a href="workflow-map.html">Workflow map</a>.</p>
+</section>
+
+<section aria-labelledby="team">
+  <div class="kicker">Working as a team</div>
+  <h2 id="team">Solo or <em>Team</em></h2>
+  <p>Right after the project folder is created, Claude asks once: <b>"Will anyone else work on this design system with this workflow?"</b></p>
+  <div class="cards">
+    <div class="card"><span class="k">Solo · Recommended</span><h3>Just you</h3><p>Nothing extra: no repo, nothing pushed. You can switch to Team later.</p></div>
+    <div class="card"><span class="k">Team</span><h3>One shared project</h3><p>The project folder becomes one private GitHub repo that also holds its Storybook. Everyone shares one changelog, one status and one Storybook.</p></div>
+  </div>
+
+  <h3 style="margin-top:8px">Start a team project (owner)</h3>
+  <ol class="howto">
+    <li><h3>Pick Team</h3><p>Claude asks before creating anything, then makes a private repo named <code>&lt;project&gt;-design-system</code> (or uses a repo link you give it) and pushes the project folder.</p></li>
+    <li><h3>Add your teammate</h3><p>On GitHub: the repo's Settings &gt; Collaborators. In Figma: share the DS file and the Design files with them. Claude never invites anyone for you.</p></li>
+    <li><h3>Send them the repo link</h3><p>That link is all they need to join.</p></li>
+  </ol>
+
+  <h3 style="margin-top:8px">Join a team project (teammate)</h3>
+  <ol class="howto">
+    <li><h3>Do the setup above</h3><p>Get the workflow, run the setup file, connect a Figma tool.</p></li>
+    <li><h3>Say "Start" and pick "Join a team project"</h3><p>Paste the repo link. Claude clones it into <code>My Projects/</code> under the same name your teammates use, so you never place folders by hand. If cloning fails, ask the owner to add you as a collaborator.</p></li>
+    <li><h3>Continue like any project</h3><p>You get the resume line ("Last time … Next step …") and pick your Figma tool for this computer.</p></li>
+  </ol>
+
+  <h3 style="margin-top:8px">What happens every session</h3>
+  <ol class="steps">
+    <li class="claude"><b>Start:</b> pulls teammates' work and tells you who changed what.</li>
+    <li class="claude"><b>Before editing a component:</b> locks it, so two people never change the same component. The foundation locks as one item.</li>
+    <li class="you"><div><b>A teammate holds the lock?</b> Claude says who and since when.
+      <div class="opts"><span class="opt rec">Work on something else</span><span class="opt">Wait</span><span class="opt">Take over</span></div></div></li>
+    <li class="claude"><b>After each step:</b> pushes the change and releases the lock.</li>
+    <li class="claude"><b>Pull or push blocked:</b> stops and shows you the differences. It never force-pushes or throws work away.</li>
+  </ol>
+  <p class="callout">Full rules for Claude: <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready/blob/master/Design_System_Intake_Skill/steps/team.md" target="_blank" rel="noopener">steps/team.md</a>. Stuck? See the <a href="faq.html#team">Team FAQ</a>.</p>
+</section>
+
+<section aria-labelledby="next">
+  <h2 id="next">Where to go next</h2>
+  <ul class="plain">
+    <li><a href="workflow-map.html">Workflow map</a>: every stage and question.</li>
+    <li><a href="faq.html">FAQ and troubleshooting</a>: Figma tool problems and their fixes.</li>
+    <li><a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready/blob/master/README.md#storybook-for-the-team-run-it-on-your-machine" target="_blank" rel="noopener">Run the Storybook</a> on your machine.</li>
+  </ul>
+</section>
+</main>
+
+<footer><span>AI-Ready Design Systems · Getting started</span><span>Made by Abdulrahman with Claude</span></footer>
+</body>
+</html>

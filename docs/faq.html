@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FAQ and Troubleshooting</title>
+<meta name="description" content="Recurring problems with the Figma tools, setup, team projects and Storybook, and how to fix each one.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="assets/docs.css">
+<style>.group{scroll-margin-top:16px}.empty{display:none}</style>
+</head>
+<body>
+<nav class="topnav" aria-label="Docs">
+  <a class="brand" href="getting-started.html">AI-Ready Design Systems · Docs</a>
+  <a href="getting-started.html">Getting started</a>
+  <a href="workflow-map.html">Workflow map</a>
+  <a href="faq.html" aria-current="page">FAQ</a>
+  <a href="presentation/AI-Ready-Design-Systems.html">Presentation</a>
+</nav>
+
+<main class="narrow">
+<header>
+  <div class="kicker">FAQ and troubleshooting</div>
+  <h1>When something <em>breaks</em></h1>
+  <p class="lead">The problems people hit more than once, and the fix for each. Collected from the workflow's lessons log. FigCli commands run inside your figma-cli folder.</p>
+</header>
+
+<div class="filter">
+  <input id="q" type="search" placeholder="Search, e.g. timeout, token, lock" aria-label="Search the FAQ">
+  <a href="#figcli">FigCli</a><a href="#bridge">Desktop Bridge</a><a href="#setup">Setup</a><a href="#team">Team</a><a href="#storybook">Storybook</a><a href="#workflow">Workflow</a>
+</div>
+<p class="note empty" id="none">Nothing matches. Ask Claude in the workflow folder; it reads the same lessons log.</p>
+
+<section class="group" id="figcli" aria-labelledby="h-figcli">
+  <h2 id="h-figcli">FigCli (Yolo mode)</h2>
+  <div class="faq">
+    <details class="q"><summary>Commands are slow or time out after 60 seconds</summary><div class="a">
+      <p>The FigCli daemon lost its connection token ("token mismatch"), so every command falls back to a slow direct connection.</p>
+      <p class="fix"><b>Fix:</b> run <code>node src/index.js daemon status</code>. If it is unhealthy, restart it with the same file set: <code>FIGMA_FILE="&lt;file name&gt;" node src/index.js daemon restart</code>. A restart without <code>FIGMA_FILE</code> breaks the token again on the next command.</p>
+    </div></details>
+    <details class="q"><summary>FigCli stopped working after Figma updated</summary><div class="a">
+      <p>A Figma update replaces the app, so the Yolo patch is gone.</p>
+      <p class="fix"><b>Fix:</b> open a terminal as administrator <b>inside the figma-cli folder</b>, run <code>node src/index.js connect</code>, then <code>node src/index.js daemon restart</code>.</p>
+    </div></details>
+    <details class="q"><summary>The first command after connecting fails</summary><div class="a">
+      <p>The daemon is usually still loading the open files.</p>
+      <p class="fix"><b>Fix:</b> <code>node src/index.js daemon restart</code>, then try again.</p>
+    </div></details>
+    <details class="q"><summary>Changes went to the wrong Figma file</summary><div class="a">
+      <p>With several files open, a command without <code>FIGMA_FILE</code> goes to the last connected file, not the one on your screen.</p>
+      <p class="fix"><b>Fix:</b> keep only the files you need open, and make sure the name Claude uses is unique. <code>FIGMA_FILE</code> matches part of a name, so with "Design System" and "Design System (Copy)" open, use <code>"Design System -"</code> or the full name. Claude checks the file name before every first write and writes nothing on a mismatch.</p>
+    </div></details>
+    <details class="q"><summary>Screenshots or exports come back blank or fail</summary><div class="a">
+      <p class="fix"><b>Fix:</b> bring the file to the front tab in Figma Desktop, then ask Claude to retry.</p>
+    </div></details>
+    <details class="q"><summary>An audit result looks cut off or is not valid JSON</summary><div class="a">
+      <p>FigCli cuts command output at 20,000 characters.</p>
+      <p class="fix"><b>Fix:</b> ask Claude to return counts only or split the audit by page. A truncated file is never used as an audit report.</p>
+    </div></details>
+    <details class="q"><summary>Claude Code blocks a figma-cli command</summary><div class="a">
+      <p>Auto mode may stop FigCli commands that write to Figma.</p>
+      <p class="fix"><b>Fix:</b> allow the command when Claude asks, or run it yourself.</p>
+    </div></details>
+    <details class="q"><summary>Should I use Safe mode or Browser mode?</summary><div class="a">
+      <p>No. Safe mode was not stable in testing, and Browser mode runs outside Figma Desktop. Use Yolo, or the Desktop Bridge where patching is not allowed.</p>
+    </div></details>
+    <details class="q"><summary>Is the Yolo patch safe? How do I undo it?</summary><div class="a">
+      <p>It modifies the Figma app and opens local port 9222 without a password, so any program on your computer can reach your open files while Figma runs. It is not reachable from the network. Use it on a computer you control.</p>
+      <p class="fix"><b>Undo:</b> <code>node src/index.js unpatch</code>.</p>
+    </div></details>
+  </div>
+</section>
+
+<section class="group" id="bridge" aria-labelledby="h-bridge">
+  <h2 id="h-bridge">Desktop Bridge and Figma token</h2>
+  <div class="faq">
+    <details class="q"><summary>Claude can't see the Desktop Bridge tools</summary><div class="a">
+      <p class="fix"><b>Fix:</b> restart Claude Code after adding the MCP server, then run the <b>Figma Desktop Bridge</b> plugin in your file (Plugins &gt; Development) and say "Check Figma status".</p>
+    </div></details>
+    <details class="q"><summary>The Desktop Bridge disconnected after the Yolo patch</summary><div class="a">
+      <p class="fix"><b>Fix:</b> Figma restarted, so run the Desktop Bridge plugin again in your file.</p>
+    </div></details>
+    <details class="q"><summary>Reading Figma comments fails with "401 Invalid token"</summary><div class="a">
+      <p>Comments come only from the Figma REST API, and the token is read only when Claude Code starts.</p>
+      <p class="fix"><b>Fix:</b> make sure the token has the Comments (Read) scope, then quit Claude Code fully and start a new session. You edit the token; Claude never reads or writes it.</p>
+    </div></details>
+    <details class="q"><summary>Claude never notices my manual edits in Figma</summary><div class="a">
+      <p>The edit check needs a Figma token with the File versions (Read) scope. Without one it is skipped silently.</p>
+      <p class="fix"><b>Fix:</b> set up the token when Claude offers it (once per computer). If the token is refused or the file is not found, Claude says so once: replace the token, or fix the DS file key in the project's <code>status.json</code>.</p>
+    </div></details>
+    <details class="q"><summary>Which tool creates slots?</summary><div class="a">
+      <p>Only the Desktop Bridge. With both tools installed, Claude uses FigCli for everything else and asks you to open the Desktop Bridge plugin only for slots.</p>
+    </div></details>
+  </div>
+</section>
+
+<section class="group" id="setup" aria-labelledby="h-setup">
+  <h2 id="h-setup">Setup and computer</h2>
+  <div class="faq">
+    <details class="q"><summary>"Python was not found" or a Stop hook error</summary><div class="a">
+      <p>Old versions of the workflow ran hooks with Python. Hooks now run on Node.js and skip anything optional that is missing.</p>
+      <p class="fix"><b>Fix:</b> update your copy of the workflow (<code>git pull</code>). If <code>python</code> opens the Microsoft Store, turn off <code>python.exe</code> and <code>python3.exe</code> in Settings &gt; Apps &gt; Advanced app settings &gt; App execution aliases.</p>
+    </div></details>
+    <details class="q"><summary>Node.js is missing and nothing offers to install it</summary><div class="a">
+      <p class="fix"><b>Fix:</b> double-click <code>Setup-Windows.cmd</code> or <code>Setup-Mac.command</code> in the workflow folder. If you start Claude anyway, it notices the hooks did not run and offers to install Node.js.</p>
+    </div></details>
+    <details class="q"><summary>I installed something and want the computer checked again</summary><div class="a">
+      <p class="fix"><b>Fix:</b> <code>node .claude/hooks/run.cjs setup_check --force</code>.</p>
+    </div></details>
+    <details class="q"><summary>A PowerShell installer rejects its arguments</summary><div class="a">
+      <p>With <code>powershell -File</code>, a comma list reaches the script as one string.</p>
+      <p class="fix"><b>Fix:</b> in an open PowerShell window, run <code>Set-ExecutionPolicy -Scope Process Bypass -Force;</code> and then the script with its arguments, in the same window.</p>
+    </div></details>
+    <details class="q"><summary>Where do the Figma tools go?</summary><div class="a">
+      <p>Outside the workflow folder, in a <code>Tools</code> folder at a drive root (for example <code>&lt;drive&gt;:\Tools</code>). Never copy them into the repo. Check what is installed with <code>python tools/figma_tools_check.py</code>.</p>
+    </div></details>
+  </div>
+</section>
+
+<section class="group" id="team" aria-labelledby="h-team">
+  <h2 id="h-team">Team projects</h2>
+  <div class="faq">
+    <details class="q"><summary>"Join a team project" can't clone the repo</summary><div class="a">
+      <p>The repo is private, so you need access.</p>
+      <p class="fix"><b>Fix:</b> ask the project owner to add you as a collaborator on GitHub, check the link, then pick Try again.</p>
+    </div></details>
+    <details class="q"><summary>A folder with that project name already exists</summary><div class="a">
+      <p>Claude never overwrites it. Pick "Use the existing folder", or rename the old folder first if it is not the team copy.</p>
+    </div></details>
+    <details class="q"><summary>Teammates' work was not pulled at session start</summary><div class="a">
+      <p>Your copy and GitHub have both changed, or the pull failed.</p>
+      <p class="fix"><b>Fix:</b> pick "Show me the differences" and resolve it with Claude. It never force-pushes, resets or discards work.</p>
+    </div></details>
+    <details class="q"><summary>A component is locked by a teammate</summary><div class="a">
+      <p>Claude says who holds it and since when. Work on something else, wait, or take over only when the teammate agreed or the lock is older than two days.</p>
+      <p class="fix"><b>See locks:</b> <code>node tools/team_sync.cjs "My Projects/&lt;Project&gt;" --status</code>.</p>
+    </div></details>
+    <details class="q"><summary>Can we go back to Solo?</summary><div class="a">
+      <p>Yes, tell Claude. The project stops pushing; the repo stays as it is, and deleting it is up to you.</p>
+    </div></details>
+  </div>
+</section>
+
+<section class="group" id="storybook" aria-labelledby="h-storybook">
+  <h2 id="h-storybook">Storybook</h2>
+  <div class="faq">
+    <details class="q"><summary>Storybook doesn't match Figma anymore</summary><div class="a">
+      <p class="fix"><b>Fix:</b> at the start of a session, pick the project and choose "Resync now". Claude updates it from the DS file and reruns the name and style checks; it is called synced only at 100% fidelity.</p>
+    </div></details>
+    <details class="q"><summary>The Storybook MCP doesn't show in my AI tool</summary><div class="a">
+      <p>The MCP server runs only while Storybook runs, and it is registered per computer, never committed.</p>
+      <p class="fix"><b>Fix:</b> start Storybook, then register <code>http://localhost:6006/mcp</code> once with <code>claude mcp add --transport http &lt;name&gt; http://localhost:6006/mcp --scope local</code>. Steps: <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready/blob/master/README.md#storybook-for-the-team-run-it-on-your-machine" target="_blank" rel="noopener">README</a>.</p>
+    </div></details>
+    <details class="q"><summary>The GitHub check on a team project is red</summary><div class="a">
+      <p>It reruns the Figma name check, the build and the style check on every push.</p>
+      <p class="fix"><b>Fix:</b> ask Claude to read the failing check and fix it before more Storybook work.</p>
+    </div></details>
+  </div>
+</section>
+
+<section class="group" id="workflow" aria-labelledby="h-workflow">
+  <h2 id="h-workflow">Using the workflow</h2>
+  <div class="faq">
+    <details class="q"><summary>I picked the wrong answer</summary><div class="a">
+      <p>Pick <b>Back</b> on the next menu, or type "back to 0.4" in Other. If Figma was already changed, Claude asks whether to keep that work or undo it first.</p>
+    </div></details>
+    <details class="q"><summary>I only want one component or one audit</summary><div class="a">
+      <p>Pick "Quick task" at the start, or run <code>/ds-quick &lt;task&gt;</code>. It skips the project setup but still audits the result.</p>
+    </div></details>
+    <details class="q"><summary>Another AI tool worked in the folder</summary><div class="a">
+      <p>Codex, Cursor and others log their changes in the project's <code>CHANGELOG.md</code>. At the next session Claude tells you what they did and audits it before building on it.</p>
+    </div></details>
+    <details class="q"><summary>Why did Claude stop and ask me to approve?</summary><div class="a">
+      <p>The Foundation, Components and Screens checkpoints always wait for you. Claude never approves its own work.</p>
+    </div></details>
+  </div>
+</section>
+
+<p class="note">Found a new problem? Tell Claude in the workflow folder. Every fix is logged in <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready/blob/master/memory/lessons.md" target="_blank" rel="noopener">memory/lessons.md</a>; recurring ones are added here.</p>
+</main>
+
+<footer><span>AI-Ready Design Systems · FAQ</span><span>Made by Abdulrahman with Claude</span></footer>
+
+<script>
+(function(){
+  var input=document.getElementById('q'), none=document.getElementById('none');
+  input.addEventListener('input',function(){
+    var t=input.value.trim().toLowerCase(), any=false;
+    document.querySelectorAll('.group').forEach(function(g){
+      var shown=0;
+      g.querySelectorAll('details.q').forEach(function(d){
+        var hit=!t||d.textContent.toLowerCase().indexOf(t)>-1;
+        d.hidden=!hit; if(hit)shown++;
+        if(t&&hit)d.open=true;
+      });
+      g.hidden=shown===0; if(shown)any=true;
+    });
+    none.style.display=any?'none':'block';
+  });
+  if(location.hash){var q=document.querySelector(location.hash+' details.q');if(q)q.open=true;}
+})();
+</script>
+</body>
+</html>
