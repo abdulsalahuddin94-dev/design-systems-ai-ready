@@ -60,10 +60,17 @@ globalThis.DS = (() => {
   };
 
   // Paint and binding helpers.
-  DS.paint = (name) => figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: { r: 0, g: 0, b: 0 } }, 'color', DS.v(name));
-  DS.fill = (node, name) => { node.fills = name ? [DS.paint(name)] : []; return node; };
+  DS.paint = (name, consumer) => {
+    const variable = DS.v(name);
+    const value = variable.resolveForConsumer(consumer || figma.currentPage).value;
+    if (!value || typeof value.r !== 'number') throw new Error('Color variable expected: ' + name);
+    // Rebinding an identical alias can preserve the supplied fallback color in an instance.
+    // Use the actual consumer-mode color instead of black while retaining the variable binding.
+    return figma.variables.setBoundVariableForPaint({ type: 'SOLID', color: { r: value.r, g: value.g, b: value.b } }, 'color', variable);
+  };
+  DS.fill = (node, name) => { node.fills = name ? [DS.paint(name, node)] : []; return node; };
   DS.stroke = (node, name, weightVar) => {
-    node.strokes = [DS.paint(name)];
+    node.strokes = [DS.paint(name, node)];
     if (weightVar) ['strokeTopWeight', 'strokeBottomWeight', 'strokeLeftWeight', 'strokeRightWeight'].forEach(k => node.setBoundVariable(k, DS.v(weightVar)));
     return node;
   };
