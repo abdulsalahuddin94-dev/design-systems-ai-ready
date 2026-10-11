@@ -56,7 +56,7 @@ async function checkScreen(screen) {
     (groups[key] = groups[key] || []).push(texts.join(' / '));
 
     // Hug-width instances (chips, buttons) are meant to be narrower than the sample text in the main component.
-    if (main && inst.layoutSizingHorizontal !== 'HUG' && inst.width < main.width * 0.8) r.squashed.push(comp + ': ' + Math.round(inst.width) + ' wide, component ' + Math.round(main.width));
+    if (main && inst.layoutSizingHorizontal !== 'HUG' && inst.width + 0.01 < main.width * 0.8) r.squashed.push(comp + ': ' + Math.round(inst.width) + ' wide, component ' + Math.round(main.width));
 
     const lower = comp.toLowerCase();
     if (BAR_WORDS.some((w) => lower.includes(w)) && inst.width < screen.width - 1) r.bars.push(comp + ': ' + Math.round(inst.width) + ' wide, screen ' + Math.round(screen.width) + ' (not full-bleed)');
