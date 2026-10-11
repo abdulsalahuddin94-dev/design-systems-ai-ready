@@ -195,6 +195,15 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
 .agent h3{font-size:26px}
 .agent .file{font:400 16px var(--mono);color:var(--muted);line-height:1.5}
 .glyph{width:52px;height:52px;border-radius:10px;display:grid;place-items:center;font:600 18px var(--mono);color:#fff}
+.learn{margin-top:22px;border:1px dashed var(--sel);background:rgba(13,153,255,.05);padding:16px 20px}
+.learn-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.learn-h b{font:600 20px var(--sans);color:#7CC6FF}
+.learn-h span{color:var(--muted);font-size:15px}
+.learn-h code{margin-left:auto;font:500 14px var(--mono);color:#7CC6FF;background:rgba(124,198,255,.08);padding:2px 8px;border-radius:3px}
+.learn-s{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;counter-reset:l}
+.learn-s div{counter-increment:l;font-size:15px;line-height:1.4;color:var(--muted);display:grid;grid-template-columns:30px 1fr;column-gap:8px}
+.learn-s div::before{content:counter(l);grid-row:span 2;font:500 13px var(--mono);color:#111;background:var(--fg);width:24px;height:24px;border-radius:50%;display:grid;place-items:center}
+.learn-s b{display:block;color:var(--fg);font-size:16px;font-weight:600;margin-bottom:2px}
 .steps3{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;counter-reset:s}
 .steps3 div{counter-increment:s;font-size:22px;color:var(--muted);display:grid;grid-template-columns:40px 1fr;gap:10px}
 .steps3 div::before{content:counter(s);font:500 16px var(--mono);color:#111;background:var(--fg);width:28px;height:28px;border-radius:50%;display:grid;place-items:center}
@@ -369,7 +378,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
   .frame-label{top:-24px;font-size:12px}
   .slide-foot{left:20px;right:20px;bottom:16px;font-size:11px}
   h1{font-size:54px} h2{font-size:34px} .lead{font-size:18px}
-  .c2,.c3,.c4,.c5,.scen,.subrow,.agenda,.pain,.users,.proof,.links2,.vgrid,.agt,.agents,.proc,.steps3,.atoms,.mcols,.mcards,.layers{grid-template-columns:1fr}
+  .c2,.c3,.c4,.c5,.scen,.subrow,.agenda,.pain,.users,.proof,.links2,.vgrid,.agt,.agents,.proc,.steps3,.atoms,.mcols,.mcards,.layers,.learn-s{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr} .stat .n{font-size:42px}
   .cover .comp{position:static;width:auto;margin:30px 0}
   .hub{height:auto;display:flex;flex-direction:column;gap:10px}
@@ -1110,7 +1119,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
 <section class="slide" aria-label="Reference library">
   <div class="frame-label"><span class="hash">#</span><b>06 Reference library</b></div>
   <div class="kicker rise">06 · Reference library</div>
-  <h2 class="rise d1" style="margin-bottom:36px">Four design systems <em>the agent learned from.</em></h2>
+  <h2 class="rise d1" style="margin-bottom:28px">Four design systems <em>to start with. It learns more.</em></h2>
   <div class="tbl-wrap rise d2">
   <table class="tbl">
     <thead><tr><th>Reference</th><th>Platform</th><th class="num">Variables</th><th class="num">Components</th><th class="num">Text styles</th><th class="num">Templates</th><th>Role</th></tr></thead>
@@ -1119,11 +1128,19 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
       <tr><td>Trianglz iOS</td><td><span class="plat"><span class="logo" style="width:20px;height:20px"><svg viewBox="0 0 24 24" role="img" aria-label="apple"><path fill="#EEEFF3" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg></span>iOS · HIG</span></td><td class="num">170</td><td class="num">25</td><td class="num">22</td><td class="num">8</td><td class="muted">Default iOS base</td></tr>
       <tr><td>Trianglz Android</td><td><span class="plat"><span class="logo" style="width:20px;height:20px"><svg viewBox="0 0 24 24" role="img" aria-label="materialdesign"><path fill="#EEEFF3" d="M11.9998 23.9997c-1.6545 0-3.218-.309-4.691-.927-1.4544-.6364-2.7269-1.4909-3.8179-2.5639-1.073-1.0905-1.9274-2.3634-2.5634-3.8179C.3085 15.2179 0 13.6545 0 12c0-1.6725.309-3.2364.927-4.6909.6365-1.4545 1.491-2.718 2.564-3.791C4.5818 2.4278 5.8543 1.5733 7.3087.9548c1.473-.6365 3.0365-.9545 4.691-.9545 1.673 0 3.2364.318 4.6909.955 1.4544.618 2.7179 1.4725 3.7909 2.563 1.091 1.073 1.945 2.3364 2.5634 3.7909C23.6815 8.7641 24 10.3275 24 12c0 1.655-.3185 3.218-.955 4.6909-.618 1.4545-1.4724 2.7274-2.5634 3.818-1.073 1.0729-2.3365 1.9274-3.791 2.5639-1.455.618-3.0179.927-4.6909.927zm-7.6364-5.8633V5.8636A9.4843 9.4843 0 0 0 2.755 8.7001C2.373 9.7365 2.1825 10.8365 2.1825 12s.1905 2.2725.5724 3.3274a9.5713 9.5713 0 0 0 1.609 2.809zm1.5-13.7727H18.163a9.4848 9.4848 0 0 0-2.836-1.609c-1.0549-.382-2.1639-.5725-3.3273-.5725-1.1635 0-2.2725.1905-3.327.5725a9.5713 9.5713 0 0 0-2.8094 1.609Zm6.1364 10.3637 4.1179-8.1818H7.9088Zm1.091 2.727h4.3633V8.7276Zm-6.5454 0h4.3634L6.5454 8.7276Zm8.7813 3.791c1.0545-.382 2-.918 2.836-1.609H5.8628a9.5713 9.5713 0 0 0 2.8094 1.609c1.0545.3819 2.1635.5724 3.327.5724 1.0543 0 2.1823-.1579 3.3274-.5725zm4.3089-3.109a9.5713 9.5713 0 0 0 1.609-2.809c.382-1.055.5724-2.164.5724-3.3274 0-1.1635-.1905-2.2635-.5724-3.3-.382-1.055-.918-1.9999-1.609-2.8364Z"/></svg></span>Android · M3</span></td><td class="num">364</td><td class="num">98</td><td class="num">30</td><td class="num">8</td><td class="muted">Default Android base</td></tr>
       <tr><td>Astryx Library</td><td><span class="plat"><span class="logo" style="width:20px;height:20px"><svg viewBox="0 0 24 24" role="img" aria-label="tailwindcss"><path fill="#06B6D4" d="M12.001,4.8c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 C13.666,10.618,15.027,12,18.001,12c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C16.337,6.182,14.976,4.8,12.001,4.8z M6.001,12c-3.2,0-5.2,1.6-6,4.8c1.2-1.6,2.6-2.2,4.2-1.8c0.913,0.228,1.565,0.89,2.288,1.624 c1.177,1.194,2.538,2.576,5.512,2.576c3.2,0,5.2-1.6,6-4.8c-1.2,1.6-2.6,2.2-4.2,1.8c-0.913-0.228-1.565-0.89-2.288-1.624 C10.337,13.382,8.976,12,6.001,12z"/></svg></span>Web</span></td><td class="num">166</td><td class="num">131</td><td class="num">14</td><td class="num">33</td><td class="muted">Data-heavy and AI apps: 1,988 variants</td></tr>
-      <tr class="total"><td>Total</td><td></td><td class="num" style="color:var(--sel)">942</td><td class="num" style="color:var(--sel)">282</td><td class="num">72</td><td class="num">57</td><td class="muted">Add one with a single command</td></tr>
+      <tr class="total"><td>Total</td><td></td><td class="num" style="color:var(--sel)">942</td><td class="num" style="color:var(--sel)">282</td><td class="num">72</td><td class="num">57</td><td class="muted">A starting point, not a limit</td></tr>
     </tbody>
   </table>
   </div>
-  <p class="muted rise d3" style="font-size:18px;margin-top:auto">Lessons adopted from them: slots for content areas, a Size collection, role-based radius, a <span class="tok">Code:</span> line in every component description.</p>
+  <div class="learn rise d3">
+    <div class="learn-h"><b>Teach it a new design system</b><span>Any company, Web, iOS, Android or cross-platform</span><code>/study-reference-ds</code></div>
+    <div class="learn-s">
+      <div><b>Give Claude the Figma link</b>with the company name and platform. The original file is read only.</div>
+      <div><b>It studies the whole file</b>Setup first, then every component group, every variant in Light and Dark, and writes its skills and data.</div>
+      <div><b>It becomes a starting template</b>The intake offers it next to the others, and its best lessons go into the platform rules for every project.</div>
+    </div>
+  </div>
+  <p class="muted rise d3" style="font-size:17px;margin-top:auto">Lessons adopted from them so far: slots for content areas, a Size collection, role-based radius, a <span class="tok">Code:</span> line in every component description.</p>
   <div class="slide-foot"><span>Source: Reference_Library/*/data</span><span>22</span></div>
 </section>
 
