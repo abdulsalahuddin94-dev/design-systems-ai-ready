@@ -39,7 +39,7 @@ def main():
             problems.append(f"{name}: no stories file with this Figma name in its title")
             continue
         f, text = match
-        rel = f.relative_to(ROOT).as_posix()
+        rel = (f.relative_to(ROOT) if f.is_relative_to(ROOT) else f.relative_to(folder)).as_posix()  # CI runs it on a project repo outside the Root
         for key in list(c.get("variants", {})) + list(c.get("properties", {})):
             if not re.search(r"['\"]" + re.escape(key) + r"['\"]\s*:|\b" + re.escape(key) + r"\s*:", text):
                 problems.append(f"{name}: property/variant '{key}' missing in argTypes ({rel})")

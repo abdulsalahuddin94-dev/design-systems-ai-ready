@@ -1,0 +1,53 @@
+# Checks the project Storybook on every push and pull request (idea from storysync's GitHub Action, adopted 2026-10-11).
+# Copy to the project repo as .github/workflows/storybook-check.yml (Team projects and published Storybooks).
+# 1. Name check: every Figma component, variant and property name is in the stories (tools/storybook_parity.py).
+# 2. The Storybook builds.
+# 3. Style check, only when data/figma-styles.json is committed: the built Storybook is measured again
+#    (tools/storybook_snap.cjs) and compared with the last Figma read (tools/style_parity.py), so a hand edit to a
+#    component or token file that breaks the match with Figma fails here, before anyone opens the link.
+# The workflow tools come from the public workflow repo; nothing is installed in the project repo.
+name: Storybook check
+on:
+  push:
+    paths: ["storybook/**", "data/**", ".github/workflows/storybook-check.yml"]
+  pull_request:
+    paths: ["storybook/**", "data/**", ".github/workflows/storybook-check.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: abdulsalahuddin94-dev/design-systems-ai-ready
+          ref: master
+          path: _workflow
+          sparse-checkout: tools
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: storybook/package-lock.json
+      - name: Figma names in Storybook
+        run: python _workflow/tools/storybook_parity.py "$GITHUB_WORKSPACE"
+      - run: npm ci
+        working-directory: storybook
+      - run: npm run build-storybook
+        working-directory: storybook
+      - name: Style check against the last Figma read
+        if: hashFiles('data/figma-styles.json') != ''
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+          (python -m http.server 6006 -d storybook-static > /dev/null 2>&1 &)
+          sleep 2
+          cd "$GITHUB_WORKSPACE"
+          node _workflow/tools/storybook_snap.cjs "$GITHUB_WORKSPACE" --url http://localhost:6006
+          python _workflow/tools/style_parity.py "$GITHUB_WORKSPACE"
+        working-directory: storybook

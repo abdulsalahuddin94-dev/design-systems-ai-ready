@@ -9,8 +9,9 @@ Load when 0.3d is answered "Team", when 0.0 is "Join a team project", or when a 
 ## 15.2 Setup (once per project, after "Team")
 1. Repo already there (`git -C "<folder>" remote get-url origin` works, e.g. a Storybook published earlier): use it. Say its name in one line; nothing else is created.
 2. No repo: Ask (choice): "Create a private GitHub repo for '<Project>'?" "Create <owner>/<project>-design-system, private (Recommended)" (description: holds the project folder and its Storybook; teammates join with its link) / "I'll give an existing repo URL" (description: type it in Other) / "Back". Only after that answer: `git init` in the folder, a `.gitignore` (`node_modules/`, `storybook/storybook-static/`, `.env`), a first commit, then `gh repo create <owner>/<project>-design-system --private --source . --remote origin --push` (or `git remote add origin <url>` + `git push -u origin HEAD`). Scan for secrets before the first push.
-3. Record `collaboration: "team"` and `team.repo` (the repo URL) in `status.json`, log it in `CHANGELOG.md`, push.
-4. Tell the user in one line how teammates join: they start a session in the workflow Root, pick "Join a team project" and paste the repo link. Adding them to the private repo (GitHub > Settings > Collaborators) is the user's step; Claude never invites anyone.
+3. When the project has a Storybook (now or later, Storybook skill section 4), copy `Storybook_Design_System_Skill/templates/storybook-check.yml` to `.github/workflows/` and commit `data/figma-styles.json`: every teammate's push then runs the Figma name check, the build and the style check on GitHub, and a red check is fixed before more Storybook work.
+4. Record `collaboration: "team"` and `team.repo` (the repo URL) in `status.json`, log it in `CHANGELOG.md`, push.
+5. Tell the user in one line how teammates join: they start a session in the workflow Root, pick "Join a team project" and paste the repo link. Adding them to the private repo (GitHub > Settings > Collaborators) is the user's step; Claude never invites anyone.
 
 ## 15.3 Joining a team project (0.0 "Join a team project")
 1. Typed: "Paste the project's GitHub repo link."
