@@ -8,12 +8,18 @@
 // CHANGELOG.md has entries marked "Storybook synced: no". Output is JSON additionalContext (added to
 // the session, not shown as an error). Never fails: without Python it skips the check (setup_check.cjs
 // offers the Python install).
+// Also runs the Figma edit check (tools/figma_versions.cjs): projects whose DS file has Figma history
+// versions newer than the last Storybook sync, which catches manual edits no CHANGELOG.md entry
+// mentions. Needs the Figma token; without one, or offline, it is skipped (at most 3 s), and a missing
+// or rejected token is mentioned once per machine (.claude/.state/figma-edit-check.json).
+// Team projects only (status.json > collaboration = team): pulls their repos first (tools/team_sync.cjs).
 const fs = require("fs");
 const net = require("net");
 const path = require("path");
 const { spawnSync } = require("child_process");
 
 const ROOT = path.join(__dirname, "..", "..");
+const EDIT_STATE = path.join(__dirname, "..", ".state", "figma-edit-check.json");
 // Windows "python" can be the Microsoft Store alias that only prints an install message, so try the
 // py launcher first and check that the interpreter really runs.
 const PYTHONS = [["py", ["-3"]], ["python3", []], ["python", []]];
@@ -62,6 +68,56 @@ function unsyncedProjects() {
     libText + laterText;
 }
 
+// Said once per machine: no token, or Figma refused it. Recorded so later sessions stay quiet.
+function onceFor(key) {
+  let state = {};
+  try { state = JSON.parse(fs.readFileSync(EDIT_STATE, "utf8")); } catch (e) {}
+  if (state[key]) return false;
+  state[key] = new Date().toISOString().slice(0, 10);
+  try {
+    fs.mkdirSync(path.dirname(EDIT_STATE), { recursive: true });
+    fs.writeFileSync(EDIT_STATE, JSON.stringify(state, null, 2) + "\n", "utf8");
+  } catch (e) {}
+  return true;
+}
+
+function teamSync() {
+  try { return require(path.join(ROOT, "tools", "team_sync.cjs")).pullAll(); } catch (e) { return ""; }
+}
+
+async function figmaEdits() {
+  let res;
+  try { res = await require(path.join(ROOT, "tools", "figma_versions.cjs")).check(); } catch (e) { return ""; }
+  const { describe } = require(path.join(ROOT, "tools", "figma_versions.cjs"));
+  let text = "";
+  if (res.changed.length) {
+    text += "Projects whose DS file changed in Figma since the last Storybook sync (Figma version history; " +
+      "includes manual edits that CHANGELOG.md may not mention):\n" + res.changed.map(describe).join("\n") +
+      "\nMention each in your first reply in one line, without a question (merge it with that project's " +
+      "CHANGELOG line above if it has one). When the user picks one of these projects (intake 0.0), or at once " +
+      "if they asked for Storybook work on it, Ask (choice) \"'<DS file>' was edited in Figma after the last " +
+      "Storybook sync. Update the Storybook?\": \"Resync now (Recommended)\" (description: open the DS file " +
+      "with the Desktop Bridge and run Storybook_Design_System_Skill section 5) / \"Later\" (description: ask " +
+      "again next session) / \"Not needed\" (description: the edits do not affect the Storybook; record this " +
+      "Figma version as synced) / \"Back\". Ask once per project, together with the CHANGELOG question when " +
+      "both apply. After a resync `python tools/project_status.py \"<folder>\" --mark-synced` records the " +
+      "version; for Not needed run `node tools/figma_versions.cjs \"<folder>\" --record`.\n";
+  }
+  if (res.eligible && !res.tok && onceFor("no_token")) {
+    text += "Figma edit check skipped: no Figma token found (FIGMA_ACCESS_TOKEN in the figma-console MCP " +
+      "config). Without it, manual Figma edits to a project's DS file are not detected at session start. " +
+      "Offer the token setup once (Design_System_Intake_Skill 0b check 6). This notice is shown only once.\n";
+  }
+  if (res.errors.length && onceFor("token_refused")) {
+    text += "Figma edit check: Figma refused the version history for " +
+      res.errors.map((r) => `\`${r.rel}\` (${r.code || r.error})`).join(", ") +
+      ". 401/403: the token is invalid or lacks the scope file_versions:read; 404: the DS file key in " +
+      "status.json is wrong or the token's account cannot open it. Tell the user in one line " +
+      "(Design_System_Intake_Skill 0b check 6). Shown once.\n";
+  }
+  return text;
+}
+
 function referenceStorybook() {
   // MCP name and port of the default Web reference's Storybook (references.json); no brand hardcoded.
   try {
@@ -94,8 +150,9 @@ function emit(text) {
 }
 
 async function main() {
+  // Team projects pull first, so the changelog and Figma checks below see teammates' work.
   const books = storybooks();
-  const pending = unsyncedProjects();
+  const pending = teamSync() + unsyncedProjects() + await figmaEdits();
   if (!books.length) {
     if (pending) emit(pending);
     return;
