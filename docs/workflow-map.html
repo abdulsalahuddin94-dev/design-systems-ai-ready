@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workflow Map</title>
+<meta name="description" content="Every stage and question of the AI-ready design system workflow, from setup to Storybook.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="assets/docs.css">
+<style>
+/* Layout: an overview strip of 8 stage buttons; each opens one expandable panel below. Blue = you act, grey = Claude works. */
+.flow{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px}
+.stage{flex:1 1 112px;min-width:0;display:grid;gap:3px;align-content:start;text-align:left;font:inherit;color:inherit;cursor:pointer;
+  background:var(--frame);border:1px solid var(--line);border-radius:10px;padding:13px 13px 11px}
+.stage:hover,.stage:focus-visible{border-color:var(--sel);outline:none}
+.stage[aria-current="true"]{border-color:var(--sel);box-shadow:0 0 0 3px var(--sel-soft)}
+.stage .n{font:500 11px var(--mono);color:var(--faint)}
+.stage .t{font-weight:600;font-size:16px;letter-spacing:-.01em;line-height:1.15}
+.stage .s{font-size:12px;color:var(--muted);line-height:1.35}
+@media (max-width:760px){.stage{flex-basis:calc(50% - 4px)}}
+
+.panels{display:grid;gap:10px}
+details.panel>summary{list-style:none;cursor:pointer;padding:16px 20px;display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline}
+details.panel>summary::-webkit-details-marker{display:none}
+summary .n{font:500 12px var(--mono);color:var(--faint);min-width:1.4em}
+summary .t{font-weight:600;font-size:19px;letter-spacing:-.015em}
+summary .s{color:var(--muted);font-size:13.5px;margin-left:auto}
+summary::after{content:"+";font:500 18px var(--mono);color:var(--muted);margin-left:8px}
+details[open]>summary::after{content:"−"}
+.body{padding:0 20px 22px;display:grid;gap:18px}
+.card ol.steps{gap:6px;font-size:14px}
+.more{display:grid;gap:10px}
+details.small>summary{cursor:pointer;padding:13px 18px;font-weight:600}
+details.small .inner{padding:0 18px 18px;overflow-x:auto}
+td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
+</style>
+</head>
+<body>
+<nav class="topnav" aria-label="Docs">
+  <a class="brand" href="getting-started.html">AI-Ready Design Systems · Docs</a>
+  <a href="getting-started.html">Getting started</a>
+  <a href="workflow-map.html" aria-current="page">Workflow map</a>
+  <a href="faq.html">FAQ</a>
+  <a href="presentation/AI-Ready-Design-Systems.html">Presentation</a>
+</nav>
+
+<main>
+<header>
+  <div class="kicker">Workflow map</div>
+  <h1>Every stage, <em>every question</em></h1>
+  <p class="lead">The whole workflow in eight stages. Pick a stage to see its steps. Only the blue steps need you; everything grey is Claude's work. Every question in Claude shows where you are, like "Intake 3/8", and every menu except the first ends with Back.</p>
+  <div class="legend">
+    <span><i class="dot you"></i>You decide or do it</span>
+    <span><i class="dot claude"></i>Claude does it</span>
+    <span><span class="opt rec">Recommended</span> option</span>
+    <span><span class="tag new">New</span> added in October</span>
+  </div>
+</header>
+
+<nav class="flow" aria-label="Workflow stages">
+  <button type="button" class="stage" data-go="s0"><span class="n">0</span><span class="t">Setup</span><span class="s">Once per computer</span></button>
+  <button type="button" class="stage" data-go="s1"><span class="n">1</span><span class="t">Start</span><span class="s">Tools check, quick or full</span></button>
+  <button type="button" class="stage" data-go="s2"><span class="n">2</span><span class="t">Intake</span><span class="s">Project, platform, Solo or Team</span></button>
+  <button type="button" class="stage" data-go="s3"><span class="n">3</span><span class="t">Path</span><span class="s">Scenario A, B, C or D</span></button>
+  <button type="button" class="stage" data-go="s4"><span class="n">4</span><span class="t">Foundation</span><span class="s">Checkpoint 1</span></button>
+  <button type="button" class="stage" data-go="s5"><span class="n">5</span><span class="t">Components</span><span class="s">Checkpoint 2</span></button>
+  <button type="button" class="stage" data-go="s6"><span class="n">6</span><span class="t">Screens</span><span class="s">Checkpoint 3, optional</span></button>
+  <button type="button" class="stage" data-go="s7"><span class="n">7</span><span class="t">Finish</span><span class="s">Audit, skills, Storybook</span></button>
+</nav>
+
+<div class="panels">
+
+<details class="panel" id="s0">
+  <summary><span class="n">0</span><span class="t">Setup</span><span class="s">once per computer · <a href="getting-started.html">full guide</a></span></summary>
+  <div class="body cols2">
+    <div><p class="sub">Get the workflow</p>
+    <ol class="steps">
+      <li class="you"><div><b>Get the repo</b> from <a href="https://github.com/abdulsalahuddin94-dev/design-systems-ai-ready" target="_blank" rel="noopener">GitHub</a>
+        <div class="opts"><span class="opt rec">Give the link to an AI agent</span><span class="opt">git clone</span><span class="opt">Download ZIP</span></div></div></li>
+      <li class="claude">Any folder works; every path inside is relative.</li>
+      <li class="you"><div><b>Double-click the setup file</b>
+        <div class="opts"><span class="opt">Windows: <code>Setup-Windows.cmd</code></span><span class="opt">Mac: <code>Setup-Mac.command</code></span></div></div></li>
+      <li class="claude">Installs what is missing: Node.js 18+, Python 3, Git, Figma Desktop. Skipped it? Claude checks the same list the first time you open the folder and offers to install, once per computer.</li>
+    </ol></div>
+    <div><p class="sub">Connect Figma</p>
+    <ol class="steps">
+      <li class="you"><div><b>Install a Figma tool</b> (paste its GitHub link to Claude, it helps)
+        <div class="opts"><a class="opt rec" href="https://github.com/silships/figma-cli" target="_blank" rel="noopener">FigCli Yolo</a><a class="opt" href="https://github.com/southleft/figma-console-mcp" target="_blank" rel="noopener">Desktop Bridge</a></div></div></li>
+      <li class="you"><div><b>Optional: a Figma token</b> so Claude can notice edits made in Figma and read comments</div></li>
+      <li class="you"><div><b>Open Claude Code in the folder and say "Start"</b>
+        <div class="opts"><span class="opt rec">Start</span><span class="opt"><code>/design-system-intake</code></span></div></div></li>
+    </ol></div>
+  </div>
+</details>
+
+<details class="panel" id="s1">
+  <summary><span class="n">1</span><span class="t">Start</span><span class="s">every session</span></summary>
+  <div class="body">
+    <div class="cols2">
+    <ol class="steps">
+      <li class="claude">Checks which Figma tools are installed and connected. If none, it stops and helps you install one.</li>
+      <li class="claude">Team projects: pulls teammates' work and lists who changed what and which components are locked. <span class="tag new">New</span></li>
+      <li class="claude">Notices edits made directly in a project's DS file in Figma since the last Storybook sync. <span class="tag new">New</span></li>
+      <li class="you"><div><b>Pick the Figma tool</b> (only if both are installed, once per file)
+        <div class="opts"><span class="opt rec">FigCli Yolo</span><span class="opt">Figma Desktop Bridge</span></div></div></li>
+      <li class="you"><div><b>Quick task or full project?</b>
+        <div class="opts"><span class="opt">Quick task on this file</span><span class="opt">Full project setup</span></div></div></li>
+    </ol>
+    <div><p class="sub">Quick task</p>
+    <ol class="steps">
+      <li class="you"><div><b>What should I do?</b>
+        <div class="opts"><span class="opt">Build one component</span><span class="opt">Audit a file or page</span><span class="opt">Fix one thing</span></div></div></li>
+      <li class="claude">Does the task, then audits every variant in Light and Dark.</li>
+      <li class="you"><div><b>Approve the result</b>
+        <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
+    </ol></div>
+    </div>
+  </div>
+</details>
+
+<details class="panel" id="s2">
+  <summary><span class="n">2</span><span class="t">Intake</span><span class="s">one question at a time</span></summary>
+  <div class="body cols2">
+    <ol class="steps">
+      <li class="you"><div><b>Which project?</b>
+        <div class="opts"><span class="opt">An existing project</span><span class="opt">Start a new project</span><span class="opt">Join a team project <span class="tag new">New</span></span></div></div></li>
+      <li class="you"><div><b>Existing project: resume</b> ("Last time … Next step …")
+        <div class="opts"><span class="opt rec">Continue</span><span class="opt">Something else</span></div></div></li>
+      <li class="you"><div><b>DS file was edited in Figma?</b> Update the Storybook to match <span class="tag new">New</span>
+        <div class="opts"><span class="opt rec">Resync now</span><span class="opt">Later</span><span class="opt">Not needed</span></div></div></li>
+      <li class="you"><div><b>Join a team project:</b> paste the project's repo link; Claude clones it into My Projects under the shared name</div></li>
+      <li class="you"><div><b>New project: name and Figma links</b> (typed)</div></li>
+      <li class="you"><div><b>Platform</b>
+        <div class="opts"><span class="opt">Web</span><span class="opt">iOS</span><span class="opt">Android</span><span class="opt">Both</span></div></div></li>
+      <li class="you"><div><b>Both mobile platforms: how?</b>
+        <div class="opts"><span class="opt">Native (two DS files)</span><span class="opt">Cross-platform (one DS)</span><span class="opt">Mobile Adaptive (one file)</span></div></div></li>
+      <li class="claude">Creates the project folder and shows the Inputs path: Brand, Inspiration, Screens, Research.</li>
+      <li class="you"><div><b>Will anyone else work on it?</b> <span class="tag new">New</span>
+        <div class="opts"><span class="opt rec">Solo</span><span class="opt">Team (one private repo)</span></div></div></li>
+      <li class="you"><div><b>Add your files</b>
+        <div class="opts"><span class="opt">I added files, read them</span><span class="opt">Don't have inputs</span><span class="opt">Later</span></div></div></li>
+    </ol>
+    <ol class="steps">
+      <li class="you"><div><b>What do you start from?</b> (stage 3)
+        <div class="opts"><span class="opt">Greenfield</span><span class="opt">Brownfield</span><span class="opt">Code to Design</span></div></div></li>
+      <li class="you"><div><b>Confirm what Claude found</b> in your files, the Figma file or the code: modes, RTL, fonts, icons, brand color
+        <div class="opts"><span class="opt rec">Use these</span><span class="opt">Change something</span></div></div></li>
+      <li class="claude">Asks only what was not found:</li>
+      <li class="you"><div><b>Color modes</b>
+        <div class="opts"><span class="opt rec">Light and Dark</span><span class="opt">Light only</span><span class="opt">Dark only</span></div></div></li>
+      <li class="you"><div><b>Arabic / RTL, then fonts</b>
+        <div class="opts"><span class="opt">No</span><span class="opt">Yes</span><span class="opt rec">Platform default font</span><span class="opt">Brand font</span></div></div></li>
+      <li class="you"><div><b>Icon library</b> (the workflow fetches and builds the icons itself)
+        <div class="opts"><span class="opt rec">Platform default</span><span class="opt">Already in the Figma project</span><span class="opt">Phosphor, Tabler, Heroicons, Remix</span></div></div></li>
+      <li class="you"><div><b>Storybook and example screens?</b>
+        <div class="opts"><span class="opt rec">Yes, after components</span><span class="opt">Later</span><span class="opt">No</span></div></div></li>
+      <li class="you"><div><b>Approve the Intake Summary</b> (one plan, before any Figma work)
+        <div class="opts"><span class="opt rec">Yes, start</span><span class="opt">Change something</span></div></div></li>
+    </ol>
+  </div>
+</details>
+
+<details class="panel" id="s3">
+  <summary><span class="n">3</span><span class="t">Path</span><span class="s">what do you start from?</span></summary>
+  <div class="body">
+    <div class="cards">
+      <div class="card">
+        <span class="k">Scenario A · Greenfield</span>
+        <h3>New product</h3>
+        <p>Nothing designed yet.</p>
+        <ol class="steps">
+          <li class="you"><div><b>Start from</b> scratch, your AI-ready DS, or a reference template</div></li>
+          <li class="claude">Reads your brand and inspiration files, or asks a brand color and industry</li>
+          <li class="claude">Builds the DS in build order</li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="k">Scenario B · Brownfield</span>
+        <h3>Screens, no DS</h3>
+        <p>Screens or screenshots exist in Figma.</p>
+        <ol class="steps">
+          <li class="claude">Extracts colors, fonts, spacing from the screens</li>
+          <li class="you"><div><b>Approve the merges</b>, create the DS file</div></li>
+          <li class="claude">Builds the DS, then rebuilds the screens on it</li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="k">Scenario C · Brownfield</span>
+        <h3>Imperfect DS + screens</h3>
+        <p>A DS exists but screens follow it partly.</p>
+        <ol class="steps">
+          <li class="you"><div><b>Where is the DS?</b> Own library, or inside the Design file (split or keep)</div></li>
+          <li class="claude">Maps variables, fixes the DS, audits each screen</li>
+          <li class="you"><div><b>Approve the fixes</b>, publish, Accept updates</div></li>
+        </ol>
+      </div>
+      <div class="card">
+        <span class="k">Scenario D · Code to Design</span>
+        <h3>Coded app</h3>
+        <p>A repo is the source; Figma screens are the goal.</p>
+        <ol class="steps">
+          <li class="you"><div><b>Share the repo</b>, then pick an existing DS or a new DS from the code</div></li>
+          <li class="claude">Reads routes, popups, states and tokens</li>
+          <li class="claude">Existing DS: adds only missing parts on one page. New DS: builds it from the code</li>
+          <li class="claude">Builds every screen and popup, keeps your manual edits</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</details>
+
+<details class="panel" id="s4">
+  <summary><span class="n">4</span><span class="t">Foundation</span><span class="s">Checkpoint 1</span></summary>
+  <div class="body">
+    <ol class="steps">
+      <li class="you"><div><b>Open the DS file in Figma</b></div></li>
+      <li class="claude">Primitives, then Semantics (Light / Dark)</li>
+      <li class="claude">Spacing, radius, size and typography variables, then text and effect styles</li>
+      <li class="claude">Icons from the library you picked, the App Icon page, and linked Colors / Typography pages; fixes any gaps</li>
+      <li class="claude">Team projects: locks the foundation while editing and pushes after the step</li>
+      <li class="you"><div><b>Approve the Foundation</b>
+        <div class="opts"><span class="opt rec">Approve, go to components</span><span class="opt">Request changes</span></div></div></li>
+    </ol>
+  </div>
+</details>
+
+<details class="panel" id="s5">
+  <summary><span class="n">5</span><span class="t">Components</span><span class="s">Checkpoint 2</span></summary>
+  <div class="body">
+    <ol class="steps">
+      <li class="claude">Atoms, then Molecules, Organisms, Patterns; each with its description and real icons</li>
+      <li class="claude">Team projects: locks each component before editing, so two people never change the same one</li>
+      <li class="claude">Audits every variant in Light and Dark</li>
+      <li class="you"><div><b>Approve the components</b>
+        <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
+      <li class="you"><div><b>One to-do list</b>: rename the file if needed, publish the library, Accept updates in the Design files
+        <div class="opts"><span class="opt rec">All done</span><span class="opt">Some are done</span><span class="opt">Not yet</span></div></div></li>
+    </ol>
+  </div>
+</details>
+
+<details class="panel" id="s6">
+  <summary><span class="n">6</span><span class="t">Screens</span><span class="s">Checkpoint 3, optional</span></summary>
+  <div class="body">
+    <ol class="steps">
+      <li class="you"><div><b>Pick the Design file</b> and open it</div></li>
+      <li class="claude">Writes a spec per screen and lists missing components</li>
+      <li class="claude">Builds missing components in the DS first (you publish again)</li>
+      <li class="claude">Builds each screen section by section (Mobile 375 × 812, Desktop 1440 × 1024), compares it side by side, audits it</li>
+      <li class="you"><div><b>Create the prototype?</b> (after each flow)
+        <div class="opts"><span class="opt">Yes</span><span class="opt">No</span></div></div></li>
+      <li class="you"><div><b>Approve the screens</b>
+        <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
+    </ol>
+  </div>
+</details>
+
+<details class="panel" id="s7">
+  <summary><span class="n">7</span><span class="t">Finish</span><span class="s">every path</span></summary>
+  <div class="body cols2">
+    <ol class="steps">
+      <li class="claude">Final audit of the DS and every changed Design file</li>
+      <li class="claude">Writes the project skills and the changelog</li>
+      <li class="claude">Team projects: pushes, and says which locks are still held</li>
+    </ol>
+    <div><p class="sub">Storybook (if you said Yes)</p>
+    <ol class="steps">
+      <li class="you"><div><b>Allow the install</b>
+        <div class="opts"><span class="opt">Yes, install</span><span class="opt">Not now</span></div></div></li>
+      <li class="claude">Builds the Storybook: welcome page, foundations, a docs page per component</li>
+      <li class="claude">Checks names and real values against Figma, variant by variant, in every mode. Done only at 100% fidelity. <span class="tag new">New</span></li>
+      <li class="you"><div><b>How should developers open it?</b>
+        <div class="opts"><span class="opt rec">Public link on GitHub Pages</span><span class="opt">Private link with Chromatic</span><span class="opt">Keep it local</span></div></div></li>
+      <li class="claude">Team or published Storybooks get a GitHub check that reruns the name and style checks on every push</li>
+      <li class="claude">Later Figma changes: asks you to update the Storybook at the next session</li>
+    </ol></div>
+  </div>
+</details>
+
+</div>
+
+<section class="more">
+  <details class="small panel">
+    <summary>Back on every menu</summary>
+    <div class="inner">
+      <ol class="steps">
+        <li class="you"><div><b>Pick Back</b> on any question except the first one, or type "back to 0.4" in Other</div></li>
+        <li class="claude">Asks the previous question again with your old answer marked current</li>
+        <li class="you"><div><b>If Figma was already changed</b>
+          <div class="opts"><span class="opt rec">Keep it and go back</span><span class="opt">Undo it, then go back</span></div></div></li>
+      </ol>
+    </div>
+  </details>
+  <details class="small panel">
+    <summary>All intake questions</summary>
+    <div class="inner">
+      <table>
+        <thead><tr><th>#</th><th>Question</th><th>Options</th></tr></thead>
+        <tbody>
+          <tr><td>0.0</td><td>Which project?</td><td>Recent projects / Start a new project / Join a team project</td></tr>
+          <tr><td>0.0t</td><td>Which Figma tool for this file?</td><td>FigCli Yolo / Figma Desktop Bridge</td></tr>
+          <tr><td>0.1</td><td>Project name</td><td>typed</td></tr>
+          <tr><td>0.2</td><td>Figma links</td><td>typed</td></tr>
+          <tr><td>1.1</td><td>Which platform?</td><td>Web / Mobile</td></tr>
+          <tr><td>1.2</td><td>Which mobile platform?</td><td>iOS / Android / Both</td></tr>
+          <tr><td>1.3</td><td>Native, cross-platform or Mobile Adaptive?</td><td>Native / Cross-platform / Mobile Adaptive</td></tr>
+          <tr><td>1.4</td><td>Shared Brand Foundation? (Native)</td><td>Yes / No</td></tr>
+          <tr><td>1.5</td><td>Framework + base (Cross-platform)</td><td>Flutter / React Native; Material 3 / Apple HIG / Custom</td></tr>
+          <tr><td>1.6</td><td>Languages (Mobile Adaptive)</td><td>English only / English + Arabic</td></tr>
+          <tr><td>0.3</td><td>Project folder</td><td>My Projects/&lt;Project&gt; / other path</td></tr>
+          <tr><td>0.3d</td><td>Will anyone else work on it?</td><td>Solo / Team</td></tr>
+          <tr><td>0.3b</td><td>Files for this project?</td><td>I added files / Don't have inputs / Later</td></tr>
+          <tr><td>2.1</td><td>New or existing?</td><td>Greenfield / Brownfield / Code to Design</td></tr>
+          <tr><td>2.2</td><td>What exists?</td><td>Screens, no DS / Imperfect DS + screens</td></tr>
+          <tr><td>2.3</td><td>Where is the DS?</td><td>Own library file / Inside the Design file</td></tr>
+          <tr><td>2.4</td><td>DS inside the Design file</td><td>Split into a library / Keep one file</td></tr>
+          <tr><td>2.5</td><td>Which DS for the screens? (Code to Design)</td><td>An existing DS / New DS from the code</td></tr>
+          <tr><td>2.6</td><td>Which DS page may I add to?</td><td>Likely pages / new page</td></tr>
+          <tr><td>0.3c</td><td>Confirm what was found</td><td>Use these / Change something</td></tr>
+          <tr><td>0.4</td><td>Color modes</td><td>Light and Dark / Light only / Dark only</td></tr>
+          <tr><td>0.5</td><td>Arabic / RTL?</td><td>No / Yes</td></tr>
+          <tr><td>0.6</td><td>Fonts</td><td>Platform default / Brand font</td></tr>
+          <tr><td>0.6b</td><td>Icon library</td><td>Platform default (Lucide / SF Symbols style / Material Symbols) / Already in the Figma project / Phosphor, Tabler, Heroicons, Remix Icon</td></tr>
+          <tr><td>0.7</td><td>Storybook?</td><td>Yes, after components / Later / No</td></tr>
+          <tr><td>0.8</td><td>Example screens?</td><td>Yes, after components / No</td></tr>
+          <tr><td>3.1</td><td>AI-ready DS already?</td><td>Yes / No / Reference template</td></tr>
+          <tr><td>3.3</td><td>Brand color (no brand files)</td><td>hex typed</td></tr>
+          <tr><td>3.4</td><td>Industry (no inspiration files)</td><td>SaaS / Fintech / Healthcare / E-commerce</td></tr>
+        </tbody>
+      </table>
+      <p class="note" style="margin-top:10px">Asked in this order: 0.0, 0.1, 0.2, 1.x, 0.3, 0.3d, 0.3b, 2.x, 0.3c, then 0.4 to 0.8. Anything Claude already found in your files is confirmed, not asked.</p>
+    </div>
+  </details>
+</section>
+
+<p class="note">Source: <code>Design_System_Intake_Skill</code> on master, 11 Oct 2026. When the intake changes, update this page in the same pull request.</p>
+</main>
+
+<footer><span>AI-Ready Design Systems · Workflow map</span><span>Made by Abdulrahman with Claude</span></footer>
+
+<script>
+(function(){
+  var buttons=document.querySelectorAll('.stage');
+  function mark(id){buttons.forEach(function(b){b.setAttribute('aria-current',b.dataset.go===id?'true':'false')})}
+  buttons.forEach(function(b){
+    b.addEventListener('click',function(){
+      var d=document.getElementById(b.dataset.go);
+      document.querySelectorAll('details.panel[id]').forEach(function(p){p.open=(p===d)});
+      mark(b.dataset.go);
+      d.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+      history.replaceState(null,'','#'+b.dataset.go);
+    });
+  });
+  document.querySelectorAll('details.panel[id]').forEach(function(p){
+    p.addEventListener('toggle',function(){if(p.open)mark(p.id)});
+  });
+  var start=document.getElementById((location.hash||'#s0').slice(1))||document.getElementById('s0');
+  start.open=true; mark(start.id);
+})();
+</script>
+</body>
+</html>
