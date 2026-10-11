@@ -157,6 +157,49 @@ globalThis.DS = (() => {
     });
     return { name: node.name, type: node.type, size: Math.round(node.width) + 'x' + Math.round(node.height), raw: raw.slice(0, 20), rawCount: raw.length };
   };
+  // Per-write check (adapted from chudarin figma-plugin-api-rules hard rule 7, MIT): end EVERY write script with
+  // `return await DS.readBack([nodes you created or changed])`. Bindings fail silently (paint bindings, the four
+  // radius corners, layout sizing), so read them back in the same call. Returns the variable NAMES bound per node
+  // (a wrong binding is visible on sight) and everything left raw: fills / strokes without a color variable, padding /
+  // gap / radius without a variable, text without a text style, effects without an effect style. rawCount must be 0.
+  DS.readBack = async (nodes) => {
+    const names = {}, raw = [], bound = {};
+    const nameOf = async (alias) => {
+      if (!alias || !alias.id) return null;
+      if (!(alias.id in names)) { const v = await figma.variables.getVariableByIdAsync(alias.id); names[alias.id] = v ? v.name : '(missing variable)'; }
+      return names[alias.id];
+    };
+    const PADS = ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'itemSpacing', 'counterAxisSpacing'];
+    const RADS = ['topLeftRadius', 'topRightRadius', 'bottomLeftRadius', 'bottomRightRadius'];
+    const list = [];
+    for (const n of [].concat(nodes || [])) {
+      if (!n || n.removed) continue;
+      list.push(n);
+      if (n.findAll && n.type !== 'INSTANCE') list.push(...n.findAll(c => !(c.parent && c.parent.type === 'INSTANCE') || c.type === 'INSTANCE'));
+    }
+    for (const n of list.slice(0, 400)) {
+      if (n.parent && n.parent.type === 'INSTANCE') continue; // nested instance content belongs to its component
+      const bv = n.boundVariables || {}, got = [];
+      for (const key of ['fills', 'strokes']) {
+        if (!Array.isArray(n[key])) continue;
+        for (const [i, p] of n[key].entries()) {
+          if (p.type !== 'SOLID' || p.visible === false) continue;
+          const name = await nameOf(p.boundVariables && p.boundVariables.color);
+          if (name) got.push(key.slice(0, -1) + '=' + name); else if (!(key === 'fills' ? n.fillStyleId : n.strokeStyleId)) raw.push(n.name + ': raw ' + key.slice(0, -1) + ' #' + i);
+        }
+      }
+      if (n.layoutMode && n.layoutMode !== 'NONE') for (const k of PADS) {
+        if (n[k] > 0) { const name = await nameOf(bv[k]); if (name) got.push(k + '=' + name); else raw.push(n.name + ': ' + k + ' ' + n[k]); }
+      }
+      if ('topLeftRadius' in n) for (const k of RADS) {
+        if (n[k] > 0 && !bv[k]) { raw.push(n.name + ': ' + k + ' ' + n[k]); break; }
+      }
+      if (n.type === 'TEXT' && !n.textStyleId) raw.push(n.name + ': text without a text style');
+      if (Array.isArray(n.effects) && n.effects.some(e => e.visible !== false) && !n.effectStyleId) raw.push(n.name + ': effect without an effect style');
+      if (got.length) bound[n.name] = got.slice(0, 8);
+    }
+    return { checked: Math.min(list.length, 400), rawCount: raw.length, raw: raw.slice(0, 25), bound: Object.fromEntries(Object.entries(bound).slice(0, 15)) };
+  };
   return DS;
 })();
 await DS.ready(true);

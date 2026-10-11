@@ -124,10 +124,13 @@ Written once, while the component is built (before its Figma description), and t
     "Touch target at least 44px"
   ],
   "keywords": ["button", "btn", "cta", "submit", "action"],
-  "code": "components/ui/button.tsx (variant, size)"
+  "behavior": ["Enter and Space activate it", "Loading keeps its width and blocks a second press", "Focus ring on keyboard focus only"],
+  "avoid": ["Two Primary buttons in one view", "An icon-only button without an accessible name"],
+  "code": "components/ui/button.tsx",
+  "props_map": { "Type": "variant", "Size": "size", "Label": "children", "Show Icon": "leadingIcon" }
 }
 ```
-`accessibility` items are a sentence or a row per part (WCAG criterion, required ratio, the states it is checked in); rows make the audit's contrast check per state explicit. `keywords` are the words people and agents search with (synonyms, abbreviations, the old name), so a search for "cta" or "btn" finds Button. `when_not_to_use` items name the component to use instead in brackets. `code` (only when a code counterpart exists) becomes the description's `Code:` line. After the Storybook is generated, `tools/storybook_parity.py` checks that every Docs page shows these sections.
+`accessibility` items are a sentence or a row per part (WCAG criterion, required ratio, the states it is checked in); rows make the audit's contrast check per state explicit. `keywords` are the words people and agents search with (synonyms, abbreviations, the old name), so a search for "cta" or "btn" finds Button. `when_not_to_use` items name the component to use instead in brackets. `code` (only when a code counterpart exists) becomes the description's `Code:` line, followed by `props_map` (Figma property -> code prop). Optional, added 2026-10-11 from natdexterra's component-description template and the design-system-ops AI component description (both MIT): `behavior` (interaction, keyboard, state changes, motion) and `avoid` (the misuse agents and people get wrong) become the description's `Behavior:` and `Avoid:` lines, so an agent reading it over MCP knows how the component acts and what not to do; fill them for every interactive component. After the Storybook is generated, `tools/storybook_parity.py` checks that every Docs page shows these sections.
 `do_args` / `dont_args` render the component with those Figma property values next to the guideline. Keep the wording brand-neutral; product-specific examples go in `use_cases`.
 6b. **Mobile Adaptive (one Storybook, Platform switch).** For `mobile_setup: mobile-adaptive` (Intake `steps/mobile-adaptive.md`):
    - `data/tokens.json > meta.platform` and the registry's `meta.platform` are `Mobile Adaptive`; collections carry roles (`primitive`, `semantic` = Color, `language`, `os`, `component`) and Figma's default mode. Export the variables with their Code syntax (token-extractor, or a read-only FigCli eval) so `code_syntax` is filled.

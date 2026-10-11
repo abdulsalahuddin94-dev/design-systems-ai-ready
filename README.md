@@ -15,8 +15,9 @@ Skills that let Claude Code build, audit and scale AI-ready design systems in Fi
 - `memory/`: shared project memory (decisions, references). `CLAUDE.md` imports it, so every Claude session in this folder starts with it.
 - `.claude/agents/`, `.claude/hooks/`, `.claude/settings.json`, `.claude/scheduled/`: the Claude toolkit (see below).
 - `References.md`: the reference library (entries, Figma links, how to add one) and tooling links.
+- `Workflow_References/`: ready guides adopted from public MIT agent-skill repos (readiness and drift scores, UX rules for screens, deprecation, decision records), each loaded at one step; index and credits in its `README.md`.
 - `docs/`: pages for people, not for Claude: Getting started (with the Team guide), an interactive Workflow map, FAQ and troubleshooting, and the presentation. Start at `docs/README.md`.
-- `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`.
+- `.claude/skills/`: slash commands `/design-system-intake`, `/web-design-system`, `/ios-design-system`, `/android-design-system`, plus two loaded on their own: `figma-plugin-api-rules` (before any Figma write script) and `fix-variable-bindings` (scan, report, rebind).
 
 ## Setup
 1. **Install Claude Code, then double-click the setup file in this folder**: `Setup-Windows.cmd` on Windows, `Setup-Mac.command` on macOS. It checks what this computer needs (`tools/dependencies.json`: Node.js 18+, Python 3, Git, Figma Desktop) and installs what is missing; on Windows just click **Yes** when Windows asks for permission, on a Mac type your password when asked. Then open Claude Code in this folder.
@@ -47,7 +48,7 @@ At the start of a new project the intake asks "Solo" or "Team". Solo (the defaul
 **Subagents** (`.claude/agents/`). Claude hands focused jobs to them; you can also ask for one by name ("run the ds-auditor on the Navigation group").
 | Agent | Does | Writes |
 |---|---|---|
-| `ds-auditor` | Read-only QA: remote variables, raw hex/px, detached components, missing states, unwired properties, icons, contrast, naming, group placement, linked docs. `drift` mode compares Figma with the saved skills, data and Storybook. | `<folder>/audits/<date>-<mode>.md` |
+| `ds-auditor` | Read-only QA: remote variables, raw hex/px, detached components, missing states, unwired properties, icons, contrast, naming, group placement, linked docs, plus a 0-100 readiness score per component. `drift` mode compares Figma with the saved skills, data and Storybook and reports one drift % with history. | `<folder>/audits/<date>-<mode>.md` |
 | `token-extractor` | Exports Figma variables (or scans unstructured screens) and rebuilds `data/tokens.json` with exact Figma names. | `<folder>/data/`, `Inputs/Extracted_Tokens.md` |
 | `docs-writer` | Writes Foundation and Component skills, `component-registry.json`, `Project_Brief.md` and Storybook usage pages from what is in Figma. | skill folders |
 
@@ -57,7 +58,7 @@ None of them can edit Figma; they only have read tools.
 - *Machine setup*: at session start, once per machine, checks `tools/dependencies.json` and offers to install what is missing (see Setup step 1).
 - *Storybook notice*: at session start Claude is told the repo has a Storybook (installed or not, running or not) and mentions it in one line; it asks about the project first and about Storybook later (intake 0.7, or when you pick a project with pending Storybook work). The same hook is the daily Storybook check (there is no separate scheduled question): it reads each project's `CHANGELOG.md` and `status.json` (never Figma, which may be closed), lists projects whose Figma changes are not yet in Storybook and Design files that still need Accept updates for the library, and projects whose Storybook plan is Later; Claude asks whether to open the Figma plugin and update when you pick that project. Silent when everything is synced.
 - *Block absolute paths*: any write to a repo file that contains a machine path like `D:\Work\...` or `/Users/...` is stopped, so the folder keeps working on any computer.
-- *Audit reminder*: after Claude changes Figma, the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor or a Figma audit tool clears the reminder.
+- *Audit reminder*: after Claude changes Figma (Desktop Bridge or FigCli `eval`), the first time it tries to finish it is asked once to run the QA checklist (ds-auditor). Running the ds-auditor, a Figma audit tool or a binding / screen check clears the reminder. A write script that did not read its bindings back (`DS.readBack`) gets a reminder right away.
 
 **Permissions** (`.claude/settings.json`). Figma read tools (status, variables, styles, components, screenshots, audits) and safe read commands (`git status/diff/log`, `ls`, version checks, `build_tokens.py`, running Storybook) run without prompts. Installing anything (`npm install`, `npm create`, `npx storybook add`, `pip install`, `claude mcp add`) and `git push` always ask first. `.env` files are never read. Figma write tools still ask, as before. Put personal overrides in `.claude/settings.local.json` (git-ignored).
 

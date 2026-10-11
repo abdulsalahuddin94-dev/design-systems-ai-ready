@@ -39,7 +39,9 @@ It checks which Figma tools are installed first (FigCli = figma-cli, Yolo mode R
 | `Android_Design_System_Skill/SKILL.md` | Android systems (Material Design 3) |
 | `Storybook_Design_System_Skill/SKILL.md` | Optional: live Storybook (React + Storybook MCP) from a finished DS; names match Figma exactly |
 
-Knowledge base (exact values, read these instead of re-deriving or re-reading Figma): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`).
+Before any script that writes to Figma (FigCli `eval`, `figma_execute`, `use_figma`), load `.claude/skills/figma-plugin-api-rules/` (then only the topic file that matches the code) and end the script with `return await DS.readBack([...])`. Unbound values: `.claude/skills/fix-variable-bindings/`. Guides adopted from public MIT skill repos (readiness and drift scores, UX rules for screens, deprecation, decision records): `Workflow_References/README.md`.
+
+Knowledge base (exact values, read these instead of re-deriving or re-reading Figma): each DS folder has `data/tokens.json`, `data/component-registry.json`, `data/rules.json`, `data/screen-templates.json` and `docs/decisions.md`. Tools in `tools/` (`build_tokens.py`, `recolor.py`, `lint_token_names.cjs`, `design_md.py`).
 
 Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step and for weekly drift), `token-extractor` (Figma variables or screens to `data/tokens.json`), `docs-writer` (skills, registry and usage docs from Figma). Hooks in `.claude/settings.json` check the machine's dependencies once (`tools/dependencies.json`), block absolute paths in files and remind you to run the audit after Figma changes. Weekly drift audit definition: `.claude/scheduled/weekly-drift-audit.md` (not enabled).
 

@@ -52,6 +52,18 @@ updated: 2026-09-30
 ## Figma comments (Abdul, 2026-10-06)
 - Optional, any path: only when the user asks to read a file's comments or act on them; never run by default, offered or asked, and never a blocking step. A ✅ reaction (`:white_check_mark:`) on a comment means it is already fixed: resolved or ✅ threads are skipped, the rest become a fix list (fix / decision / info) approved before any change, and Claude adds ✅ to each comment it fixed after the audit passes. Never resolve, delete or reply unless asked. Read through figma-console `figma_get_comments` (REST API, token with `file_comments:read`; ✅ needs `file_comments:write`, else the user reacts by hand). Rules: Intake section 14 (`steps/figma-comments.md`).
 
+## Adopted from public agent-skill repos (Abdul, 2026-10-11)
+- A search of GitHub found no workflow like ours end to end, but several MIT repos had ready parts. Abdul chose to adopt all eight ideas; index and credits in `Workflow_References/README.md` (licenses in `Workflow_References/licenses/`). Our rules win where a file differs.
+- (1) **Readiness score:** ds-auditor gives each component and the file a 0-100 score from the checklist counts (`Workflow_References/audit/readiness-scoring.md`); it ranks work, the checkpoint still needs every count at 0.
+- (2) **Per-write check:** every Figma write script ends with `return await DS.readBack([...])` (`tools/figma_helpers.figma.js`) and `rawCount` must be 0; `audit_reminder.cjs` now also watches FigCli `eval` through Bash and reminds at once when a write script did not read back.
+- (3) **DESIGN.md:** `python tools/design_md.py <folder>` at the end of a build (finish step 3) writes `DESIGN.md` and an `AGENTS.md` block for coding agents from the data files.
+- (4) **Token name linter:** `node tools/lint_token_names.cjs <folder>` (rules in `tools/token_lint_rules.json`) in Fix on create, finish (0 errors) and the Team CI template; reference templates are only reported.
+- (5) **Drift score:** ds-auditor drift mode reports one % (components, tokens, docs, Storybook) with history in `audits/drift-history.json` (`Workflow_References/audit/drift-score.md`).
+- (6) **Flow map before screen specs:** Intake 7e step 0 (`steps/plan-user-flows.md`) maps every screen, state and decision of a flow, approved before the gap table.
+- (7) **Governance:** deprecations follow `Workflow_References/governance/deprecation.md` (mark, migrate, remove at 0 uses, registry `docs.deprecated`); token, property and breaking changes get a numbered record in the project's `docs/decisions.md` (`governance/decision-record.md`).
+- (8) **Plugin API rules:** `.claude/skills/figma-plugin-api-rules/` loads before any Figma write script (FigCli eval, figma_execute, use_figma), then only the topic file that matches the code; `.claude/skills/fix-variable-bindings/` handles scan-report-rebind. New Plugin API insights still go to `memory/lessons.md` first.
+- Also: component docs blocks take optional `behavior`, `avoid` and `props_map` (Figma description `Behavior:`, `Avoid:`, `Code: ...; props`), and screen specs list the matching UX rules from `Workflow_References/ux/`.
+
 ## Radio vs Select (Abdul, 2026-09-30)
 - Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.
 

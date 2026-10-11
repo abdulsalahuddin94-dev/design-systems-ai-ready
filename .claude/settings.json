@@ -104,7 +104,7 @@
     ],
     "PostToolUse": [
       {
-        "matcher": "mcp__figma-console__figma_(execute|create_.*|batch_.*|update_.*|delete_.*|set_.*|add_.*|edit_.*|rename_.*|move_.*|resize_.*|clone_.*|instantiate_.*|import_.*|arrange_.*|append_.*|reset_.*|setup_.*|audit_.*|lint_.*)|mcp__.*figma.*__use_figma|Agent|Task",
+        "matcher": "mcp__figma-console__figma_(execute|create_.*|batch_.*|update_.*|delete_.*|set_.*|add_.*|edit_.*|rename_.*|move_.*|resize_.*|clone_.*|instantiate_.*|import_.*|arrange_.*|append_.*|reset_.*|setup_.*|audit_.*|lint_.*)|mcp__.*figma.*__use_figma|Agent|Task|Bash",
         "hooks": [
           {
             "type": "command",

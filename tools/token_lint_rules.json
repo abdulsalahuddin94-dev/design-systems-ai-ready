@@ -1,0 +1,26 @@
+{
+  "$comment": "Rules for tools/lint_token_names.cjs. abbreviations: short form -> the word to write (rule: no abbreviations, Button not Btn). allowed_short: short forms that are the platform's own convention and stay allowed. typos: common misspellings seen in real files. Add a word here, never in the script.",
+  "abbreviations": {
+    "btn": "button", "txt": "text", "clr": "color", "col": "color", "img": "image", "ico": "icon", "lbl": "label",
+    "msg": "message", "desc": "description", "hdr": "header", "ftr": "footer", "sec": "secondary", "prim": "primary",
+    "bkg": "background", "bgd": "background", "brd": "border", "bdr": "border", "nav": "navigation", "pri": "primary",
+    "sel": "selected", "dis": "disabled", "err": "error", "warn": "warning", "succ": "success", "info": "info",
+    "cnt": "container", "ctr": "container", "fg": "foreground", "bg": "background", "sm": "small", "md": "medium",
+    "lg": "large", "xs": "extra small", "xl": "extra large", "tmp": "temporary", "num": "number", "pct": "percent"
+  },
+  "allowed_short": ["info"],
+  "typos": {
+    "raduis": "radius", "radious": "radius", "sucess": "success", "succes": "success", "warnign": "warning",
+    "seconday": "secondary", "secondery": "secondary", "primay": "primary", "pirmary": "primary",
+    "backgound": "background", "backround": "background", "boarder": "border", "bordr": "border",
+    "disbaled": "disabled", "dissabled": "disabled", "hoverd": "hovered", "focussed": "focused", "colour": "color",
+    "neutal": "neutral", "nuetral": "neutral", "spacnig": "spacing", "spcing": "spacing", "tertiery": "tertiary", "teritary": "tertiary", "spaceing": "spacing"
+  },
+  "hue_names": ["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "cyan", "sky", "blue", "indigo", "violet", "purple", "fuchsia", "pink", "rose", "gray", "grey", "slate", "zinc", "stone"],
+  "platforms": {
+    "web": { "allowed_short": ["bg", "fg", "sm", "md", "lg", "xs", "xl", "2xl", "3xl", "nav"] },
+    "ios": { "allowed_short": [] },
+    "android": { "allowed_short": ["md", "sys", "ref", "fg", "bg"] },
+    "mobile-adaptive": { "allowed_short": ["md", "sys", "ref"] }
+  }
+}

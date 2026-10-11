@@ -122,6 +122,7 @@ Trials ran one session per project (470-650 turns, context up to 690K tokens, re
 | 7b | `steps/fix-on-create.md` | a project starts from an existing file; last foundation step of a new build |
 | 7c | `steps/figma-files.md` | before the first Figma work of every session |
 | 7d, 7e, 7f | `steps/screens.md` | screens are built or changed |
+| 7e.0 | `steps/plan-user-flows.md` | a flow of two or more screens is requested (before the gap table) |
 | 10 | `steps/folders.md` | question 0.3, or unsure where a file goes |
 | 11, 12 | `steps/finish.md` | end of a build, Storybook step |
 | 13 | `steps/quick-mode.md` | `/ds-quick`, or one task on a live file without a project setup (section 0) |
@@ -195,7 +196,7 @@ Platform rules (never mix):
 - **iOS** = Apple HIG, Dynamic Type, iOS semantic names (System Background, Label...), SF Symbols style icons by default (intake 0.6b), pt units.
 - **Android** = Material Design 3, `md.sys.color` tokens, state layers, elevation levels, Material Symbols by default (intake 0.6b), dp units.
 - Each platform is **independent**: its own Figma DS file, its own variables, its own skills folder. Nothing is shared or merged between Web, iOS and Android. "Both" + Native means two full systems (the optional Brand Foundation only supplies Primitive values to copy); "Both" + Cross-platform means one shared system. "Both" + Mobile Adaptive (Native, one file) is the one exception where iOS and Android share a DS file: platform differences live only in OS-mode variables (`steps/mobile-adaptive.md`).
-- After choosing, load the platform Main Skill. Its required skills (figma-use + figma-generate-library; figma-swiftui for iOS; figma-code-connect when mapping to code) load at the first Figma build step of the session (section 0c), not during the intake questions. Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
+- After choosing, load the platform Main Skill. Its required skills (figma-use + figma-generate-library, plus `figma-plugin-api-rules` before the first write script and only the topic file that matches the code; figma-swiftui for iOS; figma-code-connect when mapping to code) load at the first Figma build step of the session (section 0c), not during the intake questions. Until the iOS / Android Main Skills are finished, tell the user and use what exists in them.
 
 ---
 
