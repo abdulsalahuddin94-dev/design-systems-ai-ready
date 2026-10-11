@@ -42,7 +42,7 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
             each: SKILL.md + references\ (components.md, gaps.md, screens\)
 ```
 
-- New project folders are copies of `My Projects\_Project_Template\`. Each can become its own private Git repo, separate from the workflow repo (see `My Projects\README.md`); never create or push one without asking.
+- New project folders are copies of `My Projects\_Project_Template\`. Each can become its own private Git repo, separate from the workflow repo (see `My Projects\README.md`); never create or push one without asking. Team projects (0.3d) are always one repo that also holds the Storybook (`steps/team.md`).
 - Root tools take the project folder relative to the Root, quoted: `python tools/build_tokens.py "My Projects/<Project>"`.
 - One folder per platform: "Both" + Native creates `<Project>_iOS\` and `<Project>_Android\`, each with its own full skill set (and `<Project>_Brand\` with `Project_Brief.md`, `status.json` and `data\tokens.json` Primitives when the Brand Foundation is chosen). "Both" + Cross-platform creates one `<Project>_Mobile\`.
 - Group routing for new components and pages (Figma and skills): foundations (including ➜ App Icon) -> ⭐Setup / Foundation_Skill; data entry -> ⭐Form Elements; actions and navigation -> ⭐Navigation; information display -> ⭐Data Display. Create a new `➜` page in the matching group when no page fits.

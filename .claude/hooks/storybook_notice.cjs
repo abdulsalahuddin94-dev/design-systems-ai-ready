@@ -12,6 +12,7 @@
 // versions newer than the last Storybook sync, which catches manual edits no CHANGELOG.md entry
 // mentions. Needs the Figma token; without one, or offline, it is skipped (at most 3 s), and a missing
 // or rejected token is mentioned once per machine (.claude/.state/figma-edit-check.json).
+// Team projects only (status.json > collaboration = team): pulls their repos first (tools/team_sync.cjs).
 const fs = require("fs");
 const net = require("net");
 const path = require("path");
@@ -80,6 +81,10 @@ function onceFor(key) {
   return true;
 }
 
+function teamSync() {
+  try { return require(path.join(ROOT, "tools", "team_sync.cjs")).pullAll(); } catch (e) { return ""; }
+}
+
 async function figmaEdits() {
   let res;
   try { res = await require(path.join(ROOT, "tools", "figma_versions.cjs")).check(); } catch (e) { return ""; }
@@ -145,8 +150,9 @@ function emit(text) {
 }
 
 async function main() {
+  // Team projects pull first, so the changelog and Figma checks below see teammates' work.
   const books = storybooks();
-  const pending = unsyncedProjects() + await figmaEdits();
+  const pending = teamSync() + unsyncedProjects() + await figmaEdits();
   if (!books.length) {
     if (pending) emit(pending);
     return;
