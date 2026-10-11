@@ -38,7 +38,7 @@ Questions: every `Ask (choice)` / `Ask (multi)` in this skill is an AskUserQuest
 
 ## 2. Inputs
 
-What to update: the project's `CHANGELOG.md` entries marked `Storybook synced: no` (list them with `python tools/project_status.py`). After the update is verified, run `python tools/project_status.py "<platform folder>" --mark-synced`.
+What to update: the project's `CHANGELOG.md` entries marked `Storybook synced: no` (list them with `python tools/project_status.py`), plus any manual Figma edits the session-start Figma edit check reported (`node tools/figma_versions.cjs` lists DS files with history versions newer than `status.json > figma.design_system.storybook_synced_version`; they may have no changelog entry, so compare the re-exported `data/` with the last sync). After the update is verified, run `python tools/project_status.py "<platform folder>" --mark-synced` (it also records the DS file's latest Figma version as synced).
 
 From the platform folder (`My Projects/<Project>/`, `<Project>_iOS/`, `<Project>_Android/`, or a reference folder from `references.json`):
 - `data/tokens.json`: every variable with its Figma name (`<Collection>::<name>`), per-mode values and aliases.
@@ -165,7 +165,7 @@ Tell the user up front which file to open: "Please open '<DS file name>' in Figm
 4. `python tools/storybook_docs.py "<folder>"` (Welcome, Foundations, doc blocks), then `python tools/storybook_stories.py "<folder>"` (stories and component Docs pages from `data/component-registry.json`; refresh the registry with docs-writer first if components changed). When ➜ App Icon changed, re-export `public/app-icon/` as in section 4 step 4.
 5. `python tools/storybook_parity.py "<folder>"` (names must match Figma exactly; fix every mismatch).
 6. `npm --prefix "<folder>/storybook" run build-storybook`, then a visual check of the changed components in each mode against the Figma screenshots.
-7. `python tools/project_status.py "<folder>" --mark-synced`.
+7. `python tools/project_status.py "<folder>" --mark-synced` (marks the changelog and records the DS file's latest Figma version, so the next session's Figma edit check starts from here).
 8. If the project is published (`status.json > storybook_publish` = `pages` or `chromatic`): commit and push the project repo so the same link redeploys, wait for the deploy, and tell the user in one line that the link is updated.
 - Never edit `src/tokens/*` by hand; they are generated.
 - A rename in Figma is a rename in Storybook (same day), because names must match.
