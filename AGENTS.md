@@ -32,6 +32,7 @@ Skills and data for building, auditing and scaling AI-ready design systems (Web,
 ## Handoff (every tool other than Claude Code)
 Several tools may work on the same project. Claude Code picks up after them from the git log and the changelog, so every tool must leave both behind.
 
+0. **Team projects** (`status.json > collaboration = team`): pull the project folder before work, lock a component before editing it and push after each change with `node tools/team_sync.cjs` (`Design_System_Intake_Skill/steps/team.md`). Solo projects: nothing to sync.
 1. **Log every Figma or project change** in that project's `CHANGELOG.md`, newest first:
    ```
    ## YYYY-MM-DD - <what> (<tool name>, e.g. Cursor)

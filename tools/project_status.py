@@ -5,6 +5,8 @@ Usage (from the Root):
   python tools/project_status.py "My Projects/<Project>"   refresh that project's status.json
   python tools/project_status.py "My Projects/<Project>" --mark-synced
                                                            mark every entry "Storybook synced: yes" (after a Storybook update)
+                                                           and record the DS file's latest Figma version as synced
+                                                           (tools/figma_versions.cjs --record, Figma edit check)
   python tools/project_status.py "My Projects/<Project>" --add-design-file <figma url> --name "Web App"
                              [--role screens|source] [--content frames|screenshots|mixed]
                                                            register (or update, by file key) a Design file in status.json > figma
@@ -18,6 +20,7 @@ import datetime
 import json
 import pathlib
 import re
+import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -67,7 +70,21 @@ def mark_synced(folder):
     lines = path.read_text(encoding="utf-8").splitlines()
     lines = [SYNC.sub(lambda m: m.group(1) + "yes", l) for l in lines]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return write_status(folder, synced_now=True)
+    result = write_status(folder, synced_now=True)
+    record_figma_version(folder)
+    return result
+
+
+def record_figma_version(folder):
+    """Record the DS file's latest Figma version as synced, so the session-start Figma edit check only
+    reports edits made after this sync. Best effort: without Node.js, a token or a network it is skipped."""
+    try:
+        r = subprocess.run(["node", str(ROOT / "tools" / "figma_versions.cjs"), str(folder), "--record"],
+                           capture_output=True, text=True, timeout=15)
+        if r.stdout.strip():
+            print(r.stdout.strip(), file=sys.stderr)
+    except (OSError, subprocess.SubprocessError):
+        pass
 
 
 def pending():

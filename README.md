@@ -38,6 +38,9 @@ Open the folder in Claude Code and say what you want, or run `/design-system-int
 
 Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, each a copy of `My Projects/_Project_Template/`. See `My Projects/README.md`.
 
+## Working as a team (optional)
+At the start of a new project the intake asks "Solo" or "Team". Solo (the default) changes nothing. Team turns the project folder into one private GitHub repo that also holds its Storybook, so everyone shares one changelog, one status and one Storybook: each session pulls teammates' work first, each step is pushed, and a component is locked while someone edits it. To join a teammate's project, open this folder in Claude Code, pick "Join a team project" and paste the repo link; Claude clones it into `My Projects/` with the right name, so you never place folders by hand. Details: `Design_System_Intake_Skill/steps/team.md`.
+
 ## Claude toolkit (in `.claude/`)
 
 **Subagents** (`.claude/agents/`). Claude hands focused jobs to them; you can also ask for one by name ("run the ds-auditor on the Navigation group").

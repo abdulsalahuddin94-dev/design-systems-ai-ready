@@ -25,4 +25,5 @@ Tools in the Root take the project folder relative to the Root, in quotes becaus
 `python tools/build_tokens.py "My Projects/<Project>"`
 
 ## Git (optional)
+Team projects (intake 0.3d "Team"): the intake sets up one repo for the project folder and its Storybook and keeps it in sync; teammates pick "Join a team project" and paste the repo link, and it is cloned here under the right name (`Design_System_Intake_Skill/steps/team.md`). Solo projects:
 Each project folder can become its own private GitHub repo, separate from the workflow repo, so a client's work can be shared without the workflow. To do that, run `git init` inside the project folder and add `My Projects/<Project>/` to the Root `.gitignore`. Nothing is created or pushed automatically.
