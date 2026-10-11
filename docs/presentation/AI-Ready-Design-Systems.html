@@ -252,6 +252,9 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
 .ms .opts{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .ms code{font:500 14px var(--mono);color:#7CC6FF;background:rgba(124,198,255,.08);padding:1px 5px;border-radius:3px;word-break:break-word}
 .ms a{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.ms a.opt{text-decoration:none;font-size:15px;padding:5px 12px}
+.ms a.opt:hover{border-color:var(--sel)}
+.ms a.opt::after{content:" ↗";color:var(--muted)}
 .msub{font:500 13px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px}
 .mcards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .mc{background:var(--frame);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:8px;min-width:0}
@@ -922,12 +925,9 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
         </ol></div>
         <div><p class="msub">Connect Figma, with Claude</p>
         <ol class="ms">
-          <li class="y"><b>Ask Claude: "Install FigCli"</b> (Recommended)</li>
-          <li class="c">Downloads figma-cli into <code>&lt;drive&gt;:\Tools</code> and runs <code>npm install</code> after your yes.</li>
-          <li class="y"><b>Turn on Yolo yourself</b>: admin terminal, <code>node src/index.js connect</code>, then <code>daemon restart</code>. Undo with <code>unpatch</code>.</li>
-          <li class="y"><b>Ask Claude: "Install the Desktop Bridge"</b> (needed for slots)</li>
-          <li class="c">You create a Figma token and add the MCP server in your own terminal (the token never goes in the chat), then Figma: Plugins &gt; Development &gt; Import plugin from manifest. Restart Claude Code.</li>
-          <li class="y"><b>Open Claude Code in the workflow folder and say "Start"</b><div class="opts"><span class="opt rec">Start</span><span class="opt"><code>/design-system-intake</code></span></div></li>
+          <li class="y"><b>Open Claude and paste each tool's GitHub link</b><div class="opts"><a class="opt rec" href="https://github.com/silships/figma-cli" target="_blank" rel="noopener">FigCli · silships/figma-cli</a><a class="opt" href="https://github.com/southleft/figma-console-mcp" target="_blank" rel="noopener">Desktop Bridge · southleft/figma-console-mcp</a></div></li>
+          <li class="c">Claude installs them for you.</li>
+          <li class="y"><b>Say "Start" in the workflow folder</b><div class="opts"><span class="opt rec">Start</span><span class="opt"><code>/design-system-intake</code></span></div></li>
           <li class="c">The intake begins at stage 1.</li>
         </ol></div>
       </div>
