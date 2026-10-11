@@ -24,6 +24,9 @@ Python 3, standard library only. Run from the Root.
 | `icon_libraries.json` | Icon libraries offered at intake 0.6b (platform defaults, Phosphor, Tabler, Heroicons, Remix Icon): license, commercial use, npm package, Iconify prefix, style and variants. The chosen id goes in `status.json > icons`. |
 | `platform_names.py` | SwiftUI / Jetpack Compose / CSS names for tokens, text styles and component properties, plus `DesignTokens.swift` / `.kt` (used by `tokens_to_css.py` and `storybook_docs.py`). |
 | `tokens_to_css.py`, `storybook_docs.py`, `storybook_stories.py`, `storybook_parity.py` | Storybook generators (tokens; Welcome, Foundations and component Docs pages; stories) and the Figma name check (Storybook_Design_System_Skill sections 4 and 5). |
+| `figma_styles.figma.js` | Paste into Yolo eval or `figma_execute` (read-only, timeout 30000) on the DS file: every variant's fill, stroke, radius, padding, gap, size, opacity and text color / font / size / weight / line height, resolved per Light / Dark mode. Save the result as `data/figma-styles.json`. |
+| `storybook_snap.cjs <folder> [--url] [--components] [--selector] [--global]` | Opens each variant's story with its Figma args and mode in a headless browser (Playwright; asks for the install) and writes the computed styles to `data/storybook-styles.json`. Works on `npm run storybook` or a served static build. |
+| `style_parity.py <folder>` | Compares the two files: `Fidelity: N% (x/y properties)` plus every difference per component, variant and mode; exit 1 on any difference, unmeasured variant or stale measurement. Storybook style check (skill section 4 step 7, section 5 step 6, CI template `storybook-check.yml`). |
 
 ## Refresh tokens from Figma
 1. Open the DS file in Figma Desktop with the Desktop Bridge plugin running.
