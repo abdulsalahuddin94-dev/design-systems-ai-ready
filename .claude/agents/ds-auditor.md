@@ -40,6 +40,8 @@ Report each line as a number, never "looks fine":
 
 Screenshot every variant you flag, in Light and Dark, with `figma_capture_screenshot`.
 
+**Readiness score (2026-10-11):** after the checklist, give each component set a 0-100 score and the file a mean score, computed from the checklist counts as in `Workflow_References/audit/readiness-scoring.md` (labels: Production ready, Nearly ready, Needs work, Not ready). Put the file score at the top of the report with the previous report's score next to it. The score ranks the work; the checkpoint still needs every count at 0.
+
 ## Screens mode (every time screens are built or changed in a Design file)
 Abdul's rule: every Design file is audited for real use of the design system.
 - Every component on the screens is an instance of a **library** component from the project's DS file (`status.json > figma.design_system`), not a local copy, a detached group or a hand-drawn shape (e.g. a divider drawn by hand).
@@ -66,6 +68,7 @@ Compare Figma against the project's `data/tokens.json`, `data/component-registry
 - Figma descriptions that differ from `python tools/component_docs.py <folder> figma` output (someone edited Figma or the registry `docs` block without regenerating), and `... check` gaps;
 - the build-mode checklist numbers compared with the last report.
 If a Storybook project exists (`My Projects/<Project>/storybook/`), also list component, variant, property and token names that no longer match Figma exactly.
+- **Drift score (2026-10-11):** one overall % with its parts (components, tokens, docs, Storybook), computed as in `Workflow_References/audit/drift-score.md`, appended to `<folder>/audits/drift-history.json`, with the trend since the last entry in the first line of the report.
 
 ## Output
 Write the report to `<platform folder>/audits/<YYYY-MM-DD>-<mode>.md` with: summary numbers, a table of findings (node name, page, issue, fix), screenshots paths, and what changed since the previous report in that folder. Return to the caller a short summary with the numbers and the report path. Do not fix anything yourself; the caller decides.

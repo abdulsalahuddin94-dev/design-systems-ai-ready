@@ -93,7 +93,7 @@ def read_component_md(folder):
     return out
 
 
-DESC_LABELS = r"Purpose|Usage rules?|Usage|Accessibility|Sources?|Code|Keywords"
+DESC_LABELS = r"Deprecated|Purpose|Usage rules?|Usage|Accessibility|Behaviou?r|Avoid|Sources?|Code|Keywords"
 
 
 def parse_description(desc):
@@ -203,6 +203,10 @@ def component_docs(c, live, usage, rules, url, rtl=False, platform="Web"):
     docs["guidelines"] = [{"do": cap(g["do"]), "dont": cap(g["dont"])} for g in docs["guidelines"]]
     docs.update({k: v for k, v in over.items() if v is not None})
     docs["accessibility"] = [a11y_text(x) for x in docs.get("accessibility", [])]
+    dep = over.get("deprecated")
+    if isinstance(dep, dict) and dep.get("replacement"):  # Workflow_References/governance/deprecation.md
+        when = f" Removed after {dep['remove_after']}." if dep.get("remove_after") else ""
+        docs["overview"] = f"Deprecated: use {dep['replacement']}.{when} " + docs.get("overview", "")
     return {k: v for k, v in docs.items() if v not in (None, "", [])} | {"name": name, "group": docs["group"], "tier": docs["tier"]}
 
 

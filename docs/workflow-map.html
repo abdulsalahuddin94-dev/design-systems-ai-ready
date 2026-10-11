@@ -219,6 +219,7 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
       <li class="claude">Primitives, then Semantics (Light / Dark)</li>
       <li class="claude">Spacing, radius, size and typography variables, then text and effect styles</li>
       <li class="claude">Icons from the library you picked, the App Icon page, and linked Colors / Typography pages; fixes any gaps</li>
+      <li class="claude">Checks every token name (typos, stray spaces, duplicates, raw values in Semantic colors) and fixes them in your copy <span class="tag new">New</span></li>
       <li class="claude">Team projects: locks the foundation while editing and pushes after the step</li>
       <li class="you"><div><b>Approve the Foundation</b>
         <div class="opts"><span class="opt rec">Approve, go to components</span><span class="opt">Request changes</span></div></div></li>
@@ -232,7 +233,8 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
     <ol class="steps">
       <li class="claude">Atoms, then Molecules, Organisms, Patterns; each with its description and real icons</li>
       <li class="claude">Team projects: locks each component before editing, so two people never change the same one</li>
-      <li class="claude">Audits every variant in Light and Dark</li>
+      <li class="claude">Every Figma change reads its token bindings back on the spot, so nothing is left hardcoded by accident <span class="tag new">New</span></li>
+      <li class="claude">Audits every variant in Light and Dark and gives each component a readiness score out of 100 <span class="tag new">New</span></li>
       <li class="you"><div><b>Approve the components</b>
         <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
       <li class="you"><div><b>One to-do list</b>: rename the file if needed, publish the library, Accept updates in the Design files
@@ -246,7 +248,10 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
   <div class="body">
     <ol class="steps">
       <li class="you"><div><b>Pick the Design file</b> and open it</div></li>
-      <li class="claude">Writes a spec per screen and lists missing components</li>
+      <li class="claude">Maps the whole flow first: every screen, its loading, error and empty states, and where each choice leads <span class="tag new">New</span></li>
+      <li class="you"><div><b>Approve the flow map</b> <span class="tag new">New</span>
+        <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
+      <li class="claude">Writes a spec per screen with the UX rules that fit it (forms, tables, search...) and lists missing components</li>
       <li class="claude">Builds missing components in the DS first (you publish again)</li>
       <li class="claude">Builds each screen section by section (Mobile 375 × 812, Desktop 1440 × 1024), compares it side by side, audits it</li>
       <li class="you"><div><b>Create the prototype?</b> (after each flow)
@@ -263,6 +268,7 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
     <ol class="steps">
       <li class="claude">Final audit of the DS and every changed Design file</li>
       <li class="claude">Writes the project skills and the changelog</li>
+      <li class="claude">Writes DESIGN.md and AGENTS.md, so any coding AI builds with your components and tokens <span class="tag new">New</span></li>
       <li class="claude">Team projects: pushes, and says which locks are still held</li>
     </ol>
     <div><p class="sub">Storybook (if you said Yes)</p>

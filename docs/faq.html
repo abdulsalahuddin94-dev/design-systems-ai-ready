@@ -173,7 +173,23 @@
       <p>Codex, Cursor and others log their changes in the project's <code>CHANGELOG.md</code>. At the next session Claude tells you what they did and audits it before building on it.</p>
     </div></details>
     <details class="q"><summary>Why did Claude stop and ask me to approve?</summary><div class="a">
-      <p>The Foundation, Components and Screens checkpoints always wait for you. Claude never approves its own work.</p>
+      <p>The Foundation, Components and Screens checkpoints always wait for you. Claude never approves its own work. A flow of screens also starts with a flow map (every screen, its loading, error and empty states, and where each choice leads) that you approve before any screen spec.</p>
+    </div></details>
+    <details class="q"><summary>What does the readiness score in an audit mean?</summary><div class="a">
+      <p>Each component gets a score out of 100 from the audit counts: missing states weigh most, then hardcoded values, then accessibility, then naming. 90 and up is Production ready, 75 to 89 Nearly ready, 50 to 74 Needs work. It tells you which component to fix first; a checkpoint still needs every count at 0.</p>
+    </div></details>
+    <details class="q"><summary>The token name check reports errors on a reference template</summary><div class="a">
+      <p>The original templates are never changed, so their typos and stray spaces stay there. When a project starts from one, Claude fixes the same names in your copy during Fix on create and lists anything it could not rename safely in <code>gaps.md</code>.</p>
+    </div></details>
+    <details class="q"><summary>How do developers' AI tools use the design system?</summary><div class="a">
+      <p>At the end of a build Claude writes <code>DESIGN.md</code> and an <code>AGENTS.md</code> block in the project folder: tokens per mode, type, spacing, radius, components and the do's and don'ts. Cursor, Codex, Claude Code and similar tools read them, so generated UI uses your components and tokens. Rerun <code>python tools/design_md.py "My Projects/&lt;Project&gt;"</code> after a resync; your own Overview and rules between the manual markers are kept.</p>
+    </div></details>
+    <details class="q"><summary>Claude says a Figma script "did not read its result back"</summary><div class="a">
+      <p>Figma sometimes accepts a token binding silently without applying it. Every script that changes Figma now ends by reading its bindings back, and the reminder appears when one did not.</p>
+      <p class="fix"><b>Fix:</b> nothing for you to do; Claude runs <code>DS.readBack</code> on the changed layers and fixes anything left hardcoded.</p>
+    </div></details>
+    <details class="q"><summary>We want to retire a component</summary><div class="a">
+      <p>Ask Claude to deprecate it. It counts where the component is used, marks it <code>[Deprecated]</code> with its replacement, swaps the instances in your Design files one file at a time, and removes it only when nothing uses it anymore. The reason goes into the project's <code>docs/decisions.md</code>.</p>
     </div></details>
   </div>
 </section>

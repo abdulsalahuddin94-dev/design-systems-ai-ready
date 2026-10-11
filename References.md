@@ -42,6 +42,15 @@ Not Figma kits: agent skills that guide decisions (component choice, states, acc
 - Android: material-design-3-ui (MIT): https://github.com/skydashnet/material-design-3-ui-skill
 - Android exact M3 values: material-components-android `tokens.xml` files: https://github.com/material-components/material-components-android (Views, maintenance mode; Compose Material 3 is current)
 
+## Adopted agent-skill guides (2026-10-11)
+Parts of public MIT agent-skill repos, adapted and kept in this repo (no install needed). Index: `Workflow_References/README.md`; licenses: `Workflow_References/licenses/`.
+- schudarin/chudarin-figma-skills: https://github.com/schudarin/chudarin-figma-skills (Plugin API rules, fix variable bindings, user flows, UX rules)
+- natdexterra/work-with-design-systems: https://github.com/natdexterra/work-with-design-systems (readiness score, component description template, AGENTS.md export)
+- murphytrueman/design-system-ops: https://github.com/murphytrueman/design-system-ops (deprecation, decision records, AI readiness)
+- MUZEEBURRAHAMAN/design-system-skills: https://github.com/MUZEEBURRAHAMAN/design-system-skills (DESIGN.md, drift score)
+- michaelwnau/figma-design-system-engineering: https://github.com/michaelwnau/figma-design-system-engineering (token name linter)
+- Seen but not adopted: senlindesign/claude2figma (its post-write hook only echoes a reminder; our `DS.readBack` check replaces it), lifesized/figma-design-sync and christinevall/skills (code to Figma; our Figma is the source).
+
 ## Figma tooling
 Setup guide, which tool fits which step, Yolo setup and risks, switching: `Figma_Tools/README.md`.
 - figma-console-mcp: https://github.com/southleft/figma-console-mcp

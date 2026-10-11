@@ -11,7 +11,8 @@ Part of `Design_System_Intake_Skill` (sections keep their original numbers, so "
    - One Component_Skill per group: every component with tier, variants, properties, exact use cases, when not to use, and dependencies. The usage lines come from the registry `docs` blocks: `python tools/component_docs.py "My Projects/<Project>" check` must report 0 missing, then `... skills`.
    - `gaps.md` in each: anything left open.
    - The JSON knowledge base in `My Projects/<Project>/data/`: export variables and run `python tools/build_tokens.py "My Projects/<Project>"` (tokens.json), then write `component-registry.json`, `rules.json`, `screen-templates.json` (copy the reference entry's versions as the starting shape, `references.json`) and `docs/decisions.md`.
-   - Check `tokens.json > recolor_readiness.ready` is true.
+   - Check `tokens.json > recolor_readiness.ready` is true and `node tools/lint_token_names.cjs "My Projects/<Project>"` reports 0 errors.
+   - **DESIGN.md for coding agents (2026-10-11):** `python tools/design_md.py "My Projects/<Project>"` writes `DESIGN.md` (tokens per mode, type, spacing, radius, effects, components, do's and don'ts, in the google-labs-code/design.md shape) and a managed block in the project's `AGENTS.md`, from the data files above (no Figma calls). Write the Overview (2-4 sentences on the look) and any product rules inside its manual markers; they survive reruns. Rerun after every resync of the data files.
 4. Update `Project_Brief.md` with the final state and links, add the `CHANGELOG.md` entry (`Storybook synced: no`), refresh `status.json` with `tools/project_status.py`, and save the key facts to memory.
 5. Reply to the user with the audit result, the skill paths and what is left.
 

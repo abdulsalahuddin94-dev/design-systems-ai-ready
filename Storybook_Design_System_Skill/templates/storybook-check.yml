@@ -1,8 +1,10 @@
 # Checks the project Storybook on every push and pull request (idea from storysync's GitHub Action, adopted 2026-10-11).
 # Copy to the project repo as .github/workflows/storybook-check.yml (Team projects and published Storybooks).
 # 1. Name check: every Figma component, variant and property name is in the stories (tools/storybook_parity.py).
-# 2. The Storybook builds.
-# 3. Style check, only when data/figma-styles.json is committed: the built Storybook is measured again
+# 2. Token names: no typos, duplicates, stray spaces or Semantic colors with raw values (tools/lint_token_names.cjs;
+#    errors fail, warnings are listed). Added 2026-10-11.
+# 3. The Storybook builds.
+# 4. Style check, only when data/figma-styles.json is committed: the built Storybook is measured again
 #    (tools/storybook_snap.cjs) and compared with the last Figma read (tools/style_parity.py), so a hand edit to a
 #    component or token file that breaks the match with Figma fails here, before anyone opens the link.
 # The workflow tools come from the public workflow repo; nothing is installed in the project repo.
@@ -36,6 +38,8 @@ jobs:
           cache-dependency-path: storybook/package-lock.json
       - name: Figma names in Storybook
         run: python _workflow/tools/storybook_parity.py "$GITHUB_WORKSPACE"
+      - name: Token names
+        run: node _workflow/tools/lint_token_names.cjs "$GITHUB_WORKSPACE"
       - run: npm ci
         working-directory: storybook
       - run: npm run build-storybook

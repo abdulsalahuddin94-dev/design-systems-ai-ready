@@ -8,7 +8,8 @@ The `docs` block of each entry in <folder>/data/component-registry.json is writt
 (Storybook_Design_System_Skill/SKILL.md section 4b has the full shape). Required keys: overview, when_to_use,
 when_not_to_use, accessibility, keywords; Molecules and higher also need anatomy.
 
-- figma:  the Figma description (Purpose / Usage rules / Accessibility / Keywords) is generated from the block, then
+- figma:  the Figma description (Purpose / Usage rules / Accessibility / Behavior / Avoid / Keywords / Code) is generated
+          from the block (Behavior, Avoid and Code only when the block has them), then
           written to every component set by tools/apply_descriptions.figma.js. Nobody writes it by hand.
 - skills: under each `## <Component>` heading of its group's components.md, the lines between
           `<!-- docs:start -->` and `<!-- docs:end -->` are regenerated (Use / Do not use / Content / Accessibility /
@@ -57,23 +58,47 @@ def missing_keys(c):
     return [k for k in need if not d.get(k)]
 
 
+def code_line(d):
+    """`Code:` line: the file or import, then the Figma property -> code prop map (idea from natdexterra's
+    component-description template, MIT), so an agent reading the description over MCP writes the right props."""
+    if not d.get("code"):
+        return ""
+    props = d.get("props_map") or {}
+    mapped = "; props " + ", ".join(f"{k} -> {v}" for k, v in props.items()) if props else ""
+    return f"Code: {d['code']}{mapped}"
+
+
+def deprecated_line(dep):
+    """First description line of a deprecated component (Workflow_References/governance/deprecation.md)."""
+    if not isinstance(dep, dict) or not dep.get("replacement"):
+        return ""
+    when = f" Removed after {dep['remove_after']}." if dep.get("remove_after") else ""
+    return f"Deprecated: use {dep['replacement']}.{when}"
+
+
 def figma_description(c):
     """House format read back by tools/storybook_docs.py parse_description()."""
     d = c.get("docs") or {}
     usage = [x.rstrip(".") for x in d.get("when_to_use", [])] + [dont_text(x) for x in d.get("when_not_to_use", [])]
+    dep = d.get("deprecated") or {}
     lines = [
+        deprecated_line(dep),
         f"Purpose: {d.get('overview', '').rstrip('.')}.",
         f"Usage rules: {'. '.join(usage)}." if usage else "",
         f"Accessibility: {'. '.join(a11y_text(x) for x in d.get('accessibility', []))}." if d.get("accessibility") else "",
+        f"Behavior: {'. '.join(x.rstrip('.') for x in d['behavior'])}." if d.get("behavior") else "",
+        f"Avoid: {'. '.join(x.rstrip('.') for x in d['avoid'])}." if d.get("avoid") else "",
         f"Keywords: {', '.join(d['keywords'])}" if d.get("keywords") else "",
-        f"Code: {d['code']}" if d.get("code") else "",
+        code_line(d),
     ]
     return "\n".join(x for x in lines if x)
 
 
 def skill_lines(c):
     d = c.get("docs") or {}
+    dep = deprecated_line(d.get("deprecated"))
     rows = [
+        ("Deprecated", dep[len("Deprecated: "):] if dep else ""),
         ("Use", "; ".join(x.rstrip(".") for x in d.get("use_cases") or d.get("when_to_use", []))),
         ("Do not use", "; ".join(x.rstrip(".") for x in d.get("when_not_to_use", []))),
         ("Content", "; ".join(x.rstrip(".") for x in d.get("content", []))),

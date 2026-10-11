@@ -12,4 +12,5 @@ Entry format:
 - Figma file: <name>
 - Library published: <yes / no> (DS changes only)
 - Design files updated (Accept updates): <name: yes / no, one per linked Design file>
+- Deprecated / Removed: <name -> replacement, usage count> (only when something was deprecated or removed; `Workflow_References/governance/deprecation.md`)
 ```
