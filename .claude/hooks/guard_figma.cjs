@@ -6,6 +6,9 @@
 //   off_limits.original_template_file_keys).
 // - read-only: denies write APIs in scripts that start with "// read-only" or run inside a read-only
 //   agent (ds-auditor, token-extractor, docs-writer), so auditors can use figma_execute safely.
+// - FigCli (Bash): the same checks run on `node src/index.js eval "<code>"` / `eval --file <script>`.
+//   Inside a read-only agent only the FigCli read commands are allowed (eval of read-only code,
+//   verify, check, snapshot, daemon status/restart, --version); any other FigCli command is denied.
 // Reads the rules at run time, so editing rules.json changes what is enforced.
 const fs = require("fs");
 const path = require("path");
@@ -18,6 +21,25 @@ const WRITE = new RegExp(
   String.raw`figma\.(create\w+|variables\.create\w+)\s*\(`
 );
 const READ_ONLY_AGENTS = new Set(["ds-auditor", "token-extractor", "docs-writer"]);
+const FIGCLI = /\bsrc[\\/]index\.js\b/;
+const FIGCLI_READ = /\bsrc[\\/]index\.js\s+(eval|verify|check|snapshot|daemon\s+(status|restart)|--version)\b/;
+
+// Code that a FigCli Bash command sends to Figma: the inline eval string, plus the script of
+// `eval --file <path>` (resolved against the command's cwd and the Root).
+function figcliCode(cmd, cwd) {
+  let code = "";
+  const file = cmd.match(/\beval\s+--file\s+("([^"]+)"|'([^']+)'|(\S+))/);
+  if (file) {
+    const f = file[2] || file[3] || file[4];
+    for (const base of [cwd || process.cwd(), ROOT]) {
+      try { code = fs.readFileSync(path.resolve(base, f), "utf8"); break; } catch (e) { /* try next */ }
+    }
+  } else {
+    const inline = cmd.match(/\beval\s+([\s\S]*)$/);
+    if (inline) code = inline[1].replace(/^\s*["']|["']\s*$/g, "");
+  }
+  return code;
+}
 
 function readJson(p) {
   return JSON.parse(fs.readFileSync(p, "utf8"));
@@ -58,7 +80,15 @@ function main() {
   const data = readInput();
   if (!data) return 0;
   const ti = data.tool_input || {};
-  const code = ti.code || ti.javascript || "";
+  let code = ti.code || ti.javascript || "";
+  if (typeof ti.command === "string") { // Bash: only FigCli commands are checked
+    if (!FIGCLI.test(ti.command)) return 0;
+    if (READ_ONLY_AGENTS.has(data.agent_type) && !FIGCLI_READ.test(ti.command)) {
+      return decide("deny", "read-only agent: only FigCli read commands (eval of read-only code, verify, check, " +
+                            "snapshot, daemon status/restart) are allowed here. Report the fix to the caller.");
+    }
+    code = figcliCode(ti.command, data.cwd);
+  }
   if (code.includes("detachInstance(")) {
     return decide("deny", "off_limits no-detach: never detach instances. Use instance swaps, slots or exposed " +
                           "properties (component-registry.json > slots); if a swap is missing, fix the component.");

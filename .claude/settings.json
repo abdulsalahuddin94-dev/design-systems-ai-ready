@@ -54,6 +54,7 @@
       "Bash(python tools/build_tokens.py:*)",
       "Bash(python tools/new_foundation.py:*)",
       "Bash(python tools/project_status.py:*)",
+      "Bash(python tools/session_cost.py:*)",
       "Bash(npm run storybook:*)",
       "Bash(npm run build-storybook:*)",
       "Bash(node .claude/hooks/run.cjs setup_check:*)"
@@ -93,7 +94,7 @@
         ]
       },
       {
-        "matcher": "mcp__figma-console__figma_execute|mcp__figma-console__figma_execute_across_files|mcp__.*figma.*__use_figma",
+        "matcher": "mcp__figma-console__figma_execute|mcp__figma-console__figma_execute_across_files|mcp__.*figma.*__use_figma|Bash",
         "hooks": [
           {
             "type": "command",

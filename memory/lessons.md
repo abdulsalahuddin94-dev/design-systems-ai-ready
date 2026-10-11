@@ -2,6 +2,10 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+## Audits with FigCli Yolo (2026-10-11)
+1. **ds-auditor could not run on a FigCli Yolo machine.** It had only Desktop Bridge tools and no Bash, and stopped when the Bridge was not connected, although Yolo is the main tool and the Bridge is used only for slots.
+   Cause: the agents were written before Yolo became the default (2026-10-05) and were never updated. Rule: every agent that reads Figma uses the tool saved for the file, through FigCli read commands or the Bridge; FigCli `check` alone is never the audit (one sample variant per set). Check: `guard_figma.cjs` denies non-read FigCli commands in read-only agents; `tools/figma_styles.figma.js` passes the read-only check (plain-object fields written as `out['x']` so they do not look like node writes). Fixed in `.claude/agents/*.md`, `.claude/hooks/guard_figma.cjs`, `.claude/settings.json`.
+
 ## Code-to-Design source recovery (2026-10-07)
 1. **Work stopped at a remote browser failure despite an available GitHub source.** Cause: the visual comparison tool was treated as the only path to source references. Rule: continue the code inventory and component gap analysis independently; if remote preview automation fails, use the local source preview after package-install authorization. Match the repository's lockfile/tool rather than assuming npm ci can consume a Bun lockfile. Capture only after React hydration and chart animations finish; a server-rendered page can show labels while interactive charts are still blank. Check: current source commit recorded, complete chart geometry visible in source screenshots, and table counts exported from the hydrated local app. Recovery added to `Design_System_Intake_Skill/steps/code-to-design.md`.
 

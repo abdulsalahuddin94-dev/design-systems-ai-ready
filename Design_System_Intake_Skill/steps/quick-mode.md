@@ -15,7 +15,7 @@ For real projects that are already running: the user opens the workflow and asks
 Read what the user already said first; ask nothing it answers. Every question with options is an Ask (choice) or Ask (multi) (section 0).
 1. **The task**, if it is not one clear thing, Ask (choice): "What exactly should I do?" "Build one component" / "Audit a file or page" / "Fix one thing".
 2. **The file:** if a file is connected, Ask (choice): "Figma is connected to '<file name>'. Should I work in this file?" "Yes, this file" / "No, another file" (description: paste its link in Other). For a component, also ask where the component goes if the connected file is not the DS, Ask (choice): "Which file holds the design system for this component?" "This file" / "Another file" (description: paste its link in Other).
-3. **The tool**, only when both tools are installed (0.0t, asked per file; nothing is saved because there is no `status.json`).
+3. **The tool:** no question (Abdul, 2026-10-11). Both installed -> FigCli Yolo, the Desktop Bridge only for slots; one installed -> that one. Say which in one line.
 4. **The platform**, Ask (choice): "Web" / "iOS" / "Android", only when the file does not make it obvious (frame widths, names, `md.sys` or iOS semantic variables). It picks which Main Skill sections apply.
 5. **The source** for a component (typed): the live URL, or the captured frame in Figma (name or selection). If the source shows only one state, Ask (multi): "Which states should it have?" with the platform's usual states (Web: Hover, Focus, Disabled, Pressed; group the rest in Other).
 

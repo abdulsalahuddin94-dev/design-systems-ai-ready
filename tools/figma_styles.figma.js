@@ -80,7 +80,7 @@ async function measure(node, mode) {
   out.fill = await paint(node.fills, mode);
   const stroke = await paint(node.strokes, mode);
   out.stroke = stroke;
-  out.strokeWeight = stroke ? await num(node, 'strokeWeight', mode) : 0;
+  out['strokeWeight'] = stroke ? await num(node, 'strokeWeight', mode) : 0;
   const rad = (await num(node, 'topLeftRadius', mode)) ?? (await num(node, 'cornerRadius', mode)) ?? 0;
   out.radius = r2(Math.min(rad, Math.min(node.width, node.height) / 2));
   const auto = node.layoutMode && node.layoutMode !== 'NONE';
@@ -91,15 +91,15 @@ async function measure(node, mode) {
   out.height = r2(node.height);
   out.sizingH = node.layoutSizingHorizontal || 'FIXED';
   out.sizingV = node.layoutSizingVertical || 'FIXED';
-  out.opacity = r2(node.opacity);
+  out['opacity'] = r2(node.opacity);
   const t = firstText(node);
   if (t) {
     out.textColor = await paint(t.fills, mode);
     out.fontFamily = t.fontName === figma.mixed ? null : t.fontName.family;
-    out.fontSize = t.fontSize === figma.mixed ? null : await num(t, 'fontSize', mode);
+    out['fontSize'] = t.fontSize === figma.mixed ? null : await num(t, 'fontSize', mode);
     out.fontWeight = typeof t.fontWeight === 'number' ? t.fontWeight : null;
     const lh = t.lineHeight;
-    out.lineHeight = lh === figma.mixed || !lh || lh.unit === 'AUTO' ? null
+    out['lineHeight'] = lh === figma.mixed || !lh || lh.unit === 'AUTO' ? null
       : lh.unit === 'PIXELS' ? r2(lh.value) : r2((out.fontSize || 0) * lh.value / 100);
   }
   return out;
