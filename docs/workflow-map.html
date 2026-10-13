@@ -111,6 +111,8 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
     <ol class="steps">
       <li class="you"><div><b>What should I do?</b>
         <div class="opts"><span class="opt">Build one component</span><span class="opt">Audit a file or page</span><span class="opt">Fix one thing</span></div></div></li>
+      <li class="you"><div><b>What should the audit cover?</b> (audits of screens)
+        <div class="opts"><span class="opt rec">Design system use</span><span class="opt">Usability</span></div></div> <span class="tag new">New</span></li>
       <li class="claude">Does the task, then audits every variant in Light and Dark.</li>
       <li class="you"><div><b>Approve the result</b>
         <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
@@ -191,7 +193,7 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
         <p>A DS exists but screens follow it partly.</p>
         <ol class="steps">
           <li class="you"><div><b>Where is the DS?</b> Own library, or inside the Design file (split or keep)</div></li>
-          <li class="claude">Maps variables, fixes the DS, audits each screen</li>
+          <li class="claude">Maps variables, fixes the DS, audits each screen (and its usability, if you ask) <span class="tag new">New</span></li>
           <li class="you"><div><b>Approve the fixes</b>, publish, Accept updates</div></li>
         </ol>
       </div>
@@ -247,12 +249,14 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
   <div class="body">
     <ol class="steps">
       <li class="you"><div><b>Pick the Design file</b> and open it</div></li>
-      <li class="claude">Maps the whole flow first: every screen, its loading, error and empty states, and where each choice leads <span class="tag new">New</span></li>
+      <li class="claude">Maps the whole flow first: every screen, its loading, error and empty states, and where each choice leads, then checks the map for a way back and a way out of every error <span class="tag new">New</span></li>
       <li class="you"><div><b>Approve the flow map</b> <span class="tag new">New</span>
         <div class="opts"><span class="opt rec">Approve</span><span class="opt">Request changes</span></div></div></li>
       <li class="claude">Writes a spec per screen with the UX rules that fit it (forms, tables, search...) and lists missing components</li>
       <li class="claude">Builds missing components in the DS first (you publish again)</li>
       <li class="claude">Builds each screen section by section (Mobile 375 × 812, Desktop 1440 × 1024), compares it side by side, audits it</li>
+      <li class="you"><div><b>Run a usability review of the whole flow?</b> Nielsen's 10 heuristics, each issue rated 0 to 4; you pick what to fix <span class="tag new">New</span>
+        <div class="opts"><span class="opt rec">Yes</span><span class="opt">Skip</span></div></div></li>
       <li class="you"><div><b>Create the prototype?</b> (after each flow)
         <div class="opts"><span class="opt">Yes</span><span class="opt">No</span></div></div></li>
       <li class="you"><div><b>Approve the screens</b>

@@ -1,6 +1,6 @@
 # Workflow references
 
-Ready-made guides the workflow loads at one step, taken from public MIT-licensed agent-skill repos on GitHub (studied 2026-10-11) and adapted to our rules, so we did not have to write them from scratch. Each file names its source at the top; the license texts are in `licenses/`. Our own rules (`memory/decisions.md`, `memory/lessons.md`, the platform Main Skills) win wherever a file differs.
+Ready-made guides the workflow loads at one step, taken from public MIT-licensed agent-skill repos on GitHub (studied 2026-10-11, `ux-heuristics/` added 2026-10-13) and adapted to our rules, so we did not have to write them from scratch. Each file names its source at the top; the license texts are in `licenses/`. Our own rules (`memory/decisions.md`, `memory/lessons.md`, the platform Main Skills) win wherever a file differs.
 
 Load only the file the current step needs (token budget, Intake section 0c).
 
@@ -9,6 +9,7 @@ Load only the file the current step needs (token budget, Intake section 0c).
 | `audit/readiness-scoring.md` | ds-auditor build mode: a 0-100 score per component and per file | natdexterra/work-with-design-systems |
 | `audit/drift-score.md` | ds-auditor drift mode: one drift % with history in `audits/drift-history.json` | MUZEEBURRAHAMAN/design-system-skills (fork of NewMediaStudio) |
 | `ux/README.md` + `ux/*.md` | Screens (Intake 7e, 7f): rules per screen content (forms, tables, search, navigation, states, loading, copy, accessibility...) in the screen spec and the critique | schudarin/chudarin-figma-skills |
+| `ux-heuristics/README.md` + `ux-heuristics/*.md` | Optional usability review (Nielsen's 10 heuristics, Krug, severity 0-4): flow map pre-check (7e.0), end of a flow (7e step 4b), quick-mode audit and Scenario C step 3, through ds-auditor `usability` mode. Added 2026-10-13 | wondelai/skills `ux-heuristics` |
 | `governance/deprecation.md` | Replacing or removing a component, variant or variable that screens use | murphytrueman/design-system-ops |
 | `governance/decision-record.md` | Token, property or breaking changes and trade-offs, in the project's `docs/decisions.md` | murphytrueman/design-system-ops |
 | `ai-readiness.md` | Background: what "AI-ready" means and why descriptions, tokens and checks matter | murphytrueman/design-system-ops |
