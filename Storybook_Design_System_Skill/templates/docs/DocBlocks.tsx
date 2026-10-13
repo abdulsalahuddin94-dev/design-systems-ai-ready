@@ -58,11 +58,11 @@ function pick(patterns: RegExp[], role = 'semantic'): string | undefined {
   return undefined;
 }
 const THEME: Record<string, string | undefined> = {
-  '--dsd-text': pick([/(^|\/)text\/primary$/i, /label\/primary$/i, /(^|\/)on-surface$/i, /(^|\/)text$/i]),
-  '--dsd-muted': pick([/(^|\/)text\/(secondary|muted)$/i, /label\/secondary$/i, /on-surface-variant$/i]),
+  '--dsd-text': pick([/(^|\/)text\/primary$/i, /label\/primary$/i, /(^|\/)on[-_]surface$/i, /(^|\/)text$/i]),
+  '--dsd-muted': pick([/(^|\/)text\/(secondary|muted)$/i, /label\/secondary$/i, /on[-_]surface[-_]variant$/i]),
   '--dsd-bg': pick([/(^|\/)bg\/primary$/i, /background\/primary$/i, /system-?background$/i, /(^|\/)surface$/i, /(^|\/)background$/i]),
-  '--dsd-surface': pick([/(^|\/)bg\/secondary$/i, /background\/(secondary|grouped|elevated)$/i, /secondary-?system-?background$/i, /surface[-/ ]container$/i, /(^|\/)bg\/subtle$/i, /(^|\/)surface$/i]),
-  '--dsd-border': pick([/(^|\/)border\/default$/i, /separator/i, /outline-variant$/i, /(^|\/)border\/muted$/i]),
+  '--dsd-surface': pick([/(^|\/)bg\/secondary$/i, /background\/(secondary|grouped|elevated)$/i, /secondary-?system-?background$/i, /surface[-_/ ]container$/i, /(^|\/)bg\/subtle$/i, /(^|\/)surface$/i]),
+  '--dsd-border': pick([/(^|\/)border\/default$/i, /separator/i, /outline[-_]variant$/i, /(^|\/)border\/muted$/i]),
   '--dsd-brand': pick([/(^|\/)bg\/brand$/i, /action\/primary\/bg$/i, /btn\/primary\/bg/i, /(^|\/)accent/i, /(^|\/)primary$/i, /brand\/(600|500)$/i]),
   '--dsd-success': pick([/(^|\/)text\/success$/i, /(^|\/)icon\/success$/i, /success/i]),
   '--dsd-error': pick([/(^|\/)text\/error$/i, /(^|\/)icon\/error$/i, /(^|\/)error$/i, /danger/i]),
