@@ -45,7 +45,7 @@ At the start of a new project the intake asks "Solo" or "Team". Solo (the defaul
 
 ## Claude toolkit (in `.claude/`)
 
-**Subagents** (`.claude/agents/`). Claude hands focused jobs to them; you can also ask for one by name ("run the ds-auditor on the Navigation group").
+**Subagents** (`.claude/agents/`). Claude hands focused jobs to them; you can also ask for one by name ("run the ds-auditor on the Navigation group"). They run on Sonnet to save tokens, read Figma with FigCli Yolo or the Desktop Bridge (whichever the file uses), and never edit it; the main session still judges every checkpoint.
 | Agent | Does | Writes |
 |---|---|---|
 | `ds-auditor` | Read-only QA: remote variables, raw hex/px, detached components, missing states, unwired properties, icons, contrast, naming, group placement, linked docs, plus a 0-100 readiness score per component. `drift` mode compares Figma with the saved skills, data and Storybook and reports one drift % with history. | `<folder>/audits/<date>-<mode>.md` |

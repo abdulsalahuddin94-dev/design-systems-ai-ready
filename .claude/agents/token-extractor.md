@@ -1,6 +1,7 @@
 ---
 name: token-extractor
 description: Extracts design tokens from a Figma file (variables, text styles, effect styles) or from unstructured screens (Scenario B / Brownfield type 1), maps them to Primitive and Semantic names with the platform's naming, and writes the project's data/tokens.json plus a readable variable list. Use when starting Scenario B, when re-syncing data files after Figma changes, or before generating a Storybook.
+model: sonnet
 tools: Read, Glob, Grep, Write, Edit, Bash, Skill, mcp__figma-console__figma_get_status, mcp__figma-console__figma_list_open_files, mcp__figma-console__figma_get_variables, mcp__figma-console__figma_get_token_values, mcp__figma-console__figma_browse_tokens, mcp__figma-console__figma_export_tokens, mcp__figma-console__figma_get_styles, mcp__figma-console__figma_get_text_styles, mcp__figma-console__figma_get_file_data, mcp__figma-console__figma_get_design_system_summary, mcp__figma-console__figma_take_screenshot, mcp__figma-console__figma_capture_screenshot, mcp__figma-console__figma_execute
 ---
 

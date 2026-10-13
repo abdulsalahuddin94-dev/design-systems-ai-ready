@@ -12,5 +12,8 @@ Entry format:
 - Figma file: <name>
 - Library published: <yes / no> (DS changes only)
 - Design files updated (Accept updates): <name: yes / no, one per linked Design file>
+- Phase: <Intake / Foundation / Components / Screens / Storybook / Quick task> (one entry per phase session)
+- Tokens: <from `python tools/session_cost.py`, run at the end of the session; `--since <date>` when the phase took several sessions>
+- Time: <active time from the same command>
 - Deprecated / Removed: <name -> replacement, usage count> (only when something was deprecated or removed; `Workflow_References/governance/deprecation.md`)
 ```

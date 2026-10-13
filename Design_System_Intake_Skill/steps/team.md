@@ -17,7 +17,7 @@ Load when 0.3d is answered "Team", when 0.0 is "Join a team project", or when a 
 1. Typed: "Paste the project's GitHub repo link."
 2. `node tools/team_sync.cjs --join <link>`: clones into `My Projects/`, then names the folder from the repo's `status.json > project` so it matches the teammates' folder. A folder with that name already there -> nothing is overwritten; say so and Ask (choice): "Use the existing folder (Recommended)" / "Back".
 3. Clone failed (no access, wrong link): one line to the user (ask the repo owner to add them as a collaborator) and Ask (choice): "Try again" / "Back".
-4. Then continue as for an existing project at 0.0 (resume line, preflight check 4 tool question for this machine, Figma connection to the same DS file from `status.json > figma`).
+4. Then continue as for an existing project at 0.0 (resume line, preflight checks 3-4 pick the Figma tool installed on this machine, no question, Figma connection to the same DS file from `status.json > figma`).
 
 ## 15.4 Every session (team projects only)
 - **Start:** the SessionStart hook runs `tools/team_sync.cjs` (fast-forward pull of each team project, local edits stashed and restored, at most 6 s each, quiet offline) and lists pulled commits by author and components locked by teammates. Read teammates' new `CHANGELOG.md` entries before building on their work; work from another tool still gets the CLAUDE.md handoff audit.

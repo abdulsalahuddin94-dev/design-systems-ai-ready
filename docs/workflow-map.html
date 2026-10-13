@@ -103,8 +103,7 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
       <li class="claude">Checks which Figma tools are installed and connected. If none, it stops and helps you install one.</li>
       <li class="claude">Team projects: pulls teammates' work and lists who changed what and which components are locked. <span class="tag new">New</span></li>
       <li class="claude">Notices edits made directly in a project's DS file in Figma since the last Storybook sync. <span class="tag new">New</span></li>
-      <li class="you"><div><b>Pick the Figma tool</b> (only if both are installed, once per file)
-        <div class="opts"><span class="opt rec">FigCli Yolo</span><span class="opt">Figma Desktop Bridge</span></div></div></li>
+      <li class="claude">Uses FigCli Yolo when both Figma tools are installed (the Desktop Bridge only for slots), with no question. Say so to switch a file. <span class="tag new">New</span></li>
       <li class="you"><div><b>Quick task or full project?</b>
         <div class="opts"><span class="opt">Quick task on this file</span><span class="opt">Full project setup</span></div></div></li>
     </ol>
@@ -306,9 +305,9 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
         <thead><tr><th>#</th><th>Question</th><th>Options</th></tr></thead>
         <tbody>
           <tr><td>0.0</td><td>Which project?</td><td>Recent projects / Start a new project / Join a team project</td></tr>
-          <tr><td>0.0t</td><td>Which Figma tool for this file?</td><td>FigCli Yolo / Figma Desktop Bridge</td></tr>
           <tr><td>0.1</td><td>Project name</td><td>typed</td></tr>
           <tr><td>0.2</td><td>Figma links</td><td>typed</td></tr>
+          <tr><td>0.2b</td><td>Which Figma plan? (asked once)</td><td>Professional or higher / Starter (free)</td></tr>
           <tr><td>1.1</td><td>Which platform?</td><td>Web / Mobile</td></tr>
           <tr><td>1.2</td><td>Which mobile platform?</td><td>iOS / Android / Both</td></tr>
           <tr><td>1.3</td><td>Native, cross-platform or Mobile Adaptive?</td><td>Native / Cross-platform / Mobile Adaptive</td></tr>
