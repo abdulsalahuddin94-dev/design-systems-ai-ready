@@ -71,6 +71,10 @@ updated: 2026-09-30
 - (8) **Plugin API rules:** `.claude/skills/figma-plugin-api-rules/` loads before any Figma write script (FigCli eval, figma_execute, use_figma), then only the topic file that matches the code; `.claude/skills/fix-variable-bindings/` handles scan-report-rebind. New Plugin API insights still go to `memory/lessons.md` first.
 - Also: component docs blocks take optional `behavior`, `avoid` and `props_map` (Figma description `Behavior:`, `Avoid:`, `Code: ...; props`), and screen specs list the matching UX rules from `Workflow_References/ux/`.
 
+## Usability review (Abdul, 2026-10-13)
+- Adopted wondelai/skills `ux-heuristics` (MIT) as `Workflow_References/ux-heuristics/` (read, never installed): Nielsen's 10 heuristics and Krug, each issue rated 0-4, a score out of 10. It covers what the other checks do not: whether a flow is easy to use (where am I, how do I get back, how do I recover from an error, the same word for the same thing). Other GitHub UI skills were checked and not adopted because the workflow already covers them (frontend-design / taste-skill = Impeccable, interface-design = these memory files, Vercel agent-skills = React code).
+- Where: flow map pre-check (7e.0, text only, always); optional review at the end of every flow (7e step 4b) and in audits of existing screens (quick mode "Audit a file or page", Scenario C step 3), through ds-auditor `usability` mode. Reports only; fixes are picked by the user and use DS components and variables only; severity 3-4 = Blocking. Logged in `CHANGELOG.md` (`Usability review: ...`).
+
 ## Radio vs Select (Abdul, 2026-09-30)
 - Radio groups hold 2 to 6 options; 7 or more use Select / Dropdown. Both component descriptions state the same number.
 
