@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Workflow Dashboard</title>
+<meta name="description" content="Local dashboard for the Design systems Ai Ready workflow.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="docs/assets/docs.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<nav class="topnav" aria-label="Dashboard">
+  <a class="brand" href="#/">AI-Ready Design Systems · Dashboard</a>
+  <a href="#/" data-nav="home">Home</a>
+  <a href="docs/getting-started.html" target="_blank" rel="noopener">Docs</a>
+  <button class="theme" type="button" id="theme" aria-label="Switch light or dark">◐</button>
+</nav>
+
+<div id="update" class="update" hidden></div>
+<div id="app"></div>
+
+<template id="tpl-home">
+  <main class="home">
+    <header>
+      <div class="kicker">Workflow</div>
+      <h1>What are we <em>building</em> today?</h1>
+      <p class="lead">Every button starts the same Claude Code you use in the terminal, with the same skills and rules. Menus appear as buttons, screenshots appear here for your approval.</p>
+    </header>
+
+    <section aria-labelledby="start">
+      <h2 id="start" class="sub">Start</h2>
+      <div class="cards start">
+        <button class="card action rec" data-start="new">
+          <span class="k">Recommended</span>
+          <h3>Start a new project</h3>
+          <p>The intake asks one question at a time and creates the project folder.</p>
+        </button>
+        <button class="card action" data-start="join">
+          <span class="k">Team</span>
+          <h3>Join a team project</h3>
+          <p>Paste the project's GitHub link; it lands in My Projects.</p>
+        </button>
+        <button class="card action" data-start="quick">
+          <span class="k">Quick task</span>
+          <h3>One task on a live file</h3>
+          <p>One component, an audit or one fix, without the intake.</p>
+        </button>
+        <button class="card action" data-start="chat">
+          <span class="k">Anything</span>
+          <h3>Ask Claude</h3>
+          <p>Type any request, like in the terminal.</p>
+        </button>
+      </div>
+    </section>
+
+    <section aria-labelledby="projects">
+      <div class="row-head">
+        <h2 id="projects" class="sub">My projects</h2>
+        <button class="link" type="button" id="refresh">Refresh</button>
+      </div>
+      <div id="project-list" class="cards projects"><p class="muted">Loading…</p></div>
+    </section>
+
+    <section aria-labelledby="recent" id="recent-wrap" hidden>
+      <h2 id="recent" class="sub">Recent conversations</h2>
+      <ul id="recent-list" class="recent"></ul>
+    </section>
+  </main>
+</template>
+
+<template id="tpl-chat">
+  <div class="chat-layout">
+    <aside class="side" aria-label="Project">
+      <a class="back" href="#/">← Home</a>
+      <div class="side-head">
+        <div class="kicker" id="side-kicker">Conversation</div>
+        <h2 id="side-title"></h2>
+        <p class="note" id="side-meta"></p>
+      </div>
+      <div id="side-links" class="side-links"></div>
+      <div id="side-actions" class="side-actions"></div>
+      <div class="side-foot">
+        <button class="ghost" type="button" id="to-terminal" title="Continue this conversation in a terminal">Open in Claude Code</button>
+      </div>
+    </aside>
+    <section class="chat" aria-label="Conversation">
+      <div id="log" class="log" aria-live="polite"></div>
+      <form id="composer" class="composer" autocomplete="off">
+        <div id="attachments" class="attachments"></div>
+        <div class="composer-row">
+          <label class="attach" title="Attach an image">
+            <input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden>
+            <span aria-hidden="true">＋</span><span class="sr">Attach an image</span>
+          </label>
+          <textarea id="input" rows="1" placeholder="Write to Claude (Arabic or English). Paste or drop screenshots here." dir="auto"></textarea>
+          <button type="button" id="stop" class="ghost" hidden>Stop</button>
+          <button type="submit" id="send" class="primary">Send</button>
+        </div>
+        <p class="note" id="status-line"></p>
+      </form>
+    </section>
+  </div>
+</template>
+
+<template id="tpl-dialog">
+  <dialog class="ask" id="ask">
+    <form method="dialog" class="ask-form">
+      <h3 id="ask-title"></h3>
+      <p class="muted" id="ask-help"></p>
+      <textarea id="ask-input" rows="3" dir="auto"></textarea>
+      <div class="ask-buttons">
+        <button value="cancel" class="ghost">Cancel</button>
+        <button value="ok" class="primary" id="ask-ok">Start</button>
+      </div>
+    </form>
+  </dialog>
+</template>
+
+<script src="app.js"></script>
+</body>
+</html>
