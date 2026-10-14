@@ -129,6 +129,16 @@ dialog.ask::backdrop{background:rgba(0,0,0,.45)}
 .ask-form{display:grid;gap:12px}
 .ask-form textarea{font:inherit;font-size:15px;padding:10px 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--canvas);color:var(--fg);resize:vertical}
 .ask-buttons{display:flex;justify-content:flex-end;gap:8px}
+dialog.add{width:min(620px,calc(100vw - 32px));max-height:calc(100dvh - 32px)}
+.add .steps{margin:0;padding-left:22px;display:grid;gap:6px;font-size:14px;color:var(--muted);list-style:decimal}
+.add .steps li{list-style:decimal;padding-left:2px}
+.add .steps li::before{content:none;display:none}
+.add .steps li::marker{color:var(--sel);font:500 13px var(--mono)}
+.add .fields{display:grid;gap:10px}
+.add .field{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.add .field input{font:inherit;font-size:15px;padding:9px 12px;border-radius:8px;border:1px solid var(--line-2);background:var(--canvas);color:var(--fg)}
+.add .field input:focus{outline:2px solid var(--sel);outline-offset:0;border-color:transparent}
+.add .err-line{color:var(--warn);margin:0;font-size:13.5px}
 
 @media (max-width: 860px){
   .chat-layout{grid-template-columns:1fr;height:auto}

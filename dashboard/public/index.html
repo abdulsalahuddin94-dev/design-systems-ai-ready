@@ -66,6 +66,27 @@
       <div id="project-list" class="cards projects"><p class="muted">Loading…</p></div>
     </section>
 
+    <section aria-labelledby="add">
+      <h2 id="add" class="sub">Add to the workflow</h2>
+      <div class="cards start">
+        <button class="card action" data-add="reference">
+          <span class="k">Reference</span>
+          <h3>Add a reference design system</h3>
+          <p>Study a company's Figma design system so the intake can offer it as a template.</p>
+        </button>
+        <button class="card action" data-add="icons">
+          <span class="k">Icons</span>
+          <h3>Add an icon library</h3>
+          <p>A free SVG icon set the intake can offer next to the platform default.</p>
+        </button>
+        <button class="card action" data-add="skill">
+          <span class="k">Skill</span>
+          <h3>Add a skill from GitHub</h3>
+          <p>Paste the skill's GitHub link; Claude checks it and adopts what is new.</p>
+        </button>
+      </div>
+    </section>
+
     <section aria-labelledby="recent" id="recent-wrap" hidden>
       <h2 id="recent" class="sub">Recent conversations</h2>
       <ul id="recent-list" class="recent"></ul>
@@ -116,6 +137,23 @@
       <div class="ask-buttons">
         <button value="cancel" class="ghost">Cancel</button>
         <button value="ok" class="primary" id="ask-ok">Start</button>
+      </div>
+    </form>
+  </dialog>
+</template>
+
+<template id="tpl-add">
+  <dialog class="ask add" id="add-dlg">
+    <form method="dialog" class="ask-form">
+      <h3 id="add-title"></h3>
+      <p class="muted" id="add-lead"></p>
+      <div class="sub">What happens</div>
+      <ol id="add-steps" class="steps"></ol>
+      <div id="add-fields" class="fields"></div>
+      <p class="err-line" id="add-error" hidden></p>
+      <div class="ask-buttons">
+        <button value="cancel" class="ghost" formnovalidate>Cancel</button>
+        <button value="ok" class="primary" id="add-ok">Add</button>
       </div>
     </form>
   </dialog>

@@ -183,11 +183,100 @@ async function startKind(kind) {
   if (t) start({ prompt: t, title: t });
 }
 
+// ---------- Add to the workflow (reference DS, icon library, skill) ----------
+// Each one runs the workflow's own command (/study-reference-ds or /contribute), so the result is a
+// pull request Abdul reviews, exactly as from the terminal (CONTRIBUTING.md).
+const ADD = {
+  reference: {
+    title: "Add a reference design system",
+    lead: "A company's design system, studied once, becomes a template the intake offers for new projects.",
+    steps: [
+      "You paste the Figma link of the design system (a published file, or one the company allows to be studied).",
+      "Claude asks the company name and the platform (Web, iOS, Android or cross-platform) if you did not type them. One platform per run.",
+      "Open the file in Figma when Claude asks. It studies the Setup pages first, then every component group, with Light and Dark screenshots.",
+      "It writes the Foundation_Skill, the Component_Skills and the data files, and adds the entry to references.json.",
+      "It is sent as a pull request for review. After it is merged, the intake offers it under \"Start from a reference template\".",
+    ],
+    fields: [
+      { name: "link", label: "Figma link", placeholder: "https://www.figma.com/design/…", required: true, check: (v) => /^https:\/\/(www\.)?figma\.com\//i.test(v) || "Paste a figma.com link." },
+      { name: "about", label: "Company and platform (optional)", placeholder: "e.g. Acme, Web" },
+    ],
+    prompt: (f) => `/study-reference-ds ${f.link}${f.about ? ` (${f.about})` : ""}. When the study is done, send it for review with /contribute.`,
+    title2: (f) => `Reference: ${f.about || f.link}`,
+  },
+  icons: {
+    title: "Add an icon library",
+    lead: "A free icon set the intake can offer at question 0.6b, next to the platform default.",
+    steps: [
+      "You type the library's name or link (its website, GitHub or npm page).",
+      "Claude checks the license: free, SVG, and allowed in commercial products. If it is not, it stops and tells you why.",
+      "It finds the library's Iconify prefix and its styles (outline, filled, sizes).",
+      "It adds an entry to tools/icon_libraries.json with the same fields as the others.",
+      "It is sent as a pull request for review. After it is merged, the intake offers it for new projects.",
+    ],
+    fields: [
+      { name: "lib", label: "Library name or link", placeholder: "e.g. Iconoir, or https://github.com/…", required: true },
+    ],
+    prompt: (f) => `/contribute Add an icon library: ${f.lib}`,
+    title2: (f) => `Icons: ${f.lib}`,
+  },
+  skill: {
+    title: "Add a skill from GitHub",
+    lead: "A public agent skill whose ideas the workflow should use.",
+    steps: [
+      "You paste the GitHub link of the skill (its repo, or the folder that holds its SKILL.md).",
+      "Claude reads it and checks its license (MIT or similar). Nothing is installed on this computer.",
+      "It compares the skill with what the workflow already does and shows you only what is new.",
+      "It asks how to adopt it: as a guide in Workflow_References (read when needed) or as a skill in .claude/skills. The workflow's own rules win where they differ.",
+      "It is sent as a pull request for review, with the license and credit included.",
+    ],
+    fields: [
+      { name: "url", label: "GitHub link", placeholder: "https://github.com/owner/repo", required: true, check: (v) => /^https:\/\/github\.com\/[\w.-]+\/[\w.-]+/i.test(v) || "Paste a github.com link to the skill." },
+      { name: "why", label: "What should it help with? (optional)", placeholder: "e.g. better accessibility checks" },
+    ],
+    prompt: (f) => `/contribute Add a new skill from GitHub: ${f.url}${f.why ? `. It should help with: ${f.why}` : ""}. Read it and check its license first and install nothing; compare it with what the workflow already has, then ask me how to adopt it (a Workflow_References guide or a .claude/skills skill), as CONTRIBUTING.md section 1 says.`,
+    title2: (f) => `Skill: ${f.url.replace(/^https:\/\/github\.com\//i, "")}`,
+  },
+};
+
+function openAdd(kind) {
+  const spec = ADD[kind];
+  let dlg = $("#add-dlg");
+  if (!dlg) { document.body.append($("#tpl-add").content.cloneNode(true)); dlg = $("#add-dlg"); }
+  $("#add-title").textContent = spec.title;
+  $("#add-lead").textContent = spec.lead;
+  $("#add-steps").replaceChildren(...spec.steps.map((s) => el("li", {}, s)));
+  const inputs = {};
+  $("#add-fields").replaceChildren(...spec.fields.map((f) => {
+    inputs[f.name] = el("input", { type: "text", placeholder: f.placeholder || "", dir: "auto", autocomplete: "off" });
+    return el("label", { class: "field" }, el("span", {}, f.label), inputs[f.name]);
+  }));
+  const err = $("#add-error");
+  err.hidden = true;
+  const values = () => Object.fromEntries(spec.fields.map((f) => [f.name, inputs[f.name].value.trim()]));
+  $("#add-ok").onclick = (ev) => {
+    const v = values();
+    for (const f of spec.fields) {
+      const problem = f.required && !v[f.name] ? `${f.label} is needed.` : (v[f.name] && f.check ? f.check(v[f.name]) : true);
+      if (problem !== true) { ev.preventDefault(); err.textContent = problem; err.hidden = false; inputs[f.name].focus(); return; }
+    }
+  };
+  dlg.onclose = () => {
+    if (dlg.returnValue !== "ok") return;
+    const v = values();
+    start({ prompt: spec.prompt(v), title: spec.title2(v) }).catch(showError);
+  };
+  dlg.returnValue = "";
+  dlg.showModal();
+  inputs[spec.fields[0].name].focus();
+}
+
 // ---------- Home ----------
 async function renderHome() {
   const app = $("#app");
   app.replaceChildren($("#tpl-home").content.cloneNode(true));
   for (const b of app.querySelectorAll("[data-start]")) b.addEventListener("click", () => startKind(b.dataset.start).catch(showError));
+  for (const b of app.querySelectorAll("[data-add]")) b.addEventListener("click", () => openAdd(b.dataset.add));
   $("#refresh").addEventListener("click", () => { loadProjects(); checkUpdates(true); });
   loadProjects();
   loadRecent();
