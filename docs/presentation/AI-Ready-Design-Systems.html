@@ -470,7 +470,10 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
 .mob li{counter-increment:m;display:grid;grid-template-columns:34px 1fr;gap:12px;font-size:20px;color:var(--muted);line-height:1.4}
 .mob li::before{content:counter(m);font:500 14px var(--mono);color:#111;background:var(--fg);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;margin-top:2px}
 .mob li b{color:var(--fg);font-weight:600}
-.sbm{background:var(--frame-2);border:1px solid var(--line);display:flex;flex-direction:column}
+.sbm{--code:#7CC6FF;background:var(--frame-2);border:1px solid var(--line);display:flex;flex-direction:column;color:var(--fg);transition:background .25s,color .25s}
+.sbm.light{--frame-2:#FFFFFF;--line:#E3E5EA;--line-2:#D2D5DD;--fg:#16171D;--muted:#5E6372;--code:#0A66C2}
+.sbm.light.and{--frame-2:#FEF7FF;--line:#E7E0EC;--line-2:#CAC4D0;--fg:#1D1B20;--muted:#49454F;--code:#6750A4}
+.sbm.light .seg button[aria-pressed="false"]{background:#fff}
 .sbm .tb{display:flex;gap:18px;padding:12px 16px;border-bottom:1px solid var(--line);align-items:center;flex-wrap:wrap}
 .sbm .tb .lab{font-size:11px}
 .seg{display:inline-flex;border:1px solid var(--line-2);border-radius:6px;overflow:hidden;margin-left:6px}
@@ -481,7 +484,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
 .tkt th{font:500 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:left;padding:12px 16px 8px;border-bottom:1px solid var(--line)}
 .tkt td{padding:15px 16px;border-bottom:1px solid var(--line);font-family:var(--mono);vertical-align:middle}
 .tkt td:first-child{color:var(--muted)}
-.tkt td.code{color:#7CC6FF}
+.tkt td.code{color:var(--code)}
 .tkt td.val{text-align:right;color:var(--fg)}
 .tkt .sw{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:8px;border:1px solid var(--line-2)}
 .sbm .ft{padding:12px 16px;font:400 13px var(--mono);color:var(--muted);display:flex;justify-content:space-between;gap:12px;margin-top:auto}
@@ -1400,6 +1403,7 @@ a.route:hover{border-color:var(--sel);background:var(--frame)}
     var os=st.os, ar=st.lang==='ar';
     document.querySelectorAll('.tkt [data-ios]').forEach(function(td){td.textContent=td.dataset[os==='ios'?'ios':'and']});
     var hx=HEX[os][st.mode]; var sw=document.getElementById('mobSw'); if(!sw)return;
+    var card=sw.closest('.sbm'); card.classList.toggle('light',st.mode==='light'); card.classList.toggle('and',os==='and');
     sw.style.background=hx; document.getElementById('mobHex').textContent=hx;
     var b=document.getElementById('mobBtn'); b.style.borderRadius=(os==='ios'?12:20)+'px';
     b.textContent=ar?'متابعة':'Continue'; b.dir=ar?'rtl':'ltr';

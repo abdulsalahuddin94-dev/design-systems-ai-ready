@@ -30,6 +30,10 @@ It checks which Figma tools are installed first (FigCli = figma-cli, Yolo mode R
 
 **Quick mode:** `/ds-quick <task>` (or "quick mode") does one task on a live file (one component, an audit, one fix) without the intake questions, a `My Projects/` folder or project skills. Preflight, the file check, the rules and the audit still apply: `Design_System_Intake_Skill/steps/quick-mode.md`.
 
+**Dashboard:** `Start-Dashboard.cmd` / `.command` opens a local browser interface (`dashboard/`) that runs this same Claude Code session; your menus show there as buttons, so ask with AskUserQuestion exactly as in the terminal (`memory/decisions.md` > Dashboard).
+
+**Improving the workflow:** `/contribute` lets any teammate add a lesson, rule, reference design system, icon library or skill / step / tool change as a pull request for Abdul's review; `/contribute review` is Abdul's review. In a teammate's session a fixed mistake is offered through `/contribute` instead of editing `memory/` (`CONTRIBUTING.md`).
+
 ## Main Skills (Root)
 | Skill | Use for |
 |---|---|

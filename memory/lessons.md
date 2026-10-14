@@ -2,6 +2,8 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+Teammates share their lessons through `/contribute` (`CONTRIBUTING.md`); an entry lands here only after Abdul accepts it, marked `(contributed by <login>)`.
+
 ## Storybook docs with snake_case token names (2026-10-13)
 1. **Docs pages were unreadable in Dark (Abdul).** On the Music App Storybook every docs page showed dark text on a dark page.
    Cause: `templates/docs/DocBlocks.tsx` picks the docs text, muted, surface and border colors by token name with hyphen patterns (`on-surface`, `outline-variant`); this DS uses md.sys names with underscores (`on_surface`, `outline_variant`), so nothing matched and the fixed light fallbacks were used. Rule: the name patterns accept `-` and `_`. Check: `templates/mode_check.js` on every docs page in every mode (`unreadableCount` 0) before a Storybook is called done, which this build skipped (lesson 5 of the pilot). Also: `storybook/figma-links.json` (node ids per component) is part of every build, or the Docs pages have no "Open in Figma" button.
