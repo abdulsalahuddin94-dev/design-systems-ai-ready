@@ -305,10 +305,11 @@ function renderChat(id) {
     switch (e.type) {
       case "hello":
         log.replaceChildren();
-        Object.assign(state, { busy: false, pending: new Set(), lastShots: [], shotRows: [], toolRow: null, live: null, session: e.session });
+        Object.assign(state, { busy: false, pending: new Set(), lastShots: [], shotRows: [], toolRow: null, live: null, firstPrompt: null, session: e.session });
         fillSide(e.session);
         break;
       case "user":
+        if (!state.firstPrompt) state.firstPrompt = e.text;
         state.toolRow = null; state.live = null; state.lastShots = []; state.shotRows = [];
         add(el("div", { class: "msg user", dir: "auto" }, e.text, (e.images || []).map((src) => el("img", { src, alt: "Attached image" }))));
         break;
@@ -368,6 +369,10 @@ function renderChat(id) {
         break;
       case "error":
         add(el("div", { class: "sys err" }, e.message));
+        break;
+      case "auth":
+        state.live = null; state.toolRow = null;
+        add(authCard(e));
         break;
       case "ended":
         if (state.session) state.session.ended = true;
@@ -431,6 +436,24 @@ function renderChat(id) {
     }
     if (multi) card.append(el("div", { class: "foot" }, el("button", { type: "button", class: "primary", onclick: submit }, "Send answers")));
     return card;
+  }
+
+  function authCard(e) {
+    const note = el("p", { class: "note" }, "Your Claude Code sign-in expired. Sign in once in a terminal, then try again here.");
+    return el("div", { class: "qcard perm" },
+      el("div", { class: "head" }, "Sign in"),
+      el("h4", {}, e.message),
+      note,
+      el("div", { class: "foot" },
+        el("button", { type: "button", class: "ghost", onclick: async () => {
+          try { const r = await api("/api/login", {}); note.textContent = r.message; } catch (err) { showError(err); }
+        } }, "Open sign-in"),
+        el("button", { type: "button", class: "primary", onclick: () => {
+          const sess = state.session || {};
+          start({ prompt: state.firstPrompt || "", project: sess.project, title: sess.title }).catch(showError);
+        } }, "Try again"),
+      ),
+    );
   }
 
   function permissionCard(e) {

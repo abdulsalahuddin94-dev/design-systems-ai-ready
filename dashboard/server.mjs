@@ -272,7 +272,8 @@ function startSession({ prompt, project, title, images, resume }) {
   }
   emit(s, { type: "busy", busy: s.busy });
   pump(s).catch((err) => {
-    emit(s, { type: "error", message: explainError(err) });
+    const message = explainError(err);
+    emit(s, message === AUTH_MESSAGE ? { type: "auth", message } : { type: "error", message });
   }).finally(() => {
     s.ended = true; s.busy = false;
     emit(s, { type: "busy", busy: false });
@@ -282,9 +283,13 @@ function startSession({ prompt, project, title, images, resume }) {
   return s;
 }
 
+// Claude Code's sign-in expired or is missing: shown as a card with a Sign in button, not as a reply.
+const AUTH_RE = /failed to authenticate|oauth session|not logged in|please run \/login|invalid api key|authentication_error|credentials? (?:expired|not found)/i;
+const AUTH_MESSAGE = "Claude Code needs you to sign in again on this computer.";
+
 function explainError(err) {
   const msg = String(err?.message || err);
-  if (/login|auth|401|credential|api key/i.test(msg)) return "Claude Code is not signed in on this computer. Open Claude Code once in a terminal (type claude), sign in, then come back.";
+  if (AUTH_RE.test(msg)) return AUTH_MESSAGE;
   if (/ENOENT|spawn/i.test(msg)) return "Claude Code could not be started. Install it (https://claude.com/claude-code) or run Setup again.";
   return msg;
 }
@@ -304,7 +309,10 @@ async function pump(s) {
     if (m.type === "assistant") {
       const sub = !!m.parent_tool_use_id;
       for (const block of m.message?.content || []) {
-        if (block.type === "text" && !sub && block.text.trim()) {
+        if (block.type === "text" && !sub && block.text.length < 400 && AUTH_RE.test(block.text)) {
+          emit(s, { type: "auth", message: AUTH_MESSAGE, detail: block.text });
+          liveText = false;
+        } else if (block.type === "text" && !sub && block.text.trim()) {
           emit(s, { type: "text", text: block.text, streamed: liveText });
           liveText = false;
         } else if (block.type === "tool_use" && block.name !== "AskUserQuestion") {
@@ -328,7 +336,9 @@ async function pump(s) {
     }
     if (m.type === "result") {
       s.busy = false;
-      emit(s, { type: "result", ok: m.subtype === "success", turns: m.num_turns, ms: m.duration_ms, error: m.subtype !== "success" ? (m.errors || []).join(" ") || m.subtype : "" });
+      const error = m.subtype !== "success" ? (m.errors || []).join(" ") || m.subtype : "";
+      if (AUTH_RE.test(error)) emit(s, { type: "auth", message: AUTH_MESSAGE, detail: error });
+      emit(s, { type: "result", ok: m.subtype === "success", turns: m.num_turns, ms: m.duration_ms, error: AUTH_RE.test(error) ? "" : error });
       emit(s, { type: "busy", busy: false });
       saveHistory(s);
     }
@@ -370,7 +380,17 @@ function answer(s, requestId, body) {
 // Opens the same conversation in a terminal (claude --resume), for work that is easier there.
 function openInTerminal(s) {
   if (!s.claudeSessionId) return { ok: false, message: "The conversation has not started yet." };
-  const cmd = `claude --resume ${s.claudeSessionId}`;
+  const r = runInTerminal(`claude --resume ${s.claudeSessionId}`);
+  return r.ok ? { ...r, message: "Opened in a terminal. Stop here first so both do not answer at once." } : r;
+}
+
+// Opens Claude Code in a terminal so the user can type /login (the sign-in needs their browser).
+function openSignIn() {
+  const r = runInTerminal("claude");
+  return r.ok ? { ...r, message: "A terminal opened with Claude Code. Type /login there, finish in the browser, close it, then press Try again." } : r;
+}
+
+function runInTerminal(cmd) {
   try {
     if (process.platform === "win32") {
       spawn("cmd.exe", ["/c", "start", "", "cmd.exe", "/k", `cd /d "${ROOT}" && ${cmd}`], { detached: true, stdio: "ignore", windowsHide: false }).unref();
@@ -380,7 +400,7 @@ function openInTerminal(s) {
     } else {
       return { ok: false, message: `Run this in a terminal in the workflow folder: ${cmd}` };
     }
-    return { ok: true, message: "Opened in a terminal. Stop here first so both do not answer at once.", command: cmd };
+    return { ok: true, command: cmd };
   } catch (e) {
     return { ok: false, message: `Run this in a terminal in the workflow folder: ${cmd}` };
   }
@@ -415,6 +435,7 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && p === "/api/projects") return send(res, 200, { projects: listProjects() });
     if (req.method === "GET" && p === "/api/workflow") return send(res, 200, workflowInfo(url.searchParams.get("fetch") === "1"));
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
+    if (req.method === "POST" && p === "/api/login") return send(res, 200, openSignIn());
     if (req.method === "GET" && p === "/api/sessions") {
       const live = [...sessions.values()].map(sessionSummary);
       const liveIds = new Set(live.map((s) => s.id));
