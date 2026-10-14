@@ -2,6 +2,8 @@
 
 Every mistake Abdul reports or a check finds gets one entry here in the session that fixes it: what broke, the root cause, the rule now in the workflow, and the check that catches it. Read before building or updating anything of the same kind. Newest first.
 
+Teammates share their lessons through `/contribute` (`CONTRIBUTING.md`); an entry lands here only after Abdul accepts it, marked `(contributed by <login>)`.
+
 ## Size tokens bound on resizable components (2026-10-13)
 1. **The Play button turned into a pill (Abdul).** After `md/sys/size/touch_target` (48) was bound to the height of every Icon Button and Button variant, the Play button in Playback Controls (resized to 64 x 64) became 64 x 48, the Mini Player Play (40 x 40) became 40 x 48, and the Section Header More button grew from 36 to 48.
    Cause: a variable bound to a main component's height wins over the height of every resized instance, so each instance that had been scaled kept its width and snapped to the bound height. The binding script only checked that the main component's height matched the token. Rule: bind Size tokens only on components that are never resized as instances (or bind width and height together on the instances that use another size); before binding, list every instance (DS file and Design files) whose size differs from its main component, and skip the binding when any exist. Check: after a Size binding, compare instance sizes before and after (any instance whose height changed is a regression). Fixed: height unbound on Button and Icon Button; Play 64 x 64, Mini Player Play 40 x 40 and More 36 restored.

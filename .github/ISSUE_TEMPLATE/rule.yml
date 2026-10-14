@@ -1,0 +1,32 @@
+name: Rule or improvement
+description: A standing rule every project should follow, or a better way to do an existing step.
+title: "[Rule] "
+labels: [contribution]
+body:
+  - type: markdown
+    attributes:
+      value: "Abdul reviews every proposal before it goes into `memory/decisions.md` or a skill. Use `[Improvement]` in the title for a change to a skill, step or tool. This repo is public: nothing private."
+  - type: textarea
+    id: proposal
+    attributes:
+      label: The rule or change
+      description: One sentence.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What happened that shows it is needed.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where it applies
+      description: Skill, step or tool, and the platform.
+  - type: input
+    id: conflicts
+    attributes:
+      label: Conflicts with
+      description: A standing decision it changes, if any.

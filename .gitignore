@@ -41,4 +41,6 @@ node_modules/
 
 # Private notes and local-only Claude instructions (kept on the owner's machine)
 private/
+# Contributions saved locally by /contribute before they are sent
+contributions/
 CLAUDE.local.md
