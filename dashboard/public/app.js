@@ -104,6 +104,7 @@ async function checkUpdates(fetchRemote) {
     if (!info.git || !info.behind) { if (!box.classList.contains("ok")) box.hidden = true; return; }
     box.className = "update";
     box.replaceChildren(
+      icon("i-download"),
       el("div", { class: "what" },
         el("b", {}, `A new workflow update is ready (${info.behind} change${info.behind > 1 ? "s" : ""}).`),
         info.changes.length ? el("ul", {}, info.changes.slice(0, 6).map((c) => el("li", {}, c))) : null),
@@ -317,8 +318,47 @@ async function renderHome() {
   loadRecent();
 }
 
+// Inline icon from the sprite in index.html.
+const icon = (name, cls = "ic") => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", cls);
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", `#${name}`);
+  svg.append(use);
+  return svg;
+};
+
 function linkChip(l) {
-  return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener" }, l.kind === "figma" ? `Figma · ${l.label}` : l.label);
+  const ic = { figma: "i-pen", github: "i-branch", storybook: "i-book" }[l.kind] || "i-external";
+  return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener", title: l.url }, icon(ic), l.kind === "figma" ? `Figma · ${l.label}` : l.label);
+}
+
+// The proof sign-offs every project moves through (Intake section 8 checkpoints, then the final audit).
+const STAGES = ["Intake", "Foundation", "Components", "Screens", "Audit"];
+// Reads where a project stands from its brief and changelog text; -1 when nothing says.
+function stageIndex(p) {
+  const text = [p.phase, p.next, p.last?.title].filter(Boolean).join(" ").toLowerCase();
+  const next = text.match(/next (?:phase|step)[:\s]+(\w+)/);
+  const at = next ? STAGES.findIndex((s) => next[1].startsWith(s.toLowerCase().slice(0, 5))) : -1;
+  if (at >= 0) return at;
+  let best = -1;
+  STAGES.forEach((s, i) => { if (text.includes(s.toLowerCase().slice(0, 5))) best = i; });
+  if (best >= 0 && /(done|approved|finished|complete)/.test(text) && best < STAGES.length - 1) best += 1;
+  return best;
+}
+function track(p) {
+  const at = stageIndex(p);
+  return el("div", { class: "stage" },
+    el("div", { class: "stage-now" }, at >= 0 ? STAGES[at] : "Stage not recorded", at >= 0 ? el("span", {}, `${at + 1} of ${STAGES.length}`) : null),
+    el("ol", { class: "track", "aria-hidden": "true" },
+      STAGES.map((s, i) => el("li", { class: i < at ? "done" : i === at ? "now" : "" }, el("span", {}, s)))));
+}
+const jobNo = (i) => `No.${String(i + 1).padStart(3, "0")}`;
+
+function setTally(key, value) {
+  const n = $(`#t-${key}`);
+  if (n) n.textContent = String(value);
 }
 
 async function loadProjects() {
@@ -327,20 +367,34 @@ async function loadProjects() {
   try {
     ({ projects } = await api("/api/projects"));
   } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  setTally("jobs", projects.length);
+  setTally("sync", projects.filter((p) => p.unsynced).length);
   if (!projects.length) {
-    list.replaceChildren(el("p", { class: "muted" }, "No projects yet. Start a new one or join a team project."));
+    list.replaceChildren(el("div", { class: "sheet empty" },
+      el("h3", {}, "No projects yet"),
+      el("p", { class: "muted" }, "Start a new project or join a team project; it appears here as a job with its stage and next step."),
+      el("button", { class: "primary", type: "button", onclick: () => startKind("new").catch(showError) }, icon("i-plus"), "Start a new project")));
     return;
   }
-  list.replaceChildren(...projects.map((p) => el("article", { class: "card project" },
-    el("h3", {}, p.title, p.team ? el("span", { class: "chip team" }, "Team") : null),
-    el("div", { class: "meta" }, [p.platform, p.phase].filter(Boolean).join(" · ") || p.name),
-    p.last ? el("div", { class: "last" }, `${p.last.date} · ${p.last.title}`) : el("div", { class: "last muted" }, "Intake not finished"),
-    p.next ? el("div", { class: "next" }, `Next: ${p.next}`) : null,
-    el("div", { class: "chips" },
-      p.unsynced ? el("span", { class: "chip warn" }, `${p.unsynced} change${p.unsynced > 1 ? "s" : ""} not in Storybook`) : null,
-      p.links.map(linkChip)),
+  list.classList.toggle("few", projects.length < 3);
+  list.replaceChildren(...projects.map((p, i) => el("article", { class: "sheet ticket" },
+    el("div", { class: "ticket-head" },
+      el("span", { class: "jobno" }, jobNo(i)),
+      el("div", { style: "flex:1;min-width:0" },
+        el("h3", {}, p.title),
+        el("div", { class: "meta" }, p.platform || p.name)),
+      p.team ? el("span", { class: "tag team" }, "Team") : null),
+    track(p),
+    p.last
+      ? el("div", { class: "last" }, icon("i-clock"), el("span", {}, el("time", {}, p.last.date), " · ", p.last.title))
+      : el("div", { class: "last" }, icon("i-clock"), el("span", {}, "Intake not finished")),
+    p.next ? el("div", { class: "next", dir: "auto" }, el("b", {}, "Next"), el("span", {}, p.next)) : null,
+    (p.unsynced || p.links.length) ? el("div", { class: "chips" },
+      p.unsynced ? el("span", { class: "chip warn" }, icon("i-alert"), `${p.unsynced} change${p.unsynced > 1 ? "s" : ""} not in Storybook`) : null,
+      p.links.map(linkChip)) : null,
     el("div", { class: "go" },
-      el("button", { class: "primary", type: "button", onclick: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError) }, "Open"),
+      el("span", { class: "note" }, p.updated ? `updated ${ago(p.updated)}` : ""),
+      el("button", { class: "primary", type: "button", onclick: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError) }, "Open", icon("i-right")),
     ),
   )));
 }
@@ -348,12 +402,14 @@ async function loadProjects() {
 async function loadRecent() {
   try {
     const { live, past } = await api("/api/sessions");
+    setTally("live", live.length);
     const rows = [...live.map((s) => ({ ...s, live: true })), ...past].slice(0, 8);
     if (!rows.length || !$("#recent-wrap")) return;
     $("#recent-wrap").hidden = false;
     $("#recent-list").replaceChildren(...rows.map((r) => el("li", {},
-      el("span", {}, r.title || "Conversation"),
       el("time", {}, ago(r.updated || r.started)),
+      el("span", { class: "dot" + (r.live ? " live" : ""), title: r.live ? "Running" : "Finished" }),
+      el("span", { class: "title", dir: "auto", title: r.title || "Conversation" }, r.title || "Conversation"),
       r.live
         ? el("button", { class: "ghost", type: "button", onclick: () => { location.hash = `#/chat/${r.id}`; } }, "Open")
         : el("button", { class: "ghost", type: "button", onclick: () => start({ resume: r.claudeSessionId, project: r.project, title: r.title }).catch(showError) }, "Continue"),
@@ -399,9 +455,10 @@ function renderChat(id) {
   // Sidebar
   const fillSide = (session) => {
     const p = projects.find((x) => x.name === session.project);
-    $("#side-kicker").textContent = p ? "Project" : "Conversation";
+    $("#side-kicker").textContent = p ? `${jobNo(projects.indexOf(p))} · ${p.platform || p.name}` : "Conversation";
     $("#side-title").textContent = p ? p.title : session.title;
-    $("#side-meta").textContent = p ? [p.platform, p.phase].filter(Boolean).join(" · ") : "";
+    $("#side-meta").textContent = p && p.next ? `Next: ${p.next}` : "";
+    $("#side-track").replaceChildren(...(p ? [track(p)] : []));
     $("#side-links").replaceChildren(...(p ? p.links.map(linkChip) : []));
     const actions = $("#side-actions");
     actions.replaceChildren();
@@ -510,8 +567,7 @@ function renderChat(id) {
   }
 
   function questionCard(e, shots) {
-    const card = el("div", { class: "qcard", "data-request": e.requestId });
-    card.append(el("div", { class: "head" }, shots.length ? "Your approval" : "Claude asks"));
+    const card = el("div", { class: "qcard sheet" + (shots.length ? " proof" : ""), "data-request": e.requestId });
     if (shots.length) {
       const wrap = el("div", { class: "shots" + (shots.length === 2 ? " compare" : "") }, shots.map(shotNode));
       card.append(wrap);
@@ -566,7 +622,6 @@ function renderChat(id) {
     const note = el("p", { class: "note" }, "Your Claude Code sign-in expired. Sign in here, then press Try again.");
     refreshAccount(true);
     return el("div", { class: "qcard perm" },
-      el("div", { class: "head" }, "Sign in"),
       el("h4", {}, e.message),
       note,
       el("div", { class: "foot" },
@@ -581,7 +636,6 @@ function renderChat(id) {
 
   function permissionCard(e) {
     const card = el("div", { class: "qcard perm", "data-request": e.requestId },
-      el("div", { class: "head" }, "Permission"),
       el("h4", {}, e.title || `Claude wants to use: ${e.tool}`),
       e.detail ? el("div", { class: "detail" }, e.detail) : null,
       e.reason ? el("p", { class: "note" }, e.reason) : null,
@@ -608,7 +662,7 @@ function renderChat(id) {
   // Composer
   const attachments = $("#attachments");
   const renderAttachments = () => attachments.replaceChildren(...state.images.map((src, i) =>
-    el("figure", {}, el("img", { src, alt: "Image to send" }), el("button", { type: "button", "aria-label": "Remove", onclick: () => { state.images.splice(i, 1); renderAttachments(); } }, "✕"))));
+    el("figure", {}, el("img", { src, alt: "Image to send" }), el("button", { type: "button", "aria-label": "Remove", onclick: () => { state.images.splice(i, 1); renderAttachments(); } }, icon("i-x")))));
   const addFiles = (files) => {
     for (const f of files) {
       if (!/^image\/(png|jpeg|gif|webp)$/.test(f.type)) continue;
@@ -659,7 +713,7 @@ async function refreshAccount(fresh) {
   try {
     const a = await api(`/api/auth${fresh ? "?fresh=1" : ""}`);
     btn.hidden = false;
-    btn.className = "account " + (a.loggedIn ? "ok" : "off");
+    btn.className = "pill account " + (a.loggedIn ? "ok" : "off");
     btn.textContent = a.loggedIn ? (a.email || "Signed in") : "Sign in";
     btn.title = a.loggedIn ? "Signed in to Claude. Click to sign in again." : (a.error || "Not signed in");
     return a;
