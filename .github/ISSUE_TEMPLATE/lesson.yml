@@ -1,0 +1,44 @@
+name: Lesson (a mistake and its fix)
+description: Something broke while using the workflow and you found the cause and the fix.
+title: "[Lesson] "
+labels: [contribution]
+body:
+  - type: markdown
+    attributes:
+      value: "Abdul reviews every lesson before it goes into `memory/lessons.md`. This repo is public: leave out client and product names, Figma links and keys, tokens and machine paths. In Claude Code, `/contribute` fills this in for you."
+  - type: textarea
+    id: broke
+    attributes:
+      label: What broke
+      description: What you saw, in one or two sentences.
+    validations:
+      required: true
+  - type: textarea
+    id: cause
+    attributes:
+      label: Cause
+      description: Why it happened.
+    validations:
+      required: true
+  - type: textarea
+    id: rule
+    attributes:
+      label: Rule
+      description: What the workflow should always do so it never happens again.
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: Check
+      description: How a later session can catch it (a script, an audit count, a screenshot).
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      options: [All, Web, iOS, Android, Mobile Adaptive]
+  - type: input
+    id: files
+    attributes:
+      label: Files the fix should change
+      description: e.g. Design_System_Intake_Skill/steps/screens.md
