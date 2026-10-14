@@ -152,3 +152,19 @@ dialog.ask::backdrop{background:rgba(0,0,0,.45)}
 .signin .ok-line{color:var(--good);font-weight:600}
 .signin .err-line{color:var(--warn)}
 .signin .other input{font-family:var(--mono)}
+
+/* permission mode pill, Add dialog */
+.perm{margin-left:auto;font:500 12px var(--mono);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px;background:var(--frame);color:var(--muted);cursor:pointer}
+.perm:not([hidden])+.account{margin-left:6px}
+dialog.add{width:min(760px,calc(100vw - 32px))}
+.add-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.add-cols ol{margin:6px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14px;color:var(--muted)}
+.add-fields{display:grid;gap:10px}
+.field{display:grid;gap:4px;font-size:13px;color:var(--muted)}
+.field input,.field select{font:inherit;font-size:15px;padding:9px 11px;border-radius:8px;border:1px solid var(--line-2);background:var(--canvas);color:var(--fg)}
+.field input:focus:invalid{border-color:var(--claude)}
+.opt{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--sel)}
+.opt span{display:grid;gap:4px}
+.opt small{color:var(--muted);font-size:13px;line-height:1.45}
+@media (max-width:640px){.add-cols{grid-template-columns:1fr}}

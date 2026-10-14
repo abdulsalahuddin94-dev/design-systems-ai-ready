@@ -179,8 +179,131 @@ async function startKind(kind) {
     if (t) start({ prompt: `/ds-quick ${t}`, title: `Quick: ${t}` });
     return;
   }
+  if (kind === "phone") {
+    const r = await api("/api/phone", {});
+    alert(r.message);
+    return;
+  }
   const t = await askText({ title: "Ask Claude", help: "Anything you would type in the terminal.", placeholder: "Write your request…" });
   if (t) start({ prompt: t, title: t });
+}
+
+// ---------- Add to the workflow ----------
+// Each kind runs /contribute (CONTRIBUTING.md), which does the work on a branch and opens a pull request for review.
+const ADD = {
+  reference: {
+    title: "Add a reference design system",
+    need: [
+      "The Figma link of the design system file. Use a file that is published, or one the company allows you to study (the repo is public).",
+      "The company name and the platform. One platform per run.",
+      "Figma Desktop open with that file, connected with FigCli Yolo or the Desktop Bridge.",
+    ],
+    steps: [
+      "Claude studies the file read only; the original is never changed.",
+      "The Setup group first (variables, text styles, icons), then every component with Light and Dark screenshots.",
+      "It writes Reference_Library/<Company>/<Platform>/ and the entry in references.json.",
+      "It shows you the result, then sends it as a pull request. After it is merged, new projects can start from it.",
+    ],
+    note: "This takes a whole session for one platform.",
+    fields: [
+      { name: "company", label: "Company name", placeholder: "e.g. Acme" },
+      { name: "platform", label: "Platform", options: ["Web", "iOS", "Android", "Cross-platform"] },
+      { name: "link", label: "Figma link", placeholder: "https://www.figma.com/design/…", pattern: "https://(www\\.)?figma\\.com/.+" },
+    ],
+    prompt: (v) => `/contribute Add a reference design system: company "${v.company}", platform ${v.platform}, Figma link ${v.link}. Study it with /study-reference-ds (References.md > "Adding a design system to the library").`,
+    title2: (v) => `Add reference: ${v.company} ${v.platform}`,
+  },
+  icons: {
+    title: "Add an icon library",
+    need: [
+      "The library's name.",
+      "Its website, GitHub or npm link.",
+    ],
+    steps: [
+      "Claude checks the license: free, SVG, allowed in commercial work.",
+      "It finds the library's Iconify prefix and its styles (outline, filled…).",
+      "It adds an entry to tools/icon_libraries.json, shows it to you, then sends it as a pull request.",
+      "After it is merged, the intake offers it at the icon question. Nothing is installed on your computer.",
+    ],
+    note: "",
+    fields: [
+      { name: "name", label: "Library name", placeholder: "e.g. Iconoir" },
+      { name: "link", label: "Link", placeholder: "https://…", pattern: "https://.+" },
+    ],
+    prompt: (v) => `/contribute Add an icon library: "${v.name}" (${v.link}).`,
+    title2: (v) => `Add icons: ${v.name}`,
+  },
+  skill: {
+    title: "Add a skill from GitHub",
+    need: [
+      "The GitHub link of the skill: its repository, or the folder that has its SKILL.md.",
+      "Optional: what it should help with.",
+    ],
+    steps: [
+      "Claude reads it without installing it and checks the license (MIT or similar).",
+      "It compares it with what the workflow already does and tells you what it would add, before changing anything.",
+      "If you agree, the useful parts are added as an adopted guide (credited, in Workflow_References/) or as a new skill or step.",
+      "It shows you the change, then sends it as a pull request.",
+    ],
+    note: "",
+    fields: [
+      { name: "link", label: "GitHub link", placeholder: "https://github.com/…", pattern: "https://github\\.com/.+" },
+      { name: "why", label: "What should it help with? (optional)", placeholder: "e.g. better iOS screens", optional: true },
+    ],
+    prompt: (v) => `/contribute Add a skill from GitHub: ${v.link}.${v.why ? ` It should help with: ${v.why}.` : ""} Read it without installing it, check its license, compare it with what the workflow already covers and show me what it would add before changing anything; then adopt the useful parts (CONTRIBUTING.md section 1: adopted guide or new skill).`,
+    title2: (v) => `Add skill: ${v.link.replace(/^https:\/\/github\.com\//, "")}`,
+  },
+};
+
+function openAdd(kind) {
+  const spec = ADD[kind];
+  let dlg = $("#adddlg");
+  if (!dlg) { document.body.append($("#tpl-add").content.cloneNode(true)); dlg = $("#adddlg"); }
+  $("#add-title").textContent = spec.title;
+  $("#add-need").replaceChildren(...spec.need.map((t) => el("li", {}, t)));
+  $("#add-steps").replaceChildren(...spec.steps.map((t) => el("li", {}, t)));
+  $("#add-note").textContent = spec.note;
+  const inputs = spec.fields.map((f) => {
+    const input = f.options
+      ? el("select", { name: f.name }, f.options.map((o) => el("option", { value: o }, o)))
+      : el("input", { name: f.name, type: "text", placeholder: f.placeholder, required: !f.optional, pattern: f.pattern, autocomplete: "off", dir: "auto" });
+    return { f, input, row: el("label", { class: "field" }, el("span", {}, f.label), input) };
+  });
+  $("#add-fields").replaceChildren(...inputs.map((i) => i.row));
+  dlg.onclose = () => {
+    if (dlg.returnValue !== "ok") return;
+    const v = Object.fromEntries(inputs.map((i) => [i.f.name, i.input.value.trim()]));
+    start({ prompt: spec.prompt(v), title: spec.title2(v) }).catch(showError);
+  };
+  dlg.returnValue = "";
+  dlg.showModal();
+  inputs[0]?.input.focus();
+}
+
+// ---------- permission mode ----------
+const MODE_LABEL = { auto: "Auto", default: "Ask every time" };
+async function refreshPerm() {
+  const btn = $("#perm");
+  try {
+    const st = await api("/api/settings");
+    btn.hidden = false;
+    btn.textContent = `Permissions: ${MODE_LABEL[st.permissionMode] || st.permissionMode}`;
+    btn.dataset.mode = st.permissionMode;
+  } catch { btn.hidden = true; }
+}
+
+function openPerm() {
+  let dlg = $("#permdlg");
+  if (!dlg) { document.body.append($("#tpl-perm").content.cloneNode(true)); dlg = $("#permdlg"); }
+  const mode = $("#perm").dataset.mode || "auto";
+  for (const r of dlg.querySelectorAll("input[name=mode]")) r.checked = r.value === mode;
+  dlg.onclose = async () => {
+    if (dlg.returnValue !== "ok") return;
+    const picked = dlg.querySelector("input[name=mode]:checked")?.value;
+    if (picked && picked !== mode) { try { await api("/api/settings", { permissionMode: picked }); } catch (e) { showError(e); } refreshPerm(); }
+  };
+  dlg.returnValue = "";
+  dlg.showModal();
 }
 
 // ---------- Home ----------
@@ -188,6 +311,7 @@ async function renderHome() {
   const app = $("#app");
   app.replaceChildren($("#tpl-home").content.cloneNode(true));
   for (const b of app.querySelectorAll("[data-start]")) b.addEventListener("click", () => startKind(b.dataset.start).catch(showError));
+  for (const b of app.querySelectorAll("[data-add]")) b.addEventListener("click", () => openAdd(b.dataset.add));
   $("#refresh").addEventListener("click", () => { loadProjects(); checkUpdates(true); });
   loadProjects();
   loadRecent();
@@ -518,6 +642,14 @@ function renderChat(id) {
     try { const r = await api(`/api/sessions/${id}/terminal`, {}); add(el("div", { class: "sys" }, r.message)); }
     catch (e) { showError(e); }
   });
+  $("#to-phone").addEventListener("click", async () => {
+    if (!confirm("Move this conversation to your phone? It continues in a terminal on this computer with Remote Control, and this page stops.")) return;
+    try {
+      const r = await api(`/api/sessions/${id}/terminal`, { phone: true });
+      add(el("div", { class: "sys" }, r.message));
+      if (r.ended) { es.close(); state.session = { ...(state.session || {}), ended: true }; state.busy = false; updateTyping(); }
+    } catch (e) { showError(e); }
+  });
   input.focus();
 }
 
@@ -606,6 +738,8 @@ function lightbox(src) {
 }
 
 $("#account").addEventListener("click", () => openSignIn());
+$("#perm").addEventListener("click", openPerm);
+refreshPerm();
 route();
 checkUpdates(true);
 refreshAccount();

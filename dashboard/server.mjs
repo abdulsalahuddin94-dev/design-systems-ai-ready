@@ -21,6 +21,7 @@ const PROJECTS = path.join(ROOT, "My Projects");
 const PUBLIC = path.join(HERE, "public");
 const STATE = path.join(ROOT, ".claude", ".state");
 const HISTORY = path.join(STATE, "dashboard-sessions.json");
+const SETTINGS = path.join(STATE, "dashboard-settings.json");
 const PORT = Number(process.env.DASHBOARD_PORT || 4777);
 const HOST = "127.0.0.1";
 
@@ -144,6 +145,24 @@ function updateWorkflow() {
 }
 
 // ---------- Claude sessions ----------
+// ---------- settings (permission mode) ----------
+// auto: Claude Code's auto mode approves routine steps by itself and asks only for risky ones (Recommended).
+// default: asks before every step that needs permission.
+const MODES = ["auto", "default"];
+function getSettings() {
+  const saved = readJson(SETTINGS, {}) || {};
+  return { permissionMode: MODES.includes(saved.permissionMode) ? saved.permissionMode : "auto" };
+}
+function setSettings(body) {
+  const next = { ...getSettings() };
+  if (MODES.includes(body.permissionMode)) next.permissionMode = body.permissionMode;
+  fs.mkdirSync(STATE, { recursive: true });
+  fs.writeFileSync(SETTINGS, JSON.stringify(next, null, 2));
+  for (const s of sessions.values()) if (!s.ended) s.query?.setPermissionMode(next.permissionMode).catch(() => {});
+  return next;
+}
+const modeFlag = (mode) => `--permission-mode ${mode === "default" ? "manual" : mode}`;
+
 const sessions = new Map(); // id -> session
 
 function saveHistory(s) {
@@ -326,6 +345,7 @@ function startSession({ prompt, project, title, images, resume }) {
       includePartialMessages: true,
       abortController: s.abort,
       canUseTool,
+      permissionMode: getSettings().permissionMode,
       ...(resume ? { resume } : {}),
       ...(exe ? { pathToClaudeCodeExecutable: exe } : {}),
     },
@@ -445,10 +465,29 @@ function answer(s, requestId, body) {
 }
 
 // Opens the same conversation in a terminal (claude --resume), for work that is easier there.
-function openInTerminal(s) {
+// phone: the terminal session also turns on Remote Control, so it shows in the Claude app on a phone;
+// the dashboard copy is closed first so both never answer at once.
+function openInTerminal(s, phone) {
   if (!s.claudeSessionId) return { ok: false, message: "The conversation has not started yet." };
-  const r = runInTerminal(`claude --resume ${s.claudeSessionId}`);
+  const mode = modeFlag(getSettings().permissionMode);
+  if (phone) {
+    const name = s.title.replace(/["%^&|<>]/g, "").slice(0, 50) || "Design systems workflow";
+    const r = runInTerminal(`claude --resume ${s.claudeSessionId} ${mode} --remote-control "${name}"`);
+    if (r.ok) closeSession(s);
+    return r.ok ? { ...r, ended: true, message: `It now runs in a terminal with Remote Control. On your phone open the Claude app, then Code, and pick "${name}". Keep this computer on and the terminal open.` } : r;
+  }
+  const r = runInTerminal(`claude --resume ${s.claudeSessionId} ${mode}`);
   return r.ok ? { ...r, message: "Opened in a terminal. Stop here first so both do not answer at once." } : r;
+}
+
+// A new Remote Control session in the Root, to work from the phone from the start.
+function openPhone() {
+  const r = runInTerminal(`claude ${modeFlag(getSettings().permissionMode)} --remote-control "Design systems workflow"`);
+  return r.ok ? { ...r, message: 'A terminal opened with Remote Control. On your phone open the Claude app, then Code, and pick "Design systems workflow". Keep this computer on and the terminal open.' } : r;
+}
+
+function closeSession(s) {
+  s.inbox.close(); s.abort.abort(); sessions.delete(s.id);
 }
 
 // Opens Claude Code in a terminal so the user can type /login (the sign-in needs their browser).
@@ -502,6 +541,9 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && p === "/api/projects") return send(res, 200, { projects: listProjects() });
     if (req.method === "GET" && p === "/api/workflow") return send(res, 200, workflowInfo(url.searchParams.get("fetch") === "1"));
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
+    if (req.method === "GET" && p === "/api/settings") return send(res, 200, getSettings());
+    if (req.method === "POST" && p === "/api/settings") { const b = await readBody(req); return send(res, 200, setSettings(b)); }
+    if (req.method === "POST" && p === "/api/phone") return send(res, 200, openPhone());
     if (req.method === "POST" && p === "/api/login") return send(res, 200, openSignIn());
     if (req.method === "GET" && p === "/api/auth") return send(res, 200, authStatus(url.searchParams.get("fresh") === "1"));
     if (req.method === "POST" && p === "/api/auth/login") { const b = await readBody(req); return send(res, 200, startLogin(b.method)); }
@@ -537,8 +579,8 @@ const server = http.createServer(async (req, res) => {
       if (action === "/message") return send(res, sendMessage(s, body.text || "", body.images) ? 200 : 409, { ok: !s.ended });
       if (action === "/answer") return send(res, answer(s, body.requestId, body) ? 200 : 404, { ok: true });
       if (action === "/stop") { try { await s.query.interrupt(); } catch {} return send(res, 200, { ok: true }); }
-      if (action === "/close") { s.inbox.close(); s.abort.abort(); sessions.delete(s.id); return send(res, 200, { ok: true }); }
-      if (action === "/terminal") return send(res, 200, openInTerminal(s));
+      if (action === "/close") { closeSession(s); return send(res, 200, { ok: true }); }
+      if (action === "/terminal") return send(res, 200, openInTerminal(s, !!body.phone));
       return send(res, 404, { error: "unknown action" });
     }
     if (req.method === "GET" && !p.startsWith("/api/")) return serveStatic(req, res, p);
