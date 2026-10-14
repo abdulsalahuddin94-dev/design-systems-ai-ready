@@ -17,6 +17,7 @@
   <a class="brand" href="#/">AI-Ready Design Systems · Dashboard</a>
   <a href="#/" data-nav="home">Home</a>
   <a href="docs/getting-started.html" target="_blank" rel="noopener">Docs</a>
+  <button class="account" type="button" id="account" hidden></button>
   <button class="theme" type="button" id="theme" aria-label="Switch light or dark">◐</button>
 </nav>
 
@@ -117,6 +118,20 @@
         <button value="ok" class="primary" id="ask-ok">Start</button>
       </div>
     </form>
+  </dialog>
+</template>
+
+<template id="tpl-signin">
+  <dialog class="ask signin" id="signin">
+    <div class="ask-form">
+      <h3>Sign in to Claude</h3>
+      <p class="muted" id="signin-help">Uses the same account as Claude Code in the terminal. Your browser opens the Claude sign-in page; finish there and come back.</p>
+      <div id="signin-body"></div>
+      <div class="ask-buttons">
+        <button type="button" class="ghost" id="signin-close">Close</button>
+        <button type="button" class="primary" id="signin-start">Sign in</button>
+      </div>
+    </div>
   </dialog>
 </template>
 

@@ -439,15 +439,14 @@ function renderChat(id) {
   }
 
   function authCard(e) {
-    const note = el("p", { class: "note" }, "Your Claude Code sign-in expired. Sign in once in a terminal, then try again here.");
+    const note = el("p", { class: "note" }, "Your Claude Code sign-in expired. Sign in here, then press Try again.");
+    refreshAccount(true);
     return el("div", { class: "qcard perm" },
       el("div", { class: "head" }, "Sign in"),
       el("h4", {}, e.message),
       note,
       el("div", { class: "foot" },
-        el("button", { type: "button", class: "ghost", onclick: async () => {
-          try { const r = await api("/api/login", {}); note.textContent = r.message; } catch (err) { showError(err); }
-        } }, "Open sign-in"),
+        el("button", { type: "button", class: "ghost", onclick: () => openSignIn() }, "Sign in"),
         el("button", { type: "button", class: "primary", onclick: () => {
           const sess = state.session || {};
           start({ prompt: state.firstPrompt || "", project: sess.project, title: sess.title }).catch(showError);
@@ -522,6 +521,83 @@ function renderChat(id) {
   input.focus();
 }
 
+// ---------- account / sign-in ----------
+async function refreshAccount(fresh) {
+  const btn = $("#account");
+  try {
+    const a = await api(`/api/auth${fresh ? "?fresh=1" : ""}`);
+    btn.hidden = false;
+    btn.className = "account " + (a.loggedIn ? "ok" : "off");
+    btn.textContent = a.loggedIn ? (a.email || "Signed in") : "Sign in";
+    btn.title = a.loggedIn ? "Signed in to Claude. Click to sign in again." : (a.error || "Not signed in");
+    return a;
+  } catch { btn.hidden = true; return null; }
+}
+
+function openSignIn(onDone) {
+  let dlg = $("#signin");
+  if (!dlg) { document.body.append($("#tpl-signin").content.cloneNode(true)); dlg = $("#signin"); }
+  const body = $("#signin-body");
+  const startBtn = $("#signin-start");
+  let timer = null;
+  body.replaceChildren();
+  startBtn.hidden = false;
+  startBtn.disabled = false;
+  const stop = () => { clearInterval(timer); timer = null; };
+  $("#signin-close").onclick = () => { stop(); dlg.close(); };
+  dlg.onclose = stop;
+
+  let startedAt = Date.now();
+  const terminalFallback = (lead) => el("div", { class: "linkbox" }, lead ? el("span", { class: "note" }, lead) : null,
+    el("button", { type: "button", class: "ghost", onclick: async () => {
+      try { const r = await api("/api/login", {}); body.append(el("p", { class: "note" }, r.message)); } catch (e) { showError(e); }
+    } }, "Use a terminal instead"));
+  const render = (st) => {
+    const kids = [];
+    if (st.running) kids.push(el("p", {}, "Waiting for you to finish signing in in your browser…"));
+    if (st.running && !st.url && Date.now() - startedAt > 15000) kids.push(terminalFallback("Nothing opened?"));
+    if (st.url) kids.push(el("div", { class: "linkbox" }, el("a", { class: "primary", href: st.url, target: "_blank", rel: "noopener", style: "text-decoration:none" }, "Open the sign-in page"), el("span", { class: "note" }, "if the browser did not open by itself")));
+    if (st.needsCode) {
+      const input = el("input", { type: "text", placeholder: "Paste the code from the sign-in page", autocomplete: "off" });
+      const go = el("button", { type: "button", class: "ghost", onclick: async () => {
+        if (!input.value.trim()) return;
+        try { render(await api("/api/auth/login/code", { code: input.value })); } catch (e) { showError(e); }
+      } }, "Send code");
+      kids.push(el("div", { class: "other" }, input, go));
+    }
+    if (!st.running && st.exitCode != null) {
+      stop();
+      if (st.exitCode === 0 || st.status?.loggedIn) {
+        kids.push(el("p", { class: "ok-line" }, "Signed in. You can close this window (in a conversation, press Try again)."));
+        startBtn.hidden = true;
+        refreshAccount(true);
+        onDone?.();
+      } else {
+        kids.push(el("p", { class: "err-line" }, "Sign-in did not finish."));
+        kids.push(terminalFallback(""));
+        startBtn.disabled = false;
+        startBtn.textContent = "Try again";
+      }
+    }
+    if (st.output) kids.push(el("details", {}, el("summary", { class: "note" }, "Details"), el("pre", {}, st.output)));
+    body.replaceChildren(...kids);
+  };
+
+  startBtn.textContent = "Sign in";
+  startBtn.onclick = async () => {
+    startBtn.disabled = true;
+    startedAt = Date.now();
+    try {
+      render(await api("/api/auth/login", {}));
+      stop();
+      timer = setInterval(async () => {
+        try { render(await api("/api/auth/login")); } catch { stop(); }
+      }, 1500);
+    } catch (e) { startBtn.disabled = false; showError(e); }
+  };
+  dlg.showModal();
+}
+
 function lightbox(src) {
   const box = el("div", { class: "lightbox", role: "dialog", "aria-label": "Screenshot", onclick: () => box.remove() }, el("img", { src, alt: "Screenshot, full size" }));
   const onKey = (k) => { if (k.key === "Escape") { box.remove(); removeEventListener("keydown", onKey); } };
@@ -529,5 +605,7 @@ function lightbox(src) {
   document.body.append(box);
 }
 
+$("#account").addEventListener("click", () => openSignIn());
 route();
 checkUpdates(true);
+refreshAccount();

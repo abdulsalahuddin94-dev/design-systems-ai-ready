@@ -140,3 +140,15 @@ dialog.ask::backdrop{background:rgba(0,0,0,.45)}
 }
 [hidden]{display:none!important}
 .cards.projects{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+
+/* Account and sign-in */
+.account{margin-left:6px;font:500 12px var(--mono);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px;background:var(--frame);color:var(--muted);cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.account::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.account.ok::before{background:var(--good)}
+.account.off{color:var(--claude);border-color:currentColor}
+.account.off::before{background:var(--claude)}
+.signin pre{white-space:pre-wrap;max-height:180px;overflow:auto;font-size:12px}
+.signin .linkbox{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.signin .ok-line{color:var(--good);font-weight:600}
+.signin .err-line{color:var(--warn)}
+.signin .other input{font-family:var(--mono)}

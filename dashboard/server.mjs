@@ -225,6 +225,73 @@ function claudeExecutable() {
   return found.find((p) => process.platform !== "win32" || /\.exe$/i.test(p));
 }
 
+// ---------- sign-in (claude auth) ----------
+// The dashboard signs in with Claude Code's own commands, so the login is the same one the terminal uses.
+function claudeCommand(args) {
+  const exe = claudeExecutable();
+  if (exe) return { cmd: exe, args, shell: false };
+  return { cmd: "claude", args, shell: process.platform === "win32" };
+}
+
+let authCache = null;
+function authStatus(force) {
+  if (!force && authCache && Date.now() - authCache.at < 30000) return authCache.value;
+  const c = claudeCommand(["auth", "status", "--json"]);
+  const r = spawnSync(c.cmd, c.args, { encoding: "utf8", timeout: 15000, windowsHide: true, shell: c.shell });
+  let value;
+  try {
+    const j = JSON.parse((r.stdout || "").trim());
+    value = { known: true, loggedIn: !!j.loggedIn, method: j.authMethod || "", email: j.email || j.account?.email || "" };
+  } catch {
+    value = { known: false, loggedIn: false, error: r.error ? "Claude Code was not found on this computer." : ((r.stderr || r.stdout || "").trim().slice(0, 300) || "Could not read the sign-in status.") };
+  }
+  authCache = { at: Date.now(), value };
+  return value;
+}
+
+const stripAnsi = (t) => String(t).replace(/\x1b\[[0-9;?]*[ -\/]*[@-~]/g, "").replace(/\x1b\][^\x07]*\x07/g, "");
+let login = null; // { proc, output, exitCode, startedAt }
+
+function startLogin(method) {
+  if (login && login.exitCode === null) return loginState();
+  const args = ["auth", "login"];
+  if (method === "console") args.push("--console");
+  const c = claudeCommand(args);
+  const proc = spawn(c.cmd, c.args, { cwd: ROOT, stdio: ["pipe", "pipe", "pipe"], windowsHide: true, shell: c.shell });
+  login = { proc, output: "", exitCode: null, startedAt: Date.now() };
+  const onData = (d) => { login.output = (login.output + stripAnsi(d.toString())).slice(-8000); };
+  proc.stdout.on("data", onData);
+  proc.stderr.on("data", onData);
+  proc.on("error", (e) => { login.output += `\n${e.message}`; login.exitCode = -1; });
+  proc.on("exit", (code) => { login.exitCode = code ?? -1; authCache = null; });
+  setTimeout(() => { if (login?.proc === proc && login.exitCode === null) proc.kill(); }, 10 * 60 * 1000);
+  return loginState();
+}
+
+function loginState() {
+  if (!login) return { running: false };
+  const url = (login.output.match(/https:\/\/[^\s"'<>]+/g) || []).find((u) => /claude\.ai|anthropic\.com|oauth|login/i.test(u)) || "";
+  return {
+    running: login.exitCode === null,
+    exitCode: login.exitCode,
+    output: login.output.trim().split(/\r?\n/).slice(-12).join("\n"),
+    url,
+    needsCode: login.exitCode === null && /paste|code/i.test(login.output),
+    status: login.exitCode === null ? null : authStatus(true),
+  };
+}
+
+function sendLoginCode(code) {
+  if (!login || login.exitCode !== null) return false;
+  login.proc.stdin.write(String(code).trim() + "\n");
+  return true;
+}
+
+function cancelLogin() {
+  if (login && login.exitCode === null) login.proc.kill();
+  return { ok: true };
+}
+
 function startSession({ prompt, project, title, images, resume }) {
   const id = crypto.randomUUID();
   const s = {
@@ -436,6 +503,11 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && p === "/api/workflow") return send(res, 200, workflowInfo(url.searchParams.get("fetch") === "1"));
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
     if (req.method === "POST" && p === "/api/login") return send(res, 200, openSignIn());
+    if (req.method === "GET" && p === "/api/auth") return send(res, 200, authStatus(url.searchParams.get("fresh") === "1"));
+    if (req.method === "POST" && p === "/api/auth/login") { const b = await readBody(req); return send(res, 200, startLogin(b.method)); }
+    if (req.method === "GET" && p === "/api/auth/login") return send(res, 200, loginState());
+    if (req.method === "POST" && p === "/api/auth/login/code") { const b = await readBody(req); return send(res, sendLoginCode(b.code) ? 200 : 409, loginState()); }
+    if (req.method === "POST" && p === "/api/auth/login/cancel") return send(res, 200, cancelLogin());
     if (req.method === "GET" && p === "/api/sessions") {
       const live = [...sessions.values()].map(sessionSummary);
       const liveIds = new Set(live.map((s) => s.id));
