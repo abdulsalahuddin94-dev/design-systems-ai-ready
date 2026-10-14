@@ -40,6 +40,13 @@ Open the folder in Claude Code and say what you want, or run `/design-system-int
 
 Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Project>_Android/` or `<Project>_Mobile/`, each a copy of `My Projects/_Project_Template/`. See `My Projects/README.md`.
 
+## Dashboard (optional, no terminal)
+Double-click `Start-Dashboard.cmd` (Windows) or `Start-Dashboard.command` (Mac). The first time it installs itself (`dashboard/`, one npm package), then opens http://localhost:4777 in your browser; keep its window open while you work. It runs the same Claude Code in this folder, with the same skills, rules, hooks and sign-in, so nothing changes in how the workflow behaves:
+- **Home**: start a new project, join a team project, run a quick task or ask anything; every project in `My Projects/` with its phase, last change, next step, Storybook status and Figma / Storybook / team repo links.
+- **Conversation**: the intake menus and every other choice show as buttons (with an "Other" box for typed answers), permission prompts as Yes / No cards, and screenshots Claude takes or reads inside the approval card (click to zoom). You can paste or drop your own screenshots. Quick actions per project: continue, audit, add or change a component, change a token, update Storybook, status. "Open in Claude Code" continues the same conversation in a terminal.
+- **Updates**: when `master` has new merged changes, a banner lists them with **Update now** (a fast-forward `git pull`; local edits are never overwritten) or **Later**.
+Requires Claude Code installed and signed in on the computer. Projects listed in `private/dashboard-hidden.txt` (one folder name per line, git-ignored) are not shown. Details: `dashboard/README.md`.
+
 ## Working as a team (optional)
 At the start of a new project the intake asks "Solo" or "Team". Solo (the default) changes nothing. Team turns the project folder into one private GitHub repo that also holds its Storybook, so everyone shares one changelog, one status and one Storybook: each session pulls teammates' work first, each step is pushed, and a component is locked while someone edits it. To join a teammate's project, open this folder in Claude Code, pick "Join a team project" and paste the repo link; Claude clones it into `My Projects/` with the right name, so you never place folders by hand. Details: `Design_System_Intake_Skill/steps/team.md`.
 
