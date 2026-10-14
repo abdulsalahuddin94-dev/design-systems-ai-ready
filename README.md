@@ -43,8 +43,8 @@ Project work is saved in `My Projects/<Project>/` (Web), `<Project>_iOS/`, `<Pro
 ## Working as a team (optional)
 At the start of a new project the intake asks "Solo" or "Team". Solo (the default) changes nothing. Team turns the project folder into one private GitHub repo that also holds its Storybook, so everyone shares one changelog, one status and one Storybook: each session pulls teammates' work first, each step is pushed, and a component is locked while someone edits it. To join a teammate's project, open this folder in Claude Code, pick "Join a team project" and paste the repo link; Claude clones it into `My Projects/` with the right name, so you never place folders by hand. Details: `Design_System_Intake_Skill/steps/team.md`.
 
-## Share what you learned
-Hit a problem and found the fix, or found a better way to do a step? Run `/contribute` (or say "share a lesson"). Claude writes it in the workflow's format, removes anything private, shows it to you, and opens a GitHub issue (or a pull request if you can push) only after you say "Send it". Abdul reviews each one with `/contribute review`; accepted ones go into `memory/lessons.md` or `memory/decisions.md` and the matching skill, so every later session follows them. Without Claude, use the Lesson or Rule forms under New issue. Details: `CONTRIBUTING.md`.
+## Improve the workflow (everyone)
+Anyone on the team can make the workflow better: share a lesson from a mistake, add a reference design system or an icon library, improve a skill, step or tool, or add a new one. Run `/contribute` (or just say what you want to add). Claude does the git work on its own branch (a fork if you cannot push here, so you need only a GitHub account), keeps the workflow's rules, removes anything private, shows you the change and opens a pull request after you say "Send it for review". Abdul reviews each one with `/contribute review`; once merged, every teammate gets it with their next pull. Without Claude, use the Lesson or Rule forms under New issue. Details: `CONTRIBUTING.md`.
 
 ## Claude toolkit (in `.claude/`)
 
