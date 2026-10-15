@@ -442,7 +442,8 @@ async function pump(s) {
       s.busy = false;
       const error = m.subtype !== "success" ? (m.errors || []).join(" ") || m.subtype : "";
       const u = m.usage || {};
-      usage.add({ tool: "claude", project: s.project, input: (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0), output: u.output_tokens || 0, cost: m.total_cost_usd || 0 });
+      // New input and output only: cache re-reads repeat the same context every turn and would read as millions of tokens.
+      usage.add({ tool: "claude", project: s.project, input: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0), output: u.output_tokens || 0, cached: u.cache_read_input_tokens || 0, cost: m.total_cost_usd || 0 });
       if (error && LIMIT_RE.test(error)) { usage.add({ tool: "claude", project: s.project, limit: error.slice(0, 200), input: 0, output: 1 }); emit(s, { type: "limit", tool: "claude", message: error.slice(0, 300), fallback: getSettings().fallbackTool }); }
       if (AUTH_RE.test(error)) emit(s, { type: "auth", message: AUTH_MESSAGE, detail: error });
       emit(s, { type: "result", ok: m.subtype === "success", turns: m.num_turns, ms: m.duration_ms, error: AUTH_RE.test(error) ? "" : error });

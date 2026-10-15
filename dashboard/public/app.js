@@ -147,7 +147,10 @@ function route() {
 
 // ---------- Settings ----------
 const fmtTokens = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}K` : String(n || 0);
-const TOOL_ICON = { claude: "i-message", codex: "i-terminal", gemini: "i-zap", cursor: "i-pen", copilot: "i-branch", antigravity: "i-external" };
+// Each tool's own mark (brand symbols in index.html), in its brand colour where it has one.
+const TOOL_ICON = { claude: "b-claude", codex: "b-openai", gemini: "b-gemini", cursor: "b-cursor", copilot: "b-copilot", antigravity: "b-antigravity" };
+const brandIcon = (id) => icon(id, `ic brand-fill ${id.slice(2)}`);
+const figmaIcon = () => { const s = icon("b-figma-color", "logo-ic"); s.setAttribute("viewBox", "0 0 256 384"); return s; };
 
 async function renderSettings() {
   const app = $("#app");
@@ -188,7 +191,7 @@ function toolCard(t, settings) {
   }
   return el("article", { class: "sheet tool" + (t.installed ? "" : " missing") },
     el("div", { class: "tool-head" },
-      el("span", { class: "tool-ic" }, icon(TOOL_ICON[t.id] || "i-blocks")),
+      el("span", { class: "tool-ic" }, TOOL_ICON[t.id] ? brandIcon(TOOL_ICON[t.id]) : icon("i-blocks")),
       el("div", { class: "tool-name" }, el("h3", {}, t.name), el("span", { class: "meta" }, [t.company, t.version].filter(Boolean).join(" · "))),
       t.id === "claude" ? el("span", { class: "tag main" }, "Runs here") : null),
     el("div", { class: `state ${state[0]}` }, state[1]),
@@ -429,10 +432,10 @@ async function renderHome() {
   const app = $("#app");
   app.replaceChildren($("#tpl-home").content.cloneNode(true));
   for (const b of app.querySelectorAll("[data-start]")) b.addEventListener("click", () => startKind(b.dataset.start).catch(showError));
-  for (const b of app.querySelectorAll("[data-add]")) b.addEventListener("click", () => openAdd(b.dataset.add));
   $("#refresh").addEventListener("click", () => { loadProjects(); checkUpdates(true); });
-  loadProjects();
+  loadProjects().then(loadInsights);
   loadRecent();
+  loadFigmaTally();
 }
 
 // Inline icon from the sprite in index.html.
@@ -447,8 +450,8 @@ const icon = (name, cls = "ic") => {
 };
 
 function linkChip(l) {
-  const ic = { figma: "i-pen", github: "i-branch", storybook: "i-book" }[l.kind] || "i-external";
-  return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener", title: l.url }, icon(ic), l.kind === "figma" ? `Figma · ${l.label}` : l.label);
+  const mark = l.kind === "figma" ? figmaIcon() : l.kind === "github" ? brandIcon("b-github") : l.kind === "storybook" ? brandIcon("b-storybook") : icon("i-external");
+  return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener", title: l.url }, mark, l.kind === "figma" ? `Figma · ${l.label}` : l.label);
 }
 
 // The proof sign-offs every project moves through (Intake section 8 checkpoints, then the final audit).
@@ -472,6 +475,66 @@ function track(p) {
       STAGES.map((s, i) => el("li", { class: i < at ? "done" : i === at ? "now" : "" }, el("span", {}, s)))));
 }
 const jobNo = (i) => `No.${String(i + 1).padStart(3, "0")}`;
+
+// Figma connection for the Home counter: FigCli Yolo answers on port 9222 when Figma Desktop runs patched.
+let integrationsCache = null;
+const getIntegrations = () => (integrationsCache ||= api("/api/integrations").catch(() => null));
+async function loadFigmaTally() {
+  const d = await getIntegrations();
+  const lines = d?.figma?.lines || [];
+  const yolo = lines.find((l) => /yolo/i.test(l)) || "";
+  const bridge = lines.find((l) => /desktop bridge/i.test(l)) || "";
+  const state = /port 9222 open/i.test(yolo) ? ["Connected", "ok"] : /installed/i.test(bridge) || /installed/i.test(yolo) ? ["Not running", "off"] : ["Not set up", "off"];
+  const dd = $("#t-figma");
+  if (!dd) return;
+  dd.textContent = state[0];
+  dd.parentElement.classList.toggle("off", state[1] === "off");
+  dd.parentElement.title = lines.join("\n");
+}
+
+// "Worth a look": facts from the projects, usage and workflow, each with one action. Nothing is invented.
+async function loadInsights() {
+  const list = $("#insight-list");
+  if (!list) return;
+  const items = [];
+  const day = 864e5;
+  const [usage, wf, integ] = await Promise.all([api("/api/usage").catch(() => null), api("/api/workflow").catch(() => null), getIntegrations()]);
+  const unsynced = projects.filter((p) => p.unsynced);
+  if (unsynced.length) {
+    const p = unsynced[0];
+    items.push({ tone: "warn", icon: brandIcon("b-storybook"), title: `${unsynced.length} project${unsynced.length > 1 ? "s have" : " has"} Figma changes not in Storybook`,
+      text: unsynced.map((x) => `${x.title} (${x.unsynced})`).join(", "), action: `Update ${p.title}`, run: () => start({ prompt: `Update the Storybook of the project "${p.name}" from Figma.`, project: p.name, title: `Storybook: ${p.title}` }) });
+  }
+  const idle = projects.filter((p) => p.last?.date && Date.now() - Date.parse(p.last.date) > 7 * day).sort((a, b) => Date.parse(a.last.date) - Date.parse(b.last.date));
+  if (idle.length) {
+    const p = idle[0];
+    const days = Math.round((Date.now() - Date.parse(p.last.date)) / day);
+    items.push({ tone: "idle", icon: icon("i-clock"), title: `${p.title} has been quiet for ${days} days`, text: p.next ? `Next: ${p.next}` : "No next step recorded.", action: "Continue", run: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }) });
+  }
+  const stageCounts = {};
+  for (const p of projects) { const i = stageIndex(p); if (i >= 0) stageCounts[STAGES[i]] = (stageCounts[STAGES[i]] || 0) + 1; }
+  const stageLine = STAGES.filter((s) => stageCounts[s]).map((s) => `${stageCounts[s]} at ${s}`).join(" · ");
+  if (stageLine) items.push({ tone: "info", icon: icon("i-pen"), title: "Where the jobs stand", text: stageLine });
+  const c = usage?.byTool?.claude;
+  if (c && (c.today.turns || c.week.turns)) {
+    items.push({ tone: "info", icon: brandIcon("b-claude"), title: `Claude used ${fmtTokens(c.today.input + c.today.output)} tokens today`, text: `${c.today.turns} turns today · ${fmtTokens(c.week.input + c.week.output)} over 7 days. Details in Settings.`, action: "Usage", run: () => { location.hash = "#/settings"; } });
+  }
+  const lastLimit = usage?.limits?.[0];
+  if (lastLimit && Date.now() - lastLimit.at < day) {
+    items.push({ tone: "warn", icon: icon("i-alert"), title: "Claude reached its usage limit today", text: lastLimit.limit, action: "Fallback tool", run: () => { location.hash = "#/settings"; } });
+  }
+  const yolo = (integ?.figma?.lines || []).find((l) => /yolo/i.test(l)) || "";
+  if (integ && !/port 9222 open/i.test(yolo)) {
+    items.push({ tone: "warn", icon: figmaIcon(), title: "Figma is not connected", text: "Open Figma Desktop (patched for FigCli Yolo) before Claude works on a file.", action: "Check", run: () => { location.hash = "#/settings"; } });
+  }
+  if (wf?.git && wf.behind) items.push({ tone: "warn", icon: icon("i-download"), title: `A workflow update is ready (${wf.behind})`, text: wf.changes?.[0] || "New skills and rules.", action: "Update now", run: runUpdate });
+  if (!items.length) { $("#insights-wrap").hidden = true; return; }
+  $("#insights-wrap").hidden = false;
+  list.replaceChildren(...items.slice(0, 6).map((it) => el("article", { class: `insight ${it.tone}` },
+    el("span", { class: "insight-ic" }, it.icon),
+    el("div", { class: "insight-body" }, el("h3", {}, it.title), el("p", { dir: "auto" }, it.text)),
+    it.action ? el("button", { type: "button", class: "ghost", onclick: () => Promise.resolve(it.run()).catch(showError) }, it.action, icon("i-right")) : null)));
+}
 
 function setTally(key, value) {
   const n = $(`#t-${key}`);
@@ -923,6 +986,8 @@ function lightbox(src) {
 $("#account").addEventListener("click", () => openSignIn());
 $("#perm").addEventListener("click", openPerm);
 refreshPerm();
+// The sidebar's Add to the workflow buttons live outside the page templates, so they are bound once.
+for (const b of document.querySelectorAll(".sidenav [data-add]")) b.addEventListener("click", () => openAdd(b.dataset.add));
 route();
 checkUpdates(true);
 refreshAccount();
