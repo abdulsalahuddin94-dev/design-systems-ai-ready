@@ -3,117 +3,166 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Workflow Dashboard</title>
+<title>Atomica</title>
 <meta name="description" content="Local dashboard for the Design systems Ai Ready workflow.">
+<meta name="color-scheme" content="light dark">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap">
-<link rel="stylesheet" href="docs/assets/docs.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=Red+Hat+Mono:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<nav class="topnav" aria-label="Dashboard">
-  <a class="brand" href="#/">AI-Ready Design Systems · Dashboard</a>
-  <a href="#/" data-nav="home">Home</a>
-  <a href="docs/getting-started.html" target="_blank" rel="noopener">Docs</a>
-  <button class="perm" type="button" id="perm" hidden title="How often Claude asks before a step"></button>
-  <button class="account" type="button" id="account" hidden></button>
-  <button class="theme" type="button" id="theme" aria-label="Switch light or dark">◐</button>
-</nav>
+<!-- Icons: Lucide (ISC license, lucide.dev), redrawn inline so the dashboard needs no package. -->
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+    <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+    <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></symbol>
+    <symbol id="i-library" viewBox="0 0 24 24"><path d="m16 6 4 14"/><path d="M12 6v14"/><path d="M8 8v12"/><path d="M4 4v16"/></symbol>
+    <symbol id="i-shapes" viewBox="0 0 24 24"><path d="M8.3 10a.7.7 0 0 1-.626-1.079L11.4 3a.7.7 0 0 1 1.198-.043L16.3 8.9a.7.7 0 0 1-.572 1.1Z"/><rect x="3" y="14" width="7" height="7" rx="1"/><circle cx="17.5" cy="17.5" r="3.5"/></symbol>
+    <symbol id="i-blocks" viewBox="0 0 24 24"><rect width="7" height="7" x="14" y="3" rx="1"/><path d="M10 21V8a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H3"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+    <symbol id="i-pen" viewBox="0 0 24 24"><path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/><path d="m2.3 2.3 7.286 7.286"/><circle cx="11" cy="11" r="2"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+    <symbol id="i-branch" viewBox="0 0 24 24"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M18 9a9 9 0 0 1-9 9"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3"/><path d="M7 20.662V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.662"/></symbol>
+    <symbol id="i-left" viewBox="0 0 24 24"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+    <symbol id="i-clip" viewBox="0 0 24 24"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><rect width="14" height="14" x="5" y="5" rx="2"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" x2="20" y1="19" y2="19"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-login" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></symbol>
+    <symbol id="i-docs" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+    <!-- The mark: a registration target, the sign printers use to line up every ink. -->
+    <symbol id="logo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="currentColor"/><path d="M16 1v8M16 23v8M1 16h8M23 16h8" stroke="currentColor" stroke-width="2"/></symbol>
+  </defs>
+</svg>
+
+<header class="masthead">
+  <div class="strip" aria-hidden="true"><i class="c"></i><i class="m"></i><i class="y"></i><i class="k"></i><i class="c t75"></i><i class="m t75"></i><i class="y t75"></i><i class="k t75"></i><i class="c t50"></i><i class="m t50"></i><i class="y t50"></i><i class="k t50"></i><i class="c t25"></i><i class="m t25"></i><i class="y t25"></i><i class="k t25"></i></div>
+  <nav class="topnav" aria-label="Dashboard">
+    <a class="brand" href="#/" aria-label="Atomica, Home">
+      <span class="mark" aria-hidden="true"><svg class="reg c"><use href="#logo"/></svg><svg class="reg m"><use href="#logo"/></svg><svg class="reg k"><use href="#logo"/></svg></span>
+      <span class="word"><b>Atomica</b> AI-ready design systems</span>
+    </a>
+    <div class="navlinks">
+      <a href="#/" data-nav="home"><svg class="ic"><use href="#i-pen"/></svg>Jobs</a>
+      <a href="#/settings" data-nav="settings"><svg class="ic"><use href="#i-settings"/></svg>Settings</a>
+      <a href="docs/getting-started.html" target="_blank" rel="noopener"><svg class="ic"><use href="#i-docs"/></svg>Docs</a>
+    </div>
+    <div class="status">
+      <button class="pill perm" type="button" id="perm" hidden title="How often Claude asks before a step"></button>
+      <button class="pill account" type="button" id="account" hidden></button>
+      <button class="iconbtn theme" type="button" id="theme" aria-label="Switch light or dark"><svg class="ic sun"><use href="#i-sun"/></svg><svg class="ic moon"><use href="#i-moon"/></svg></button>
+    </div>
+  </nav>
+</header>
 
 <div id="update" class="update" hidden></div>
 <div id="app"></div>
 
 <template id="tpl-home">
   <main class="home">
-    <header>
-      <div class="kicker">Workflow</div>
-      <h1>What are we <em>building</em> today?</h1>
-      <p class="lead">Every button starts the same Claude Code you use in the terminal, with the same skills and rules. Menus appear as buttons, screenshots appear here for your approval.</p>
-    </header>
+    <section class="intro" aria-labelledby="hello">
+      <div class="intro-text">
+        <h1 id="hello">What are we <em>building</em> today?</h1>
+        <p class="lead">Every button starts the same Claude Code you use in the terminal, with the same skills and rules. Menus come back as buttons and screenshots come back as proofs for you to sign off.</p>
+      </div>
+      <dl class="tally" id="tally" aria-label="Today">
+        <div><dt>Jobs</dt><dd id="t-jobs">–</dd></div>
+        <div class="warn"><dt>Storybook waiting</dt><dd id="t-sync">–</dd></div>
+        <div class="live"><dt>Running now</dt><dd id="t-live">–</dd></div>
+      </dl>
+    </section>
 
-    <section aria-labelledby="start">
-      <h2 id="start" class="sub">Start</h2>
-      <div class="cards start">
-        <button class="card action rec" data-start="new">
-          <span class="k">Recommended</span>
-          <h3>Start a new project</h3>
-          <p>The intake asks one question at a time and creates the project folder.</p>
+    <section class="start" aria-labelledby="start">
+      <h2 id="start" class="section-title">Start</h2>
+      <div class="start-grid">
+        <button class="tile lead-tile reg-hover" data-start="new" aria-label="Start a new project (recommended)">
+          <span class="tile-ic"><svg class="ic"><use href="#i-plus"/></svg></span>
+          <span class="tile-body">
+            <span class="tile-title">Start a new project</span>
+            <span class="tile-desc">The intake asks one question at a time, then creates the project folder and its Figma plan.</span>
+          </span>
+          <svg class="ic go"><use href="#i-right"/></svg>
         </button>
-        <button class="card action" data-start="join">
-          <span class="k">Team</span>
-          <h3>Join a team project</h3>
-          <p>Paste the project's GitHub link; it lands in My Projects.</p>
+        <button class="tile reg-hover" data-start="join">
+          <span class="tile-ic"><svg class="ic"><use href="#i-users"/></svg></span>
+          <span class="tile-body"><span class="tile-title">Join a team project</span><span class="tile-desc">Paste its GitHub link; it lands in My Projects.</span></span>
         </button>
-        <button class="card action" data-start="quick">
-          <span class="k">Quick task</span>
-          <h3>One task on a live file</h3>
-          <p>One component, an audit or one fix, without the intake.</p>
+        <button class="tile reg-hover" data-start="quick">
+          <span class="tile-ic"><svg class="ic"><use href="#i-zap"/></svg></span>
+          <span class="tile-body"><span class="tile-title">One task on a live file</span><span class="tile-desc">One component, an audit or one fix, no intake.</span></span>
         </button>
-        <button class="card action" data-start="chat">
-          <span class="k">Anything</span>
-          <h3>Ask Claude</h3>
-          <p>Type any request, like in the terminal.</p>
+        <button class="tile reg-hover" data-start="chat">
+          <span class="tile-ic"><svg class="ic"><use href="#i-message"/></svg></span>
+          <span class="tile-body"><span class="tile-title">Ask Claude</span><span class="tile-desc">Any request, like in the terminal.</span></span>
         </button>
-        <button class="card action" data-start="phone">
-          <span class="k">Phone</span>
-          <h3>Work from my phone</h3>
-          <p>Starts Claude Code with Remote Control, so you follow and answer it in the Claude app.</p>
+        <button class="tile reg-hover" data-start="phone">
+          <span class="tile-ic"><svg class="ic"><use href="#i-phone"/></svg></span>
+          <span class="tile-body"><span class="tile-title">Work from my phone</span><span class="tile-desc">Remote Control: follow and answer in the Claude app.</span></span>
         </button>
       </div>
     </section>
 
-    <section aria-labelledby="add">
-      <h2 id="add" class="sub">Add to the workflow</h2>
-      <div class="cards start">
-        <button class="card action" data-add="reference">
-          <span class="k">Reference</span>
-          <h3>Reference design system</h3>
-          <p>Study another company's Figma design system so new projects can start from it.</p>
-        </button>
-        <button class="card action" data-add="icons">
-          <span class="k">Icons</span>
-          <h3>Icon library</h3>
-          <p>A free icon set the intake can offer for new projects.</p>
-        </button>
-        <button class="card action" data-add="skill">
-          <span class="k">Skill</span>
-          <h3>Skill from GitHub</h3>
-          <p>Paste a skill's GitHub link; Claude checks what it adds before changing anything.</p>
-        </button>
-      </div>
-    </section>
-
-    <section aria-labelledby="projects">
+    <section class="jobs" aria-labelledby="projects">
       <div class="row-head">
-        <h2 id="projects" class="sub">My projects</h2>
-        <button class="link" type="button" id="refresh">Refresh</button>
+        <h2 id="projects" class="section-title">My projects</h2>
+        <button class="textbtn" type="button" id="refresh"><svg class="ic"><use href="#i-refresh"/></svg>Refresh</button>
       </div>
-      <div id="project-list" class="cards projects"><p class="muted">Loading…</p></div>
+      <div id="project-list" class="tickets"><p class="muted">Loading…</p></div>
     </section>
 
-    <section aria-labelledby="recent" id="recent-wrap" hidden>
-      <h2 id="recent" class="sub">Recent conversations</h2>
-      <ul id="recent-list" class="recent"></ul>
-    </section>
+    <div class="lower">
+      <section class="board-wrap" aria-labelledby="recent" id="recent-wrap" hidden>
+        <h2 id="recent" class="section-title">Recent conversations</h2>
+        <ul id="recent-list" class="board"></ul>
+      </section>
+
+      <section class="addon" aria-labelledby="add">
+        <h2 id="add" class="section-title">Add to the workflow</h2>
+        <p class="muted small">Each one is checked, then sent as a pull request for review.</p>
+        <div class="add-list">
+          <button class="add-row" data-add="reference"><svg class="ic"><use href="#i-library"/></svg><span><b>Reference design system</b><small>Study another company's Figma design system so new projects can start from it.</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
+          <button class="add-row" data-add="icons"><svg class="ic"><use href="#i-shapes"/></svg><span><b>Icon library</b><small>A free icon set the intake can offer for new projects.</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
+          <button class="add-row" data-add="skill"><svg class="ic"><use href="#i-blocks"/></svg><span><b>Skill from GitHub</b><small>Claude checks what it adds before changing anything.</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
+        </div>
+      </section>
+    </div>
   </main>
 </template>
 
 <template id="tpl-chat">
   <div class="chat-layout">
     <aside class="side" aria-label="Project">
-      <a class="back" href="#/">← Home</a>
-      <div class="side-head">
-        <div class="kicker" id="side-kicker">Conversation</div>
+      <a class="back" href="#/"><svg class="ic"><use href="#i-left"/></svg>All jobs</a>
+      <div class="side-head sheet">
+        <div class="side-kicker" id="side-kicker">Conversation</div>
         <h2 id="side-title"></h2>
         <p class="note" id="side-meta"></p>
+        <div id="side-track"></div>
       </div>
       <div id="side-links" class="side-links"></div>
       <div id="side-actions" class="side-actions"></div>
       <div class="side-foot">
-        <button class="ghost" type="button" id="to-phone" title="Move this conversation to a terminal with Remote Control">Continue on my phone</button>
-        <button class="ghost" type="button" id="to-terminal" title="Continue this conversation in a terminal">Open in Claude Code</button>
+        <button class="ghost" type="button" id="to-phone" title="Move this conversation to a terminal with Remote Control"><svg class="ic"><use href="#i-phone"/></svg>Continue on my phone</button>
+        <button class="ghost" type="button" id="to-tool" title="Hand this conversation to Codex, Gemini or Antigravity"><svg class="ic"><use href="#i-swap"/></svg>Continue with another tool</button>
+        <button class="ghost" type="button" id="to-terminal" title="Continue this conversation in a terminal"><svg class="ic"><use href="#i-terminal"/></svg>Open in Claude Code</button>
       </div>
     </aside>
     <section class="chat" aria-label="Conversation">
@@ -123,11 +172,11 @@
         <div class="composer-row">
           <label class="attach" title="Attach an image">
             <input type="file" id="file" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden>
-            <span aria-hidden="true">＋</span><span class="sr">Attach an image</span>
+            <svg class="ic" aria-hidden="true"><use href="#i-clip"/></svg><span class="sr">Attach an image</span>
           </label>
           <textarea id="input" rows="1" placeholder="Write to Claude (Arabic or English). Paste or drop screenshots here." dir="auto"></textarea>
-          <button type="button" id="stop" class="ghost" hidden>Stop</button>
-          <button type="submit" id="send" class="primary">Send</button>
+          <button type="button" id="stop" class="ghost" hidden><svg class="ic"><use href="#i-stop"/></svg>Stop</button>
+          <button type="submit" id="send" class="primary"><svg class="ic"><use href="#i-send"/></svg><span>Send</span></button>
         </div>
         <p class="note" id="status-line"></p>
       </form>
@@ -166,11 +215,10 @@
 <template id="tpl-add">
   <dialog class="ask add" id="adddlg">
     <form method="dialog" class="ask-form" id="add-form">
-      <div class="kicker" id="add-kicker">Add to the workflow</div>
       <h3 id="add-title"></h3>
       <div class="add-cols">
-        <div><p class="sub">What you need</p><ol id="add-need"></ol></div>
-        <div><p class="sub">What happens when you press Add</p><ol id="add-steps"></ol></div>
+        <div><p class="col-title">What you need</p><ol id="add-need"></ol></div>
+        <div><p class="col-title">What happens when you press Add</p><ol id="add-steps"></ol></div>
       </div>
       <div id="add-fields" class="add-fields"></div>
       <p class="note" id="add-note"></p>
@@ -178,6 +226,65 @@
         <button value="cancel" class="ghost" formnovalidate>Cancel</button>
         <button value="ok" class="primary">Add</button>
       </div>
+    </form>
+  </dialog>
+</template>
+
+<template id="tpl-settings">
+  <main class="settings">
+    <header class="settings-head">
+      <h1>Settings</h1>
+      <p class="lead">The AI tools, accounts and services this workflow uses on this computer. Sign-ins happen in each tool's own window; nothing here stores a password or token.</p>
+    </header>
+
+    <section aria-labelledby="s-tools">
+      <div class="row-head"><h2 id="s-tools" class="section-title">AI tools</h2><button class="textbtn" type="button" id="s-refresh"><svg class="ic"><use href="#i-refresh"/></svg>Check again</button></div>
+      <p class="muted small">Claude Code runs inside this dashboard. The others open in their own window on the same folder, follow AGENTS.md and ask their own approvals.</p>
+      <div id="s-tool-list" class="tool-grid"><p class="muted">Checking the tools on this computer…</p></div>
+    </section>
+
+    <section aria-labelledby="s-fallback" class="sheet setting-row">
+      <div>
+        <h2 id="s-fallback" class="row-title">When Claude hits its usage limit</h2>
+        <p class="muted small">The conversation is written to a handoff note, and the tool you pick continues from the same step. When Claude is back, it audits what the other tool did first.</p>
+      </div>
+      <select id="s-fallback-pick" aria-labelledby="s-fallback">
+        <option value="ask">Ask me each time</option>
+        <option value="codex">Continue with Codex</option>
+        <option value="gemini">Continue with Gemini CLI</option>
+      </select>
+    </section>
+
+    <section aria-labelledby="s-usage">
+      <h2 id="s-usage" class="section-title">Usage</h2>
+      <p class="muted small">Tokens used through this dashboard, counted on this computer. Plans do not share how much is left, so a limit shows here when a tool reports one.</p>
+      <div id="s-usage-body"><p class="muted">Loading…</p></div>
+    </section>
+
+    <div class="settings-cols">
+      <section aria-labelledby="s-github" class="sheet panel">
+        <h2 id="s-github" class="row-title"><svg class="ic"><use href="#i-branch"/></svg>GitHub</h2>
+        <div id="s-github-body" class="kv"><p class="muted">Loading…</p></div>
+      </section>
+      <section aria-labelledby="s-figma" class="sheet panel">
+        <h2 id="s-figma" class="row-title"><svg class="ic"><use href="#i-pen"/></svg>Figma</h2>
+        <div id="s-figma-body" class="kv"><p class="muted">Loading…</p></div>
+      </section>
+      <section aria-labelledby="s-prefs" class="sheet panel">
+        <h2 id="s-prefs" class="row-title"><svg class="ic"><use href="#i-shield"/></svg>This computer</h2>
+        <div id="s-prefs-body" class="kv"></div>
+      </section>
+    </div>
+  </main>
+</template>
+
+<template id="tpl-toolpick">
+  <dialog class="ask" id="toolpick">
+    <form method="dialog" class="ask-form">
+      <h3>Continue with another tool</h3>
+      <p class="muted">This conversation is written to a handoff note, then the tool opens in its own window on the same folder and continues from there. Use it when Claude hits its limit, or to get a second opinion.</p>
+      <div id="toolpick-list" class="pick-list"></div>
+      <div class="ask-buttons"><button value="cancel" class="ghost">Cancel</button></div>
     </form>
   </dialog>
 </template>

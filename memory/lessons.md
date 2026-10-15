@@ -4,6 +4,10 @@ Every mistake Abdul reports or a check finds gets one entry here in the session 
 
 Teammates share their lessons through `/contribute` (`CONTRIBUTING.md`); an entry lands here only after Abdul accepts it, marked `(contributed by <login>)`.
 
+## Cleaning up scratch output (2026-10-14)
+1. **A shared output folder was deleted with older files in it.** After moving its own screenshots out of `.playwright-mcp/` (Playwright MCP's output folder in the Root), Claude removed the whole folder, which also held screenshots, logs and two scripts from earlier sessions.
+   Cause: the folder was treated as this session's own because this session had just written to it; it was not listed before the delete. Rule: never delete a folder Claude did not create in the same session; move or delete only the files it created, by name, and remove a folder only when it is empty. Check: list the folder right before any delete and compare it with the files this session wrote.
+
 ## Storybook docs with snake_case token names (2026-10-13)
 1. **Docs pages were unreadable in Dark (Abdul).** On the Music App Storybook every docs page showed dark text on a dark page.
    Cause: `templates/docs/DocBlocks.tsx` picks the docs text, muted, surface and border colors by token name with hyphen patterns (`on-surface`, `outline-variant`); this DS uses md.sys names with underscores (`on_surface`, `outline_variant`), so nothing matched and the fixed light fallbacks were used. Rule: the name patterns accept `-` and `_`. Check: `templates/mode_check.js` on every docs page in every mode (`unreadableCount` 0) before a Storybook is called done, which this build skipped (lesson 5 of the pilot). Also: `storybook/figma-links.json` (node ids per component) is part of every build, or the Docs pages have no "Open in Figma" button.

@@ -14,6 +14,7 @@ import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { query } from "@anthropic-ai/claude-agent-sdk";
+import { TOOLS, toolStatus, loginCommand, antigravityPath, usageStore, handoffCommand, LIMIT_RE } from "./tools.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -149,13 +150,24 @@ function updateWorkflow() {
 // auto: Claude Code's auto mode approves routine steps by itself and asks only for risky ones (Recommended).
 // default: asks before every step that needs permission.
 const MODES = ["auto", "default"];
+// fallbackTool: the tool offered first when Claude hits its usage limit (see handoff below).
+// models: an optional model per tool (empty = the tool's own default).
+const RUNNABLE = TOOLS.filter((t) => t.run && t.id !== "claude").map((t) => t.id);
 function getSettings() {
   const saved = readJson(SETTINGS, {}) || {};
-  return { permissionMode: MODES.includes(saved.permissionMode) ? saved.permissionMode : "auto" };
+  return {
+    permissionMode: MODES.includes(saved.permissionMode) ? saved.permissionMode : "auto",
+    fallbackTool: [...RUNNABLE, "ask"].includes(saved.fallbackTool) ? saved.fallbackTool : "ask",
+    models: { ...(saved.models || {}) },
+  };
 }
 function setSettings(body) {
   const next = { ...getSettings() };
   if (MODES.includes(body.permissionMode)) next.permissionMode = body.permissionMode;
+  if ([...RUNNABLE, "ask"].includes(body.fallbackTool)) next.fallbackTool = body.fallbackTool;
+  if (body.models && typeof body.models === "object") {
+    for (const [k, v] of Object.entries(body.models)) if (RUNNABLE.includes(k)) next.models[k] = String(v || "").trim().slice(0, 80);
+  }
   fs.mkdirSync(STATE, { recursive: true });
   fs.writeFileSync(SETTINGS, JSON.stringify(next, null, 2));
   for (const s of sessions.values()) if (!s.ended) s.query?.setPermissionMode(next.permissionMode).catch(() => {});
@@ -164,6 +176,7 @@ function setSettings(body) {
 const modeFlag = (mode) => `--permission-mode ${mode === "default" ? "manual" : mode}`;
 
 const sessions = new Map(); // id -> session
+const usage = usageStore(STATE);
 
 function saveHistory(s) {
   const all = readJson(HISTORY, []);
@@ -360,6 +373,7 @@ function startSession({ prompt, project, title, images, resume }) {
   emit(s, { type: "busy", busy: s.busy });
   pump(s).catch((err) => {
     const message = explainError(err);
+    if (message !== AUTH_MESSAGE && LIMIT_RE.test(message)) return emit(s, { type: "limit", tool: "claude", message: message.slice(0, 300), fallback: getSettings().fallbackTool });
     emit(s, message === AUTH_MESSAGE ? { type: "auth", message } : { type: "error", message });
   }).finally(() => {
     s.ended = true; s.busy = false;
@@ -399,6 +413,9 @@ async function pump(s) {
         if (block.type === "text" && !sub && block.text.length < 400 && AUTH_RE.test(block.text)) {
           emit(s, { type: "auth", message: AUTH_MESSAGE, detail: block.text });
           liveText = false;
+        } else if (block.type === "text" && !sub && block.text.length < 300 && /usage limit|limit reached|out of (?:extra )?usage/i.test(block.text)) {
+          emit(s, { type: "limit", tool: "claude", message: block.text, fallback: getSettings().fallbackTool });
+          liveText = false;
         } else if (block.type === "text" && !sub && block.text.trim()) {
           emit(s, { type: "text", text: block.text, streamed: liveText });
           liveText = false;
@@ -424,6 +441,9 @@ async function pump(s) {
     if (m.type === "result") {
       s.busy = false;
       const error = m.subtype !== "success" ? (m.errors || []).join(" ") || m.subtype : "";
+      const u = m.usage || {};
+      usage.add({ tool: "claude", project: s.project, input: (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0), output: u.output_tokens || 0, cost: m.total_cost_usd || 0 });
+      if (error && LIMIT_RE.test(error)) { usage.add({ tool: "claude", project: s.project, limit: error.slice(0, 200), input: 0, output: 1 }); emit(s, { type: "limit", tool: "claude", message: error.slice(0, 300), fallback: getSettings().fallbackTool }); }
       if (AUTH_RE.test(error)) emit(s, { type: "auth", message: AUTH_MESSAGE, detail: error });
       emit(s, { type: "result", ok: m.subtype === "success", turns: m.num_turns, ms: m.duration_ms, error: AUTH_RE.test(error) ? "" : error });
       emit(s, { type: "busy", busy: false });
@@ -486,6 +506,85 @@ function openPhone() {
   return r.ok ? { ...r, message: 'A terminal opened with Remote Control. On your phone open the Claude app, then Code, and pick "Design systems workflow". Keep this computer on and the terminal open.' } : r;
 }
 
+// ---------- Settings: GitHub, Figma, machine (read only; tokens are never read or shown) ----------
+let integCache = null;
+function integrations(force) {
+  if (!force && integCache && Date.now() - integCache.at < 60000) return integCache.value;
+  const sh = (cmd, args, timeout = 15000) => {
+    const r = spawnSync(cmd, args, { cwd: ROOT, encoding: "utf8", timeout, windowsHide: true });
+    return { ok: !r.error && r.status === 0, out: ((r.stdout || "") + (r.stderr || "")).trim() };
+  };
+  const ghs = sh("gh", ["auth", "status", "--hostname", "github.com"]);
+  const account = (ghs.out.match(/account (\S+)/) || [])[1] || "";
+  const origin = git(["remote", "get-url", "origin"]).out;
+  const pyCmd = ["python", "py", "python3"].find((c) => sh(c, ["--version"], 5000).ok);
+  const py = pyCmd ? sh(pyCmd, ["--version"], 5000) : null;
+  const figma = pyCmd ? sh(pyCmd, ["tools/figma_tools_check.py"], 20000).out : "";
+  const value = {
+    github: { cli: !/not recognized|ENOENT/i.test(ghs.out) && ghs.out !== "", signedIn: !!account, account, repo: origin.replace(/\.git$/, "") },
+    figma: { lines: figma.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !/token/i.test(l)).slice(0, 6) },
+    machine: {
+      node: process.version,
+      python: py ? py.out.replace(/^Python\s*/, "") : "",
+      git: (sh("git", ["--version"], 5000).out.match(/\d+\.\d+(\.\d+)?/) || [""])[0],
+    },
+  };
+  integCache = { at: Date.now(), value };
+  return value;
+}
+
+// ---------- handoff to another tool ----------
+// Writes what this conversation was doing to .claude/.state/handoff.md, then opens the chosen tool in its own
+// window on that note. The tool works there with its own approvals and logs in CHANGELOG.md with a Tool: line
+// (AGENTS.md); Claude audits that work at the start of its next session (CLAUDE.md > Handoff from other tools).
+const HANDOFF_NOTE = ".claude/.state/handoff.md";
+function writeHandoff(s) {
+  const lines = [];
+  for (const e of s?.log || []) {
+    if (e.type === "user" && e.text) lines.push(`**User:** ${e.text}`);
+    else if (e.type === "text" && e.text) lines.push(`**Claude:** ${e.text}`);
+    else if (e.type === "answered" && e.answers) lines.push(`**User picked:** ${Object.values(e.answers).join(" · ")}`);
+  }
+  let convo = lines.join("\n\n");
+  if (convo.length > 12000) convo = "…\n\n" + convo.slice(-12000);
+  const body = [
+    "# Handoff from the dashboard",
+    "",
+    `Written ${new Date().toISOString()}. Claude Code stopped (usage limit or the user's choice) and another tool continues.`,
+    "",
+    s?.project ? `Project: \`My Projects/${s.project}\`. Read its Project_Brief.md (Next step), status.json and the last CHANGELOG.md entry first.` : "No project was selected in this conversation.",
+    "",
+    "Rules: follow AGENTS.md. Log every change in the project's CHANGELOG.md with a `Tool:` line and commit with a `[Tool]` prefix. Ask the user before any Figma write, publish, push or delete.",
+    "",
+    "## Conversation so far",
+    "",
+    convo || "(nothing yet)",
+    "",
+  ].join("\n");
+  fs.mkdirSync(STATE, { recursive: true });
+  fs.writeFileSync(path.join(ROOT, HANDOFF_NOTE), body);
+}
+
+function handoff(s, tool) {
+  // From a conversation: write the note. From Settings (no conversation): just open the tool on AGENTS.md.
+  if (s) writeHandoff(s);
+  const note = s ? HANDOFF_NOTE : null;
+  if (tool === "antigravity") {
+    const app = antigravityPath();
+    if (!app) return { ok: false, message: "Antigravity is not installed on this computer." };
+    try { spawn(app, [ROOT], { detached: true, stdio: "ignore" }).unref(); } catch (e) { return { ok: false, message: e.message }; }
+    return { ok: true, message: note ? `Antigravity opened on the workflow folder. Ask it: "Read ${note} and AGENTS.md, then continue."` : "Antigravity opened on the workflow folder." };
+  }
+  const cmd = handoffCommand(tool, getSettings().models[tool], note);
+  if (!cmd) return { ok: false, message: "This tool cannot take over yet." };
+  const r = runInTerminal(cmd);
+  const name = TOOLS.find((t) => t.id === tool)?.name || tool;
+  if (!r.ok) return r;
+  return { ...r, message: note
+    ? `${name} opened in its own window with the handoff note. It asks its own approvals there. When Claude is back, start a new conversation: it reads what ${name} did and audits it first.`
+    : `${name} opened in its own window in the workflow folder.` };
+}
+
 function closeSession(s) {
   s.inbox.close(); s.abort.abort(); sessions.delete(s.id);
 }
@@ -544,6 +643,16 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && p === "/api/settings") return send(res, 200, getSettings());
     if (req.method === "POST" && p === "/api/settings") { const b = await readBody(req); return send(res, 200, setSettings(b)); }
     if (req.method === "POST" && p === "/api/phone") return send(res, 200, openPhone());
+    if (req.method === "GET" && p === "/api/tools") return send(res, 200, { tools: toolStatus(url.searchParams.get("fresh") === "1", () => authStatus(false)), settings: getSettings() });
+    if (req.method === "GET" && p === "/api/usage") return send(res, 200, usage.summary());
+    if (req.method === "GET" && p === "/api/integrations") return send(res, 200, integrations(url.searchParams.get("fresh") === "1"));
+    if (req.method === "POST" && p === "/api/github/login") return send(res, 200, runInTerminal("gh auth login --web --hostname github.com"));
+    const tl = p.match(/^\/api\/tools\/(\w+)\/(login|open)$/);
+    if (req.method === "POST" && tl) {
+      if (tl[2] === "open") return send(res, 200, handoff(null, tl[1]));
+      const cmd = loginCommand(tl[1]);
+      return send(res, cmd ? 200 : 404, cmd ? runInTerminal(cmd) : { ok: false, message: "Unknown tool." });
+    }
     if (req.method === "POST" && p === "/api/login") return send(res, 200, openSignIn());
     if (req.method === "GET" && p === "/api/auth") return send(res, 200, authStatus(url.searchParams.get("fresh") === "1"));
     if (req.method === "POST" && p === "/api/auth/login") { const b = await readBody(req); return send(res, 200, startLogin(b.method)); }
@@ -581,6 +690,7 @@ const server = http.createServer(async (req, res) => {
       if (action === "/stop") { try { await s.query.interrupt(); } catch {} return send(res, 200, { ok: true }); }
       if (action === "/close") { closeSession(s); return send(res, 200, { ok: true }); }
       if (action === "/terminal") return send(res, 200, openInTerminal(s, !!body.phone));
+      if (action === "/handoff") return send(res, 200, handoff(s, String(body.tool || "")));
       return send(res, 404, { error: "unknown action" });
     }
     if (req.method === "GET" && !p.startsWith("/api/")) return serveStatic(req, res, p);

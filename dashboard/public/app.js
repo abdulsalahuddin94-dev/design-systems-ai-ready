@@ -104,6 +104,7 @@ async function checkUpdates(fetchRemote) {
     if (!info.git || !info.behind) { if (!box.classList.contains("ok")) box.hidden = true; return; }
     box.className = "update";
     box.replaceChildren(
+      icon("i-download"),
       el("div", { class: "what" },
         el("b", {}, `A new workflow update is ready (${info.behind} change${info.behind > 1 ? "s" : ""}).`),
         info.changes.length ? el("ul", {}, info.changes.slice(0, 6).map((c) => el("li", {}, c))) : null),
@@ -138,9 +139,131 @@ let projects = [];
 window.addEventListener("hashchange", route);
 function route() {
   const m = location.hash.match(/^#\/chat\/([\w-]+)/);
-  for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", !m && a.dataset.nav === "home");
+  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : "home";
+  for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", a.dataset.nav === page);
   if (current?.es) { current.es.close(); current = null; }
-  if (m) renderChat(m[1]); else renderHome();
+  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else renderHome();
+}
+
+// ---------- Settings ----------
+const fmtTokens = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}K` : String(n || 0);
+const TOOL_ICON = { claude: "i-message", codex: "i-terminal", gemini: "i-zap", cursor: "i-pen", copilot: "i-branch", antigravity: "i-external" };
+
+async function renderSettings() {
+  const app = $("#app");
+  app.replaceChildren($("#tpl-settings").content.cloneNode(true));
+  $("#s-refresh").addEventListener("click", () => loadTools(true));
+  loadTools(false);
+  loadUsage();
+  loadIntegrations();
+}
+
+async function loadTools(fresh) {
+  const list = $("#s-tool-list");
+  let data;
+  try { data = await api(`/api/tools${fresh ? "?fresh=1" : ""}`); } catch (e) { list?.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  if (!$("#s-tool-list")) return;
+  const pick = $("#s-fallback-pick");
+  pick.value = data.settings.fallbackTool;
+  pick.onchange = () => api("/api/settings", { fallbackTool: pick.value }).catch(showError);
+  list.replaceChildren(...data.tools.map((t) => toolCard(t, data.settings)));
+}
+
+function toolCard(t, settings) {
+  const state = !t.installed ? ["off", "Not installed"] : t.signedIn === true ? ["ok", t.account ? `Signed in · ${t.account}` : "Signed in"] : t.signedIn === false ? ["warn", "Not signed in"] : ["idle", t.app ? "Installed" : "Sign in once if asked"];
+  const act = async (url, body = {}) => { try { const r = await api(url, body); toast(r.message || (r.ok ? "Opened in a new window." : "Could not open it.")); } catch (e) { showError(e); } };
+  const actions = [];
+  if (!t.installed) actions.push(el("a", { class: "ghost", href: t.install, target: "_blank", rel: "noopener" }, icon("i-download"), "How to install"));
+  else {
+    if (t.id === "claude") actions.push(el("button", { type: "button", class: "ghost", onclick: () => openSignIn() }, icon("i-login"), "Sign in again"));
+    else if (!t.app) actions.push(el("button", { type: "button", class: "ghost", onclick: () => act(`/api/tools/${t.id}/login`) }, icon("i-login"), t.signedIn ? "Sign in again" : "Sign in"));
+    if (t.id !== "claude" && (t.run || t.app)) actions.push(el("button", { type: "button", class: "ghost", onclick: () => act(`/api/tools/${t.id}/open`) }, icon("i-external"), "Open"));
+  }
+  let model = null;
+  if (t.installed && t.run && t.id !== "claude") {
+    const listId = `models-${t.id}`;
+    const input = el("input", { type: "text", list: listId, value: settings.models?.[t.id] || "", placeholder: "The tool's own default", autocomplete: "off", spellcheck: "false" });
+    input.addEventListener("change", () => api("/api/settings", { models: { [t.id]: input.value } }).then(() => toast("Model saved.")).catch(showError));
+    model = el("label", { class: "field compact" }, el("span", {}, "Model"), input, el("datalist", { id: listId }, (t.models || []).map((m) => el("option", { value: m }))));
+  }
+  return el("article", { class: "sheet tool" + (t.installed ? "" : " missing") },
+    el("div", { class: "tool-head" },
+      el("span", { class: "tool-ic" }, icon(TOOL_ICON[t.id] || "i-blocks")),
+      el("div", { class: "tool-name" }, el("h3", {}, t.name), el("span", { class: "meta" }, [t.company, t.version].filter(Boolean).join(" · "))),
+      t.id === "claude" ? el("span", { class: "tag main" }, "Runs here") : null),
+    el("div", { class: `state ${state[0]}` }, state[1]),
+    t.note ? el("p", { class: "note" }, t.note) : null,
+    t.loginHint && t.installed && t.signedIn !== true && t.id !== "claude" ? el("p", { class: "note" }, t.loginHint) : null,
+    model,
+    actions.length ? el("div", { class: "tool-actions" }, actions) : null);
+}
+
+async function loadUsage() {
+  const box = $("#s-usage-body");
+  let u;
+  try { u = await api("/api/usage"); } catch (e) { box?.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  if (!$("#s-usage-body")) return;
+  const tools = Object.keys(u.byTool);
+  if (!tools.length) { box.replaceChildren(el("p", { class: "muted" }, "No usage yet. It is counted from your next conversation in the dashboard.")); return; }
+  const row = (id) => {
+    const t = u.byTool[id];
+    return el("tr", {}, el("th", { scope: "row" }, id === "claude" ? "Claude Code" : id),
+      el("td", {}, fmtTokens(t.today.input + t.today.output)), el("td", {}, String(t.today.turns)),
+      el("td", {}, fmtTokens(t.week.input + t.week.output)), el("td", {}, String(t.week.turns)),
+      el("td", {}, t.week.cost ? `$${t.week.cost.toFixed(2)}` : "–"));
+  };
+  const projects = Object.entries(u.byProject).sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0)).slice(0, 6);
+  box.replaceChildren(
+    el("div", { class: "tablewrap" }, el("table", {},
+      el("thead", {}, el("tr", {}, el("th", {}, "Tool"), el("th", {}, "Tokens today"), el("th", {}, "Turns today"), el("th", {}, "Tokens, 7 days"), el("th", {}, "Turns, 7 days"), el("th", {}, "Cost estimate, 7 days"))),
+      el("tbody", {}, tools.map(row)))),
+    projects.length ? el("div", { class: "chips usage-projects" }, projects.map(([name, per]) => el("span", { class: "chip" }, `${name} · ${fmtTokens(Object.values(per).reduce((x, y) => x + y, 0))}`))) : null,
+    u.limits.length ? el("p", { class: "note warn-line" }, icon("i-alert"), `Last limit: ${new Date(u.limits[0].at).toLocaleString()} · ${u.limits[0].limit}`) : null);
+}
+
+async function loadIntegrations() {
+  let d;
+  try { d = await api("/api/integrations"); } catch (e) { return; }
+  const gh = $("#s-github-body");
+  if (!gh) return;
+  const kv = (k, v) => el("div", { class: "kv-row" }, el("span", {}, k), el("b", {}, v));
+  gh.replaceChildren(
+    kv("Account", d.github.signedIn ? d.github.account : d.github.cli ? "Not signed in" : "GitHub CLI not installed"),
+    d.github.repo ? kv("Workflow repo", el("a", { href: d.github.repo.replace(/^git@github\.com:/, "https://github.com/"), target: "_blank", rel: "noopener" }, d.github.repo.replace(/^https:\/\/github\.com\//, ""))) : null,
+    el("p", { class: "note" }, "Used to update the workflow, share team projects and send contributions for review."),
+    el("button", { type: "button", class: "ghost", onclick: async () => { try { toast((await api("/api/github/login", {})).ok ? "GitHub sign-in opened in a new window. Finish it in the browser." : "Could not open it."); } catch (e) { showError(e); } } }, icon("i-login"), d.github.signedIn ? "Sign in again" : "Sign in with GitHub"));
+  $("#s-figma-body").replaceChildren(
+    ...(d.figma.lines.length ? d.figma.lines.map((l) => { const [k, ...v] = l.split(":"); return kv(k.trim(), v.join(":").trim() || "–"); }) : [el("p", { class: "muted" }, "Python is needed for the Figma tools check.")]),
+    el("p", { class: "note" }, "FigCli Yolo is the main Figma tool; the Desktop Bridge is used for slots. Setup: Figma_Tools/README.md."));
+  const mode = $("#perm")?.dataset.mode || "auto";
+  $("#s-prefs-body").replaceChildren(
+    kv("Permissions", mode === "default" ? "Ask every time" : "Auto"),
+    el("button", { type: "button", class: "ghost", onclick: openPerm }, icon("i-shield"), "Change"),
+    kv("Node.js", d.machine.node), kv("Python", d.machine.python || "missing"), kv("Git", d.machine.git || "missing"));
+}
+
+function toast(text) {
+  const t = el("div", { class: "toast", role: "status" }, text);
+  document.body.append(t);
+  setTimeout(() => t.remove(), 6000);
+}
+
+// Hands a conversation to another tool (writes the note, opens the tool in its own window).
+async function openToolPicker(sessionId, onDone) {
+  let dlg = $("#toolpick");
+  if (!dlg) { document.body.append($("#tpl-toolpick").content.cloneNode(true)); dlg = $("#toolpick"); }
+  const list = $("#toolpick-list");
+  list.replaceChildren(el("p", { class: "muted" }, "Checking which tools are installed…"));
+  dlg.showModal();
+  let data;
+  try { data = await api("/api/tools"); } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  const usable = data.tools.filter((t) => t.id !== "claude" && t.installed && (t.run || t.app));
+  if (!usable.length) { list.replaceChildren(el("p", { class: "muted" }, "No other tool is installed. See Settings.")); return; }
+  list.replaceChildren(...usable.map((t) => el("button", { type: "button", class: "opt-btn" + (t.id === data.settings.fallbackTool ? " rec" : ""), onclick: async () => {
+    dlg.close();
+    try { const r = await api(`/api/sessions/${sessionId}/handoff`, { tool: t.id }); onDone?.(r); } catch (e) { showError(e); }
+  } }, el("span", { class: "l" }, `${t.name}${t.id === data.settings.fallbackTool ? " (your choice in Settings)" : ""}`),
+    el("span", { class: "d" }, t.app ? "Opens the app on this folder; ask it to read the handoff note." : `Opens in its own window${data.settings.models?.[t.id] ? ` with ${data.settings.models[t.id]}` : ""}.`))));
 }
 
 // ---------- start a conversation ----------
@@ -317,8 +440,47 @@ async function renderHome() {
   loadRecent();
 }
 
+// Inline icon from the sprite in index.html.
+const icon = (name, cls = "ic") => {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", cls);
+  svg.setAttribute("aria-hidden", "true");
+  const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+  use.setAttribute("href", `#${name}`);
+  svg.append(use);
+  return svg;
+};
+
 function linkChip(l) {
-  return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener" }, l.kind === "figma" ? `Figma · ${l.label}` : l.label);
+  const ic = { figma: "i-pen", github: "i-branch", storybook: "i-book" }[l.kind] || "i-external";
+  return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener", title: l.url }, icon(ic), l.kind === "figma" ? `Figma · ${l.label}` : l.label);
+}
+
+// The proof sign-offs every project moves through (Intake section 8 checkpoints, then the final audit).
+const STAGES = ["Intake", "Foundation", "Components", "Screens", "Audit"];
+// Reads where a project stands from its brief and changelog text; -1 when nothing says.
+function stageIndex(p) {
+  const text = [p.phase, p.next, p.last?.title].filter(Boolean).join(" ").toLowerCase();
+  const next = text.match(/next (?:phase|step)[:\s]+(\w+)/);
+  const at = next ? STAGES.findIndex((s) => next[1].startsWith(s.toLowerCase().slice(0, 5))) : -1;
+  if (at >= 0) return at;
+  let best = -1;
+  STAGES.forEach((s, i) => { if (text.includes(s.toLowerCase().slice(0, 5))) best = i; });
+  if (best >= 0 && /(done|approved|finished|complete)/.test(text) && best < STAGES.length - 1) best += 1;
+  return best;
+}
+function track(p) {
+  const at = stageIndex(p);
+  return el("div", { class: "stage" },
+    el("div", { class: "stage-now" }, at >= 0 ? STAGES[at] : "Stage not recorded", at >= 0 ? el("span", {}, `${at + 1} of ${STAGES.length}`) : null),
+    el("ol", { class: "track", "aria-hidden": "true" },
+      STAGES.map((s, i) => el("li", { class: i < at ? "done" : i === at ? "now" : "" }, el("span", {}, s)))));
+}
+const jobNo = (i) => `No.${String(i + 1).padStart(3, "0")}`;
+
+function setTally(key, value) {
+  const n = $(`#t-${key}`);
+  if (n) n.textContent = String(value);
 }
 
 async function loadProjects() {
@@ -327,20 +489,34 @@ async function loadProjects() {
   try {
     ({ projects } = await api("/api/projects"));
   } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  setTally("jobs", projects.length);
+  setTally("sync", projects.filter((p) => p.unsynced).length);
   if (!projects.length) {
-    list.replaceChildren(el("p", { class: "muted" }, "No projects yet. Start a new one or join a team project."));
+    list.replaceChildren(el("div", { class: "sheet empty" },
+      el("h3", {}, "No projects yet"),
+      el("p", { class: "muted" }, "Start a new project or join a team project; it appears here as a job with its stage and next step."),
+      el("button", { class: "primary", type: "button", onclick: () => startKind("new").catch(showError) }, icon("i-plus"), "Start a new project")));
     return;
   }
-  list.replaceChildren(...projects.map((p) => el("article", { class: "card project" },
-    el("h3", {}, p.title, p.team ? el("span", { class: "chip team" }, "Team") : null),
-    el("div", { class: "meta" }, [p.platform, p.phase].filter(Boolean).join(" · ") || p.name),
-    p.last ? el("div", { class: "last" }, `${p.last.date} · ${p.last.title}`) : el("div", { class: "last muted" }, "Intake not finished"),
-    p.next ? el("div", { class: "next" }, `Next: ${p.next}`) : null,
-    el("div", { class: "chips" },
-      p.unsynced ? el("span", { class: "chip warn" }, `${p.unsynced} change${p.unsynced > 1 ? "s" : ""} not in Storybook`) : null,
-      p.links.map(linkChip)),
+  list.classList.toggle("few", projects.length < 3);
+  list.replaceChildren(...projects.map((p, i) => el("article", { class: "sheet ticket" },
+    el("div", { class: "ticket-head" },
+      el("span", { class: "jobno" }, jobNo(i)),
+      el("div", { style: "flex:1;min-width:0" },
+        el("h3", {}, p.title),
+        el("div", { class: "meta" }, p.platform || p.name)),
+      p.team ? el("span", { class: "tag team" }, "Team") : null),
+    track(p),
+    p.last
+      ? el("div", { class: "last" }, icon("i-clock"), el("span", {}, el("time", {}, p.last.date), " · ", p.last.title))
+      : el("div", { class: "last" }, icon("i-clock"), el("span", {}, "Intake not finished")),
+    p.next ? el("div", { class: "next", dir: "auto" }, el("b", {}, "Next"), el("span", {}, p.next)) : null,
+    (p.unsynced || p.links.length) ? el("div", { class: "chips" },
+      p.unsynced ? el("span", { class: "chip warn" }, icon("i-alert"), `${p.unsynced} change${p.unsynced > 1 ? "s" : ""} not in Storybook`) : null,
+      p.links.map(linkChip)) : null,
     el("div", { class: "go" },
-      el("button", { class: "primary", type: "button", onclick: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError) }, "Open"),
+      el("span", { class: "note" }, p.updated ? `updated ${ago(p.updated)}` : ""),
+      el("button", { class: "primary", type: "button", onclick: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError) }, "Open", icon("i-right")),
     ),
   )));
 }
@@ -348,12 +524,14 @@ async function loadProjects() {
 async function loadRecent() {
   try {
     const { live, past } = await api("/api/sessions");
+    setTally("live", live.length);
     const rows = [...live.map((s) => ({ ...s, live: true })), ...past].slice(0, 8);
     if (!rows.length || !$("#recent-wrap")) return;
     $("#recent-wrap").hidden = false;
     $("#recent-list").replaceChildren(...rows.map((r) => el("li", {},
-      el("span", {}, r.title || "Conversation"),
       el("time", {}, ago(r.updated || r.started)),
+      el("span", { class: "dot" + (r.live ? " live" : ""), title: r.live ? "Running" : "Finished" }),
+      el("span", { class: "title", dir: "auto", title: r.title || "Conversation" }, r.title || "Conversation"),
       r.live
         ? el("button", { class: "ghost", type: "button", onclick: () => { location.hash = `#/chat/${r.id}`; } }, "Open")
         : el("button", { class: "ghost", type: "button", onclick: () => start({ resume: r.claudeSessionId, project: r.project, title: r.title }).catch(showError) }, "Continue"),
@@ -399,9 +577,10 @@ function renderChat(id) {
   // Sidebar
   const fillSide = (session) => {
     const p = projects.find((x) => x.name === session.project);
-    $("#side-kicker").textContent = p ? "Project" : "Conversation";
+    $("#side-kicker").textContent = p ? `${jobNo(projects.indexOf(p))} · ${p.platform || p.name}` : "Conversation";
     $("#side-title").textContent = p ? p.title : session.title;
-    $("#side-meta").textContent = p ? [p.platform, p.phase].filter(Boolean).join(" · ") : "";
+    $("#side-meta").textContent = p && p.next ? `Next: ${p.next}` : "";
+    $("#side-track").replaceChildren(...(p ? [track(p)] : []));
     $("#side-links").replaceChildren(...(p ? p.links.map(linkChip) : []));
     const actions = $("#side-actions");
     actions.replaceChildren();
@@ -498,6 +677,10 @@ function renderChat(id) {
         state.live = null; state.toolRow = null;
         add(authCard(e));
         break;
+      case "limit":
+        state.live = null; state.toolRow = null;
+        add(limitCard(e));
+        break;
       case "ended":
         if (state.session) state.session.ended = true;
         break;
@@ -510,8 +693,7 @@ function renderChat(id) {
   }
 
   function questionCard(e, shots) {
-    const card = el("div", { class: "qcard", "data-request": e.requestId });
-    card.append(el("div", { class: "head" }, shots.length ? "Your approval" : "Claude asks"));
+    const card = el("div", { class: "qcard sheet" + (shots.length ? " proof" : ""), "data-request": e.requestId });
     if (shots.length) {
       const wrap = el("div", { class: "shots" + (shots.length === 2 ? " compare" : "") }, shots.map(shotNode));
       card.append(wrap);
@@ -566,7 +748,6 @@ function renderChat(id) {
     const note = el("p", { class: "note" }, "Your Claude Code sign-in expired. Sign in here, then press Try again.");
     refreshAccount(true);
     return el("div", { class: "qcard perm" },
-      el("div", { class: "head" }, "Sign in"),
       el("h4", {}, e.message),
       note,
       el("div", { class: "foot" },
@@ -579,9 +760,23 @@ function renderChat(id) {
     );
   }
 
+  // Claude's plan or rate limit ran out: offer the tool picked in Settings, or the picker.
+  function limitCard(e) {
+    const names = { codex: "Codex", gemini: "Gemini CLI" };
+    const handoffTo = async (tool) => {
+      try { const r = await api(`/api/sessions/${id}/handoff`, { tool }); add(el("div", { class: "sys" }, r.message)); } catch (err) { showError(err); }
+    };
+    return el("div", { class: "qcard perm" },
+      el("h4", {}, "Claude hit its usage limit."),
+      el("p", { class: "note" }, e.message),
+      el("p", { class: "note" }, "Continue with another tool: this conversation is written to a handoff note and the tool picks up from the same step in its own window."),
+      el("div", { class: "foot" },
+        el("button", { type: "button", class: "ghost", onclick: () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))) }, "Pick a tool"),
+        names[e.fallback] ? el("button", { type: "button", class: "primary", onclick: () => handoffTo(e.fallback) }, icon("i-swap"), `Continue with ${names[e.fallback]}`) : null));
+  }
+
   function permissionCard(e) {
     const card = el("div", { class: "qcard perm", "data-request": e.requestId },
-      el("div", { class: "head" }, "Permission"),
       el("h4", {}, e.title || `Claude wants to use: ${e.tool}`),
       e.detail ? el("div", { class: "detail" }, e.detail) : null,
       e.reason ? el("p", { class: "note" }, e.reason) : null,
@@ -608,7 +803,7 @@ function renderChat(id) {
   // Composer
   const attachments = $("#attachments");
   const renderAttachments = () => attachments.replaceChildren(...state.images.map((src, i) =>
-    el("figure", {}, el("img", { src, alt: "Image to send" }), el("button", { type: "button", "aria-label": "Remove", onclick: () => { state.images.splice(i, 1); renderAttachments(); } }, "✕"))));
+    el("figure", {}, el("img", { src, alt: "Image to send" }), el("button", { type: "button", "aria-label": "Remove", onclick: () => { state.images.splice(i, 1); renderAttachments(); } }, icon("i-x")))));
   const addFiles = (files) => {
     for (const f of files) {
       if (!/^image\/(png|jpeg|gif|webp)$/.test(f.type)) continue;
@@ -638,6 +833,7 @@ function renderChat(id) {
     send(text);
   });
   $("#stop").addEventListener("click", () => api(`/api/sessions/${id}/stop`, {}).catch(showError));
+  $("#to-tool").addEventListener("click", () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))));
   $("#to-terminal").addEventListener("click", async () => {
     try { const r = await api(`/api/sessions/${id}/terminal`, {}); add(el("div", { class: "sys" }, r.message)); }
     catch (e) { showError(e); }
@@ -659,7 +855,7 @@ async function refreshAccount(fresh) {
   try {
     const a = await api(`/api/auth${fresh ? "?fresh=1" : ""}`);
     btn.hidden = false;
-    btn.className = "account " + (a.loggedIn ? "ok" : "off");
+    btn.className = "pill account " + (a.loggedIn ? "ok" : "off");
     btn.textContent = a.loggedIn ? (a.email || "Signed in") : "Sign in";
     btn.title = a.loggedIn ? "Signed in to Claude. Click to sign in again." : (a.error || "Not signed in");
     return a;
