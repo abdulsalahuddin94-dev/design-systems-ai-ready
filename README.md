@@ -80,18 +80,18 @@ None of them can edit Figma; they only have read tools.
 
 ## Storybook for the team (run it on your machine)
 
-The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: the default Web reference (`references.json`, today `Reference_Library/Trianglz/Web/storybook/`).
+The design system is live in Storybook: browse every component, try its variants and properties, read its use cases, and open it in Figma. Current Storybook: the default Web reference (`references.json`, today `Reference_Library/Library/Web/storybook/`).
 
 Needs **Node.js 18+** (`node --version`). Then:
 1. `git clone <repo URL>` (private repo; ask for access).
-2. `cd "<repo folder>/Reference_Library/Trianglz/Web/storybook"`
+2. `cd "<repo folder>/Reference_Library/Library/Web/storybook"`
 3. `npm install` (first time only; `node_modules` is not in the repo).
 4. `npm run storybook`
 5. Open http://localhost:6006
 
 Updates: `git pull` in the repo, then `npm install` again if `package.json` changed, and restart `npm run storybook`.
 
-**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (not committed, so a fresh clone prompts nothing; in Claude Code register it once with `claude mcp add --transport http trianglz-web-storybook http://localhost:6006/mcp --scope local`, or copy `.mcp.example.json` to `.mcp.json`, which is git-ignored; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and mentions it (it asks about your project first): Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
+**With an AI tool or agent:** while Storybook runs, its MCP server is at `http://localhost:6006/mcp` (not committed, so a fresh clone prompts nothing; in Claude Code register it once with `claude mcp add --transport http web-library-storybook http://localhost:6006/mcp --scope local`, or copy `.mcp.example.json` to `.mcp.json`, which is git-ignored; add the same URL as an HTTP MCP server in Cursor or other tools). Every AI tool that opens this repo is told about the Storybook and mentions it (it asks about your project first): Claude Code through `CLAUDE.md` and a SessionStart hook, Cursor through `.cursor/rules/storybook.mdc`, Codex and others through `AGENTS.md`, Copilot through `.github/copilot-instructions.md`, Gemini through `GEMINI.md`.
 
 ## Live Storybook (optional)
 

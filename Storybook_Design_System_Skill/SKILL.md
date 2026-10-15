@@ -19,7 +19,7 @@ Questions: every `Ask (choice)` / `Ask (multi)` in this skill is an AskUserQuest
 4. **One platform per Storybook.** Web, iOS and Android each get their own Storybook inside their own folder. Nothing shared or merged.
 5. **Default stack for every platform: React + Vite + TypeScript + Storybook (latest).** Mobile components are React components styled to look like their iOS / Android counterparts, shown inside a device frame.
 6. **Never install without asking.** Show the exact packages and commands, then Ask (choice) (AskUserQuestion, Intake section 0): "Yes, install" / "Not now", before `npm create`, `npm install` or `npx storybook add`.
-7. **iOS and Android projects get a web Storybook (for now).** Every new iOS or Android design system gets its own Storybook rendered as web: React + CSS components styled to look like the native iOS (HIG) or Android (Material 3) components, in a device frame, built from that platform's own tokens. Same setup and quality bar as Web. This is the interim choice until a native Storybook (SwiftUI / Compose) is decided; it applies to future projects, not to the Trianglz reference folders.
+7. **iOS and Android projects get a web Storybook (for now).** Every new iOS or Android design system gets its own Storybook rendered as web: React + CSS components styled to look like the native iOS (HIG) or Android (Material 3) components, in a device frame, built from that platform's own tokens. Same setup and quality bar as Web. This is the interim choice until a native Storybook (SwiftUI / Compose) is decided; it applies to future projects, not to the custom-built reference folders.
 8. **Quality bar for every new Storybook.**
    - Components really work, not just look right: typing, checking, toggling, opening, closing, selecting and dismissing all behave.
    - The left sidebar navigates Foundations and every component group, in the same order as the Figma ⭐ groups.
@@ -53,7 +53,7 @@ If `data/` says `needs_resync: true` and the Figma file is open in the Desktop B
 
 ## 3. Output layout
 
-Reference build: the default Web reference's Storybook (`references.json`, today `Reference_Library/Trianglz/Web/storybook/`, 28 component sets, 2026-09-30). Copy its structure.
+Reference build: the default Web reference's Storybook (`references.json`, today `Reference_Library/Library/Web/storybook/`, 28 component sets, 2026-09-30). Copy its structure.
 
 ```
 <platform folder>/storybook/
@@ -162,8 +162,8 @@ Written once, while the component is built (before its Figma description), and t
 - Figma changes -> token-extractor re-exports `data/` -> rerun `tools/tokens_to_css.py` -> parity check lists stories to update.
 
 ### "Update from Figma" procedure
-Tell the user up front which file to open: "Please open '<DS file name>' in Figma Desktop and run the Desktop Bridge plugin in it.", then Ask (choice): "Done, plugin running" / "Not yet". The file is the project's `status.json > figma.design_system` (Trianglz Web: the key in `memory/references.md`). Then:
-1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original Trianglz template may be read freely; writing to it is guarded by `guard_figma.cjs` and never needed here.
+Tell the user up front which file to open: "Please open '<DS file name>' in Figma Desktop and run the Desktop Bridge plugin in it.", then Ask (choice): "Done, plugin running" / "Not yet". The file is the project's `status.json > figma.design_system` (Web Library: the key in `memory/references.md`). Then:
+1. **Confirm the source file:** `figma_get_status` / `figma_list_open_files`; the connected file key must match. If several files are connected, pin it with `figma_navigate` (`lock: true`). An original reference template may be read freely; writing to it is guarded by `guard_figma.cjs` and never needed here.
 2. **Tokens:** run the token-extractor agent (writes `data/source/` and `data/tokens.json`; fallback export: `tools/export_variables.figma.js`).
 3. `python tools/tokens_to_css.py "<folder>"` (regenerates `storybook/src/tokens/*`).
 4. `python tools/storybook_docs.py "<folder>"` (Welcome, Foundations, doc blocks), then `python tools/storybook_stories.py "<folder>"` (stories and component Docs pages from `data/component-registry.json`; refresh the registry with docs-writer first if components changed). When ➜ App Icon changed, re-export `public/app-icon/` as in section 4 step 4.

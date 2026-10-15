@@ -8,9 +8,9 @@ Current entries (from `references.json`):
 
 | Entry | Platform | Figma file | Study folder |
 |---|---|---|---|
-| Trianglz - Web Design System | Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Trianglz---Web-Design-System | `Reference_Library/Trianglz/Web/` |
-| Trianglz - IOS Design System | iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/Trianglz---IOS-Design-System | `Reference_Library/Trianglz/iOS/` |
-| Trianglz - Android M3 x Design System | Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Trianglz---Android-M3-x-Design-System | `Reference_Library/Trianglz/Android/` |
+| Web Library | Web | https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Web-Library | `Reference_Library/Library/Web/` |
+| iOS Library | iOS | https://www.figma.com/design/q5nQHGEGzZ94WN0wilJwLW/iOS-Library | `Reference_Library/Library/iOS/` |
+| Android Library | Android (M3) | https://www.figma.com/design/JUs2c8IO6ybFcGRZjcQzr9/Android-Library | `Reference_Library/Library/Android/` |
 | Astryx Library DS | Web (second template, not default) | https://www.figma.com/design/kiygMAdfsXmLfxlP8i7ueN/Astryx-Library-DS | `Reference_Library/Astryx/Web/` |
 
 How to start from a reference template:
