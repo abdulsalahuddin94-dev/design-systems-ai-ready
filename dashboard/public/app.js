@@ -472,7 +472,7 @@ function stageIndex(p) {
 function track(p) {
   const at = stageIndex(p);
   return el("div", { class: "stage" },
-    el("div", { class: "stage-now" }, at >= 0 ? STAGES[at] : "Stage not recorded", at >= 0 ? el("span", {}, `${at + 1} of ${STAGES.length}`) : null),
+    el("div", { class: "stage-now" + (at >= 0 ? "" : " unknown") }, at >= 0 ? STAGES[at] : "Stage not recorded", at >= 0 ? el("span", {}, `${at + 1} of ${STAGES.length}`) : null),
     el("ol", { class: "track", "aria-hidden": "true" },
       STAGES.map((s, i) => el("li", { class: i < at ? "done" : i === at ? "now" : "" }, el("span", {}, s)))));
 }
@@ -504,13 +504,13 @@ async function loadProjects() {
       el("span", { class: "jobno" }, jobNo(i)),
       el("div", { style: "flex:1;min-width:0" },
         el("h3", {}, p.title),
-        el("div", { class: "meta" }, p.platform || p.name)),
+        p.platform ? el("div", { class: "meta" }, p.platform) : null),
       p.team ? el("span", { class: "tag team" }, "Team") : null),
     track(p),
     p.last
       ? el("div", { class: "last" }, icon("i-clock"), el("span", {}, el("time", {}, p.last.date), " · ", p.last.title))
       : el("div", { class: "last" }, icon("i-clock"), el("span", {}, "Intake not finished")),
-    p.next ? el("div", { class: "next", dir: "auto" }, el("b", {}, "Next"), el("span", {}, p.next)) : null,
+    p.next ? el("div", { class: "next", dir: "auto", title: p.next }, el("b", {}, "Next"), el("span", {}, p.next)) : null,
     (p.unsynced || p.links.length) ? el("div", { class: "chips" },
       p.unsynced ? el("span", { class: "chip warn" }, icon("i-alert"), `${p.unsynced} change${p.unsynced > 1 ? "s" : ""} not in Storybook`) : null,
       p.links.map(linkChip)) : null,
