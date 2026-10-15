@@ -191,6 +191,9 @@ main.home{max-width:1320px;margin:0 auto;padding:40px 24px 96px;display:grid;gap
 .reg-hover:hover,.reg-hover:focus-visible{border-color:transparent}
 .reg-hover:focus-visible{outline:none}
 .tile:active{transform:translateY(1px)}
+/* three small tiles next to the lead one: the last spans the bottom row so no slot stays empty */
+.start-grid > .tile:not(.lead-tile):last-child{grid-column:span 2}
+@media (max-width: 640px){.start-grid > .tile:not(.lead-tile):last-child{grid-column:auto}}
 /* the lead job is printed in solid process cyan with key ink, the same in both themes */
 .lead-tile{grid-row:span 2;flex-direction:column;justify-content:space-between;gap:28px;padding:22px;background:var(--cyan);color:#0B0D10;border-color:var(--cyan)}
 .lead-tile .tile-ic{background:#0B0D10;border-color:#0B0D10;color:#fff;width:46px;height:46px}

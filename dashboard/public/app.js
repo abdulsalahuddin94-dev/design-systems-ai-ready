@@ -302,11 +302,6 @@ async function startKind(kind) {
     if (t) start({ prompt: `/ds-quick ${t}`, title: `Quick: ${t}` });
     return;
   }
-  if (kind === "phone") {
-    const r = await api("/api/phone", {});
-    alert(r.message);
-    return;
-  }
   const t = await askText({ title: "Ask Claude", help: "Anything you would type in the terminal.", placeholder: "Write your request…" });
   if (t) start({ prompt: t, title: t });
 }

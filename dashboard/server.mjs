@@ -492,12 +492,6 @@ function openInTerminal(s) {
   return r.ok ? { ...r, message: "Opened in a terminal. Stop here first so both do not answer at once." } : r;
 }
 
-// A new Remote Control session in the Root, to work from the phone from the start.
-function openPhone() {
-  const r = runInTerminal(`claude ${modeFlag(getSettings().permissionMode)} --remote-control "Design systems workflow"`);
-  return r.ok ? { ...r, message: 'A terminal opened with Remote Control. On your phone open the Claude app, then Code, and pick "Design systems workflow". Keep this computer on and the terminal open.' } : r;
-}
-
 // ---------- Settings: GitHub, Figma, machine (read only; tokens are never read or shown) ----------
 let integCache = null;
 function integrations(force) {
@@ -636,7 +630,6 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
     if (req.method === "GET" && p === "/api/settings") return send(res, 200, getSettings());
     if (req.method === "POST" && p === "/api/settings") { const b = await readBody(req); return send(res, 200, setSettings(b)); }
-    if (req.method === "POST" && p === "/api/phone") return send(res, 200, openPhone());
     if (req.method === "GET" && p === "/api/tools") return send(res, 200, { tools: toolStatus(url.searchParams.get("fresh") === "1", () => authStatus(false)), settings: getSettings() });
     if (req.method === "GET" && p === "/api/usage") return send(res, 200, usage.summary());
     if (req.method === "GET" && p === "/api/integrations") return send(res, 200, integrations(url.searchParams.get("fresh") === "1"));
