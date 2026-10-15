@@ -37,9 +37,9 @@ const send = (res, code, body, type = "application/json; charset=utf-8") => {
   res.writeHead(code, { "Content-Type": type, "Cache-Control": "no-store" });
   res.end(typeof body === "string" || Buffer.isBuffer(body) ? body : JSON.stringify(body));
 };
-const readBody = (req) => new Promise((resolve) => {
+const readBody = (req, limit = 25e6) => new Promise((resolve) => {
   let data = "";
-  req.on("data", (c) => { data += c; if (data.length > 25e6) req.destroy(); });
+  req.on("data", (c) => { data += c; if (data.length > limit) req.destroy(); });
   req.on("end", () => { try { resolve(JSON.parse(data || "{}")); } catch { resolve({}); } });
 });
 const git = (args, timeout = 20000) => {
@@ -115,6 +115,125 @@ function listProjects() {
   }).sort((a, b) => b.updated - a.updated);
 }
 
+// ---------- project files: add, rename, delete (with Undo), inputs ----------
+// Only folders the list shows can be changed: never the template, a hidden project or a path outside My Projects.
+const TEMPLATE = path.join(PROJECTS, "_Project_Template");
+const TRASH = path.join(STATE, "trash");
+const INPUT_KINDS = ["Brand", "Inspiration", "Screens", "Research"];
+const UNDO_MS = 30000;
+const deleted = new Map(); // trash id -> { name, timer }
+
+function projectDir(name) {
+  const n = String(name || "");
+  if (!n || n !== path.basename(n) || n.startsWith("_") || n.startsWith(".") || hiddenProjects().has(n.toLowerCase())) return null;
+  const dir = path.join(PROJECTS, n);
+  try { return fs.statSync(dir).isDirectory() ? dir : null; } catch { return null; }
+}
+
+const folderName = (title) => String(title || "").normalize("NFC").trim().replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "").slice(0, 60);
+const busyMessage = (e) => /EBUSY|EPERM|EACCES/.test(e?.code || "")
+  ? "Windows is still using a file in this folder. Close anything open from it (Storybook, File Explorer, an editor) and try again."
+  : String(e?.message || e);
+
+function writeStatusTitle(dir, title) {
+  const file = path.join(dir, "status.json");
+  const status = readJson(file, {}) || {};
+  status.project = title;
+  fs.writeFileSync(file, JSON.stringify(status, null, 2) + "\n");
+}
+
+function createProject(title) {
+  const t = String(title || "").trim().slice(0, 80);
+  const name = folderName(t);
+  if (!name) return { ok: false, message: "Give the project a name with at least one letter or number." };
+  if (!fs.existsSync(TEMPLATE)) return { ok: false, message: "My Projects/_Project_Template is missing, so a project folder cannot be made." };
+  if (fs.existsSync(path.join(PROJECTS, name))) return { ok: false, message: `A project folder named "${name}" already exists.` };
+  const dir = path.join(PROJECTS, name);
+  fs.cpSync(TEMPLATE, dir, { recursive: true });
+  writeStatusTitle(dir, t);
+  return { ok: true, name, title: t };
+}
+
+function renameProject(name, title) {
+  const dir = projectDir(name);
+  const t = String(title || "").trim().slice(0, 80);
+  if (!dir) return { ok: false, message: "That project was not found." };
+  if (!t) return { ok: false, message: "The name cannot be empty." };
+  // Only the display name changes: the folder keeps its name, so paths in the brief, status, repo and Storybook stay valid.
+  writeStatusTitle(dir, t);
+  return { ok: true };
+}
+
+function deleteProject(name) {
+  const dir = projectDir(name);
+  if (!dir) return { ok: false, message: "That project was not found." };
+  if ([...sessions.values()].some((s) => s.project === name && !s.ended)) return { ok: false, message: "A conversation on this project is still running. Close it first." };
+  const id = `${name}-${Date.now()}`;
+  try { fs.mkdirSync(TRASH, { recursive: true }); fs.renameSync(dir, path.join(TRASH, id)); } catch (e) { return { ok: false, message: busyMessage(e) }; }
+  // Kept for the Undo window only, then removed for good.
+  const timer = setTimeout(() => purgeTrash(id), UNDO_MS);
+  deleted.set(id, { name, timer });
+  return { ok: true, id, undoMs: UNDO_MS };
+}
+
+function purgeTrash(id) {
+  deleted.delete(id);
+  try { fs.rmSync(path.join(TRASH, id), { recursive: true, force: true, maxRetries: 3 }); } catch {}
+}
+
+function restoreProject(id) {
+  const d = deleted.get(id);
+  if (!d) return { ok: false, message: "It is too late to undo; the folder was already removed." };
+  const dest = path.join(PROJECTS, d.name);
+  if (fs.existsSync(dest)) return { ok: false, message: `A new folder named "${d.name}" exists now, so the old one cannot come back.` };
+  try { fs.renameSync(path.join(TRASH, id), dest); } catch (e) { return { ok: false, message: busyMessage(e) }; }
+  clearTimeout(d.timer);
+  deleted.delete(id);
+  return { ok: true, name: d.name };
+}
+
+// Folders left in the trash by a dashboard that was closed during the Undo window.
+try { for (const f of fs.readdirSync(TRASH)) fs.rmSync(path.join(TRASH, f), { recursive: true, force: true }); } catch {}
+
+function listInputs(name) {
+  const dir = projectDir(name);
+  if (!dir) return null;
+  const out = {};
+  for (const kind of INPUT_KINDS) {
+    try {
+      out[kind] = fs.readdirSync(path.join(dir, "Inputs", kind), { withFileTypes: true })
+        .filter((f) => f.isFile() && !f.name.startsWith("."))
+        .map((f) => ({ name: f.name, size: fs.statSync(path.join(dir, "Inputs", kind, f.name)).size }));
+    } catch { out[kind] = []; }
+  }
+  return out;
+}
+
+const safeFileName = (n) => path.basename(String(n || "")).replace(/[\x00-\x1f<>:"/\\|?*]+/g, "_").replace(/^[.\s]+/, "").slice(0, 120) || "file";
+
+function addInput(name, kind, fileName, data) {
+  const dir = projectDir(name);
+  if (!dir) return { ok: false, message: "That project was not found." };
+  if (!INPUT_KINDS.includes(kind)) return { ok: false, message: "Unknown inputs folder." };
+  const base64 = String(data || "").replace(/^data:[^,]*,/, "");
+  if (!base64) return { ok: false, message: "The file was empty." };
+  const folder = path.join(dir, "Inputs", kind);
+  fs.mkdirSync(folder, { recursive: true });
+  const clean = safeFileName(fileName);
+  const ext = path.extname(clean);
+  let target = clean;
+  for (let i = 2; fs.existsSync(path.join(folder, target)); i++) target = `${path.basename(clean, ext)} (${i})${ext}`;
+  fs.writeFileSync(path.join(folder, target), Buffer.from(base64, "base64"));
+  return { ok: true, name: target };
+}
+
+function removeInput(name, kind, fileName) {
+  const dir = projectDir(name);
+  if (!dir || !INPUT_KINDS.includes(kind)) return { ok: false, message: "Not found." };
+  const file = path.join(dir, "Inputs", kind, path.basename(String(fileName || "")));
+  try { fs.rmSync(file); return { ok: true }; } catch (e) { return { ok: false, message: busyMessage(e) }; }
+}
+
 // ---------- workflow updates (git) ----------
 function workflowInfo(fetch) {
   if (!fs.existsSync(path.join(ROOT, ".git"))) return { git: false };
@@ -159,11 +278,14 @@ function getSettings() {
     permissionMode: MODES.includes(saved.permissionMode) ? saved.permissionMode : "auto",
     fallbackTool: [...RUNNABLE, "ask"].includes(saved.fallbackTool) ? saved.fallbackTool : "ask",
     models: { ...(saved.models || {}) },
+    // The Claude model picked last in a conversation; new conversations start on it (empty = Claude Code's default).
+    claudeModel: typeof saved.claudeModel === "string" ? saved.claudeModel : "",
   };
 }
 function setSettings(body) {
   const next = { ...getSettings() };
   if (MODES.includes(body.permissionMode)) next.permissionMode = body.permissionMode;
+  if (typeof body.claudeModel === "string" && /^[\w.:\[\]-]{0,80}$/.test(body.claudeModel)) next.claudeModel = body.claudeModel;
   if ([...RUNNABLE, "ask"].includes(body.fallbackTool)) next.fallbackTool = body.fallbackTool;
   if (body.models && typeof body.models === "object") {
     for (const [k, v] of Object.entries(body.models)) if (RUNNABLE.includes(k)) next.models[k] = String(v || "").trim().slice(0, 80);
@@ -329,10 +451,28 @@ function startSession({ prompt, project, title, images, resume }) {
   const s = {
     id, project: project || null, title: title || (prompt || "").slice(0, 60) || "Conversation",
     started: Date.now(), log: [], clients: new Set(), pending: new Map(),
-    inbox: inbox(), abort: new AbortController(), busy: true, claudeSessionId: resume || null, ended: false,
+    busy: true, claudeSessionId: resume || null, ended: false,
+    model: getSettings().claudeModel, limit: null, held: [], autoResume: true,
   };
   sessions.set(id, s);
+  runQuery(s, resume);
+  if (prompt || (images && images.length)) {
+    s.inbox.push(userMessage(prompt, images));
+    emit(s, { type: "user", text: prompt || "", images: images || [] });
+  } else {
+    s.busy = false;
+  }
+  emit(s, { type: "busy", busy: s.busy });
+  saveHistory(s);
+  return s;
+}
 
+// One Claude Code run for a conversation. It is started again with resume (same session id, full history) when
+// the conversation ended (usage limit, an error, a lost sign-in), so the user keeps writing in the same window.
+function runQuery(s, resume) {
+  s.inbox = inbox();
+  s.abort = new AbortController();
+  s.ended = false;
   const canUseTool = (toolName, input, opts) => new Promise((resolve) => {
     const requestId = crypto.randomUUID();
     const done = (result) => { s.pending.delete(requestId); resolve(result); };
@@ -359,29 +499,92 @@ function startSession({ prompt, project, title, images, resume }) {
       abortController: s.abort,
       canUseTool,
       permissionMode: getSettings().permissionMode,
+      ...(s.model ? { model: s.model } : {}),
       ...(resume ? { resume } : {}),
       ...(exe ? { pathToClaudeCodeExecutable: exe } : {}),
     },
   });
   s.query = q;
-  if (prompt || (images && images.length)) {
-    s.inbox.push(userMessage(prompt, images));
-    emit(s, { type: "user", text: prompt || "", images: images || [] });
-  } else {
-    s.busy = false;
-  }
-  emit(s, { type: "busy", busy: s.busy });
+  s.models = null;
+  const run = q;
   pump(s).catch((err) => {
     const message = explainError(err);
-    if (message !== AUTH_MESSAGE && LIMIT_RE.test(message)) return emit(s, { type: "limit", tool: "claude", message: message.slice(0, 300), fallback: getSettings().fallbackTool });
+    if (message !== AUTH_MESSAGE && LIMIT_RE.test(message)) return hitLimit(s, message);
     emit(s, message === AUTH_MESSAGE ? { type: "auth", message } : { type: "error", message });
   }).finally(() => {
+    if (s.query !== run) return; // already replaced by a newer run of the same conversation
     s.ended = true; s.busy = false;
     emit(s, { type: "busy", busy: false });
     emit(s, { type: "ended" });
   });
-  saveHistory(s);
-  return s;
+}
+
+// ---------- usage limit: hold, then continue in the same conversation ----------
+// The reset time comes from Claude Code's rate-limit event, or from its message ("resets 1:40pm (Africa/Cairo)").
+function resetFromText(text) {
+  const m = String(text || "").match(/resets?\s+(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*([ap]m)?/i);
+  if (!m) return null;
+  let h = Number(m[1]) % 12;
+  if (!m[3]) h = Number(m[1]);
+  else if (/pm/i.test(m[3])) h += 12;
+  const d = new Date();
+  d.setHours(h, Number(m[2] || 0), 0, 0);
+  if (d.getTime() < Date.now() - 60000) d.setDate(d.getDate() + 1);
+  return d.getTime();
+}
+
+function hitLimit(s, message, resetsAt) {
+  // An exact time (rate-limit event) wins over one read from a message; a known time is kept for the same limit.
+  const at = resetsAt || s.limit?.at || resetFromText(message) || null;
+  const first = !s.limit;
+  s.limit = { at, message: String(message || "").slice(0, 300) };
+  if (first) usage.add({ tool: "claude", project: s.project, limit: s.limit.message.slice(0, 200), input: 0, output: 1 });
+  clearTimeout(s.limitTimer);
+  // Wake one minute after the reset; setTimeout cannot wait more than about 24 days.
+  if (at) s.limitTimer = setTimeout(() => limitOver(s), Math.min(Math.max(at - Date.now() + 60000, 5000), 2 ** 31 - 1));
+  emit(s, { type: "limit", tool: "claude", message: s.limit.message, resetsAt: at, autoResume: s.autoResume, fallback: getSettings().fallbackTool });
+}
+
+const RESUME_PROMPT = "Claude's usage limit has reset. Continue this conversation from where it stopped. If another tool worked on the project meanwhile (CHANGELOG.md entries with a Tool: line, or .claude/.state/handoff.md written after your last message), read that first and audit it as CLAUDE.md > Handoff from other tools says, then go on.";
+
+function limitOver(s) {
+  if (!s.limit || !sessions.has(s.id)) return;
+  s.limit = null;
+  clearTimeout(s.limitTimer);
+  const held = s.held.splice(0);
+  emit(s, { type: "resumed", auto: s.autoResume });
+  if (!s.autoResume && !held.length) return;
+  const text = held.length ? [RESUME_PROMPT, ...held.map((h) => h.text).filter(Boolean)].join("\n\n") : RESUME_PROMPT;
+  const images = held.flatMap((h) => h.images || []);
+  deliver(s, text, images);
+}
+
+// Sends a message into the running conversation, starting it again (resume) when it had ended.
+function deliver(s, text, images) {
+  if (s.ended) {
+    if (!s.claudeSessionId) return false;
+    runQuery(s, s.claudeSessionId);
+  }
+  s.busy = true;
+  emit(s, { type: "busy", busy: true });
+  s.inbox.push(userMessage(text, images));
+  return true;
+}
+
+async function sessionModels(s) {
+  if (!s.models) s.models = s.query.supportedModels().catch(() => []);
+  const list = await Promise.race([s.models, new Promise((r) => setTimeout(() => r([]), 15000))]);
+  return { current: s.model || "", models: list.map((m) => ({ value: m.value, name: m.displayName, description: m.description })) };
+}
+
+async function switchModel(s, model) {
+  const m = String(model || "");
+  if (!/^[\w.:\[\]-]{0,80}$/.test(m)) return { ok: false, message: "Unknown model." };
+  if (!s.ended) await s.query.setModel(m || undefined);
+  s.model = m;
+  setSettings({ claudeModel: m });
+  emit(s, { type: "model", model: m });
+  return { ok: true };
 }
 
 // Claude Code's sign-in expired or is missing: shown as a card with a Sign in button, not as a reply.
@@ -399,6 +602,12 @@ async function pump(s) {
   let liveText = false;
   for await (const m of s.query) {
     if (m.session_id && !s.claudeSessionId) { s.claudeSessionId = m.session_id; saveHistory(s); }
+    // Claude Code reports plan limits with the exact reset time; "rejected" means this conversation must wait.
+    if (m.type === "rate_limit_event") {
+      const info = m.rate_limit_info || {};
+      if (info.status === "rejected") hitLimit(s, `Claude's ${String(info.rateLimitType || "usage").replace(/_/g, " ")} limit is reached.`, info.resetsAt ? info.resetsAt * 1000 : null);
+      continue;
+    }
     if (m.type === "stream_event" && !m.parent_tool_use_id) {
       const ev = m.event;
       if (ev?.type === "content_block_delta" && ev.delta?.type === "text_delta") {
@@ -413,8 +622,8 @@ async function pump(s) {
         if (block.type === "text" && !sub && block.text.length < 400 && AUTH_RE.test(block.text)) {
           emit(s, { type: "auth", message: AUTH_MESSAGE, detail: block.text });
           liveText = false;
-        } else if (block.type === "text" && !sub && block.text.length < 300 && /usage limit|limit reached|out of (?:extra )?usage/i.test(block.text)) {
-          emit(s, { type: "limit", tool: "claude", message: block.text, fallback: getSettings().fallbackTool });
+        } else if (block.type === "text" && !sub && block.text.length < 300 && (m.error === "rate_limit" || (m.message?.model === "<synthetic>" && /usage limit|session limit|limit reached|out of (?:extra )?usage/i.test(block.text)))) {
+          hitLimit(s, block.text);
           liveText = false;
         } else if (block.type === "text" && !sub && block.text.trim()) {
           emit(s, { type: "text", text: block.text, streamed: liveText });
@@ -444,7 +653,7 @@ async function pump(s) {
       const u = m.usage || {};
       // New input and output only: cache re-reads repeat the same context every turn and would read as millions of tokens.
       usage.add({ tool: "claude", project: s.project, input: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0), output: u.output_tokens || 0, cached: u.cache_read_input_tokens || 0, cost: m.total_cost_usd || 0 });
-      if (error && LIMIT_RE.test(error)) { usage.add({ tool: "claude", project: s.project, limit: error.slice(0, 200), input: 0, output: 1 }); emit(s, { type: "limit", tool: "claude", message: error.slice(0, 300), fallback: getSettings().fallbackTool }); }
+      if (error && LIMIT_RE.test(error)) hitLimit(s, error);
       if (AUTH_RE.test(error)) emit(s, { type: "auth", message: AUTH_MESSAGE, detail: error });
       emit(s, { type: "result", ok: m.subtype === "success", turns: m.num_turns, ms: m.duration_ms, error: AUTH_RE.test(error) ? "" : error });
       emit(s, { type: "busy", busy: false });
@@ -454,12 +663,21 @@ async function pump(s) {
 }
 
 function sendMessage(s, text, images) {
-  if (s.ended) return false;
-  s.busy = true;
+  if (s.ended && !s.claudeSessionId) return false;
   emit(s, { type: "user", text, images: images || [] });
-  emit(s, { type: "busy", busy: true });
-  s.inbox.push(userMessage(text, images));
-  return true;
+  // While Claude is over its limit, messages wait here and go out together when it is back.
+  if (s.limit) {
+    s.held.push({ text, images: images || [] });
+    emit(s, { type: "held", count: s.held.length, resetsAt: s.limit.at });
+    return true;
+  }
+  return deliver(s, text, images);
+}
+
+function setAutoResume(s, on) {
+  s.autoResume = !!on;
+  emit(s, { type: "autoresume", on: s.autoResume });
+  return { ok: true };
 }
 
 function answer(s, requestId, body) {
@@ -573,6 +791,7 @@ function handoff(s, tool) {
 }
 
 function closeSession(s) {
+  clearTimeout(s.limitTimer);
   s.inbox.close(); s.abort.abort(); sessions.delete(s.id);
 }
 
@@ -601,7 +820,8 @@ function runInTerminal(cmd) {
 }
 
 function sessionSummary(s) {
-  return { id: s.id, project: s.project, title: s.title, started: s.started, busy: s.busy, ended: s.ended, live: true, claudeSessionId: s.claudeSessionId };
+  return { id: s.id, project: s.project, title: s.title, started: s.started, busy: s.busy, ended: s.ended, live: true, claudeSessionId: s.claudeSessionId,
+    model: s.model || "", limit: s.limit, held: s.held.length, autoResume: s.autoResume };
 }
 
 // ---------- HTTP ----------
@@ -627,6 +847,19 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
   try {
     if (req.method === "GET" && p === "/api/projects") return send(res, 200, { projects: listProjects() });
+    if (req.method === "POST" && p === "/api/projects") { const b = await readBody(req); const r = createProject(b.title); return send(res, r.ok ? 200 : 400, r); }
+    const pr = p.match(/^\/api\/projects\/([^/]+)(\/inputs|\/restore)?$/);
+    if (pr) {
+      const name = decodeURIComponent(pr[1]);
+      if (pr[2] === "/restore" && req.method === "POST") { const r = restoreProject(name); return send(res, r.ok ? 200 : 409, r); }
+      if (pr[2] === "/inputs") {
+        if (req.method === "GET") { const r = listInputs(name); return send(res, r ? 200 : 404, r ? { inputs: r } : { error: "That project was not found." }); }
+        if (req.method === "POST") { const b = await readBody(req, 80e6); const r = addInput(name, b.kind, b.name, b.data); return send(res, r.ok ? 200 : 400, r); }
+        if (req.method === "DELETE") { const r = removeInput(name, url.searchParams.get("kind"), url.searchParams.get("file")); return send(res, r.ok ? 200 : 400, r); }
+      }
+      if (!pr[2] && req.method === "PATCH") { const b = await readBody(req); const r = renameProject(name, b.title); return send(res, r.ok ? 200 : 400, r); }
+      if (!pr[2] && req.method === "DELETE") { const r = deleteProject(name); return send(res, r.ok ? 200 : 409, r); }
+    }
     if (req.method === "GET" && p === "/api/workflow") return send(res, 200, workflowInfo(url.searchParams.get("fetch") === "1"));
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
     if (req.method === "GET" && p === "/api/settings") return send(res, 200, getSettings());
@@ -679,6 +912,10 @@ const server = http.createServer(async (req, res) => {
       if (action === "/close") { closeSession(s); return send(res, 200, { ok: true }); }
       if (action === "/terminal") return send(res, 200, openInTerminal(s));
       if (action === "/handoff") return send(res, 200, handoff(s, String(body.tool || "")));
+      if (action === "/models") return send(res, 200, await sessionModels(s));
+      if (action === "/model") { const r = await switchModel(s, body.model); return send(res, r.ok ? 200 : 400, r); }
+      if (action === "/autoresume") return send(res, 200, setAutoResume(s, body.on));
+      if (action === "/resume-now") { limitOver(s); return send(res, 200, { ok: true }); }
       return send(res, 404, { error: "unknown action" });
     }
     if (req.method === "GET" && !p.startsWith("/api/")) return serveStatic(req, res, p);
