@@ -216,8 +216,12 @@
           <button type="submit" id="send" class="primary"><svg class="ic"><use href="#i-send"/></svg><span>Send</span></button>
         </div>
         <div class="composer-foot">
-          <label class="model-pick" id="model-wrap" hidden title="The Claude model for this conversation. New conversations start on the one you picked last.">
-            <svg class="ic brand-fill claude" aria-hidden="true"><use href="#b-claude"/></svg>
+          <label class="model-pick" id="agent-wrap" hidden title="Who answers in this conversation. Switching keeps this window and its history; the other tool reads what happened first.">
+            <svg class="ic" aria-hidden="true"><use href="#i-swap"/></svg>
+            <select id="agent" aria-label="Tool"><option value="claude">Claude</option><option value="gemini">Gemini CLI</option></select>
+          </label>
+          <label class="model-pick" id="model-wrap" hidden title="The model for this conversation. New conversations start on the one you picked last.">
+            <svg class="ic brand-fill claude" id="model-icon" aria-hidden="true"><use href="#b-claude"/></svg>
             <select id="model" aria-label="Model"></select>
           </label>
           <p class="note" id="status-line"></p>

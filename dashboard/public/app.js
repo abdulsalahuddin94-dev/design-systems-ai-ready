@@ -267,11 +267,16 @@ async function openToolPicker(sessionId, onDone) {
   try { data = await api("/api/tools"); } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
   const usable = data.tools.filter((t) => t.id !== "claude" && t.installed && (t.run || t.app));
   if (!usable.length) { list.replaceChildren(el("p", { class: "muted" }, "No other tool is installed. See Settings.")); return; }
+  // Gemini CLI answers inside this conversation (ACP); the others open in their own window with the handoff note.
   list.replaceChildren(...usable.map((t) => el("button", { type: "button", class: "opt-btn" + (t.id === data.settings.fallbackTool ? " rec" : ""), onclick: async () => {
     dlg.close();
-    try { const r = await api(`/api/sessions/${sessionId}/handoff`, { tool: t.id }); onDone?.(r); } catch (e) { showError(e); }
-  } }, el("span", { class: "l" }, `${t.name}${t.id === data.settings.fallbackTool ? " (your choice in Settings)" : ""}`),
-    el("span", { class: "d" }, t.app ? "Opens the app on this folder; ask it to read the handoff note." : `Opens in its own window${data.settings.models?.[t.id] ? ` with ${data.settings.models[t.id]}` : ""}.`))));
+    try {
+      if (t.id === "gemini") await api(`/api/sessions/${sessionId}/agent`, { agent: "gemini" });
+      else { const r = await api(`/api/sessions/${sessionId}/handoff`, { tool: t.id }); onDone?.(r); }
+    } catch (e) { showError(e); }
+  } }, el("span", { class: "l" }, `${t.id === "gemini" ? "Gemini CLI, here in this conversation" : t.name}${t.id === data.settings.fallbackTool ? " (your choice in Settings)" : ""}`),
+    el("span", { class: "d" }, t.id === "gemini" ? "Answers in this window and asks before every edit or command. Switch back to Claude any time from the Tool menu."
+      : t.app ? "Opens the app on this folder; ask it to read the handoff note." : `Opens in its own window${data.settings.models?.[t.id] ? ` with ${data.settings.models[t.id]}` : ""}.`))));
 }
 
 // ---------- start a conversation ----------
@@ -819,10 +824,12 @@ function renderChat(id) {
   const removeTyping = () => { typing?.remove(); typing = null; };
   const updateTyping = () => {
     removeTyping();
-    if (state.busy && !state.pending.size) { typing = el("div", { class: "typing", "aria-label": "Claude is working" }, el("i"), el("i"), el("i")); log.append(typing); }
+    const who = state.agent === "gemini" ? "Gemini" : "Claude";
+    if (state.busy && !state.pending.size) { typing = el("div", { class: "typing" + (state.agent === "gemini" ? " gemini" : ""), "aria-label": `${who} is working` }, el("i"), el("i"), el("i")); log.append(typing); }
     $("#stop").hidden = !state.busy;
-    $("#status-line").textContent = state.limit ? (state.limit.resetsAt ? `Claude is over its usage limit until ${fmtTime(state.limit.resetsAt)}. Messages you send now wait and go out then.` : "Claude is over its usage limit. Messages you send now wait until it is back.") :
-      state.pending.size ? "Claude is waiting for your answer above." : state.busy ? "Claude is working…" :
+    $("#status-line").textContent = state.limit && state.agent !== "gemini" ? (state.limit.resetsAt ? `Claude is over its usage limit until ${fmtTime(state.limit.resetsAt)}. Messages you send now wait and go out then, or switch the tool to Gemini.` : "Claude is over its usage limit. Messages you send now wait until it is back.") :
+      state.pending.size ? `${who} is waiting for your answer above.` : state.busy ? `${who} is working…` :
+      state.agent === "gemini" ? "Gemini CLI answers in this conversation. It asks before every edit or command." :
       state.session?.ended ? "Ready. Your next message continues this same conversation." : "Ready.";
   };
 
@@ -871,9 +878,10 @@ function renderChat(id) {
     switch (e.type) {
       case "hello":
         log.replaceChildren();
-        Object.assign(state, { busy: false, pending: new Set(), lastShots: [], shotRows: [], toolRow: null, live: null, firstPrompt: null, session: e.session, limit: null, limitCard: null });
+        Object.assign(state, { busy: false, pending: new Set(), lastShots: [], shotRows: [], toolRow: null, live: null, firstPrompt: null, session: e.session, limit: null, limitCard: null, agent: e.session.agent || "claude" });
         fillSide(e.session);
-        loadModels(e.session);
+        setAgent(state.agent);
+        loadAgents();
         break;
       case "user":
         if (!state.firstPrompt) state.firstPrompt = e.text;
@@ -882,7 +890,7 @@ function renderChat(id) {
         break;
       case "delta":
         state.toolRow = null;
-        if (!state.live) state.live = add(el("div", { class: "msg claude", dir: "auto" }));
+        if (!state.live) state.live = add(el("div", { class: "msg claude" + (e.agent === "gemini" ? " gemini" : ""), dir: "auto" }));
         state.live.dataset.raw = (state.live.dataset.raw || "") + e.text;
         state.live.innerHTML = markdown(state.live.dataset.raw);
         if (nearBottom()) scroll();
@@ -890,7 +898,7 @@ function renderChat(id) {
       case "text":
         state.toolRow = null;
         if (state.live && e.streamed) { state.live.innerHTML = markdown(e.text); state.live = null; }
-        else { state.live = null; add(el("div", { class: "msg claude", dir: "auto", html: markdown(e.text) })); }
+        else { state.live = null; add(el("div", { class: "msg claude" + (e.agent === "gemini" ? " gemini" : ""), dir: "auto", html: markdown(e.text) })); }
         break;
       case "tool":
         state.live = null;
@@ -918,6 +926,7 @@ function renderChat(id) {
       }
       case "permission":
         state.pending.add(e.requestId);
+        state.toolRow = null; state.live = null;
         add(permissionCard(e));
         break;
       case "answered": {
@@ -954,14 +963,23 @@ function renderChat(id) {
       case "resumed":
         state.limit = null;
         if (state.limitCard) { state.limitCard.classList.add("done"); state.limitCard.querySelector(".foot")?.remove(); }
-        add(el("div", { class: "sys ok" }, e.auto ? "Claude is back. This conversation continues from where it stopped." : "Claude is back. Write your next message to continue."));
+        add(el("div", { class: "sys ok" }, e.other ? `Claude is back. Gemini keeps answering until you switch the tool to Claude.` : e.auto ? "Claude is back. This conversation continues from where it stopped." : "Claude is back. Write your next message to continue."));
         break;
       case "autoresume":
         if (state.limit) state.limit.autoResume = e.on;
         break;
       case "model":
         if ($("#model")) $("#model").value = e.model;
-        add(el("div", { class: "sys" }, `Model: ${modelName(e.model)}. Claude continues with the same conversation.`));
+        add(el("div", { class: "sys" }, `Model: ${modelName(e.model)}. ${e.agent === "gemini" ? "Gemini" : "Claude"} continues with the same conversation.`));
+        break;
+      case "agent":
+        state.live = null; state.toolRow = null;
+        setAgent(e.agent);
+        state.limitCard?.querySelector(".to-gemini")?.toggleAttribute("hidden", e.agent === "gemini");
+        add(el("div", { class: "sys agent" }, e.agent === "gemini"
+          ? "Gemini CLI answers from here, in this same conversation. It reads the conversation so far first and asks before every edit or command."
+          : "Claude answers from here. It reads what Gemini did and checks that work first."));
+        loadModels();
         break;
       case "ended":
         if (state.session) state.session.ended = true;
@@ -1046,6 +1064,7 @@ function renderChat(id) {
   // Another tool can take over meanwhile (the tool picked in Settings, or the picker).
   function limitCard(e) {
     const names = { codex: "Codex", gemini: "Gemini CLI" };
+    const geminiHere = e.fallback === "gemini" || state.geminiReady;
     const handoffTo = async (tool) => {
       try { const r = await api(`/api/sessions/${id}/handoff`, { tool }); add(el("div", { class: "sys" }, r.message)); } catch (err) { showError(err); }
     };
@@ -1058,27 +1077,56 @@ function renderChat(id) {
       el("div", { class: "foot" },
         el("button", { type: "button", class: "ghost", title: "If your limit was reset early", onclick: () => api(`/api/sessions/${id}/resume-now`, {}).catch(showError) }, icon("i-refresh"), "Try now"),
         el("button", { type: "button", class: "ghost", onclick: () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))) }, "Another tool"),
-        names[e.fallback] ? el("button", { type: "button", class: "primary", onclick: () => handoffTo(e.fallback) }, icon("i-swap"), `Continue with ${names[e.fallback]}`) : null));
+        geminiHere ? el("button", { type: "button", class: "primary to-gemini", hidden: state.agent === "gemini", onclick: () => switchAgent("gemini") }, icon("i-swap"), "Continue with Gemini here")
+          : names[e.fallback] ? el("button", { type: "button", class: "primary", onclick: () => handoffTo(e.fallback) }, icon("i-swap"), `Continue with ${names[e.fallback]}`) : null));
+  }
+
+  // Tool picker under the composer: Claude or Gemini CLI answer in this same conversation.
+  function setAgent(agent) {
+    state.agent = agent;
+    if ($("#agent")) $("#agent").value = agent;
+    const ic = $("#model-icon");
+    if (ic) { ic.setAttribute("class", `ic brand-fill ${agent}`); ic.querySelector("use").setAttribute("href", `#b-${agent}`); }
+    input.placeholder = `Write to ${agent === "gemini" ? "Gemini" : "Claude"} (Arabic or English). Paste or drop screenshots here.`;
+  }
+  async function switchAgent(agent) {
+    const pick = $("#agent");
+    if (pick) pick.disabled = true;
+    try { await api(`/api/sessions/${id}/agent`, { agent }); }
+    catch (err) { showError(err); setAgent(state.agent); }
+    finally { if (pick) pick.disabled = false; }
+  }
+  async function loadAgents() {
+    loadModels();
+    try {
+      const r = await api("/api/tools");
+      const gem = r.tools.find((t) => t.id === "gemini");
+      state.geminiReady = !!gem?.installed;
+      if (!$("#agent-wrap")) return;
+      $("#agent-wrap").hidden = !state.geminiReady && state.agent !== "gemini";
+      $("#agent").onchange = () => switchAgent($("#agent").value);
+    } catch {}
   }
 
   // Model picker under the composer: switches this conversation's model in place (setModel), same history.
-  async function loadModels(session) {
+  async function loadModels() {
     const wrap = $("#model-wrap");
     const pick = $("#model");
     try {
       const r = await api(`/api/sessions/${id}/models`);
-      if (!r.models.length || !$("#model")) return;
+      if (!$("#model")) return;
+      if (!r.models.length) { wrap.hidden = true; return; }
       knownModels = r.models;
       pick.replaceChildren(...r.models.map((m) => el("option", { value: m.value, title: m.description || "" }, m.name || m.value)));
       if (!r.models.some((m) => m.value === r.current)) pick.prepend(el("option", { value: r.current }, r.current ? modelName(r.current) : "Default"));
       pick.value = r.current;
       wrap.hidden = false;
-      pick.onchange = () => api(`/api/sessions/${id}/model`, { model: pick.value }).catch((err) => { showError(err); pick.value = session.model || ""; });
+      pick.onchange = () => api(`/api/sessions/${id}/model`, { model: pick.value }).catch((err) => { showError(err); pick.value = r.current; });
     } catch {}
   }
 
   function permissionCard(e) {
-    const card = el("div", { class: "qcard perm", "data-request": e.requestId },
+    const card = el("div", { class: "qcard perm" + (e.agent === "gemini" ? " gemini" : ""), "data-request": e.requestId },
       el("h4", {}, e.title || `Claude wants to use: ${e.tool}`),
       e.detail ? el("div", { class: "detail" }, e.detail) : null,
       e.reason ? el("p", { class: "note" }, e.reason) : null,

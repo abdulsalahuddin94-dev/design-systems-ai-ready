@@ -14,7 +14,8 @@ import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { query } from "@anthropic-ai/claude-agent-sdk";
-import { TOOLS, toolStatus, loginCommand, antigravityPath, usageStore, handoffCommand, LIMIT_RE } from "./tools.mjs";
+import { TOOLS, toolStatus, loginCommand, antigravityPath, usageStore, handoffCommand, LIMIT_RE, which } from "./tools.mjs";
+import { startAcp } from "./acp.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -453,6 +454,7 @@ function startSession({ prompt, project, title, images, resume }) {
     started: Date.now(), log: [], clients: new Set(), pending: new Map(),
     busy: true, claudeSessionId: resume || null, ended: false,
     model: getSettings().claudeModel, limit: null, held: [], autoResume: true,
+    agent: "claude", gemini: null, geminiNote: "",
   };
   sessions.set(id, s);
   runQuery(s, resume);
@@ -551,6 +553,8 @@ function limitOver(s) {
   if (!s.limit || !sessions.has(s.id)) return;
   s.limit = null;
   clearTimeout(s.limitTimer);
+  // Gemini is answering in this conversation: Claude waits until the user switches back.
+  if (s.agent === "gemini") { emit(s, { type: "resumed", auto: false, other: AGENTS.gemini }); return; }
   const held = s.held.splice(0);
   emit(s, { type: "resumed", auto: s.autoResume });
   if (!s.autoResume && !held.length) return;
@@ -567,11 +571,15 @@ function deliver(s, text, images) {
   }
   s.busy = true;
   emit(s, { type: "busy", busy: true });
-  s.inbox.push(userMessage(text, images));
+  s.inbox.push(userMessage(withGeminiNote(s, text), images));
   return true;
 }
 
 async function sessionModels(s) {
+  if (s.agent === "gemini") {
+    const g = await startGemini(s).catch(() => null);
+    return { agent: "gemini", current: g?.current || "", models: g?.models || [] };
+  }
   if (!s.models) s.models = s.query.supportedModels().catch(() => []);
   const list = await Promise.race([s.models, new Promise((r) => setTimeout(() => r([]), 15000))]);
   return { current: s.model || "", models: list.map((m) => ({ value: m.value, name: m.displayName, description: m.description })) };
@@ -580,6 +588,14 @@ async function sessionModels(s) {
 async function switchModel(s, model) {
   const m = String(model || "");
   if (!/^[\w.:\[\]-]{0,80}$/.test(m)) return { ok: false, message: "Unknown model." };
+  if (s.agent === "gemini") {
+    const g = await startGemini(s);
+    await g.client.request("session/set_model", { sessionId: g.sessionId, modelId: m });
+    g.current = m;
+    setSettings({ models: { gemini: m } });
+    emit(s, { type: "model", model: m, agent: "gemini" });
+    return { ok: true };
+  }
   if (!s.ended) await s.query.setModel(m || undefined);
   s.model = m;
   setSettings({ claudeModel: m });
@@ -663,6 +679,11 @@ async function pump(s) {
 }
 
 function sendMessage(s, text, images) {
+  if (s.agent === "gemini") {
+    emit(s, { type: "user", text, images: images || [] });
+    geminiSend(s, text, images);
+    return true;
+  }
   if (s.ended && !s.claudeSessionId) return false;
   emit(s, { type: "user", text, images: images || [] });
   // While Claude is over its limit, messages wait here and go out together when it is back.
@@ -680,9 +701,197 @@ function setAutoResume(s, on) {
   return { ok: true };
 }
 
+// ---------- Gemini CLI in the same conversation (Agent Client Protocol) ----------
+// The tool picker under the message box switches who answers: Claude Code (Agent SDK) or Gemini CLI (`gemini --acp`).
+// The conversation, its window and its history stay the same. Gemini asks before every edit or command, shown as the
+// same Yes / No cards, so it never runs unattended. Each switch passes the other tool's part of the conversation on:
+// Gemini starts from .claude/.state/handoff.md, and Claude gets Gemini's part with the instruction to audit that work.
+const AGENTS = { claude: "Claude", gemini: "Gemini CLI" };
+const GEMINI_INTRO = (note) => [
+  "You are Gemini CLI, continuing a conversation the user started with Claude Code in the Atomica dashboard. The user switched tools in the same window.",
+  `Before anything else read AGENTS.md and ${note} (the conversation so far), then answer the user's message below.`,
+  "Follow AGENTS.md: log every change in the project's CHANGELOG.md with a `Tool: Gemini CLI` line, commit with a `[Gemini]` prefix, and ask the user before any Figma write, publish, push or delete.",
+].join("\n");
+const KIND = { read: "Read", edit: "Edited", delete: "Deleted", move: "Moved", search: "Searched", execute: "Ran a command", think: "Thought", fetch: "Opened", switch_mode: "Mode", other: "Tool" };
+
+function geminiFlush(s) {
+  const g = s.gemini;
+  if (!g?.text) return;
+  emit(s, { type: "text", text: g.text, streamed: true, agent: "gemini" });
+  g.transcript.push(`**Gemini:** ${g.text}`);
+  g.text = "";
+}
+
+function geminiNotify(s, method, params) {
+  if (method !== "session/update") return;
+  const u = params.update || {};
+  const g = s.gemini;
+  if (u.sessionUpdate === "agent_message_chunk" && u.content?.type === "text") {
+    g.text += u.content.text;
+    emit(s, { type: "delta", text: u.content.text, agent: "gemini" });
+  } else if (u.sessionUpdate === "tool_call") {
+    geminiFlush(s);
+    // A pending call is followed by a permission card that names it; the chip comes when it runs.
+    if (u.status !== "pending") emit(s, { type: "tool", id: u.toolCallId, name: KIND[u.kind] || "Tool", detail: u.title || "" });
+    g.transcript.push(`- Gemini: ${u.title || u.kind}`);
+  } else if (u.sessionUpdate === "tool_call_update" && u.status === "in_progress" && g.asked.has(u.toolCallId)) {
+    g.asked.delete(u.toolCallId);
+    emit(s, { type: "tool", id: u.toolCallId, name: KIND[u.kind] || "Tool", detail: u.title || "" });
+  } else if (u.sessionUpdate === "usage_update" && typeof u.used === "number") {
+    g.used = u.used;
+  }
+}
+
+function geminiRequest(s, method, params) {
+  if (method !== "session/request_permission") return Promise.reject(new Error(`Not supported: ${method}`));
+  geminiFlush(s);
+  const options = params.options || [];
+  const call = params.toolCall || {};
+  const detail = (call.content || []).map((c) => c.content?.text || (c.path ? `${c.path}` : "")).filter(Boolean).join("\n").slice(0, 600);
+  s.gemini.asked.add(call.toolCallId);
+  return new Promise((resolve) => {
+    const requestId = crypto.randomUUID();
+    const pick = (kinds) => options.find((o) => kinds.includes(o.kind));
+    s.pending.set(requestId, { toolName: "gemini", options, resolve: (body) => {
+      s.pending.delete(requestId);
+      if (body === "cancel") return resolve({ outcome: { outcome: "cancelled" } });
+      const o = body.allow ? (body.always ? pick(["allow_always"]) || pick(["allow_once"]) : pick(["allow_once"])) : pick(["reject_once", "reject_always"]);
+      resolve(o ? { outcome: { outcome: "selected", optionId: o.optionId } } : { outcome: { outcome: "cancelled" } });
+    } });
+    emit(s, { type: "permission", requestId, agent: "gemini", tool: KIND[call.kind] || "a tool",
+      title: `Gemini wants to: ${call.title || KIND[call.kind] || "use a tool"}`, detail, canAlways: !!pick(["allow_always"]) });
+  });
+}
+
+// Open Gemini permission cards are closed as "No" when its turn is stopped or the tool exits.
+function cancelGeminiAsks(s) {
+  for (const [requestId, p] of [...s.pending]) {
+    if (p.toolName !== "gemini") continue;
+    p.resolve("cancel");
+    emit(s, { type: "answered", requestId, allow: false });
+  }
+}
+
+const GEMINI_AUTH = "Gemini CLI is not signed in on this computer. Open Settings, press Sign in next to Gemini CLI, then pick Gemini here again.";
+
+async function startGemini(s) {
+  if (s.gemini?.ready && !s.gemini.client.closed) return s.gemini.ready;
+  const exe = which("gemini");
+  if (!exe) throw new Error("Gemini CLI is not installed on this computer. See Settings.");
+  const g = s.gemini = { text: "", transcript: [], asked: new Set(), used: 0, sessionId: null, models: [], current: "", introduced: false, busy: false };
+  g.client = startAcp({
+    exe, args: ["--acp"], cwd: ROOT,
+    onNotify: (method, params) => geminiNotify(s, method, params),
+    onRequest: (method, params) => geminiRequest(s, method, params),
+    onExit: () => {
+      cancelGeminiAsks(s);
+      if (s.gemini === g && g.busy) { g.busy = false; s.busy = false; emit(s, { type: "busy", busy: false }); }
+      if (s.gemini === g) g.ready = null;
+    },
+  });
+  g.ready = (async () => {
+    await g.client.request("initialize", { protocolVersion: 1, clientCapabilities: { fs: { readTextFile: false, writeTextFile: false }, terminal: false } });
+    let r;
+    try {
+      r = await g.client.request("session/new", { cwd: ROOT, mcpServers: [] });
+    } catch (e) {
+      if (e.code === -32000) throw new Error(GEMINI_AUTH);
+      throw e;
+    }
+    g.sessionId = r.sessionId;
+    g.models = (r.models?.availableModels || []).map((m) => ({ value: m.modelId, name: m.name || m.modelId, description: m.description || "" }));
+    g.current = r.models?.currentModelId || "";
+    // The model chosen for Gemini in Settings (or here last time) is applied when it is not the default.
+    const want = getSettings().models.gemini;
+    if (want && want !== g.current && want !== "auto") {
+      try { await g.client.request("session/set_model", { sessionId: g.sessionId, modelId: want }); g.current = want; } catch {}
+    }
+    return g;
+  })();
+  g.ready.catch(() => { g.client.kill(); if (s.gemini === g) s.gemini = null; });
+  return g.ready;
+}
+
+function imageBlocks(images = []) {
+  const out = [];
+  for (const img of images) {
+    const m = String(img).match(/^data:(image\/(?:png|jpeg|gif|webp));base64,(.+)$/);
+    if (m) out.push({ type: "image", mimeType: m[1], data: m[2] });
+  }
+  return out;
+}
+
+async function geminiSend(s, text, images) {
+  s.busy = true;
+  emit(s, { type: "busy", busy: true });
+  let g;
+  try {
+    g = await startGemini(s);
+    let prompt = text;
+    if (!g.introduced) {
+      writeHandoff(s);
+      prompt = `${GEMINI_INTRO(HANDOFF_NOTE)}\n\nThe user's message:\n${text}`;
+      g.introduced = true;
+    }
+    g.busy = true;
+    g.transcript.push(`**User:** ${text}`);
+    const r = await g.client.request("session/prompt", { sessionId: g.sessionId, prompt: [...imageBlocks(images), { type: "text", text: prompt }] });
+    geminiFlush(s);
+    if (g.used) usage.add({ tool: "gemini", project: s.project, input: g.used, output: 0 });
+    g.used = 0;
+    emit(s, { type: "result", ok: r?.stopReason !== "refusal", agent: "gemini", error: r?.stopReason === "refusal" ? "Gemini refused this request." : "" });
+  } catch (e) {
+    if (g) geminiFlush(s);
+    const msg = String(e?.message || e);
+    if (LIMIT_RE.test(msg) || /quota|429|resource.?exhausted/i.test(msg)) usage.add({ tool: "gemini", project: s.project, limit: msg.slice(0, 200), input: 0, output: 1 });
+    emit(s, { type: "error", agent: "gemini", message: /quota|429|resource.?exhausted/i.test(msg) ? `Gemini hit its limit: ${msg.slice(0, 240)}` : msg.slice(0, 400) });
+  } finally {
+    if (g) g.busy = false;
+    s.busy = false;
+    emit(s, { type: "busy", busy: false });
+  }
+  return true;
+}
+
+// Switches who answers in this conversation. Gemini starts in the background so its models are ready to pick.
+async function switchAgent(s, agent) {
+  if (!AGENTS[agent]) return { ok: false, message: "Unknown tool." };
+  if (agent === s.agent) return { ok: true, agent };
+  if (agent === "gemini") {
+    try { await startGemini(s); } catch (e) { return { ok: false, message: String(e.message || e) }; }
+  } else if (s.gemini?.busy) {
+    s.gemini.client.notify("session/cancel", { sessionId: s.gemini.sessionId });
+    cancelGeminiAsks(s);
+  }
+  const from = s.agent;
+  s.agent = agent;
+  emit(s, { type: "agent", agent, name: AGENTS[agent], from });
+  if (agent === "claude" && s.gemini?.transcript.length) s.geminiNote = s.gemini.transcript.splice(0).join("\n\n");
+  // Messages that waited for Claude's limit go to Gemini at once.
+  if (agent === "gemini" && s.held.length) {
+    const held = s.held.splice(0);
+    geminiSend(s, held.map((h) => h.text).filter(Boolean).join("\n\n"), held.flatMap((h) => h.images || []));
+  }
+  return { ok: true, agent };
+}
+
+// Claude's first message after Gemini worked: Gemini's part of the conversation, to read and audit first.
+function withGeminiNote(s, text) {
+  if (!s.geminiNote) return text;
+  let note = s.geminiNote;
+  s.geminiNote = "";
+  if (note.length > 12000) note = "…\n\n" + note.slice(-12000);
+  return `The user switched to Gemini CLI for part of this conversation and is back with you. Gemini's part (its replies and the steps it ran):\n\n${note}\n\nCheck the CHANGELOG.md entries with a \`Tool: Gemini CLI\` line and audit that work as CLAUDE.md > Handoff from other tools says, then answer:\n\n${text}`;
+}
+
 function answer(s, requestId, body) {
   const p = s.pending.get(requestId);
   if (!p) return false;
+  if (p.toolName === "gemini") {
+    p.resolve(body);
+    emit(s, { type: "answered", requestId, allow: !!body.allow, always: !!body.always });
+    return true;
+  }
   if (p.toolName === "AskUserQuestion") {
     if (body.cancel) {
       p.resolve({ behavior: "deny", message: "The user closed the question without answering." });
@@ -747,7 +956,7 @@ function writeHandoff(s) {
   const lines = [];
   for (const e of s?.log || []) {
     if (e.type === "user" && e.text) lines.push(`**User:** ${e.text}`);
-    else if (e.type === "text" && e.text) lines.push(`**Claude:** ${e.text}`);
+    else if (e.type === "text" && e.text) lines.push(`**${e.agent === "gemini" ? "Gemini" : "Claude"}:** ${e.text}`);
     else if (e.type === "answered" && e.answers) lines.push(`**User picked:** ${Object.values(e.answers).join(" · ")}`);
   }
   let convo = lines.join("\n\n");
@@ -792,6 +1001,7 @@ function handoff(s, tool) {
 
 function closeSession(s) {
   clearTimeout(s.limitTimer);
+  s.gemini?.client.kill();
   s.inbox.close(); s.abort.abort(); sessions.delete(s.id);
 }
 
@@ -821,7 +1031,7 @@ function runInTerminal(cmd) {
 
 function sessionSummary(s) {
   return { id: s.id, project: s.project, title: s.title, started: s.started, busy: s.busy, ended: s.ended, live: true, claudeSessionId: s.claudeSessionId,
-    model: s.model || "", limit: s.limit, held: s.held.length, autoResume: s.autoResume };
+    model: s.model || "", limit: s.limit, held: s.held.length, autoResume: s.autoResume, agent: s.agent };
 }
 
 // ---------- HTTP ----------
@@ -908,7 +1118,12 @@ const server = http.createServer(async (req, res) => {
       const body = req.method === "POST" ? await readBody(req) : {};
       if (action === "/message") return send(res, sendMessage(s, body.text || "", body.images) ? 200 : 409, { ok: !s.ended });
       if (action === "/answer") return send(res, answer(s, body.requestId, body) ? 200 : 404, { ok: true });
-      if (action === "/stop") { try { await s.query.interrupt(); } catch {} return send(res, 200, { ok: true }); }
+      if (action === "/stop") {
+        if (s.agent === "gemini" && s.gemini?.sessionId) { s.gemini.client.notify("session/cancel", { sessionId: s.gemini.sessionId }); cancelGeminiAsks(s); }
+        else { try { await s.query.interrupt(); } catch {} }
+        return send(res, 200, { ok: true });
+      }
+      if (action === "/agent") { const r = await switchAgent(s, String(body.agent || "")); return send(res, r.ok ? 200 : 400, r); }
       if (action === "/close") { closeSession(s); return send(res, 200, { ok: true }); }
       if (action === "/terminal") return send(res, 200, openInTerminal(s));
       if (action === "/handoff") return send(res, 200, handoff(s, String(body.tool || "")));
