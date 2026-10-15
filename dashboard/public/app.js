@@ -984,6 +984,11 @@ function renderChat(id) {
       case "ended":
         if (state.session) state.session.ended = true;
         break;
+      case "restored":
+        // Continue after a restart: the messages above are the earlier window, Claude remembers all of it.
+        state.live = null; state.toolRow = null; state.lastShots = []; state.shotRows = [];
+        add(el("div", { class: "sys ok" }, e.since ? `Earlier messages up to ${fmtTime(e.since)}. Claude continues from here with the whole conversation in mind.` : "Earlier messages above. Claude continues from here with the whole conversation in mind."));
+        break;
     }
     updateTyping();
   };

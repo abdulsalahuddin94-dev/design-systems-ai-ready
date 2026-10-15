@@ -23,6 +23,7 @@ const PROJECTS = path.join(ROOT, "My Projects");
 const PUBLIC = path.join(HERE, "public");
 const STATE = path.join(ROOT, ".claude", ".state");
 const HISTORY = path.join(STATE, "dashboard-sessions.json");
+const LOGS = path.join(STATE, "dashboard-logs"); // one file per Claude session: what the window showed, for Continue
 const SETTINGS = path.join(STATE, "dashboard-settings.json");
 const PORT = Number(process.env.DASHBOARD_PORT || 4777);
 const HOST = "127.0.0.1";
@@ -304,14 +305,64 @@ const usage = usageStore(STATE);
 function saveHistory(s) {
   const all = readJson(HISTORY, []);
   const row = { id: s.id, claudeSessionId: s.claudeSessionId, project: s.project, title: s.title, started: s.started, updated: Date.now() };
-  const next = [row, ...all.filter((r) => r.id !== s.id)].slice(0, 40);
+  // A continued conversation keeps one row (same Claude session), so the list never shows it twice.
+  const next = [row, ...all.filter((r) => r.id !== s.id && !(s.claudeSessionId && r.claudeSessionId === s.claudeSessionId))].slice(0, 40);
   try { fs.mkdirSync(STATE, { recursive: true }); fs.writeFileSync(HISTORY, JSON.stringify(next, null, 2)); } catch {}
+  pruneLogs(next);
+}
+
+// ---------- saved conversation windows ----------
+// Each conversation's events are saved under its Claude session id, so Continue (after the dashboard or the computer
+// was restarted) shows the earlier messages again and the user can scroll back. Claude's own memory is Claude Code's
+// transcript; this file is only what the window showed.
+const logFile = (claudeSessionId) => /^[\w-]{8,}$/.test(String(claudeSessionId || "")) ? path.join(LOGS, `${claudeSessionId}.json`) : null;
+const SKIP_SAVE = new Set(["delta", "busy", "hello"]);
+const KEEP_IMAGES = 60; // screenshots are large; older ones are left out of the saved file
+
+function saveLog(s) {
+  clearTimeout(s.saveTimer); s.saveTimer = null;
+  const file = logFile(s.claudeSessionId);
+  if (!file) return;
+  let images = 0;
+  const events = [];
+  for (let i = s.log.length - 1; i >= 0; i--) {
+    const e = s.log[i];
+    if (SKIP_SAVE.has(e.type)) continue;
+    if (e.type === "image" && ++images > KEEP_IMAGES) continue;
+    events.push(e);
+  }
+  events.reverse();
+  try { fs.mkdirSync(LOGS, { recursive: true }); fs.writeFileSync(file, JSON.stringify(events)); } catch {}
+}
+
+function scheduleSave(s) {
+  if (!s.saveTimer) s.saveTimer = setTimeout(() => saveLog(s), 1500);
+}
+
+// The earlier window of a continued conversation. Cards that can no longer be answered (an open question or permission,
+// a limit or sign-in card from the old run) are left out, so nothing old looks clickable.
+function loadLog(claudeSessionId) {
+  const file = logFile(claudeSessionId);
+  const events = file ? readJson(file, []) : [];
+  if (!Array.isArray(events) || !events.length) return [];
+  const answered = new Set(events.filter((e) => e.type === "answered").map((e) => e.requestId));
+  const stale = new Set(["limit", "held", "resumed", "auth", "autoresume", "ended", "busy", "delta", "hello", "restored"]);
+  const kept = events.filter((e) => !stale.has(e.type) && !((e.type === "question" || e.type === "permission") && !answered.has(e.requestId)));
+  return kept.length ? [...kept, { type: "restored", at: Date.now(), since: kept[kept.length - 1].at || null }] : [];
+}
+
+function pruneLogs(rows) {
+  const keep = new Set(rows.map((r) => r.claudeSessionId).filter(Boolean).map((id) => `${id}.json`));
+  let names = [];
+  try { names = fs.readdirSync(LOGS); } catch { return; }
+  for (const n of names) if (n.endsWith(".json") && !keep.has(n)) { try { fs.unlinkSync(path.join(LOGS, n)); } catch {} }
 }
 
 function emit(s, event) {
   event.at = Date.now();
   s.log.push(event);
   if (s.log.length > 4000) s.log.splice(0, s.log.length - 4000);
+  if (!SKIP_SAVE.has(event.type)) scheduleSave(s);
   const line = `data: ${JSON.stringify(event)}\n\n`;
   for (const res of s.clients) res.write(line);
 }
@@ -451,7 +502,7 @@ function startSession({ prompt, project, title, images, resume }) {
   const id = crypto.randomUUID();
   const s = {
     id, project: project || null, title: title || (prompt || "").slice(0, 60) || "Conversation",
-    started: Date.now(), log: [], clients: new Set(), pending: new Map(),
+    started: Date.now(), log: resume ? loadLog(resume) : [], clients: new Set(), pending: new Map(),
     busy: true, claudeSessionId: resume || null, ended: false,
     model: getSettings().claudeModel, limit: null, held: [], autoResume: true,
     agent: "claude", gemini: null, geminiNote: "",
@@ -617,7 +668,7 @@ function explainError(err) {
 async function pump(s) {
   let liveText = false;
   for await (const m of s.query) {
-    if (m.session_id && !s.claudeSessionId) { s.claudeSessionId = m.session_id; saveHistory(s); }
+    if (m.session_id && !s.claudeSessionId) { s.claudeSessionId = m.session_id; saveHistory(s); saveLog(s); }
     // Claude Code reports plan limits with the exact reset time; "rejected" means this conversation must wait.
     if (m.type === "rate_limit_event") {
       const info = m.rate_limit_info || {};
@@ -1156,3 +1207,7 @@ server.listen(PORT, HOST, () => {
     try { spawn(opener[0], opener[1], { detached: true, stdio: "ignore" }).unref(); } catch {}
   }
 });
+
+// Closing the dashboard window saves what each conversation window showed, so Continue brings it back.
+process.on("exit", () => { for (const s of sessions.values()) if (s.saveTimer) saveLog(s); });
+for (const sig of ["SIGINT", "SIGTERM", "SIGHUP", "SIGBREAK"]) process.on(sig, () => process.exit(0));
