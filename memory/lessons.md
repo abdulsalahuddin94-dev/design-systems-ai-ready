@@ -4,6 +4,10 @@ Every mistake Abdul reports or a check finds gets one entry here in the session 
 
 Teammates share their lessons through `/contribute` (`CONTRIBUTING.md`); an entry lands here only after Abdul accepts it, marked `(contributed by <login>)`.
 
+## Dashboard select lists in dark mode (2026-10-15)
+1. **The Tool and Model lists could not be read (Abdul).** In dark mode the open lists under the message box showed light grey text on a white list.
+   Cause: the select was transparent (`background:none`) with the theme's light text; Windows draws an open native list with the select's background, so it fell back to white while the options kept the light text. Headless screenshots never show an open native list, so the check missed it. Rule: every `select option` gets the theme's background and text color explicitly. Check: read the computed `color` and `background-color` of an `option` in Dark mode (both must come from the theme), not only a screenshot.
+
 ## Dashboard terminal buttons on Windows (2026-10-15)
 1. **Sign in opened an empty terminal (Abdul).** Settings → Gemini CLI → Sign in showed "The filename, directory name, or volume label syntax is incorrect" and never started `gemini`; every button that opens a terminal (Sign in, Open, Continue with another tool, phone, Open in Claude Code) had the same bug.
    Cause: `runInTerminal` passed `cd /d "<Root>" && <cmd>` as a spawn argument; Node escapes its quotes as `\"`, which cmd.exe does not understand, so the `cd` failed and `&&` skipped the tool. The tests only checked the command strings, never a launched window. Rule: on Windows, start the window with one verbatim command line (`cmd /d /s /c "start "" cmd.exe /k <cmd>"`, `windowsVerbatimArguments`) and the Root as `cwd`, so no `cd` is needed. Check: launch one terminal button for real (a script that writes `cd` and its quoted argument to a file) before calling the change done.

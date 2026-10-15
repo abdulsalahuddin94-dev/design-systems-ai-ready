@@ -701,3 +701,7 @@ body.focus .sidenav{display:none}
 .qcard.perm.gemini{border-color:color-mix(in srgb,#8E75B2 55%,var(--rule-2))}
 .sys.agent{color:var(--ink-2)}
 #agent-wrap select:disabled{opacity:.6}
+
+/* Native select lists: a transparent select made Windows draw the open list white with the page's light text */
+select option,select optgroup{background-color:var(--paper);color:var(--ink)}
+select option:disabled{color:var(--ink-3)}
