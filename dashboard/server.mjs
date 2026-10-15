@@ -442,7 +442,8 @@ async function pump(s) {
       s.busy = false;
       const error = m.subtype !== "success" ? (m.errors || []).join(" ") || m.subtype : "";
       const u = m.usage || {};
-      usage.add({ tool: "claude", project: s.project, input: (u.input_tokens || 0) + (u.cache_read_input_tokens || 0) + (u.cache_creation_input_tokens || 0), output: u.output_tokens || 0, cost: m.total_cost_usd || 0 });
+      // New input and output only: cache re-reads repeat the same context every turn and would read as millions of tokens.
+      usage.add({ tool: "claude", project: s.project, input: (u.input_tokens || 0) + (u.cache_creation_input_tokens || 0), output: u.output_tokens || 0, cached: u.cache_read_input_tokens || 0, cost: m.total_cost_usd || 0 });
       if (error && LIMIT_RE.test(error)) { usage.add({ tool: "claude", project: s.project, limit: error.slice(0, 200), input: 0, output: 1 }); emit(s, { type: "limit", tool: "claude", message: error.slice(0, 300), fallback: getSettings().fallbackTool }); }
       if (AUTH_RE.test(error)) emit(s, { type: "auth", message: AUTH_MESSAGE, detail: error });
       emit(s, { type: "result", ok: m.subtype === "success", turns: m.num_turns, ms: m.duration_ms, error: AUTH_RE.test(error) ? "" : error });
@@ -490,12 +491,6 @@ function openInTerminal(s) {
   const mode = modeFlag(getSettings().permissionMode);
   const r = runInTerminal(`claude --resume ${s.claudeSessionId} ${mode}`);
   return r.ok ? { ...r, message: "Opened in a terminal. Stop here first so both do not answer at once." } : r;
-}
-
-// A new Remote Control session in the Root, to work from the phone from the start.
-function openPhone() {
-  const r = runInTerminal(`claude ${modeFlag(getSettings().permissionMode)} --remote-control "Design systems workflow"`);
-  return r.ok ? { ...r, message: 'A terminal opened with Remote Control. On your phone open the Claude app, then Code, and pick "Design systems workflow". Keep this computer on and the terminal open.' } : r;
 }
 
 // ---------- Settings: GitHub, Figma, machine (read only; tokens are never read or shown) ----------
@@ -636,7 +631,6 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
     if (req.method === "GET" && p === "/api/settings") return send(res, 200, getSettings());
     if (req.method === "POST" && p === "/api/settings") { const b = await readBody(req); return send(res, 200, setSettings(b)); }
-    if (req.method === "POST" && p === "/api/phone") return send(res, 200, openPhone());
     if (req.method === "GET" && p === "/api/tools") return send(res, 200, { tools: toolStatus(url.searchParams.get("fresh") === "1", () => authStatus(false)), settings: getSettings() });
     if (req.method === "GET" && p === "/api/usage") return send(res, 200, usage.summary());
     if (req.method === "GET" && p === "/api/integrations") return send(res, 200, integrations(url.searchParams.get("fresh") === "1"));
