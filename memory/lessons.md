@@ -4,6 +4,10 @@ Every mistake Abdul reports or a check finds gets one entry here in the session 
 
 Teammates share their lessons through `/contribute` (`CONTRIBUTING.md`); an entry lands here only after Abdul accepts it, marked `(contributed by <login>)`.
 
+## Cleaning up scratch output (2026-10-14)
+1. **A shared output folder was deleted with older files in it.** After moving its own screenshots out of `.playwright-mcp/` (Playwright MCP's output folder in the Root), Claude removed the whole folder, which also held screenshots, logs and two scripts from earlier sessions.
+   Cause: the folder was treated as this session's own because this session had just written to it; it was not listed before the delete. Rule: never delete a folder Claude did not create in the same session; move or delete only the files it created, by name, and remove a folder only when it is empty. Check: list the folder right before any delete and compare it with the files this session wrote.
+
 ## Size tokens bound on resizable components (2026-10-13)
 1. **The Play button turned into a pill (Abdul).** After `md/sys/size/touch_target` (48) was bound to the height of every Icon Button and Button variant, the Play button in Playback Controls (resized to 64 x 64) became 64 x 48, the Mini Player Play (40 x 40) became 40 x 48, and the Section Header More button grew from 36 to 48.
    Cause: a variable bound to a main component's height wins over the height of every resized instance, so each instance that had been scaled kept its width and snapped to the bound height. The binding script only checked that the main component's height matched the token. Rule: bind Size tokens only on components that are never resized as instances (or bind width and height together on the instances that use another size); before binding, list every instance (DS file and Design files) whose size differs from its main component, and skip the binding when any exist. Check: after a Size binding, compare instance sizes before and after (any instance whose height changed is a regression). Fixed: height unbound on Button and Icon Button; Play 64 x 64, Mini Player Play 40 x 40 and More 36 restored.

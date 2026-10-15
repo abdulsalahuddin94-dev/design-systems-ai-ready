@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Workflow Dashboard</title>
+<title>Atomica</title>
 <meta name="description" content="Local dashboard for the Design systems Ai Ready workflow.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -44,6 +44,9 @@
     <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
     <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-login" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></symbol>
+    <symbol id="i-swap" viewBox="0 0 24 24"><path d="m16 3 4 4-4 4"/><path d="M20 7H4"/><path d="m8 21-4-4 4-4"/><path d="M4 17h16"/></symbol>
     <symbol id="i-docs" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
     <!-- The mark: a registration target, the sign printers use to line up every ink. -->
     <symbol id="logo" viewBox="0 0 32 32"><circle cx="16" cy="16" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="16" cy="16" r="4" fill="currentColor"/><path d="M16 1v8M16 23v8M1 16h8M23 16h8" stroke="currentColor" stroke-width="2"/></symbol>
@@ -53,12 +56,13 @@
 <header class="masthead">
   <div class="strip" aria-hidden="true"><i class="c"></i><i class="m"></i><i class="y"></i><i class="k"></i><i class="c t75"></i><i class="m t75"></i><i class="y t75"></i><i class="k t75"></i><i class="c t50"></i><i class="m t50"></i><i class="y t50"></i><i class="k t50"></i><i class="c t25"></i><i class="m t25"></i><i class="y t25"></i><i class="k t25"></i></div>
   <nav class="topnav" aria-label="Dashboard">
-    <a class="brand" href="#/" aria-label="AI-Ready Design Systems, Home">
+    <a class="brand" href="#/" aria-label="Atomica, Home">
       <span class="mark" aria-hidden="true"><svg class="reg c"><use href="#logo"/></svg><svg class="reg m"><use href="#logo"/></svg><svg class="reg k"><use href="#logo"/></svg></span>
-      <span class="word"><b>AI-Ready</b> Design Systems</span>
+      <span class="word"><b>Atomica</b> AI-ready design systems</span>
     </a>
     <div class="navlinks">
       <a href="#/" data-nav="home"><svg class="ic"><use href="#i-pen"/></svg>Jobs</a>
+      <a href="#/settings" data-nav="settings"><svg class="ic"><use href="#i-settings"/></svg>Settings</a>
       <a href="docs/getting-started.html" target="_blank" rel="noopener"><svg class="ic"><use href="#i-docs"/></svg>Docs</a>
     </div>
     <div class="status">
@@ -157,6 +161,7 @@
       <div id="side-actions" class="side-actions"></div>
       <div class="side-foot">
         <button class="ghost" type="button" id="to-phone" title="Move this conversation to a terminal with Remote Control"><svg class="ic"><use href="#i-phone"/></svg>Continue on my phone</button>
+        <button class="ghost" type="button" id="to-tool" title="Hand this conversation to Codex, Gemini or Antigravity"><svg class="ic"><use href="#i-swap"/></svg>Continue with another tool</button>
         <button class="ghost" type="button" id="to-terminal" title="Continue this conversation in a terminal"><svg class="ic"><use href="#i-terminal"/></svg>Open in Claude Code</button>
       </div>
     </aside>
@@ -221,6 +226,65 @@
         <button value="cancel" class="ghost" formnovalidate>Cancel</button>
         <button value="ok" class="primary">Add</button>
       </div>
+    </form>
+  </dialog>
+</template>
+
+<template id="tpl-settings">
+  <main class="settings">
+    <header class="settings-head">
+      <h1>Settings</h1>
+      <p class="lead">The AI tools, accounts and services this workflow uses on this computer. Sign-ins happen in each tool's own window; nothing here stores a password or token.</p>
+    </header>
+
+    <section aria-labelledby="s-tools">
+      <div class="row-head"><h2 id="s-tools" class="section-title">AI tools</h2><button class="textbtn" type="button" id="s-refresh"><svg class="ic"><use href="#i-refresh"/></svg>Check again</button></div>
+      <p class="muted small">Claude Code runs inside this dashboard. The others open in their own window on the same folder, follow AGENTS.md and ask their own approvals.</p>
+      <div id="s-tool-list" class="tool-grid"><p class="muted">Checking the tools on this computer…</p></div>
+    </section>
+
+    <section aria-labelledby="s-fallback" class="sheet setting-row">
+      <div>
+        <h2 id="s-fallback" class="row-title">When Claude hits its usage limit</h2>
+        <p class="muted small">The conversation is written to a handoff note, and the tool you pick continues from the same step. When Claude is back, it audits what the other tool did first.</p>
+      </div>
+      <select id="s-fallback-pick" aria-labelledby="s-fallback">
+        <option value="ask">Ask me each time</option>
+        <option value="codex">Continue with Codex</option>
+        <option value="gemini">Continue with Gemini CLI</option>
+      </select>
+    </section>
+
+    <section aria-labelledby="s-usage">
+      <h2 id="s-usage" class="section-title">Usage</h2>
+      <p class="muted small">Tokens used through this dashboard, counted on this computer. Plans do not share how much is left, so a limit shows here when a tool reports one.</p>
+      <div id="s-usage-body"><p class="muted">Loading…</p></div>
+    </section>
+
+    <div class="settings-cols">
+      <section aria-labelledby="s-github" class="sheet panel">
+        <h2 id="s-github" class="row-title"><svg class="ic"><use href="#i-branch"/></svg>GitHub</h2>
+        <div id="s-github-body" class="kv"><p class="muted">Loading…</p></div>
+      </section>
+      <section aria-labelledby="s-figma" class="sheet panel">
+        <h2 id="s-figma" class="row-title"><svg class="ic"><use href="#i-pen"/></svg>Figma</h2>
+        <div id="s-figma-body" class="kv"><p class="muted">Loading…</p></div>
+      </section>
+      <section aria-labelledby="s-prefs" class="sheet panel">
+        <h2 id="s-prefs" class="row-title"><svg class="ic"><use href="#i-shield"/></svg>This computer</h2>
+        <div id="s-prefs-body" class="kv"></div>
+      </section>
+    </div>
+  </main>
+</template>
+
+<template id="tpl-toolpick">
+  <dialog class="ask" id="toolpick">
+    <form method="dialog" class="ask-form">
+      <h3>Continue with another tool</h3>
+      <p class="muted">This conversation is written to a handoff note, then the tool opens in its own window on the same folder and continues from there. Use it when Claude hits its limit, or to get a second opinion.</p>
+      <div id="toolpick-list" class="pick-list"></div>
+      <div class="ask-buttons"><button value="cancel" class="ghost">Cancel</button></div>
     </form>
   </dialog>
 </template>
