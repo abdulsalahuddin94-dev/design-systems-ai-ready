@@ -63,7 +63,7 @@ function briefLine(brief, label) {
 function latestChange(changelog) {
   const m = changelog.match(/^## (\d{4}-\d{2}-\d{2})\s*-?\s*(.*)$/m);
   if (!m || m[2].startsWith("<")) return null;
-  return { date: m[1], title: m[2].trim() };
+  return { date: m[1], title: m[2].replace(/^[\s\-\u2013\u2014:]+/, "").trim() };
 }
 
 function unsynced(changelog) {
