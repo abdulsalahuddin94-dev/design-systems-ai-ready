@@ -598,7 +598,9 @@ function openSignIn() {
 function runInTerminal(cmd) {
   try {
     if (process.platform === "win32") {
-      spawn("cmd.exe", ["/c", "start", "", "cmd.exe", "/k", `cd /d "${ROOT}" && ${cmd}`], { detached: true, stdio: "ignore", windowsHide: false }).unref();
+      // One verbatim command line: Node's own quoting (\") is not understood by cmd, which broke the cd and the tool.
+      // The window starts in the Root (cwd), so no cd is needed; /s keeps the quotes inside cmd as typed.
+      spawn("cmd.exe", ["/d", "/s", "/c", `"start "" cmd.exe /k ${cmd}"`], { cwd: ROOT, detached: true, stdio: "ignore", windowsHide: false, windowsVerbatimArguments: true }).unref();
     } else if (process.platform === "darwin") {
       const script = `tell application "Terminal" to do script "cd ${JSON.stringify(ROOT).slice(1, -1).replace(/"/g, '\\"')} && ${cmd}"`;
       spawn("osascript", ["-e", script, "-e", 'tell application "Terminal" to activate'], { detached: true, stdio: "ignore" }).unref();

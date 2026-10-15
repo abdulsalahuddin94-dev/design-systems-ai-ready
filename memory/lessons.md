@@ -4,6 +4,10 @@ Every mistake Abdul reports or a check finds gets one entry here in the session 
 
 Teammates share their lessons through `/contribute` (`CONTRIBUTING.md`); an entry lands here only after Abdul accepts it, marked `(contributed by <login>)`.
 
+## Dashboard terminal buttons on Windows (2026-10-15)
+1. **Sign in opened an empty terminal (Abdul).** Settings → Gemini CLI → Sign in showed "The filename, directory name, or volume label syntax is incorrect" and never started `gemini`; every button that opens a terminal (Sign in, Open, Continue with another tool, phone, Open in Claude Code) had the same bug.
+   Cause: `runInTerminal` passed `cd /d "<Root>" && <cmd>` as a spawn argument; Node escapes its quotes as `\"`, which cmd.exe does not understand, so the `cd` failed and `&&` skipped the tool. The tests only checked the command strings, never a launched window. Rule: on Windows, start the window with one verbatim command line (`cmd /d /s /c "start "" cmd.exe /k <cmd>"`, `windowsVerbatimArguments`) and the Root as `cwd`, so no `cd` is needed. Check: launch one terminal button for real (a script that writes `cd` and its quoted argument to a file) before calling the change done.
+
 ## Cleaning up scratch output (2026-10-14)
 1. **A shared output folder was deleted with older files in it.** After moving its own screenshots out of `.playwright-mcp/` (Playwright MCP's output folder in the Root), Claude removed the whole folder, which also held screenshots, logs and two scripts from earlier sessions.
    Cause: the folder was treated as this session's own because this session had just written to it; it was not listed before the delete. Rule: never delete a folder Claude did not create in the same session; move or delete only the files it created, by name, and remove a folder only when it is empty. Check: list the folder right before any delete and compare it with the files this session wrote.
