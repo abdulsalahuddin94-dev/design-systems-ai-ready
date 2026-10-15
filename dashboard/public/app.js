@@ -838,14 +838,6 @@ function renderChat(id) {
     try { const r = await api(`/api/sessions/${id}/terminal`, {}); add(el("div", { class: "sys" }, r.message)); }
     catch (e) { showError(e); }
   });
-  $("#to-phone").addEventListener("click", async () => {
-    if (!confirm("Move this conversation to your phone? It continues in a terminal on this computer with Remote Control, and this page stops.")) return;
-    try {
-      const r = await api(`/api/sessions/${id}/terminal`, { phone: true });
-      add(el("div", { class: "sys" }, r.message));
-      if (r.ended) { es.close(); state.session = { ...(state.session || {}), ended: true }; state.busy = false; updateTyping(); }
-    } catch (e) { showError(e); }
-  });
   input.focus();
 }
 

@@ -485,17 +485,9 @@ function answer(s, requestId, body) {
 }
 
 // Opens the same conversation in a terminal (claude --resume), for work that is easier there.
-// phone: the terminal session also turns on Remote Control, so it shows in the Claude app on a phone;
-// the dashboard copy is closed first so both never answer at once.
-function openInTerminal(s, phone) {
+function openInTerminal(s) {
   if (!s.claudeSessionId) return { ok: false, message: "The conversation has not started yet." };
   const mode = modeFlag(getSettings().permissionMode);
-  if (phone) {
-    const name = s.title.replace(/["%^&|<>]/g, "").slice(0, 50) || "Design systems workflow";
-    const r = runInTerminal(`claude --resume ${s.claudeSessionId} ${mode} --remote-control "${name}"`);
-    if (r.ok) closeSession(s);
-    return r.ok ? { ...r, ended: true, message: `It now runs in a terminal with Remote Control. On your phone open the Claude app, then Code, and pick "${name}". Keep this computer on and the terminal open.` } : r;
-  }
   const r = runInTerminal(`claude --resume ${s.claudeSessionId} ${mode}`);
   return r.ok ? { ...r, message: "Opened in a terminal. Stop here first so both do not answer at once." } : r;
 }
@@ -691,7 +683,7 @@ const server = http.createServer(async (req, res) => {
       if (action === "/answer") return send(res, answer(s, body.requestId, body) ? 200 : 404, { ok: true });
       if (action === "/stop") { try { await s.query.interrupt(); } catch {} return send(res, 200, { ok: true }); }
       if (action === "/close") { closeSession(s); return send(res, 200, { ok: true }); }
-      if (action === "/terminal") return send(res, 200, openInTerminal(s, !!body.phone));
+      if (action === "/terminal") return send(res, 200, openInTerminal(s));
       if (action === "/handoff") return send(res, 200, handoff(s, String(body.tool || "")));
       return send(res, 404, { error: "unknown action" });
     }
