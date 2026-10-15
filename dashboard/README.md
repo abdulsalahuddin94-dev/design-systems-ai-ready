@@ -27,7 +27,7 @@ A local browser interface for the workflow. It is a window onto Claude Code, not
 - Each conversation is one `query()` from the Claude Agent SDK with `cwd` = Root and `settingSources` user, project and local, so `CLAUDE.md`, `.claude/settings.json` hooks, skills, agents and your permission mode load as in the terminal. The installed `claude` is used when found (a Windows `.cmd` shim falls back to the SDK's own copy).
 - `canUseTool` turns every AskUserQuestion call and permission prompt into an event for the browser and waits for the click; answers go back as the tool's `answers` (question text -> label, several labels joined with ", ").
 - Events reach the browser over Server-Sent Events; a reload replays the conversation. Recent conversations are saved in `.claude/.state/dashboard-sessions.json` (git-ignored) and can be resumed.
-- `public/` is plain HTML, CSS and JavaScript (no build step) with its own stylesheet (the print-production look, light and dark) and inline Lucide icons.
+- `public/` is plain HTML, CSS and JavaScript (no build step) with its own stylesheet (the print-production look, light and dark) and inline Lucide icons. Fonts (Archivo, Red Hat Mono; OFL in `public/fonts/OFL.txt`) are served from `public/fonts/`, so the dashboard needs no internet.
 - `tools.mjs` detects the other AI tools, holds their login and handoff commands and keeps the usage log. The dashboard never runs another tool unattended: it only opens it in its own window.
 
 ## Rules for changing it
