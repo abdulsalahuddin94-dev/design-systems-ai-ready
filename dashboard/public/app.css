@@ -488,6 +488,9 @@ main.settings section > .muted.small{margin:-6px 0 14px;max-width:80ch}
 .row-title .ic{width:18px;height:18px;color:var(--cyan-ink)}
 select{font:inherit;font-size:14.5px;padding:9px 12px;border-radius:var(--r);border:1px solid var(--rule-2);background:var(--paper);color:var(--ink);min-width:240px}
 select:focus{outline:2px solid var(--cyan);outline-offset:-1px}
+/* Open select menus: the pickers have a transparent background, so the browser drew a light list with the light ink of the dark theme (invisible). */
+select option,select optgroup{background:var(--sheet);color:var(--ink)}
+select option:disabled{color:var(--ink-3)}
 .usage-projects{margin-top:12px}
 .warn-line{display:flex;gap:6px;align-items:center;color:var(--yellow-ink);margin-top:10px}
 .warn-line .ic{width:15px;height:15px}
