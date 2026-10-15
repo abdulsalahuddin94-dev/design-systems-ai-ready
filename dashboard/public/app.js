@@ -139,9 +139,131 @@ let projects = [];
 window.addEventListener("hashchange", route);
 function route() {
   const m = location.hash.match(/^#\/chat\/([\w-]+)/);
-  for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", !m && a.dataset.nav === "home");
+  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : "home";
+  for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", a.dataset.nav === page);
   if (current?.es) { current.es.close(); current = null; }
-  if (m) renderChat(m[1]); else renderHome();
+  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else renderHome();
+}
+
+// ---------- Settings ----------
+const fmtTokens = (n) => n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${Math.round(n / 1e3)}K` : String(n || 0);
+const TOOL_ICON = { claude: "i-message", codex: "i-terminal", gemini: "i-zap", cursor: "i-pen", copilot: "i-branch", antigravity: "i-external" };
+
+async function renderSettings() {
+  const app = $("#app");
+  app.replaceChildren($("#tpl-settings").content.cloneNode(true));
+  $("#s-refresh").addEventListener("click", () => loadTools(true));
+  loadTools(false);
+  loadUsage();
+  loadIntegrations();
+}
+
+async function loadTools(fresh) {
+  const list = $("#s-tool-list");
+  let data;
+  try { data = await api(`/api/tools${fresh ? "?fresh=1" : ""}`); } catch (e) { list?.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  if (!$("#s-tool-list")) return;
+  const pick = $("#s-fallback-pick");
+  pick.value = data.settings.fallbackTool;
+  pick.onchange = () => api("/api/settings", { fallbackTool: pick.value }).catch(showError);
+  list.replaceChildren(...data.tools.map((t) => toolCard(t, data.settings)));
+}
+
+function toolCard(t, settings) {
+  const state = !t.installed ? ["off", "Not installed"] : t.signedIn === true ? ["ok", t.account ? `Signed in · ${t.account}` : "Signed in"] : t.signedIn === false ? ["warn", "Not signed in"] : ["idle", t.app ? "Installed" : "Sign in once if asked"];
+  const act = async (url, body = {}) => { try { const r = await api(url, body); toast(r.message || (r.ok ? "Opened in a new window." : "Could not open it.")); } catch (e) { showError(e); } };
+  const actions = [];
+  if (!t.installed) actions.push(el("a", { class: "ghost", href: t.install, target: "_blank", rel: "noopener" }, icon("i-download"), "How to install"));
+  else {
+    if (t.id === "claude") actions.push(el("button", { type: "button", class: "ghost", onclick: () => openSignIn() }, icon("i-login"), "Sign in again"));
+    else if (!t.app) actions.push(el("button", { type: "button", class: "ghost", onclick: () => act(`/api/tools/${t.id}/login`) }, icon("i-login"), t.signedIn ? "Sign in again" : "Sign in"));
+    if (t.id !== "claude" && (t.run || t.app)) actions.push(el("button", { type: "button", class: "ghost", onclick: () => act(`/api/tools/${t.id}/open`) }, icon("i-external"), "Open"));
+  }
+  let model = null;
+  if (t.installed && t.run && t.id !== "claude") {
+    const listId = `models-${t.id}`;
+    const input = el("input", { type: "text", list: listId, value: settings.models?.[t.id] || "", placeholder: "The tool's own default", autocomplete: "off", spellcheck: "false" });
+    input.addEventListener("change", () => api("/api/settings", { models: { [t.id]: input.value } }).then(() => toast("Model saved.")).catch(showError));
+    model = el("label", { class: "field compact" }, el("span", {}, "Model"), input, el("datalist", { id: listId }, (t.models || []).map((m) => el("option", { value: m }))));
+  }
+  return el("article", { class: "sheet tool" + (t.installed ? "" : " missing") },
+    el("div", { class: "tool-head" },
+      el("span", { class: "tool-ic" }, icon(TOOL_ICON[t.id] || "i-blocks")),
+      el("div", { class: "tool-name" }, el("h3", {}, t.name), el("span", { class: "meta" }, [t.company, t.version].filter(Boolean).join(" · "))),
+      t.id === "claude" ? el("span", { class: "tag main" }, "Runs here") : null),
+    el("div", { class: `state ${state[0]}` }, state[1]),
+    t.note ? el("p", { class: "note" }, t.note) : null,
+    t.loginHint && t.installed && t.signedIn !== true && t.id !== "claude" ? el("p", { class: "note" }, t.loginHint) : null,
+    model,
+    actions.length ? el("div", { class: "tool-actions" }, actions) : null);
+}
+
+async function loadUsage() {
+  const box = $("#s-usage-body");
+  let u;
+  try { u = await api("/api/usage"); } catch (e) { box?.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  if (!$("#s-usage-body")) return;
+  const tools = Object.keys(u.byTool);
+  if (!tools.length) { box.replaceChildren(el("p", { class: "muted" }, "No usage yet. It is counted from your next conversation in the dashboard.")); return; }
+  const row = (id) => {
+    const t = u.byTool[id];
+    return el("tr", {}, el("th", { scope: "row" }, id === "claude" ? "Claude Code" : id),
+      el("td", {}, fmtTokens(t.today.input + t.today.output)), el("td", {}, String(t.today.turns)),
+      el("td", {}, fmtTokens(t.week.input + t.week.output)), el("td", {}, String(t.week.turns)),
+      el("td", {}, t.week.cost ? `$${t.week.cost.toFixed(2)}` : "–"));
+  };
+  const projects = Object.entries(u.byProject).sort((a, b) => Object.values(b[1]).reduce((x, y) => x + y, 0) - Object.values(a[1]).reduce((x, y) => x + y, 0)).slice(0, 6);
+  box.replaceChildren(
+    el("div", { class: "tablewrap" }, el("table", {},
+      el("thead", {}, el("tr", {}, el("th", {}, "Tool"), el("th", {}, "Tokens today"), el("th", {}, "Turns today"), el("th", {}, "Tokens, 7 days"), el("th", {}, "Turns, 7 days"), el("th", {}, "Cost estimate, 7 days"))),
+      el("tbody", {}, tools.map(row)))),
+    projects.length ? el("div", { class: "chips usage-projects" }, projects.map(([name, per]) => el("span", { class: "chip" }, `${name} · ${fmtTokens(Object.values(per).reduce((x, y) => x + y, 0))}`))) : null,
+    u.limits.length ? el("p", { class: "note warn-line" }, icon("i-alert"), `Last limit: ${new Date(u.limits[0].at).toLocaleString()} · ${u.limits[0].limit}`) : null);
+}
+
+async function loadIntegrations() {
+  let d;
+  try { d = await api("/api/integrations"); } catch (e) { return; }
+  const gh = $("#s-github-body");
+  if (!gh) return;
+  const kv = (k, v) => el("div", { class: "kv-row" }, el("span", {}, k), el("b", {}, v));
+  gh.replaceChildren(
+    kv("Account", d.github.signedIn ? d.github.account : d.github.cli ? "Not signed in" : "GitHub CLI not installed"),
+    d.github.repo ? kv("Workflow repo", el("a", { href: d.github.repo.replace(/^git@github\.com:/, "https://github.com/"), target: "_blank", rel: "noopener" }, d.github.repo.replace(/^https:\/\/github\.com\//, ""))) : null,
+    el("p", { class: "note" }, "Used to update the workflow, share team projects and send contributions for review."),
+    el("button", { type: "button", class: "ghost", onclick: async () => { try { toast((await api("/api/github/login", {})).ok ? "GitHub sign-in opened in a new window. Finish it in the browser." : "Could not open it."); } catch (e) { showError(e); } } }, icon("i-login"), d.github.signedIn ? "Sign in again" : "Sign in with GitHub"));
+  $("#s-figma-body").replaceChildren(
+    ...(d.figma.lines.length ? d.figma.lines.map((l) => { const [k, ...v] = l.split(":"); return kv(k.trim(), v.join(":").trim() || "–"); }) : [el("p", { class: "muted" }, "Python is needed for the Figma tools check.")]),
+    el("p", { class: "note" }, "FigCli Yolo is the main Figma tool; the Desktop Bridge is used for slots. Setup: Figma_Tools/README.md."));
+  const mode = $("#perm")?.dataset.mode || "auto";
+  $("#s-prefs-body").replaceChildren(
+    kv("Permissions", mode === "default" ? "Ask every time" : "Auto"),
+    el("button", { type: "button", class: "ghost", onclick: openPerm }, icon("i-shield"), "Change"),
+    kv("Node.js", d.machine.node), kv("Python", d.machine.python || "missing"), kv("Git", d.machine.git || "missing"));
+}
+
+function toast(text) {
+  const t = el("div", { class: "toast", role: "status" }, text);
+  document.body.append(t);
+  setTimeout(() => t.remove(), 6000);
+}
+
+// Hands a conversation to another tool (writes the note, opens the tool in its own window).
+async function openToolPicker(sessionId, onDone) {
+  let dlg = $("#toolpick");
+  if (!dlg) { document.body.append($("#tpl-toolpick").content.cloneNode(true)); dlg = $("#toolpick"); }
+  const list = $("#toolpick-list");
+  list.replaceChildren(el("p", { class: "muted" }, "Checking which tools are installed…"));
+  dlg.showModal();
+  let data;
+  try { data = await api("/api/tools"); } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  const usable = data.tools.filter((t) => t.id !== "claude" && t.installed && (t.run || t.app));
+  if (!usable.length) { list.replaceChildren(el("p", { class: "muted" }, "No other tool is installed. See Settings.")); return; }
+  list.replaceChildren(...usable.map((t) => el("button", { type: "button", class: "opt-btn" + (t.id === data.settings.fallbackTool ? " rec" : ""), onclick: async () => {
+    dlg.close();
+    try { const r = await api(`/api/sessions/${sessionId}/handoff`, { tool: t.id }); onDone?.(r); } catch (e) { showError(e); }
+  } }, el("span", { class: "l" }, `${t.name}${t.id === data.settings.fallbackTool ? " (your choice in Settings)" : ""}`),
+    el("span", { class: "d" }, t.app ? "Opens the app on this folder; ask it to read the handoff note." : `Opens in its own window${data.settings.models?.[t.id] ? ` with ${data.settings.models[t.id]}` : ""}.`))));
 }
 
 // ---------- start a conversation ----------
@@ -555,6 +677,10 @@ function renderChat(id) {
         state.live = null; state.toolRow = null;
         add(authCard(e));
         break;
+      case "limit":
+        state.live = null; state.toolRow = null;
+        add(limitCard(e));
+        break;
       case "ended":
         if (state.session) state.session.ended = true;
         break;
@@ -634,6 +760,21 @@ function renderChat(id) {
     );
   }
 
+  // Claude's plan or rate limit ran out: offer the tool picked in Settings, or the picker.
+  function limitCard(e) {
+    const names = { codex: "Codex", gemini: "Gemini CLI" };
+    const handoffTo = async (tool) => {
+      try { const r = await api(`/api/sessions/${id}/handoff`, { tool }); add(el("div", { class: "sys" }, r.message)); } catch (err) { showError(err); }
+    };
+    return el("div", { class: "qcard perm" },
+      el("h4", {}, "Claude hit its usage limit."),
+      el("p", { class: "note" }, e.message),
+      el("p", { class: "note" }, "Continue with another tool: this conversation is written to a handoff note and the tool picks up from the same step in its own window."),
+      el("div", { class: "foot" },
+        el("button", { type: "button", class: "ghost", onclick: () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))) }, "Pick a tool"),
+        names[e.fallback] ? el("button", { type: "button", class: "primary", onclick: () => handoffTo(e.fallback) }, icon("i-swap"), `Continue with ${names[e.fallback]}`) : null));
+  }
+
   function permissionCard(e) {
     const card = el("div", { class: "qcard perm", "data-request": e.requestId },
       el("h4", {}, e.title || `Claude wants to use: ${e.tool}`),
@@ -692,6 +833,7 @@ function renderChat(id) {
     send(text);
   });
   $("#stop").addEventListener("click", () => api(`/api/sessions/${id}/stop`, {}).catch(showError));
+  $("#to-tool").addEventListener("click", () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))));
   $("#to-terminal").addEventListener("click", async () => {
     try { const r = await api(`/api/sessions/${id}/terminal`, {}); add(el("div", { class: "sys" }, r.message)); }
     catch (e) { showError(e); }
