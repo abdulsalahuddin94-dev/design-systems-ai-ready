@@ -1,6 +1,6 @@
 // Other AI tools for the dashboard: detection, sign-in commands, handoff commands and token usage.
-// Claude Code is the tool the dashboard runs (Agent SDK in server.mjs). Codex, Gemini and Antigravity open in their
-// own window in the Root, with a handoff note, and ask their own approvals there (they follow AGENTS.md / GEMINI.md).
+// Claude Code runs through the Agent SDK (server.mjs) and Gemini CLI through ACP inside the same conversation (acp.mjs).
+// Codex and Antigravity open in their own window in the Root, with a handoff note, and ask their own approvals there.
 // Nothing here stores passwords or tokens: each tool signs in with its own command and keeps its own login.
 import fs from "node:fs";
 import path from "node:path";
@@ -26,7 +26,7 @@ export const TOOLS = [
     login: "copilot", loginHint: "Type /login and finish in the browser.", install: "https://github.com/github/copilot-cli" },
 ];
 
-function which(bin) {
+export function which(bin) {
   const r = spawnSync(WIN ? "where" : "which", [bin], { encoding: "utf8", windowsHide: true });
   const found = (r.stdout || "").split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
   if (!found.length) return null;
