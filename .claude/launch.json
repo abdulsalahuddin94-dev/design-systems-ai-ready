@@ -2,11 +2,11 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "trianglz-web-storybook",
+      "name": "web-library-storybook",
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "--prefix",
-        "Reference_Library/Trianglz/Web/storybook",
+        "Reference_Library/Library/Web/storybook",
         "run",
         "storybook",
         "--",

@@ -1,0 +1,1059 @@
+{
+ "meta": {
+  "platform": "Web",
+  "figma_file": "Web Library",
+  "figma_url": "https://www.figma.com/design/7qsOqckanKwGDbkljD3rb9/Web-Library",
+  "source": {
+   "method": "figma-console figma_execute (Desktop Bridge, read-only)",
+   "extracted_at": "2026-09-30",
+   "needs_resync": false
+  },
+  "naming": "Find components by name (page + set name). Node ids and keys are not stored: they change in a duplicate.",
+  "counts": {
+   "component_sets": 28,
+   "standalone_components": 2,
+   "icons": 42,
+   "text_styles": 40,
+   "effect_styles": 13,
+   "grid_styles": 3
+  },
+  "slots_extracted_at": "2026-09-30"
+ },
+ "pages": [
+  "Cover",
+  "⭐Setup",
+  "➜ Layout Grid",
+  "➜ Typography",
+  "➜ Colors ",
+  "➜ shadows",
+  "➜ Corner Radius & spacings",
+  "➜ Icons",
+  "⭐Form Elements",
+  "➜ Input Fields and Dropdown",
+  "➜ Text Area",
+  "➜ Checkbox",
+  "➜ Toggles",
+  "➜ Radio Buttons",
+  "⭐Navigation ",
+  "➜  Buttons & links",
+  "➜ Paganation & Tabs",
+  "⭐Data display",
+  "➜ Avatars & upload image",
+  "➜ Tooltips",
+  "➜ Banners & Badges",
+  "➜ Popups",
+  "➜ Favicon "
+ ],
+ "page_name_issues": [
+  "trailing spaces: \"➜ Colors \", \"⭐Navigation \", \"➜ Favicon \"",
+  "double space: \"➜  Buttons & links\"",
+  "typo: \"➜ Paganation & Tabs\""
+ ],
+ "components": [
+  {
+   "name": "OTP / Cell",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Empty",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error",
+     "Success",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "variant_count": 7,
+   "use": "One OTP digit cell (60x60). Building block of OTP / Field and Stepper; never alone.",
+   "slots": []
+  },
+  {
+   "name": "OTP / Field",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Empty",
+     "Filled",
+     "Disabled",
+     "Success",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Show hint": "BOOLEAN",
+    "Show Label": "BOOLEAN",
+    "Show success message": "BOOLEAN",
+    "Show error message": "BOOLEAN",
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Label2": "TEXT",
+    "Hint2": "TEXT"
+   },
+   "variant_count": 5,
+   "use": "6-digit verification code with label, hint, success and error messages.",
+   "nests": [
+    "OTP / Cell",
+    "Icon/Alert Circle"
+   ],
+   "issues": [
+    "generic property names Label2 / Hint2"
+   ],
+   "slots": [
+    {
+     "property": "(cells)",
+     "kind": "fixed_nested",
+     "accepts": "OTP / Cell x 6",
+     "rule": "state of each cell follows the field state"
+    }
+   ]
+  },
+  {
+   "name": "Stepper",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Minimum",
+     "Default"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Quantity stepper; Decrease is disabled at Minimum.",
+   "nests": [
+    "Button (Link, sm, Icon=Only)",
+    "OTP / Cell"
+   ],
+   "slots": [
+    {
+     "property": "(decrease / increase)",
+     "kind": "fixed_nested",
+     "accepts": "Button (Type=Link, Size=sm, Icon=Only) with Icon/Minus and Icon/Add; value in OTP / Cell"
+    }
+   ]
+  },
+  {
+   "name": "Input / Text",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Disabled",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Show optional": "BOOLEAN",
+    "Show hint": "BOOLEAN",
+    "Show error message": "BOOLEAN",
+    "Show icon": "BOOLEAN",
+    "Show Payment method icon": "BOOLEAN",
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT",
+    "Show tooltip": "BOOLEAN",
+    "Show link": "BOOLEAN"
+   },
+   "variant_count": 6,
+   "use": "Single-line text input; 'Show icon' makes it the Select / Dropdown trigger.",
+   "nests": [
+    "Icon"
+   ],
+   "issues": [
+    "no Success state; Show Payment method icon / Show link belong to other variants"
+   ],
+   "slots": [
+    {
+     "property": "(trailing icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Chevron Down (Select trigger) or any Icon/*",
+     "default": "Icon/Chevron Down",
+     "rule": "visible when Show icon = true",
+     "issue": "expose as INSTANCE_SWAP"
+    },
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info",
+     "rule": "visible when Show tooltip = true"
+    }
+   ]
+  },
+  {
+   "name": "Input / URL",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Disabled",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Show optional": "BOOLEAN",
+    "Show hint": "BOOLEAN",
+    "Show error message": "BOOLEAN",
+    "Show icon": "BOOLEAN",
+    "Show Payment method icon": "BOOLEAN",
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT",
+    "Show tooltip": "BOOLEAN",
+    "Show link": "BOOLEAN"
+   },
+   "variant_count": 6,
+   "use": "URL input with a fixed 'http://' prefix.",
+   "nests": [
+    "Icon"
+   ],
+   "slots": [
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
+   ]
+  },
+  {
+   "name": "Input / Card Number",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Disabled",
+     "Hover",
+     "Focus",
+     "Filled",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Show optional": "BOOLEAN",
+    "Show hint": "BOOLEAN",
+    "Show error message": "BOOLEAN",
+    "Show icon": "BOOLEAN",
+    "Show Payment method icon": "BOOLEAN",
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT",
+    "Show tooltip": "BOOLEAN"
+   },
+   "variant_count": 6,
+   "use": "Card number input with a card-brand badge. Payment forms only.",
+   "nests": [
+    "Icon"
+   ],
+   "slots": [
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    },
+    {
+     "property": "(card brand)",
+     "kind": "fixed_nested",
+     "accepts": "card-brand badge",
+     "rule": "visible when Show Payment method icon = true"
+    }
+   ]
+  },
+  {
+   "name": "Upload Field",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Disabled",
+     "Hover",
+     "Uploaded",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Show Label": "BOOLEAN",
+    "Label Text": "TEXT",
+    "Hint Text": "TEXT",
+    "Show (Optional)": "BOOLEAN",
+    "Show Help Icon": "BOOLEAN"
+   },
+   "variant_count": 5,
+   "use": "Single-file picker with dashed drop zone; Uploaded shows file name + delete.",
+   "nests": [
+    "Icon/Upload",
+    "Icon/File",
+    "Icon/Delete"
+   ],
+   "slots": [
+    {
+     "property": "(upload icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Upload",
+     "default": "Icon/Upload"
+    },
+    {
+     "property": "(help icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
+   ]
+  },
+  {
+   "name": "Search",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Filled",
+     "Focus"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Search bar with magnifier and clear (x) when Filled; filters lists, tables.",
+   "nests": [
+    "Icon/Search",
+    "Icon/Close"
+   ],
+   "issues": [
+    "no text property for the placeholder"
+   ],
+   "slots": [
+    {
+     "property": "(search icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Search",
+     "default": "Icon/Search"
+    }
+   ]
+  },
+  {
+   "name": "Menu / Item",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Selected",
+     "Disabled"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT",
+    "Show leading icon": "BOOLEAN",
+    "Leading icon": "INSTANCE_SWAP"
+   },
+   "variant_count": 4,
+   "use": "One option row for Menu / Select.",
+   "slots": [
+    {
+     "property": "Leading icon",
+     "kind": "instance_swap",
+     "accepts": "Icon/* (➜ Icons, 24px, Lucide style; color from color/icon/*)",
+     "default": "Icon/User",
+     "rule": "shown when Show leading icon = true"
+    },
+    {
+     "property": "(check mark)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Check",
+     "rule": "appears on Selected"
+    }
+   ]
+  },
+  {
+   "name": "Menu",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Molecule",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "List of Menu / Item for dropdowns.",
+   "nests": [
+    "Menu / Item"
+   ],
+   "slots": [
+    {
+     "property": "(items)",
+     "kind": "fixed_nested",
+     "accepts": "Menu / Item",
+     "rule": "add or remove Menu / Item instances; never draw rows"
+    }
+   ]
+  },
+  {
+   "name": "Select / Dropdown",
+   "group": "Form Elements",
+   "page": "➜ Input Fields and Dropdown",
+   "tier": "Organism",
+   "variants": {
+    "Open": [
+     "False",
+     "True"
+    ]
+   },
+   "properties": {},
+   "variant_count": 2,
+   "use": "Select field: Input / Text (chevron on) + Menu.",
+   "nests": [
+    "Input / Text",
+    "Menu"
+   ],
+   "slots": [
+    {
+     "property": "(trigger)",
+     "kind": "fixed_nested",
+     "accepts": "Input / Text with Show icon = true"
+    },
+    {
+     "property": "(options)",
+     "kind": "fixed_nested",
+     "accepts": "Menu"
+    }
+   ]
+  },
+  {
+   "name": "Textarea",
+   "group": "Form Elements",
+   "page": "➜ Text Area",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Focus",
+     "Disabled",
+     "Filled",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Show Optional": "BOOLEAN",
+    "Show Tooltip": "BOOLEAN",
+    "Show Hint": "BOOLEAN",
+    "Label": "TEXT",
+    "Hint": "TEXT",
+    "Error message": "TEXT"
+   },
+   "variant_count": 6,
+   "use": "Multi-line input (114px) for descriptions, notes, messages.",
+   "slots": [
+    {
+     "property": "(tooltip icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
+   ]
+  },
+  {
+   "name": "Checkbox",
+   "group": "Form Elements",
+   "page": "➜ Checkbox",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Unchecked",
+     "Indeterminate",
+     "Disabled",
+     "Checked",
+     "Disabled Checked",
+     "Hover",
+     "Focus",
+     "Checked Hover",
+     "Checked Focus"
+    ]
+   },
+   "properties": {
+    "Text": "TEXT",
+    "Show text": "BOOLEAN"
+   },
+   "variant_count": 9,
+   "use": "Multi-select, consent, 'select all' (Indeterminate).",
+   "slots": []
+  },
+  {
+   "name": "Toggle",
+   "group": "Form Elements",
+   "page": "➜ Toggles",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "On",
+     "On Disabled",
+     "Off",
+     "Off Disabled",
+     "On Hover",
+     "On Focus",
+     "Off Hover",
+     "Off Focus"
+    ]
+   },
+   "properties": {
+    "Show text": "BOOLEAN",
+    "Label": "TEXT",
+    "Label2": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "Settings that apply immediately.",
+   "issues": [
+    "generic property Label2"
+   ],
+   "slots": []
+  },
+  {
+   "name": "Radio",
+   "group": "Form Elements",
+   "page": "➜ Radio Buttons",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Unchecked",
+     "Checked",
+     "Checked Disabled",
+     "Disabled",
+     "Hover",
+     "Focus",
+     "Checked Hover",
+     "Checked Focus"
+    ]
+   },
+   "properties": {
+    "Text": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "One choice among 2-5 visible options.",
+   "slots": []
+  },
+  {
+   "name": "Button",
+   "group": "Navigation",
+   "page": "➜  Buttons & links",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Filled",
+     "Outline",
+     "Pill",
+     "Link",
+     "Danger"
+    ],
+    "Size": [
+     "base",
+     "lg",
+     "sm",
+     "xl",
+     "xs"
+    ],
+    "Icon": [
+     "None",
+     "Left",
+     "Right",
+     "Only"
+    ],
+    "State": [
+     "Default",
+     "Focus",
+     "Hover",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "variant_count": 400,
+   "use": "Filled = primary (one per section), Outline = secondary, Pill = rounded CTA, Link = tertiary, Danger = destructive.",
+   "nests": [
+    "Icon"
+   ],
+   "issues": [
+    "no Pressed/Loading state; no TEXT property for the label or INSTANCE_SWAP for icons"
+   ],
+   "slots": [
+    {
+     "property": "(leading / trailing icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/* (➜ Icons, 24px, Lucide style; color from color/icon/*)",
+     "default": "Icon/Add, Icon/Chevron Right, Icon/Upload",
+     "rule": "icon position comes from the Icon variant (Left, Right, Only)",
+     "issue": "no INSTANCE_SWAP property: expose Leading icon / Trailing icon swaps"
+    }
+   ]
+  },
+  {
+   "name": "Pagination / Item",
+   "group": "Navigation",
+   "page": "➜ Paganation & Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Number",
+     "Ellipsis",
+     "Prev",
+     "Next"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Active",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "variant_count": 9,
+   "use": "Pagination cell; Active = current page.",
+   "slots": []
+  },
+  {
+   "name": "Tabs / Item — Underline",
+   "group": "Navigation",
+   "page": "➜ Paganation & Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Underline"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Active",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Switch sibling sections of a page.",
+   "issues": [
+    "no Label text property"
+   ],
+   "slots": []
+  },
+  {
+   "name": "Tabs / Item — Pill",
+   "group": "Navigation",
+   "page": "➜ Paganation & Tabs",
+   "tier": "Atom",
+   "variants": {
+    "Style": [
+     "Pill"
+    ],
+    "State": [
+     "Default",
+     "Hover",
+     "Active",
+     "Disabled"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Compact view switcher inside cards or toolbars.",
+   "issues": [
+    "no Label text property"
+   ],
+   "slots": []
+  },
+  {
+   "name": "Breadcrumb / Item",
+   "group": "Navigation",
+   "page": "➜ Paganation & Tabs",
+   "tier": "Atom",
+   "variants": {
+    "State": [
+     "Default",
+     "Hover",
+     "Current"
+    ]
+   },
+   "properties": {
+    "Label": "TEXT"
+   },
+   "variant_count": 3,
+   "use": "One breadcrumb link.",
+   "slots": []
+  },
+  {
+   "name": "Breadcrumb",
+   "group": "Navigation",
+   "page": "➜ Paganation & Tabs",
+   "tier": "Molecule",
+   "variants": {},
+   "properties": {},
+   "variant_count": 1,
+   "use": "Breadcrumb trail.",
+   "nests": [
+    "Breadcrumb / Item",
+    "Icon/Chevron Right"
+   ],
+   "slots": [
+    {
+     "property": "(items)",
+     "kind": "fixed_nested",
+     "accepts": "Breadcrumb / Item, separated by Icon/Chevron Right"
+    }
+   ]
+  },
+  {
+   "name": "Avatar",
+   "group": "Data display",
+   "page": "➜ Avatars & upload image",
+   "tier": "Atom",
+   "variants": {
+    "Type": [
+     "Icon",
+     "Photo",
+     "Initials"
+    ],
+    "Size": [
+     "Large",
+     "Medium",
+     "Small",
+     "XSmall"
+    ]
+   },
+   "properties": {},
+   "variant_count": 12,
+   "use": "Photo when available, Initials otherwise, Icon for anonymous.",
+   "slots": []
+  },
+  {
+   "name": "Avatar Upload",
+   "group": "Data display",
+   "page": "➜ Avatars & upload image",
+   "tier": "Molecule",
+   "variants": {
+    "State": [
+     "Default",
+     "Uploaded",
+     "Error"
+    ]
+   },
+   "properties": {},
+   "variant_count": 3,
+   "use": "Profile photo picker: 100px avatar + edit button.",
+   "nests": [
+    "Avatar",
+    "Button (Icon=Only, Icon/Edit)"
+   ],
+   "slots": [
+    {
+     "property": "(edit button)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Edit on a round button"
+    }
+   ]
+  },
+  {
+   "name": "Tooltip",
+   "group": "Data display",
+   "page": "➜ Tooltips",
+   "tier": "Atom",
+   "variants": {
+    "Arrow": [
+     "Down",
+     "Left",
+     "Right",
+     "Up"
+    ],
+    "Size": [
+     "Small",
+     "Large"
+    ]
+   },
+   "properties": {
+    "Text": "TEXT",
+    "Text (large)": "TEXT"
+   },
+   "variant_count": 8,
+   "use": "Small for 1-3 words, Large for 1-2 sentences.",
+   "slots": []
+  },
+  {
+   "name": "Alert",
+   "group": "Data display",
+   "page": "➜ Banners & Badges",
+   "tier": "Molecule",
+   "variants": {
+    "Status": [
+     "Info",
+     "Warning",
+     "Error",
+     "Success"
+    ]
+   },
+   "properties": {
+    "Show close": "BOOLEAN"
+   },
+   "variant_count": 4,
+   "use": "Inline alert banner with icon, title, message and close.",
+   "nests": [
+    "Icon",
+    "Button (Link, Icon=Only)"
+   ],
+   "issues": [
+    "no Title/Message text properties"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info, Icon/Warning, Icon/Alert Circle, Icon/Check Circle by Status",
+     "default": "Icon/Info"
+    },
+    {
+     "property": "(close)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Close",
+     "rule": "visible when Show close = true"
+    }
+   ]
+  },
+  {
+   "name": "Badge",
+   "group": "Data display",
+   "page": "➜ Banners & Badges",
+   "tier": "Atom",
+   "variants": {
+    "Status": [
+     "Warning",
+     "Error",
+     "Success",
+     "Info"
+    ]
+   },
+   "properties": {},
+   "variant_count": 4,
+   "use": "Inline status in tables, cards and lists.",
+   "nests": [
+    "Icon/Info"
+   ],
+   "issues": [
+    "no Label text property"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Info",
+     "default": "Icon/Info"
+    }
+   ]
+  },
+  {
+   "name": "Toast",
+   "group": "Data display",
+   "page": "➜ Banners & Badges",
+   "tier": "Molecule",
+   "variants": {
+    "Status": [
+     "Info",
+     "Success",
+     "Warning",
+     "Error"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Message": "TEXT",
+    "Show close": "BOOLEAN"
+   },
+   "variant_count": 4,
+   "use": "Short transient feedback after an action (auto-dismiss 4-6 s).",
+   "nests": [
+    "Icon",
+    "Button (Link, Icon=Only)"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/* by Status",
+     "default": "Icon/Info"
+    },
+    {
+     "property": "(close)",
+     "kind": "fixed_nested",
+     "accepts": "Button (Link, Icon=Only) + Icon/Close"
+    }
+   ]
+  },
+  {
+   "name": "Confirmation Popup",
+   "group": "Data display",
+   "page": "➜ Popups",
+   "tier": "Organism",
+   "variants": {
+    "Status": [
+     "Success",
+     "Info",
+     "Warning",
+     "Danger"
+    ]
+   },
+   "properties": {
+    "Title": "TEXT",
+    "Body": "TEXT",
+    "Show close": "BOOLEAN"
+   },
+   "variant_count": 4,
+   "use": "Confirmation dialog: status icon, title, body, Cancel (Outline) + confirm (Filled / Danger).",
+   "nests": [
+    "Icon",
+    "Button x2"
+   ],
+   "slots": [
+    {
+     "property": "(status icon)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Check Circle, Icon/Info, Icon/Warning, Icon/Alert Circle by Status"
+    },
+    {
+     "property": "(actions)",
+     "kind": "fixed_nested",
+     "accepts": "Button Type=Outline (Cancel) + Button Type=Filled or Danger (confirm)"
+    },
+    {
+     "property": "(close)",
+     "kind": "fixed_nested",
+     "accepts": "Icon/Close"
+    }
+   ]
+  }
+ ],
+ "icons": {
+  "page": "➜ Icons",
+  "set": "Lucide style",
+  "naming": "Icon/<Title Case Name>",
+  "names": [
+   "Add",
+   "Chevron Left",
+   "Chevron Right",
+   "Edit",
+   "Upload",
+   "Download",
+   "Log Out",
+   "Log In",
+   "Eye",
+   "Eye Off",
+   "Delete",
+   "Share",
+   "Language",
+   "Close",
+   "Chevron Down",
+   "Minus",
+   "Check",
+   "Arrow Left",
+   "Arrow Right",
+   "Arrow Down",
+   "Arrow Up",
+   "Arrow Down Left",
+   "Arrow Down Right",
+   "Arrow Up Left",
+   "Arrow Up Right",
+   "Phone",
+   "Bell",
+   "Mail",
+   "Export",
+   "Check Circle",
+   "Close Circle",
+   "Question",
+   "Alert Circle",
+   "Info",
+   "Cancel",
+   "Warning",
+   "Clock",
+   "Calendar",
+   "Search",
+   "File",
+   "User",
+   "Users"
+  ]
+ },
+ "text_styles": {
+  "count": 40,
+  "naming": "{size}/{weight}",
+  "sizes": [
+   "xs",
+   "sm",
+   "base",
+   "lg",
+   "xl",
+   "2xl",
+   "3xl",
+   "4xl",
+   "5xl",
+   "6xl"
+  ],
+  "weights": [
+   "Regular",
+   "Medium",
+   "Semi Bold",
+   "Bold"
+  ],
+  "font": "Poppins",
+  "bound": [
+   "fontFamily",
+   "fontStyle",
+   "fontSize",
+   "lineHeight",
+   "letterSpacing"
+  ]
+ },
+ "effect_styles": [
+  "shadow-none",
+  "shadow-2xs",
+  "shadow-xs",
+  "shadow-sm",
+  "shadow-md",
+  "shadow-lg",
+  "shadow-xl",
+  "shadow-2xl",
+  "inset-shadow-2xs",
+  "inset-shadow-xs",
+  "inset-shadow-sm",
+  "focus-ring",
+  "focus-ring-offset"
+ ],
+ "grid_styles": [
+  "Grid/Desktop 1440",
+  "Grid/iPad 768",
+  "Grid/Mobile 375"
+ ],
+ "gaps": "See Component_Skills/*/references/gaps.md",
+ "slots": {
+  "kinds": {
+   "instance_swap": "swap the nested instance with setProperties({<prop>: componentId}); never detach",
+   "slot": "Figma slot: place the listed components inside; never draw content",
+   "fixed_nested": "nested instance with no swap property (a gap when it is an icon); set it through the nested instance, never detach",
+   "text_glyph": "icon drawn as a text character (a gap)"
+  },
+  "rule": "Screens and Storybook controls must use these slots exactly. A needed swap that is missing is a component fix, not a reason to detach."
+ }
+}
