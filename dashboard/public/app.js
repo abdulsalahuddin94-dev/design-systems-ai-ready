@@ -14,8 +14,8 @@ const el = (tag, attrs = {}, ...kids) => {
   for (const kid of kids.flat()) if (kid != null && kid !== false) n.append(kid.nodeType ? kid : String(kid));
   return n;
 };
-const api = async (url, body) => {
-  const r = await fetch(url, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+const api = async (url, body, method) => {
+  const r = await fetch(url, body === undefined && !method ? {} : { method: method || "POST", headers: { "Content-Type": "application/json" }, body: body === undefined ? undefined : JSON.stringify(body) });
   const data = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error(data.error || r.statusText);
   return data;
@@ -139,10 +139,12 @@ let projects = [];
 window.addEventListener("hashchange", route);
 function route() {
   const m = location.hash.match(/^#\/chat\/([\w-]+)/);
-  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : "home";
+  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : /^#\/projects/.test(location.hash) ? "projects" : "home";
   for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", a.dataset.nav === page);
+  // Inside a project the conversation gets the whole width: the app sidebar steps aside.
+  document.body.classList.toggle("focus", page === "chat");
   if (current?.es) { current.es.close(); current = null; }
-  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else renderHome();
+  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else if (page === "projects") renderProjects(); else renderHome();
 }
 
 // ---------- Settings ----------
@@ -245,10 +247,13 @@ async function loadIntegrations() {
     kv("Node.js", d.machine.node), kv("Python", d.machine.python || "missing"), kv("Git", d.machine.git || "missing"));
 }
 
-function toast(text) {
-  const t = el("div", { class: "toast", role: "status" }, text);
+function toast(text, action, ms = 6000) {
+  document.querySelector(".toast")?.remove();
+  const t = el("div", { class: "toast", role: "status" }, el("span", {}, text),
+    action ? el("button", { type: "button", class: "toast-btn", onclick: () => { t.remove(); action.run(); } }, action.icon ? icon(action.icon) : null, action.label) : null);
   document.body.append(t);
-  setTimeout(() => t.remove(), 6000);
+  setTimeout(() => t.remove(), ms);
+  return t;
 }
 
 // Hands a conversation to another tool (writes the note, opens the tool in its own window).
@@ -432,10 +437,168 @@ async function renderHome() {
   const app = $("#app");
   app.replaceChildren($("#tpl-home").content.cloneNode(true));
   for (const b of app.querySelectorAll("[data-start]")) b.addEventListener("click", () => startKind(b.dataset.start).catch(showError));
-  $("#refresh").addEventListener("click", () => { loadProjects(); checkUpdates(true); });
-  loadProjects().then(loadInsights);
+  fetchProjects().then(() => {
+    setTally("jobs", projects.length);
+    setTally("sync", projects.filter((p) => p.unsynced).length);
+    loadInsights();
+  }).catch(() => {});
   loadRecent();
   loadFigmaTally();
+}
+
+async function fetchProjects() {
+  ({ projects } = await api("/api/projects"));
+  return projects;
+}
+
+// ---------- Projects ----------
+let projectView = "cards";
+try { projectView = localStorage.getItem("projectView") === "table" ? "table" : "cards"; } catch {}
+
+function renderProjects() {
+  const app = $("#app");
+  app.replaceChildren($("#tpl-projects").content.cloneNode(true));
+  $("#refresh").addEventListener("click", () => { loadProjects(); checkUpdates(true); });
+  $("#add-project").addEventListener("click", () => openProjectForm());
+  for (const b of app.querySelectorAll("[data-view]")) {
+    b.setAttribute("aria-pressed", String(b.dataset.view === projectView));
+    b.addEventListener("click", () => {
+      projectView = b.dataset.view;
+      try { localStorage.setItem("projectView", projectView); } catch {}
+      for (const x of app.querySelectorAll("[data-view]")) x.setAttribute("aria-pressed", String(x.dataset.view === projectView));
+      drawProjects();
+    });
+  }
+  loadProjects();
+}
+
+const openProject = (p) => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError);
+
+function rowActions(p) {
+  return el("span", { class: "row-actions" },
+    el("button", { type: "button", class: "iconbtn sq", title: `Rename ${p.title}`, "aria-label": `Rename ${p.title}`, onclick: () => openProjectForm(p) }, icon("i-edit")),
+    el("button", { type: "button", class: "iconbtn sq danger", title: `Delete ${p.title}`, "aria-label": `Delete ${p.title}`, onclick: () => openDelete(p) }, icon("i-trash")));
+}
+
+// Add (a folder from the project template) or rename (the display name in status.json; the folder keeps its name).
+function openProjectForm(p) {
+  let dlg = $("#projdlg");
+  if (!dlg) { document.body.append($("#tpl-project-form").content.cloneNode(true)); dlg = $("#projdlg"); }
+  const edit = !!p;
+  const input = $("#proj-name");
+  $("#proj-title").textContent = edit ? `Rename ${p.title}` : "Add a project";
+  $("#proj-help").textContent = edit ? "Only the name shown here changes. The folder keeps its name, so links and paths keep working." : "A folder is made in My Projects from the project template. The intake then asks the rest, one question at a time.";
+  $("#proj-ok").textContent = edit ? "Save" : "Add project";
+  $("#proj-start-row").hidden = edit;
+  input.value = edit ? p.title : "";
+  const folder = () => { $("#proj-folder").textContent = edit ? `Folder: My Projects/${p.name}` : (input.value.trim() ? `Folder: My Projects/${input.value.trim().normalize("NFC").replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "")}` : ""); };
+  input.oninput = folder;
+  folder();
+  dlg.onclose = async () => {
+    if (dlg.returnValue !== "ok" || !input.value.trim()) return;
+    try {
+      if (edit) {
+        await api(`/api/projects/${encodeURIComponent(p.name)}`, { title: input.value.trim() }, "PATCH");
+        toast("Renamed.");
+        return loadProjects();
+      }
+      const r = await api("/api/projects", { title: input.value.trim() });
+      if ($("#proj-start").checked) return start({ prompt: `Start the intake (Design_System_Intake_Skill). I want to start a new project named "${r.title}". Its folder already exists: My Projects/${r.name} (made from the template by the dashboard), so skip creating it and continue from the next question.`, project: r.name, title: r.title });
+      toast(`Added ${r.title}.`);
+      loadProjects();
+    } catch (e) { showError(e); }
+  };
+  dlg.returnValue = "";
+  dlg.showModal();
+  input.focus();
+  input.select();
+}
+
+function openDelete(p) {
+  let dlg = $("#deldlg");
+  if (!dlg) { document.body.append($("#tpl-delete").content.cloneNode(true)); dlg = $("#deldlg"); }
+  const input = $("#del-confirm");
+  const ok = $("#del-ok");
+  $("#del-name").textContent = p.title;
+  $("#del-folder").textContent = `My Projects/${p.name}`;
+  $("#del-team").hidden = !p.team;
+  input.value = "";
+  ok.disabled = true;
+  input.oninput = () => { ok.disabled = input.value.trim() !== "Delete"; };
+  dlg.onclose = async () => {
+    if (dlg.returnValue !== "ok" || input.value.trim() !== "Delete") return;
+    try {
+      const r = await api(`/api/projects/${encodeURIComponent(p.name)}`, undefined, "DELETE");
+      loadProjects();
+      toast(`${p.title} was deleted.`, { label: "Undo", icon: "i-undo", run: async () => {
+        try { await api(`/api/projects/${encodeURIComponent(r.id)}/restore`, {}); toast(`${p.title} is back.`); loadProjects(); } catch (e) { showError(e); }
+      } }, r.undoMs - 2000);
+    } catch (e) { showError(e); }
+  };
+  dlg.returnValue = "";
+  dlg.showModal();
+  input.focus();
+}
+
+// Files for a project's Inputs folders (intake 0.3b): Brand, Inspiration, Screens, Research.
+const INPUT_TABS = [
+  { kind: "Brand", icon: "i-palette", text: "Logo, brand book, brand colors, fonts." },
+  { kind: "Inspiration", icon: "i-sparkles", text: "Reference designs, competitor apps, screenshots or links you like." },
+  { kind: "Screens", icon: "i-monitor", text: "Screenshots of the existing product, if there is one." },
+  { kind: "Research", icon: "i-docs", text: "Research, personas, PRDs, any notes about the product." },
+];
+const fmtSize = (b) => b >= 1048576 ? `${(b / 1048576).toFixed(1)} MB` : `${Math.max(1, Math.round(b / 1024))} KB`;
+
+function openInputs(p, onRead) {
+  let dlg = $("#inputsdlg");
+  if (!dlg) { document.body.append($("#tpl-inputs").content.cloneNode(true)); dlg = $("#inputsdlg"); }
+  const base = `/api/projects/${encodeURIComponent(p.name)}/inputs`;
+  let tab = "Brand";
+  let files = {};
+  const added = [];
+  const readBtn = $("#inputs-read");
+  readBtn.hidden = true;
+  const tabs = $("#inputs-tabs");
+  const panel = $("#inputs-panel");
+  const drawTabs = () => tabs.replaceChildren(...INPUT_TABS.map((t) => el("button", { type: "button", role: "tab", "aria-selected": String(t.kind === tab), onclick: () => { tab = t.kind; drawTabs(); drawPanel(); } },
+    icon(t.icon), t.kind, files[t.kind]?.length ? el("span", { class: "count" }, String(files[t.kind].length)) : null)));
+  const upload = async (list) => {
+    for (const f of list) {
+      if (f.size > 50 * 1048576) { toast(`${f.name} is over 50 MB; copy it into the folder by hand.`); continue; }
+      const row = el("li", { class: "uploading" }, el("span", { class: "fname" }, f.name), el("span", { class: "note" }, "Adding…"));
+      panel.querySelector(".file-list")?.prepend(row);
+      const data = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(f); });
+      try { const r = await api(base, { kind: tab, name: f.name, data }); added.push(`${tab}/${r.name}`); } catch (e) { toast(`${f.name}: ${e.message}`); }
+    }
+    readBtn.hidden = !added.length || !onRead;
+    await refresh();
+  };
+  const drawPanel = () => {
+    const t = INPUT_TABS.find((x) => x.kind === tab);
+    const picker = el("input", { type: "file", multiple: true, hidden: true, onchange: (ev) => { upload([...ev.target.files]); ev.target.value = ""; } });
+    const zone = el("div", { class: "dropzone", tabindex: "0", role: "button", "aria-label": `Add files to ${tab}`,
+      onclick: () => picker.click(), onkeydown: (k) => { if (k.key === "Enter" || k.key === " ") { k.preventDefault(); picker.click(); } } },
+      icon("i-upload"), el("b", {}, "Drop files here"), el("span", {}, "or ", el("u", {}, "browse"), " your computer"), el("small", {}, t.text), picker);
+    zone.addEventListener("dragover", (ev) => { ev.preventDefault(); zone.classList.add("over"); });
+    zone.addEventListener("dragleave", () => zone.classList.remove("over"));
+    zone.addEventListener("drop", (ev) => { ev.preventDefault(); zone.classList.remove("over"); upload([...ev.dataTransfer.files]); });
+    const list = el("ul", { class: "file-list" }, (files[tab] || []).map((f) => el("li", {},
+      el("span", { class: "fname", title: f.name }, f.name), el("span", { class: "note" }, fmtSize(f.size)),
+      el("button", { type: "button", class: "iconbtn sq", "aria-label": `Remove ${f.name}`, title: "Remove", onclick: async () => {
+        try { await api(`${base}?kind=${encodeURIComponent(tab)}&file=${encodeURIComponent(f.name)}`, undefined, "DELETE"); await refresh(); } catch (e) { showError(e); }
+      } }, icon("i-x")))));
+    panel.replaceChildren(zone, (files[tab] || []).length ? el("p", { class: "col-title" }, `In Inputs/${tab}`) : null, list);
+  };
+  const refresh = async () => { try { files = (await api(base)).inputs; } catch {} drawTabs(); drawPanel(); };
+  dlg.onclose = () => {
+    if (dlg.returnValue === "read" && added.length) onRead?.(added);
+    else if (added.length) toast(`${added.length} file${added.length > 1 ? "s" : ""} added to Inputs.`);
+    p.onInputs?.();
+  };
+  dlg.returnValue = "";
+  drawTabs(); drawPanel();
+  refresh();
+  dlg.showModal();
 }
 
 // Inline icon from the sprite in index.html.
@@ -544,26 +707,49 @@ function setTally(key, value) {
 async function loadProjects() {
   const list = $("#project-list");
   if (!list) return;
-  try {
-    ({ projects } = await api("/api/projects"));
-  } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
-  setTally("jobs", projects.length);
-  setTally("sync", projects.filter((p) => p.unsynced).length);
+  try { await fetchProjects(); } catch (e) { list.replaceChildren(el("p", { class: "muted" }, e.message)); return; }
+  drawProjects();
+}
+
+function drawProjects() {
+  const list = $("#project-list");
+  if (!list) return;
   if (!projects.length) {
+    list.className = "tickets";
     list.replaceChildren(el("div", { class: "sheet empty" },
       el("h3", {}, "No projects yet"),
-      el("p", { class: "muted" }, "Start a new project or join a team project; it appears here as a job with its stage and next step."),
-      el("button", { class: "primary", type: "button", onclick: () => startKind("new").catch(showError) }, icon("i-plus"), "Start a new project")));
+      el("p", { class: "muted" }, "Add a project, or start one with the intake from the Dashboard. It appears here with its stage and next step."),
+      el("button", { class: "primary", type: "button", onclick: () => openProjectForm() }, icon("i-plus"), "Add project")));
     return;
   }
-  list.classList.toggle("few", projects.length < 3);
+  if (projectView === "table") {
+    list.className = "project-table tablewrap";
+    list.replaceChildren(el("table", {},
+      el("thead", {}, el("tr", {}, ["Project", "Platform", "Stage", "Last change", "Next step", "Updated", ""].map((h) => el("th", { scope: "col" }, h)))),
+      el("tbody", {}, projects.map((p) => {
+        const at = stageIndex(p);
+        return el("tr", {},
+          el("th", { scope: "row" }, el("div", { class: "name-cell" }, el("button", { type: "button", class: "link strong", onclick: () => openProject(p) }, p.title), p.team ? el("span", { class: "tag team" }, "Team") : null, p.unsynced ? el("span", { class: "chip warn" }, `${p.unsynced} not in Storybook`) : null)),
+          el("td", { class: "mono" }, p.platform || "–"),
+          el("td", {}, at >= 0 ? el("span", { class: "stage-pill" }, el("i", { style: `--at:${(at + 1) / STAGES.length}` }), STAGES[at]) : el("span", { class: "muted" }, "Not recorded")),
+          el("td", {}, p.last ? [el("time", { class: "mono" }, p.last.date), el("div", { class: "note clamp", title: p.last.title }, p.last.title)] : el("span", { class: "muted" }, "–")),
+          el("td", { title: p.next || "", dir: "auto" }, el("div", { class: "clamp-cell" }, p.next || el("span", { class: "muted" }, "–"))),
+          el("td", { class: "mono nowrap" }, p.updated ? ago(p.updated) : "–"),
+          el("td", { class: "nowrap" }, el("span", { class: "row-actions" },
+            el("button", { type: "button", class: "ghost sm", onclick: () => openProject(p) }, "Open", icon("i-right")),
+            rowActions(p))));
+      }))));
+    return;
+  }
+  list.className = "tickets" + (projects.length < 3 ? " few" : "");
   list.replaceChildren(...projects.map((p, i) => el("article", { class: "sheet ticket" },
     el("div", { class: "ticket-head" },
       el("span", { class: "jobno" }, jobNo(i)),
       el("div", { style: "flex:1;min-width:0" },
         el("h3", {}, p.title),
         p.platform ? el("div", { class: "meta" }, p.platform) : null),
-      p.team ? el("span", { class: "tag team" }, "Team") : null),
+      p.team ? el("span", { class: "tag team" }, "Team") : null,
+      rowActions(p)),
     track(p),
     p.last
       ? el("div", { class: "last" }, icon("i-clock"), el("span", {}, el("time", {}, p.last.date), " · ", p.last.title))
@@ -574,7 +760,7 @@ async function loadProjects() {
       p.links.map(linkChip)) : null,
     el("div", { class: "go" },
       el("span", { class: "note" }, p.updated ? `updated ${ago(p.updated)}` : ""),
-      el("button", { class: "primary", type: "button", onclick: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError) }, "Open", icon("i-right")),
+      el("button", { class: "primary", type: "button", onclick: () => openProject(p) }, "Open", icon("i-right")),
     ),
   )));
 }
@@ -602,6 +788,13 @@ function showError(e) {
 }
 
 // ---------- Chat ----------
+let knownModels = [];
+const modelName = (v) => knownModels.find((m) => m.value === v)?.name || v || "Default";
+const fmtTime = (ms) => {
+  const d = new Date(ms);
+  const sameDay = d.toDateString() === new Date().toDateString();
+  return d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) + (sameDay ? "" : ` ${d.toLocaleDateString([], { weekday: "short" })}`);
+};
 const QUICK = [
   { label: "Continue", hint: "Resume from the project's next step", prompt: (p) => PROMPTS.project(p) },
   { label: "Run an audit", hint: "ds-auditor on the DS and Design files", prompt: (p) => `Run the audit (ds-auditor) on the project "${p}" and report the numbers.` },
@@ -628,8 +821,9 @@ function renderChat(id) {
     removeTyping();
     if (state.busy && !state.pending.size) { typing = el("div", { class: "typing", "aria-label": "Claude is working" }, el("i"), el("i"), el("i")); log.append(typing); }
     $("#stop").hidden = !state.busy;
-    $("#status-line").textContent = state.session?.ended ? "This conversation has ended. Start a new one from Home." :
-      state.pending.size ? "Claude is waiting for your answer above." : state.busy ? "Claude is working…" : "Ready.";
+    $("#status-line").textContent = state.limit ? (state.limit.resetsAt ? `Claude is over its usage limit until ${fmtTime(state.limit.resetsAt)}. Messages you send now wait and go out then.` : "Claude is over its usage limit. Messages you send now wait until it is back.") :
+      state.pending.size ? "Claude is waiting for your answer above." : state.busy ? "Claude is working…" :
+      state.session?.ended ? "Ready. Your next message continues this same conversation." : "Ready.";
   };
 
   // Sidebar
@@ -640,6 +834,17 @@ function renderChat(id) {
     $("#side-meta").textContent = p && p.next ? `Next: ${p.next}` : "";
     $("#side-track").replaceChildren(...(p ? [track(p)] : []));
     $("#side-links").replaceChildren(...(p ? p.links.map(linkChip) : []));
+    const inputsBtn = $("#add-inputs");
+    inputsBtn.hidden = !p;
+    if (p) {
+      const count = () => api(`/api/projects/${encodeURIComponent(p.name)}/inputs`).then((r) => {
+        const n = Object.values(r.inputs).reduce((a, l) => a + l.length, 0);
+        $("#inputs-count").textContent = n ? `${n} file${n > 1 ? "s" : ""}` : "";
+      }).catch(() => {});
+      count();
+      inputsBtn.onclick = () => openInputs({ ...p, onInputs: count }, (added) =>
+        send(`I added these files to the project's Inputs folder: ${added.map((a) => `Inputs/${a}`).join(", ")}. Read them and use them (intake 0.3b / 0.3c: Brand for colors and fonts, Inspiration and Research for the direction, Screens for the existing product).`));
+    }
     const actions = $("#side-actions");
     actions.replaceChildren();
     if (p) {
@@ -666,8 +871,9 @@ function renderChat(id) {
     switch (e.type) {
       case "hello":
         log.replaceChildren();
-        Object.assign(state, { busy: false, pending: new Set(), lastShots: [], shotRows: [], toolRow: null, live: null, firstPrompt: null, session: e.session });
+        Object.assign(state, { busy: false, pending: new Set(), lastShots: [], shotRows: [], toolRow: null, live: null, firstPrompt: null, session: e.session, limit: null, limitCard: null });
         fillSide(e.session);
+        loadModels(e.session);
         break;
       case "user":
         if (!state.firstPrompt) state.firstPrompt = e.text;
@@ -737,7 +943,25 @@ function renderChat(id) {
         break;
       case "limit":
         state.live = null; state.toolRow = null;
-        add(limitCard(e));
+        state.limit = e;
+        // One card per limit: a second signal for the same limit updates it instead of stacking another.
+        if (state.limitCard?.isConnected && !state.limitCard.classList.contains("done")) state.limitCard.replaceWith(state.limitCard = limitCard(e));
+        else state.limitCard = add(limitCard(e));
+        break;
+      case "held":
+        add(el("div", { class: "sys" }, e.resetsAt ? `Held until Claude is back at ${fmtTime(e.resetsAt)}.` : "Held until Claude is back."));
+        break;
+      case "resumed":
+        state.limit = null;
+        if (state.limitCard) { state.limitCard.classList.add("done"); state.limitCard.querySelector(".foot")?.remove(); }
+        add(el("div", { class: "sys ok" }, e.auto ? "Claude is back. This conversation continues from where it stopped." : "Claude is back. Write your next message to continue."));
+        break;
+      case "autoresume":
+        if (state.limit) state.limit.autoResume = e.on;
+        break;
+      case "model":
+        if ($("#model")) $("#model").value = e.model;
+        add(el("div", { class: "sys" }, `Model: ${modelName(e.model)}. Claude continues with the same conversation.`));
         break;
       case "ended":
         if (state.session) state.session.ended = true;
@@ -818,19 +1042,39 @@ function renderChat(id) {
     );
   }
 
-  // Claude's plan or rate limit ran out: offer the tool picked in Settings, or the picker.
+  // Claude's plan or rate limit ran out: the conversation waits here and continues by itself when the limit resets.
+  // Another tool can take over meanwhile (the tool picked in Settings, or the picker).
   function limitCard(e) {
     const names = { codex: "Codex", gemini: "Gemini CLI" };
     const handoffTo = async (tool) => {
       try { const r = await api(`/api/sessions/${id}/handoff`, { tool }); add(el("div", { class: "sys" }, r.message)); } catch (err) { showError(err); }
     };
-    return el("div", { class: "qcard perm" },
-      el("h4", {}, "Claude hit its usage limit."),
+    const auto = el("input", { type: "checkbox", onchange: () => api(`/api/sessions/${id}/autoresume`, { on: auto.checked }).catch(showError) });
+    auto.checked = e.autoResume !== false;
+    return el("div", { class: "qcard perm limit" },
+      el("h4", {}, e.resetsAt ? `Claude is back at ${fmtTime(e.resetsAt)}` : "Claude hit its usage limit"),
       el("p", { class: "note" }, e.message),
-      el("p", { class: "note" }, "Continue with another tool: this conversation is written to a handoff note and the tool picks up from the same step in its own window."),
+      el("label", { class: "check" }, auto, el("span", {}, "Continue this conversation by itself when Claude is back. It reads what happened meanwhile (the CHANGELOG and any other tool's work) first.")),
       el("div", { class: "foot" },
-        el("button", { type: "button", class: "ghost", onclick: () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))) }, "Pick a tool"),
+        el("button", { type: "button", class: "ghost", title: "If your limit was reset early", onclick: () => api(`/api/sessions/${id}/resume-now`, {}).catch(showError) }, icon("i-refresh"), "Try now"),
+        el("button", { type: "button", class: "ghost", onclick: () => openToolPicker(id, (r) => add(el("div", { class: "sys" }, r.message))) }, "Another tool"),
         names[e.fallback] ? el("button", { type: "button", class: "primary", onclick: () => handoffTo(e.fallback) }, icon("i-swap"), `Continue with ${names[e.fallback]}`) : null));
+  }
+
+  // Model picker under the composer: switches this conversation's model in place (setModel), same history.
+  async function loadModels(session) {
+    const wrap = $("#model-wrap");
+    const pick = $("#model");
+    try {
+      const r = await api(`/api/sessions/${id}/models`);
+      if (!r.models.length || !$("#model")) return;
+      knownModels = r.models;
+      pick.replaceChildren(...r.models.map((m) => el("option", { value: m.value, title: m.description || "" }, m.name || m.value)));
+      if (!r.models.some((m) => m.value === r.current)) pick.prepend(el("option", { value: r.current }, r.current ? modelName(r.current) : "Default"));
+      pick.value = r.current;
+      wrap.hidden = false;
+      pick.onchange = () => api(`/api/sessions/${id}/model`, { model: pick.value }).catch((err) => { showError(err); pick.value = session.model || ""; });
+    } catch {}
   }
 
   function permissionCard(e) {
