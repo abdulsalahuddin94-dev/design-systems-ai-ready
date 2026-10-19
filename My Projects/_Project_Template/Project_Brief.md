@@ -9,6 +9,7 @@ Order asked: 0.0-0.2, then Platform 1.1-1.4, then 0.3-0.8, then Path.
 | 0.1 | Project name | |
 | 0.2 | Figma links (DS file, Design files with names; connected file confirmed?) | |
 | 0.3 | Local folder (relative, with platform suffix) | `My Projects/<Project>/` |
+| 0.3e | Visual direction, Greenfield only (My brand files / style from the Style library: slug, title, category, inspired by a brand yes/no / No style, defaults) | |
 | 0.4 | Color modes (Light only / Light and Dark / Dark only) | |
 | 0.5 | Arabic / RTL | |
 | 0.6 | Fonts (Latin / Arabic) | |

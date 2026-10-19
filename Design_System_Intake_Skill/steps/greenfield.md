@@ -19,19 +19,20 @@ Reference design systems are listed in `references.json` in the Root (one entry 
 1. Ask, typed: "Please open '<entry name>' (<entry figma_url>), duplicate it into your own Figma workspace (Duplicate to your drafts, then move it to the project folder), rename it '<Project> Design System', and send me the link."
 2. Load the entry's study skills (its `folder`: Foundation_Skill first, then the component skills) as the map of what is in the file. Record the entry `id` in `Project_Brief.md` (3.1) and `status.json > reference`.
 3. **Node IDs change in a duplicate.** Find every page, component set, style and variable by **name**, never by the ids written in those skills (they belong to the original file only).
-4. Run the brand steps 3b and 3c to get the project's colors, fonts and direction, then rebrand the copy: update Primitives and Semantics, fonts, radius and spacing per the direction.
+4. Run the brand steps 3b and 3c (with the 0.3e style, when one was picked: `steps/style-library.md` 0.3e.4) to get the project's colors, fonts and direction, then rebrand the copy: update Primitives and Semantics, fonts, radius and spacing per the direction.
 5. Run **Fix on create** (section 7b) on the copy: token fixes with `tools/fix_tokens.py`, then the component gaps from each skill's `references/gaps.md` and the platform Main Skill section 9. Then continue with 3d from the first missing layer.
 
 ### 3b. Colors from the brand folder
 Look in `[Project folder]\Inputs\Brand\` (PDF brand book, logo, images, mood board).
 - Files found -> extract brand colors (dominant + accent + neutrals), build hue ramps 50-950 around each, map to Semantics per the platform naming, check contrast (text >= 4.5:1, UI >= 3:1, Light and Dark). Show the palette and the Semantic mapping, then Ask (choice): "Approve (Recommended)" / "Request changes".
-- Brand color already confirmed at 0.3c ("Use these") -> skip 3.3 and go to the contrast pre-check.
+- Brand color already confirmed at 0.3c ("Use these"), from the brand files or a 0.3e style -> skip 3.3 and go to the contrast pre-check.
 - Folder empty -> Question 3.3, typed: "I found no brand files. What is the primary / brand color (hex)? Add a secondary color too if you have one. If you have none, say so."
   If the user has none, Ask (choice): "Should I propose a palette based on the industry?" "Yes, propose one (Recommended)" / "No, I will pick a color"
 - **Brand contrast pre-check (right after the brand color is known):** run `python tools/new_foundation.py "<Project folder>" --brand "#hex" --modes <modes> --check-only` (or `ds_color.contrast`) and show the brand color against white, black and each mode's base surface. It decides how every filled button looks: e.g. `#299B48` + white text = 3.57:1, fails 4.5:1, so filled buttons need dark text or a darker brand step. Put the result and the chosen fix in the Intake Summary's Direction line.
 
 ### 3c. Design direction from the inspiration folder
 Look in `[Project folder]\Inputs\Inspiration\` (screenshots, links, Dribbble shots, competitor apps) and `[Project folder]\Inputs\Research\` (research, personas, PRDs: audience, tone, constraints).
+A style picked at 0.3e (`status.json > style`) already gives the direction: use its mapped values (`steps/style-library.md` 0.3e.4), let Inspiration and Research refine them, and skip 3.4.
 Derive and write down: corner style (sharp 0-4 / soft 6-12 / rounded 16+ / pill), density (compact / comfortable / spacious), elevation (flat / subtle shadows / layered), border use, type personality (geometric / humanist / grotesk), icon weight (outline / filled, stroke 1.5 / 2), imagery and illustration style.
 - Folder empty -> Question 3.4, Ask (choice): "I found no inspiration files. Which industry is the product in?" "SaaS" / "Fintech" / "Healthcare" / "E-commerce" (put first the one the project name or brief points to; education, government and any other industry are typed in Other)
   Derive a style from the industry (use ui-ux-pro-max and Impeccable for the direction; avoid generic AI-looking UI). From ui-ux-pro-max take only the **style**, the **anti-patterns** and the **color mood** (e.g. a dark-palette hint); ignore its landing-page patterns (hero, scroll journeys, CTA placement) and its font pairing. Intake answers always win: fonts (0.6), modes (0.4), brand color (3.3) and RTL (0.5) are never overridden by a skill's suggestion.

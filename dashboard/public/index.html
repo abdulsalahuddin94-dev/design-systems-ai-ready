@@ -9,6 +9,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="style-library.css">
 </head>
 <body>
 <!-- Icons: Lucide (ISC license, lucide.dev), redrawn inline so the dashboard needs no package. -->
@@ -86,6 +87,7 @@
     <nav class="side-nav" aria-label="Pages">
       <a href="#/" data-nav="home"><svg class="ic"><use href="#i-dashboard"/></svg>Dashboard</a>
       <a href="#/projects" data-nav="projects"><svg class="ic"><use href="#i-folder"/></svg>Projects</a>
+      <a href="#/styles" data-nav="styles"><svg class="ic"><use href="#i-palette"/></svg>Style library</a>
       <a href="#/settings" data-nav="settings"><svg class="ic"><use href="#i-settings"/></svg>Settings</a>
       <a href="docs/getting-started.html" target="_blank" rel="noopener"><svg class="ic"><use href="#i-docs"/></svg>Docs<svg class="ic ext"><use href="#i-external"/></svg></a>
     </nav>
@@ -95,6 +97,7 @@
       <button class="add-row" type="button" data-add="reference"><svg class="ic"><use href="#i-library"/></svg><span><b>Reference design system</b><small>Study a company's Figma DS</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
       <button class="add-row" type="button" data-add="icons"><svg class="ic"><use href="#i-shapes"/></svg><span><b>Icon library</b><small>A free set for new projects</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
       <button class="add-row" type="button" data-add="skill"><svg class="ic"><use href="#i-blocks"/></svg><span><b>Skill from GitHub</b><small>Checked before anything changes</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
+      <button class="add-row" type="button" data-add="style"><svg class="ic"><use href="#i-palette"/></svg><span><b>Style</b><small>A look for the Style library</small></span><svg class="ic go"><use href="#i-plus"/></svg></button>
       <p class="note">Each one ends as a pull request for review.</p>
     </section>
 
@@ -259,6 +262,38 @@
   </dialog>
 </template>
 
+<template id="tpl-styles">
+  <main class="home styles-page">
+    <header class="page-head">
+      <div>
+        <h1>Style library</h1>
+        <p class="lead">Looks a new project can start from: colors, type, radius and mood. The components keep the reference design system's structure; a style only changes how they look. Styles named after a company give the mood, never its logo, name or fonts.</p>
+      </div>
+      <p class="note" id="style-count"></p>
+    </header>
+    <div class="sl-tools">
+      <label class="sl-search"><svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><input type="search" id="style-search" placeholder="Search styles, e.g. warm, dark, fintech" aria-label="Search styles" dir="auto"></label>
+      <div class="sl-cats" id="style-cats" role="group" aria-label="Category"></div>
+    </div>
+    <div id="style-list" class="sl-grid"><p class="muted">Loading…</p></div>
+  </main>
+</template>
+
+<template id="tpl-style">
+  <dialog class="ask style-dlg" id="styledlg">
+    <form method="dialog" class="ask-form">
+      <h3 id="style-title"></h3>
+      <div class="style-meta" id="style-meta"></div>
+      <p class="note" id="style-brand-note" hidden>Inspired by a brand: the project takes its mood only. Its logo, product names, illustrations and fonts are never copied, and your own brand color wins.</p>
+      <div class="style-body" id="style-body"></div>
+      <div class="ask-buttons">
+        <button value="cancel" class="ghost">Close</button>
+        <button type="button" class="primary" id="style-use">Use for a new project</button>
+      </div>
+    </form>
+  </dialog>
+</template>
+
 <template id="tpl-add">
   <dialog class="ask add" id="adddlg">
     <form method="dialog" class="ask-form" id="add-form">
@@ -397,6 +432,7 @@
   </dialog>
 </template>
 
+<script src="style-library.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -24,6 +24,7 @@ Also adopted from the same study, outside this folder:
 | `Design_System_Intake_Skill/steps/plan-user-flows.md` | 7e.0 flow map: every screen, state and decision before the gap table | schudarin/chudarin-figma-skills |
 | `tools/design_md.py` | `DESIGN.md` + an `AGENTS.md` block per project for coding agents | MUZEEBURRAHAMAN/design-system-skills, google-labs-code/design.md format, natdexterra code export |
 | `tools/lint_token_names.cjs` + `tools/token_lint_rules.json` | Token name linter with an exit code (Fix on create, finish, Team CI) | michaelwnau/figma-design-system-engineering |
+| `Style_Library/` (138 `DESIGN.md` files, copied unchanged) + `tools/build_style_index.py` | Looks a Greenfield project can start from at intake 0.3e (`Design_System_Intake_Skill/steps/style-library.md`) and in the dashboard's Style library; look only, never structure. Added 2026-10-19; license in `licenses/plugin87_ux-ui-agent-skills.txt` | plugin87/ux-ui-agent-skills `design-systems/library/` (Copyright (c) 2026 Thientan Soparat) |
 | `tools/component_docs.py` (`behavior`, `avoid`, `props_map`, `deprecated`) | Richer Figma descriptions for agents reading them over MCP | natdexterra component-description template, design-system-ops AI component description |
 
 Not adopted: tools that write React code or treat code as the source (our Figma is the source), Component-specific token tiers, and plugin-install instructions.

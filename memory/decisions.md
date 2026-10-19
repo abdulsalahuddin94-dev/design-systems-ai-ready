@@ -132,6 +132,11 @@ updated: 2026-09-30
 ## File structure
 Follow the reference page layout (default Web entry in `references.json`): Cover, ⭐Setup, then ⭐ groups with ➜ topic pages. Foundation docs pages are always linked: ➜ Colors swatches bound to variables (Light/Dark frames use the matching mode), ➜ Typography samples use text styles bound to Typography variables.
 
+## Style library (Abdul, 2026-10-19)
+- `Style_Library/` holds 138 looks (one `DESIGN.md` each, index `styles.json` from `tools/build_style_index.py`), copied unchanged from plugin87/ux-ui-agent-skills (MIT, credited in `Workflow_References/`). Kept apart from `Reference_Library/` on purpose: a reference gives the **structure** (Figma pages, components, variants, docs), a style only the **look** (colors, type, radius, density, elevation, mood).
+- Greenfield only, intake 0.3e (`Design_System_Intake_Skill/steps/style-library.md`), after the path and before 0.3c: Ask (choice) "My brand files" (Recommended when `Inputs/Brand/` has files) / "Pick a style from the library" (category, then style) / "No style, use defaults" / Back. Brownfield, Scenario C and Code to Design never ask it. A style's hex colors become Primitives and our Semantic layer (contrast checked), its font or the free substitute it names prefills 0.6, radius / spacing / elevation snap to our scales, and every prefilled value is confirmed once in the 0.3c "Use these". Components still follow the platform's default reference DS. Brand-inspired styles: "inspired by", never the company's identity, and the client's own brand color wins. Recorded in `Project_Brief.md > 0.3e` and `status.json > style`.
+- Dashboard: a **Style library** page (filter by category, search, read a style, "Use for a new project" starts the intake with the style preselected) and **Add a style** under Add to the workflow (`/contribute`).
+
 ## Reference library (Abdul, 2026-10-01)
 - The studied design systems are a library, not one brand: `references.json` holds one entry per company and platform (Web, iOS, Android, cross-platform) with a per-platform default. Intake menus, README, skills and examples say "reference design system" and read names from the entry; no company name is hardcoded. Greenfield 3.1 offers "Start from a reference template" and lists the matching entries. Adding a company: `References.md`.
 
