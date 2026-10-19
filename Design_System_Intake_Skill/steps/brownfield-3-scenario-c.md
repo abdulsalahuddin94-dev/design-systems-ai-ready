@@ -10,16 +10,16 @@ Use this path when a design system already exists but is not AI-ready (missing s
 
 ### Step 1 - Understand the DS (Variable Map)
 1. Study the DS file (⭐Setup or its foundation pages first, then component groups; screenshot every variant in each mode).
-2. Read **every variable**: collection, modes, scopes, value per mode (Light / Dark), alias target (which Primitive it points to), description, and **where it is used** inside the DS components (which component, which layer, which property: fill, stroke, text, gap, radius...). Export them first (section 7b step 1) so the data is in `data/source/`.
-3. Infer each variable's purpose from, in this order: the user's references, its name and group, its scopes, where DS components use it, and its values across modes.
+2. Read **every variable**: collection, modes, scopes, value per mode (Light / Dark), alias target (which Primitive it points to), description, and **where it is used** inside the DS components (which component, which layer, which property: fill, stroke, text, gap, radius...). Export them first (section 7b step 1) so the data is in `data/source/`. Then read **how every linked Design file uses it** (read only, nothing is changed): on how many screens and layers, and on which property (e.g. `color/surface/raised` as the fill of card frames on 38 screens). The Design files show what the live product really does with each variable.
+3. Infer each variable's purpose from, in this order: the user's references, its name and group, its scopes, where DS components use it, where the Design files use it, and its values across modes. A variable used for one clear purpose across the screens gains confidence even with an unclear name; one used for conflicting purposes across the screens loses confidence and is noted for the step 3 audit.
 4. Write the **Variable Map** to `<Project folder>/audits/<date>-variable-map.md`, one row per variable:
 
-   | Variable | Collection / modes | Value (Light / Dark) | Alias | Scopes | Used in (component > layer > property) | Inferred usage | Confidence |
-   |---|---|---|---|---|---|---|---|
+   | Variable | Collection / modes | Value (Light / Dark) | Alias | Scopes | Used in (component > layer > property) | Used in Design files (screens / layers > property) | Inferred usage | Confidence |
+   |---|---|---|---|---|---|---|---|---|
 
-   Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes).
+   Confidence: **high** (name, scope and usage agree), **medium** (two of three agree), **low** (unclear name, no scope, unused or used for conflicting purposes). Usage means the DS components and the Design files together; when they disagree, the row says so.
    Then confirm the intake answers it holds (0.3c): post the color modes, RTL and fonts found in the DS (its variable modes, Arabic or RTL components, the font families of its text styles), then Ask (choice): "Use these (Recommended)" / "Change something". Record them in `Project_Brief.md` with their source.
-5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, up to 4 per AskUserQuestion call (more in further calls), one Ask (choice) per variable: "What is `<name>` for?" with the guess first, "<guess> (Recommended)" (description: <what I found>), then up to 2 other plausible usages; the real purpose is typed in Other. Record the answers in the map and in `docs/decisions.md`. Then Ask (choice): "Approve the Variable Map?" "Approve (Recommended)" / "Request changes". Abdul approves the Variable Map before step 2.
+5. Show the summary (counts per confidence) and ask Abdul **only about the low-confidence names**, up to 4 per AskUserQuestion call (more in further calls), one Ask (choice) per variable: "What is `<name>` for?" with the guess first, "<guess> (Recommended)" (description: <what I found>, including its Design file usage, e.g. "fill of card frames on 38 screens"), then up to 2 other plausible usages; the real purpose is typed in Other. Record the answers in the map and in `docs/decisions.md`. Then Ask (choice): "Approve the Variable Map?" "Approve (Recommended)" / "Request changes". Abdul approves the Variable Map before step 2.
 6. Single file (section 7g): ask 2.4 now. "Split into a library" runs the 7g migration before step 2; "Keep it in one file" runs steps 2-6 with the 7g path 1 changes (history versions instead of Publish and Accept updates).
 
 ### Step 2 - Fix the DS itself (after approval)
