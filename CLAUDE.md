@@ -50,6 +50,7 @@ Knowledge base (exact values, read these instead of re-deriving or re-reading Fi
 Subagents (`.claude/agents/`): `ds-auditor` (read-only QA after every build step and for weekly drift), `token-extractor` (Figma variables or screens to `data/tokens.json`), `docs-writer` (skills, registry and usage docs from Figma). Hooks in `.claude/settings.json` check the machine's dependencies once (`tools/dependencies.json`), block absolute paths in files and remind you to run the audit after Figma changes. Weekly drift audit definition: `.claude/scheduled/weekly-drift-audit.md` (not enabled).
 
 Reference library: studied design systems (any company, Web / iOS / Android / cross-platform), one entry per company and platform in `references.json` (folder, Figma link, Storybook, platform default); each folder has Foundation_Skill + Component_Skills + data. Never hardcode a company name in skills, intake or docs; read the entry. How to add one: `/study-reference-ds` (`References.md` > "Adding a design system", scaffold with `tools/add_reference.py`).
+Style library: `Style_Library/` (index `styles.json`) holds looks only (colors, type, radius, mood), offered at Greenfield intake 0.3e (`steps/style-library.md`); the structure always comes from the reference library. Brand-inspired styles: "inspired by", never the company's identity (`Style_Library/README.md`).
 
 ## Rules
 Abdul's standing rules live in one place: `memory/decisions.md` (imported above). This list holds only what is not there.

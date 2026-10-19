@@ -139,12 +139,12 @@ let projects = [];
 window.addEventListener("hashchange", route);
 function route() {
   const m = location.hash.match(/^#\/chat\/([\w-]+)/);
-  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : /^#\/projects/.test(location.hash) ? "projects" : "home";
+  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : /^#\/projects/.test(location.hash) ? "projects" : /^#\/styles/.test(location.hash) ? "styles" : "home";
   for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", a.dataset.nav === page);
   // Inside a project the conversation gets the whole width: the app sidebar steps aside.
   document.body.classList.toggle("focus", page === "chat");
   if (current?.es) { current.es.close(); current = null; }
-  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else if (page === "projects") renderProjects(); else renderHome();
+  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else if (page === "projects") renderProjects(); else if (page === "styles") renderStyles(); else renderHome();
 }
 
 // ---------- Settings ----------
@@ -383,6 +383,26 @@ const ADD = {
     ],
     prompt: (v) => `/contribute Add a skill from GitHub: ${v.link}.${v.why ? ` It should help with: ${v.why}.` : ""} Read it without installing it, check its license, compare it with what the workflow already covers and show me what it would add before changing anything; then adopt the useful parts (CONTRIBUTING.md section 1: adopted guide or new skill).`,
     title2: (v) => `Add skill: ${v.link.replace(/^https:\/\/github\.com\//, "")}`,
+  },
+  style: {
+    title: "Add a style",
+    need: [
+      "The style's name and a link to where it comes from: a public style guide, a repository or a site.",
+      "Its license must allow reuse (MIT or similar), or it is your own style.",
+    ],
+    steps: [
+      "Claude checks the license.",
+      "It writes Style_Library/<slug>/DESIGN.md in the same shape as the others: colors with hex, typography, components, spacing, radius, elevation, do's and don'ts.",
+      "It rebuilds the index (tools/build_style_index.py), shows you the result, then sends it as a pull request.",
+      "After it is merged, the intake and the Style library page offer it to new projects.",
+    ],
+    note: "A style is a look only: components keep the reference structure. A style named after a company says \"inspired by\" and never copies its logo or identity.",
+    fields: [
+      { name: "name", label: "Style name", placeholder: "e.g. Soft Pastel" },
+      { name: "link", label: "Link to the source", placeholder: "https://…", pattern: "https://.+" },
+    ],
+    prompt: (v) => `/contribute Add a style to the Style library: "${v.name}" (${v.link}). Check its license, write Style_Library/<slug>/DESIGN.md in the same shape as the other styles, run python tools/build_style_index.py and follow Style_Library/README.md > "Adding or updating styles".`,
+    title2: (v) => `Add style: ${v.name}`,
   },
 };
 

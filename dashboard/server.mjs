@@ -1085,6 +1085,18 @@ function sessionSummary(s) {
     model: s.model || "", limit: s.limit, held: s.held.length, autoResume: s.autoResume, agent: s.agent };
 }
 
+// ---------- Style library (Style_Library/styles.json, intake 0.3e) ----------
+const STYLE_DIR = path.join(ROOT, "Style_Library");
+function readStyles() {
+  try { return JSON.parse(fs.readFileSync(path.join(STYLE_DIR, "styles.json"), "utf8")); }
+  catch { return { count: 0, categories: [], styles: [] }; }
+}
+function readStyle(slug) {
+  const s = readStyles().styles.find((x) => x.slug === slug);
+  if (!s) return null;
+  try { return { ...s, markdown: fs.readFileSync(path.join(STYLE_DIR, s.slug, "DESIGN.md"), "utf8") }; } catch { return null; }
+}
+
 // ---------- HTTP ----------
 const MIME = { ".jpg": "image/jpeg", ".webp": "image/webp", ".html": "text/html; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".css": "text/css; charset=utf-8", ".svg": "image/svg+xml", ".png": "image/png", ".ico": "image/x-icon", ".woff2": "font/woff2" };
 
@@ -1122,6 +1134,9 @@ const server = http.createServer(async (req, res) => {
       if (!pr[2] && req.method === "DELETE") { const r = deleteProject(name); return send(res, r.ok ? 200 : 409, r); }
     }
     if (req.method === "GET" && p === "/api/workflow") return send(res, 200, workflowInfo(url.searchParams.get("fetch") === "1"));
+    if (req.method === "GET" && p === "/api/styles") return send(res, 200, readStyles());
+    const sm = req.method === "GET" && p.match(/^\/api\/styles\/([a-z0-9-]+)$/);
+    if (sm) { const s = readStyle(sm[1]); return send(res, s ? 200 : 404, s || { error: "Style not found" }); }
     if (req.method === "POST" && p === "/api/workflow/update") return send(res, 200, updateWorkflow());
     if (req.method === "GET" && p === "/api/settings") return send(res, 200, getSettings());
     if (req.method === "POST" && p === "/api/settings") { const b = await readBody(req); return send(res, 200, setSettings(b)); }

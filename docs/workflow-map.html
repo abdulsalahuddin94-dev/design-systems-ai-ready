@@ -146,6 +146,9 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
     <ol class="steps">
       <li class="you"><div><b>What do you start from?</b> (stage 3)
         <div class="opts"><span class="opt">Greenfield</span><span class="opt">Brownfield</span><span class="opt">Code to Design</span></div></div></li>
+      <li class="you"><div><b>Visual direction?</b> (Greenfield only) <span class="tag new">New</span>
+        <div class="opts"><span class="opt rec">My brand files</span><span class="opt">Pick a style from the library</span><span class="opt">No style, use defaults</span></div></div></li>
+      <li class="claude">A style (138 looks in <code>Style_Library/</code>, category then style) sets colors, fonts, radius and mood only; the components keep the reference structure. Brand-inspired styles: "inspired by", your brand color wins.</li>
       <li class="you"><div><b>Confirm what Claude found</b> in your files, the Figma file or the code: modes, RTL, fonts, icons, brand color
         <div class="opts"><span class="opt rec">Use these</span><span class="opt">Change something</span></div></div></li>
       <li class="claude">Asks only what was not found:</li>
@@ -173,7 +176,7 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
         <p>Nothing designed yet.</p>
         <ol class="steps">
           <li class="you"><div><b>Start from</b> scratch, your AI-ready DS, or a reference template</div></li>
-          <li class="claude">Reads your brand and inspiration files, or asks a brand color and industry</li>
+          <li class="claude">Reads your brand and inspiration files or the style you picked (Style library), or asks a brand color and industry</li>
           <li class="claude">Builds the DS in build order</li>
         </ol>
       </div>
@@ -327,6 +330,7 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
           <tr><td>2.4</td><td>DS inside the Design file</td><td>Split into a library / Keep one file</td></tr>
           <tr><td>2.5</td><td>Which DS for the screens? (Code to Design)</td><td>An existing DS / New DS from the code</td></tr>
           <tr><td>2.6</td><td>Which DS page may I add to?</td><td>Likely pages / new page</td></tr>
+          <tr><td>0.3e</td><td>Visual direction (Greenfield)</td><td>My brand files / Pick a style from the library (category, then style) / No style, use defaults</td></tr>
           <tr><td>0.3c</td><td>Confirm what was found</td><td>Use these / Change something</td></tr>
           <tr><td>0.4</td><td>Color modes</td><td>Light and Dark / Light only / Dark only</td></tr>
           <tr><td>0.5</td><td>Arabic / RTL?</td><td>No / Yes</td></tr>
@@ -339,12 +343,12 @@ td:first-child{font-family:var(--mono);color:var(--sel);white-space:nowrap}
           <tr><td>3.4</td><td>Industry (no inspiration files)</td><td>SaaS / Fintech / Healthcare / E-commerce</td></tr>
         </tbody>
       </table>
-      <p class="note" style="margin-top:10px">Asked in this order: 0.0, 0.1, 0.2, 1.x, 0.3, 0.3d, 0.3b, 2.x, 0.3c, then 0.4 to 0.8. Anything Claude already found in your files is confirmed, not asked.</p>
+      <p class="note" style="margin-top:10px">Asked in this order: 0.0, 0.1, 0.2, 1.x, 0.3, 0.3d, 0.3b, 2.x, 0.3e (Greenfield), 0.3c, then 0.4 to 0.8. Anything Claude already found in your files is confirmed, not asked.</p>
     </div>
   </details>
 </section>
 
-<p class="note">Source: <code>Design_System_Intake_Skill</code> on master, 11 Oct 2026. When the intake changes, update this page in the same pull request.</p>
+<p class="note">Source: <code>Design_System_Intake_Skill</code> on master, 19 Oct 2026. When the intake changes, update this page in the same pull request.</p>
 </main>
 
 <footer><span>AI-Ready Design Systems · Workflow map</span><span>Made by Abdulrahman with Claude</span></footer>
