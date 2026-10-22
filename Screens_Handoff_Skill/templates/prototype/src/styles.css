@@ -1,0 +1,34 @@
+/* Tailwind v4 without its preflight: the DS components are styled like in their Storybook, where no reset runs. */
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+/* Shell chrome follows the prototype's Light/Dark switch, not the OS. */
+@custom-variant dark (&:where(.dark, .dark *));
+/* @theme from the project's tokens (colors, spacing, radius as Tailwind names), written by tools/build_prototype.py. */
+@import './generated/theme.css';
+
+/* The project's tokens and DS styles, straight from its Storybook (modes switch through data-semantic). */
+@import '@ds/tokens/tokens.css';
+@import '@ds/styles/text-styles.css';
+@import '@ds/styles/effects.css';
+@import '@ds/styles/components.css';
+
+html, body, #root { margin: 0; height: 100%; }
+body { font-family: system-ui, sans-serif; background: #e9e9ec; color: #1b1b1f; }
+:root[data-shell='dark'] body { background: #121214; color: #e6e6ea; }
+/* Shell chrome only (no preflight runs): plain links and lists in the flow list. */
+aside a { color: inherit; text-decoration: none; }
+aside ul { list-style: none; margin: 0; padding: 0; }
+
+/* A Figma instance wrapper: the box Figma gives the instance; the DS component draws inside it. */
+.fp-inst { box-sizing: border-box; flex-shrink: 0; }
+.fp-inst[data-fill-w] > * { width: 100%; box-sizing: border-box; }
+.fp-inst[data-fill-h] > * { height: 100%; min-height: 0; box-sizing: border-box; }
+.fp-inst[data-pad] > * { padding: var(--fp-pad) !important; box-sizing: border-box; } /* instance padding override */
+.fp-frame { box-sizing: border-box; flex-shrink: 0; }
+.fp-screen { position: relative; overflow-x: hidden; overflow-y: auto; scrollbar-width: none; }
+.fp-screen::-webkit-scrollbar { display: none; }
+.fp-img { display: block; object-fit: cover; }
+
+/* Inspect mode: outline every DS instance and show its component name. */
+[data-inspect='on'] [data-component] { outline: 1px dashed rgba(255, 0, 128, 0.7); outline-offset: -1px; cursor: help; }
