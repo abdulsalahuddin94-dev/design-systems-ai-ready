@@ -447,6 +447,7 @@ def main():
     if not screens_path.exists():
         sys.exit('No %s. Run tools/screens_export.cjs first.' % screens_path)
     data = json.loads(screens_path.read_text(encoding='utf-8'))
+    make_crops(screens_path.parent)
     src_assets = screens_path.parent / 'assets'
     if src_assets.exists():
         ASSETS.update(f.name for f in src_assets.glob('*.png'))
@@ -560,6 +561,43 @@ def main():
         print('  Light and Dark frames differ in structure: ' + ', '.join(report['structure_differs']))
     print('  Raw values (no token): %d' % len(ctx.raw))
     print('Run: npm --prefix "%s" install (first time), then npm --prefix "%s" run dev' % (app, app))
+
+
+def make_crops(data_dir):
+    """Cut every image layer from its source image (data/crops.json + data/sources/, tools/screens_export.cjs), at 2x
+    the layer size: CROP uses the paint's transform, FILL a centred cover crop. Needs Pillow; without it the layers
+    keep whatever Figma export exists."""
+    crops_path = data_dir / 'crops.json'
+    if not crops_path.exists():
+        return
+    try:
+        from PIL import Image
+    except ImportError:
+        print('  ! Pillow is not installed: image crops skipped (pip install pillow)')
+        return
+    crops = json.loads(crops_path.read_text(encoding='utf-8'))
+    out_dir = data_dir / 'assets'
+    out_dir.mkdir(exist_ok=True)
+    sources, made = {}, 0
+    for node_id, c in crops.items():
+        src = data_dir / 'sources' / c['hash']
+        if not src.exists() or c.get('mode') not in ('CROP', 'FILL'):
+            continue
+        if c['hash'] not in sources:
+            sources[c['hash']] = Image.open(src).convert('RGB')
+        im = sources[c['hash']]
+        W, H = im.size
+        w, h = max(1, round(c['w'] * 2)), max(1, round(c['h'] * 2))
+        if c['mode'] == 'CROP' and c.get('t'):
+            a, _, x0, _, e, y0 = c['t']
+            box = (x0 * W, y0 * H, (x0 + a) * W, (y0 + e) * H)
+        else:  # FILL: cover, centred
+            scale = max(c['w'] / W, c['h'] / H)
+            cw, ch = c['w'] / scale, c['h'] / scale
+            box = ((W - cw) / 2, (H - ch) / 2, (W + cw) / 2, (H + ch) / 2)
+        im.crop(tuple(round(v) for v in box)).resize((w, h), Image.LANCZOS).save(out_dir / (re.sub(r'[:;]', '-', node_id) + '.png'))
+        made += 1
+    print('  %d image crops cut from %d source image(s)' % (made, len(sources)))
 
 
 def signature(n):

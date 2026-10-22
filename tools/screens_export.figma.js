@@ -51,6 +51,27 @@
 
   // OPTS.mode = 'img' / 'chunk': one image layer exported (JPG at OPTS.scale), kept in the page between calls and
   // returned as base64 in slices (FigCli's export command does not reach layers inside instances).
+  // OPTS.mode = 'crops': for each image layer (OPTS.ids) the visible image paint's hash, scale mode and transform, so
+  // the runner can cut every crop from its source image locally (Figma screenshots often use one image cropped many times).
+  if (OPTS.mode === 'crops') {
+    const out = {};
+    for (const id of OPTS.ids) {
+      const n = await figma.getNodeByIdAsync(id);
+      if (!n) continue;
+      const all = [n].concat('findAll' in n ? n.findAll((x) => x.visible !== false) : []);
+      const x = all.find((y) => Array.isArray(y.fills) && y.fills.some((f) => f.type === 'IMAGE' && f.imageHash && f.visible !== false));
+      if (!x) continue;
+      const p = x.fills.filter((f) => f.type === 'IMAGE' && f.imageHash && f.visible !== false).pop();
+      out[id] = { hash: p.imageHash, mode: p.scaleMode, t: p.imageTransform ? [].concat(...p.imageTransform) : null, w: x.width, h: x.height };
+    }
+    return JSON.stringify({ crops: out });
+  }
+  if (OPTS.mode === 'img' && OPTS.hash) {
+    const bytes = await figma.getImageByHash(OPTS.hash).getBytesAsync();
+    globalThis.__fpImg = globalThis.__fpImg || {};
+    globalThis.__fpImg[OPTS.id] = figma.base64Encode(bytes);
+    return JSON.stringify({ id: OPTS.id, len: globalThis.__fpImg[OPTS.id].length });
+  }
   if (OPTS.mode === 'img') {
     const n = await figma.getNodeByIdAsync(OPTS.id);
     if (!n) return JSON.stringify({ error: 'node not found: ' + OPTS.id });

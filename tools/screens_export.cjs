@@ -40,7 +40,13 @@ const env = Object.assign({}, process.env, { FIGMA_FILE: FILE });
 const fig = (cmdArgs, timeout = 120000) => execFileSync('node', [path.join(CLI, 'src', 'index.js'), ...cmdArgs], { env, encoding: 'utf8', timeout, maxBuffer: 64 << 20 });
 
 const SCRIPT = fs.readFileSync(path.join(__dirname, 'screens_export.figma.js'), 'utf8');
+// Figma answers slowly while its tab is hidden; each call gets up to 3 tries.
 function evalJson(opts) {
+  for (let tries = 0; ; tries++) {
+    try { return evalOnce(opts); } catch (e) { if (tries >= 2 || !/No JSON|ETIMEDOUT/.test(e.message)) throw e; }
+  }
+}
+function evalOnce(opts) {
   const tmp = path.join(os.tmpdir(), `screens_export_${process.pid}.js`);
   fs.writeFileSync(tmp, SCRIPT.replace('})(__OPTS__)', '})(' + JSON.stringify(opts) + ')'));
   const out = fig(['eval', '--file', tmp]);
@@ -108,24 +114,12 @@ const collect = (n) => {
 };
 screens.forEach((s) => collect(s.tree));
 const fileName = (id) => id.replace(/[:;]/g, '-') + '.png';
-// Image layers inside instances: exported by the eval script and read back in base64 slices (JPG data; browsers
-// read it by content, so the .png name the generator expects still works).
-// Pixel size of a PNG or JPEG buffer (enough to spot a clipped export), null when unknown.
-function imageSize(b) {
-  if (b[0] === 0x89) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
-  for (let i = 2; i < b.length - 9;) {
-    if (b[i] !== 0xff) return null;
-    const m = b[i + 1], len = b.readUInt16BE(i + 2);
-    if (m >= 0xc0 && m <= 0xc3) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
-    i += 2 + len;
-  }
-  return null;
-}
-function readImage(id, original) {
-  const head = evalJson({ mode: 'img', id, scale: 2, original: !!original });
+// Bytes from the eval script in base64 slices: an exported layer (id) or a source image (hash).
+function readImage(id, hash) {
+  const head = evalJson(hash ? { mode: 'img', id, hash } : { mode: 'img', id, scale: 2 });
   let b64 = '';
   for (let off = 0; off < head.len; off += 18000) {
-    // A slice can fail when Figma is busy; the cached export stays in the page, so retry the slice alone.
+    // A slice can fail when Figma is busy; the cached bytes stay in the page, so retry the slice alone.
     for (let tries = 0; ; tries++) {
       try { b64 += evalJson({ mode: 'chunk', id, off, keep: true }).d; break; } catch (e) { if (tries >= 2) throw e; }
     }
@@ -134,23 +128,33 @@ function readImage(id, original) {
   return Buffer.from(b64, 'base64');
 }
 if (!flag('--no-images')) {
+  // a. Crop info of every image layer (hash, scale mode, transform). Screens built from screenshots often show one
+  //    source image cropped many times; tools/build_prototype.py cuts each crop from its source, which also works for
+  //    layers clipped by a scrolling rail (Figma's own export cuts those at the parent's edge).
+  const ids = [...images.keys()];
+  const cropsPath = path.join(OUT, 'crops.json');
+  const crops = flag('--reuse') && fs.existsSync(cropsPath) ? JSON.parse(fs.readFileSync(cropsPath, 'utf8')) : {};
+  if (!Object.keys(crops).length) for (let i = 0; i < ids.length; i += 25) Object.assign(crops, evalJson({ mode: 'crops', ids: ids.slice(i, i + 25) }).crops);
+  fs.writeFileSync(cropsPath, JSON.stringify(crops, null, 1));
+  // b. Each source image once.
+  const srcDir = path.join(OUT, 'sources');
+  fs.mkdirSync(srcDir, { recursive: true });
+  const hashes = [...new Set(Object.values(crops).map((c) => c.hash))];
+  for (const h of hashes) {
+    const p = path.join(srcDir, h);
+    if (!fs.existsSync(p)) fs.writeFileSync(p, readImage('src-' + h.slice(0, 12), h));
+  }
+  // c. Layers without crop info (no image paint found): Figma's export of the layer.
   const dir = path.join(OUT, 'assets');
-  var failed = [], clipped = 0;
+  var failed = [];
   fs.mkdirSync(dir, { recursive: true });
   for (const im of images.values()) {
+    if (crops[im.id]) continue;
     const p = path.join(dir, fileName(im.id));
     if (fs.existsSync(p)) continue;
-    try {
-      // Clipped by its parent (a card half or fully outside a scrolling rail): the export is cut or fails, so the
-      // original image is used instead.
-      let buf = null;
-      try { buf = readImage(im.id); } catch (e) { buf = null; }
-      const size = buf && imageSize(buf);
-      if (!buf || (size && Math.abs(size.w / size.h - im.w / im.h) > 0.02)) { buf = readImage(im.id, true); clipped++; }
-      fs.writeFileSync(p, buf);
-    } catch (e) { failed.push(im.id + ' ' + e.message.slice(0, 80)); }
+    try { fs.writeFileSync(p, readImage(im.id)); } catch (e) { failed.push(im.id + ' ' + e.message.slice(0, 80)); }
   }
-  console.log(`  ${images.size - failed.length}/${images.size} image layers in assets/ (${clipped} clipped, taken from the original image)` + (failed.length ? ` (failed: ${failed.slice(0, 5).join(', ')}...)` : ''));
+  console.log(`  ${Object.keys(crops).length}/${images.size} image layers as crops of ${hashes.length} source image(s); ${images.size - Object.keys(crops).length - failed.length} exported` + (failed.length ? ` (failed: ${failed.slice(0, 5).join(', ')})` : ''));
 }
 if (flag('--png')) {
   const dir = path.join(OUT, 'figma');
