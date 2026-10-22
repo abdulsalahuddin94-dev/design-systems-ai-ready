@@ -70,8 +70,12 @@ class Ctx:
         return self.text_css.get(style) if style else None
 
 
+ASSETS = set()  # exported image files; an image without one is left to the component's own placeholder
+
+
 def asset_url(node_id):
-    return '/assets/' + re.sub(r'[:;]', '-', node_id) + '.png'
+    name = re.sub(r'[:;]', '-', node_id) + '.png'
+    return '/assets/' + name if name in ASSETS else None
 
 
 # ---------- adapter specs ----------
@@ -130,13 +134,15 @@ def spec_value(spec, node):
         i = int(arg) if arg else 0
         return asset_url(imgs[i]['id']) if i < len(imgs) else None
     if kind == 'img*':
-        return [asset_url(i['id']) for i in node.get('img') or []]
+        return [u for u in (asset_url(i['id']) for i in node.get('img') or []) if u]
     if kind in ('ni', 'ni*'):
         name, _, field = arg.partition('.')
         items = ni_list(node, name)
         if kind == 'ni':
             return ni_field(items[0] if items else None, field)
         return [ni_field(i, field) for i in items]
+    if kind in ('w', 'h') and not arg:
+        return round(node[kind])
     if kind == 'v':
         return (node.get('v') or {}).get(arg)
     if kind == 'p':
@@ -248,7 +254,7 @@ def emit(node, parent_layout, ctx, ind=2):
         return '%s<p className=%s%s%s>%s</p>' % (pad, js(' '.join(cls)), attr_str(attrs), style_attr(style), jsx_text(node.get('chars', '')))
 
     if t == 'R':
-        if node.get('img'):
+        if node.get('img') and asset_url(node['id']):
             return '%s<img className=%s src=%s alt=""%s%s />' % (pad, js(' '.join(cls + ['fp-img'])), js(asset_url(node['id'])), attr_str(attrs), style_attr(style))
         if node.get('f'):
             style['background'] = 'var(%s)' % ctx.var(node['f'])
@@ -274,7 +280,7 @@ def emit(node, parent_layout, ctx, ind=2):
         style['position'] = 'relative'
     if node.get('f'):
         style['background'] = 'var(%s)' % ctx.var(node['f'])
-    if node.get('img'):
+    if node.get('img') and asset_url(node['id']):
         style['backgroundImage'] = 'url(%s)' % asset_url(node['id'])
         style['backgroundSize'] = 'cover'
     if node.get('clip'):
@@ -345,7 +351,10 @@ def emit_instance(node, ctx, cls, style, attrs, click, pad):
     name = node.get('c') or node.get('n')
     attrs['data-component'] = name
     entry = ctx.cmap.get(name)
-    adapter = (ctx.adapters.get('components') or {}).get(name, {})
+    # A component's adapter, then the adapter of this layer name (e.g. "Collapse Button") on top of it.
+    adapter = dict((ctx.adapters.get('components') or {}).get(name, {}))
+    for k, v in ((ctx.adapters.get('instances') or {}).get(node.get('n'), {})).items():
+        adapter[k] = dict(adapter.get(k) or {}, **v) if isinstance(v, dict) else v
     cls.insert(0, 'fp-inst')
     if not entry or adapter.get('render') == 'image':
         if adapter.get('render') == 'image' or (not entry and node.get('img')):
@@ -369,10 +378,9 @@ def emit_instance(node, ctx, cls, style, attrs, click, pad):
         if k in drop:
             continue
         if isinstance(v, dict) and 'swap' in v:
-            # Storybook takes a swap as the nested component's variant name ("Selected=True, State=Enabled").
-            items = ni_list(node, k)
-            if items and items[0].get('v'):
-                props[k] = items[0]['v']
+            # Storybook takes a swap as the component's name (Icon/share) or, in a set, its variant name (Value=40).
+            if v.get('name'):
+                props[k] = v['name']
             continue
         props[k] = v
     for k, spec in (adapter.get('props') or {}).items():
@@ -384,7 +392,7 @@ def emit_instance(node, ctx, cls, style, attrs, click, pad):
         if isinstance(spec, dict) and 'by_index' in spec:
             table = {str(i): target_expr(t, ctx) for i, t in spec['by_index'].items()}
             body = ', '.join('%s: () => %s' % (js(i), e) for i, e in table.items())
-            raw[ev] = '(i: number) => (({%s}) as Record<string, () => void>)[String(i)]?.()' % body
+            raw[ev] = '(i: unknown) => (({%s}) as Record<string, () => void>)[String(i)]?.()' % body
         elif isinstance(spec, str):
             raw[ev] = '() => %s' % target_expr(spec, ctx)
     if click:
@@ -428,6 +436,9 @@ def main():
     if not screens_path.exists():
         sys.exit('No %s. Run tools/screens_export.cjs first.' % screens_path)
     data = json.loads(screens_path.read_text(encoding='utf-8'))
+    src_assets = screens_path.parent / 'assets'
+    if src_assets.exists():
+        ASSETS.update(f.name for f in src_assets.glob('*.png'))
 
     if a.refresh or not (app / 'package.json').exists():
         for src in TEMPLATE.rglob('*'):
@@ -449,8 +460,11 @@ def main():
 
     # One prototype screen per Figma screen; its Light and Dark frames become the mode switch.
     groups = {}
+    prefix = (data.get('page') or '') + ' / '
     for s in data['screens']:
         b = base_name(s['n'])
+        if b.startswith(prefix):
+            b = b[len(prefix):]
         g = groups.setdefault(b, {'name': b, 'frames': {}, 'section': s.get('section')})
         mode = (s.get('modes') or {}).get('Semantic') or ('Dark' if 'dark' in s['n'].lower() else 'Light')
         g['frames'][mode] = s
@@ -518,7 +532,6 @@ def main():
     idx = app / 'index.html'
     if head.exists() and '<!--FONTS-->' in idx.read_text(encoding='utf-8'):
         write(idx, idx.read_text(encoding='utf-8').replace('<!--FONTS-->', head.read_text(encoding='utf-8').strip()))
-    src_assets = screens_path.parent / 'assets'
     if src_assets.exists():
         dst = app / 'public' / 'assets'
         dst.mkdir(parents=True, exist_ok=True)

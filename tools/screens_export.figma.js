@@ -49,6 +49,23 @@
     return JSON.stringify({ file: figma.root.name, page: page.name, frames });
   }
 
+  // OPTS.mode = 'img' / 'chunk': one image layer exported (JPG at OPTS.scale), kept in the page between calls and
+  // returned as base64 in slices (FigCli's export command does not reach layers inside instances).
+  if (OPTS.mode === 'img') {
+    const n = await figma.getNodeByIdAsync(OPTS.id);
+    if (!n) return JSON.stringify({ error: 'node not found: ' + OPTS.id });
+    const bytes = await n.exportAsync({ format: OPTS.format || 'JPG', constraint: { type: 'SCALE', value: OPTS.scale || 2 } });
+    globalThis.__fpImg = globalThis.__fpImg || {};
+    globalThis.__fpImg[OPTS.id] = figma.base64Encode(bytes);
+    return JSON.stringify({ id: OPTS.id, len: globalThis.__fpImg[OPTS.id].length });
+  }
+  if (OPTS.mode === 'chunk') {
+    const s = (globalThis.__fpImg || {})[OPTS.id] || '';
+    const part = s.slice(OPTS.off, OPTS.off + 18000);
+    if (OPTS.off + 18000 >= s.length) delete globalThis.__fpImg[OPTS.id];
+    return JSON.stringify({ d: part });
+  }
+
   const root = await figma.getNodeByIdAsync(OPTS.id);
   if (!root) return JSON.stringify({ error: 'node not found: ' + OPTS.id });
 
@@ -96,15 +113,24 @@
     if (n.layoutGrow) s.grow = n.layoutGrow;
     return s;
   }
-  function propsOf(inst) {
+  // A swap holds a component id: it is given as that component's name (Icon/expand_more) or, inside a set, its
+  // variant name (Value=10), the way the Figma swap menu and the Storybook components name it.
+  const swapName = new Map();
+  async function swapOf(id) {
+    if (!swapName.has(id)) {
+      const c = await figma.getNodeByIdAsync(id);
+      swapName.set(id, !c ? null : c.parent && c.parent.type === 'COMPONENT_SET' ? { set: c.parent.name, name: c.name } : { name: c.name });
+    }
+    return swapName.get(id);
+  }
+  async function propsOf(inst) {
     const v = {}, p = {};
     const cp = inst.componentProperties || {};
     for (const k of Object.keys(cp)) {
       const name = k.replace(/#[^#]*$/, '');
       const prop = cp[k];
       if (prop.type === 'VARIANT') v[name] = prop.value;
-      // A swap holds a component id; its component and variant are read from the nested instance (ni) instead.
-      else if (prop.type === 'INSTANCE_SWAP') p[name] = { swap: prop.value };
+      else if (prop.type === 'INSTANCE_SWAP') p[name] = Object.assign({ swap: prop.value }, await swapOf(prop.value));
       else p[name] = prop.value;
     }
     return { v, p };
@@ -141,7 +167,7 @@
     return { tx, ni, img };
   }
 
-  async function nodeOf(n) {
+  async function nodeOf(n, stubKids) {
     if (n.visible === false) return null;
     const base = { id: n.id, n: n.name, x: r1(n.x), y: r1(n.y), w: r1(n.width), h: r1(n.height) };
     const s = sizingOf(n); if (Object.keys(s).length) base.s = s;
@@ -149,10 +175,10 @@
     if (n.opacity !== undefined && n.opacity < 1) base.o = r1(n.opacity);
     if (n.type === 'INSTANCE') {
       const info = await compName(n);
-      const { v, p } = propsOf(n);
+      const { v, p } = await propsOf(n);
       const content = await instanceContent(n);
       return Object.assign(base, {
-        t: 'I', c: info.c, v, p, key: info.key,
+        t: 'I', c: info.c, v, p,
         tx: Object.keys(content.tx).length ? content.tx : undefined,
         ni: Object.keys(content.ni).length ? content.ni : undefined,
         img: content.img.length ? content.img : undefined,
@@ -168,7 +194,10 @@
     }
     if ('children' in n) {
       const ch = [];
-      for (const c of n.children) { const r = await nodeOf(c); if (r) ch.push(r); }
+      for (const c of n.children) {
+        if (stubKids) { if (c.visible !== false) ch.push({ id: c.id, stub: true }); continue; }
+        const r = await nodeOf(c); if (r) ch.push(r);
+      }
       const rad = n.boundVariables && (n.boundVariables.topLeftRadius || n.boundVariables.cornerRadius);
       return Object.assign(base, {
         t: 'F', l: await layoutOf(n), f: (await fillToken(n)) || undefined, clip: n.clipsContent || undefined,
@@ -179,7 +208,16 @@
     return Object.assign(base, { t: 'R', f: (await fillToken(n)) || undefined, img: hasImage(n) || undefined });
   }
 
+  // OPTS.shallow: the frame with its children as stubs ({id, stub}); the runner then reads each child on its own.
+  if (OPTS.shallow) {
+    const tree = await nodeOf(root, true);
+    if (OPTS.mode === 'node') return JSON.stringify({ tree });
+    let modes = await modesOf(root);
+    if (!Object.keys(modes).length && root.parent && root.parent.type === 'SECTION') modes = await modesOf(root.parent);
+    return JSON.stringify({ id: root.id, n: root.name, modes, tree });
+  }
   const tree = await nodeOf(root);
+  if (OPTS.mode === 'node') return JSON.stringify({ tree });
   let modes = await modesOf(root);
   if (!Object.keys(modes).length && root.parent && root.parent.type === 'SECTION') modes = await modesOf(root.parent);
   return JSON.stringify({ id: root.id, n: root.name, modes, tree });

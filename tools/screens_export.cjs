@@ -42,19 +42,35 @@ const fig = (cmdArgs, timeout = 120000) => execFileSync('node', [path.join(CLI, 
 const SCRIPT = fs.readFileSync(path.join(__dirname, 'screens_export.figma.js'), 'utf8');
 function evalJson(opts) {
   const tmp = path.join(os.tmpdir(), `screens_export_${process.pid}.js`);
-  fs.writeFileSync(tmp, SCRIPT.replace('__OPTS__', JSON.stringify(opts)));
+  fs.writeFileSync(tmp, SCRIPT.replace('})(__OPTS__)', '})(' + JSON.stringify(opts) + ')'));
   const out = fig(['eval', '--file', tmp]);
   fs.unlinkSync(tmp);
+  if (out.length >= 19900) return { tooLong: true };
   // FigCli may wrap the result or append notes: keep the outer JSON object only.
   const a = out.indexOf('{'), b = out.lastIndexOf('}');
   if (a < 0 || b < a) throw new Error('No JSON from Figma:\n' + out.slice(0, 500));
-  let txt = out.slice(a, b + 1);
   let res;
-  try { res = JSON.parse(txt); } catch (e) { res = JSON.parse(JSON.parse('"' + txt.replace(/^"|"$/g, '') + '"')); }
+  try { res = JSON.parse(out.slice(a, b + 1)); } catch (e) { throw new Error('Unreadable JSON from Figma:\n' + out.slice(0, 300)); }
   if (typeof res === 'string') res = JSON.parse(res);
-  if (out.length >= 19900) throw new Error('FigCli output reached its 20,000-character limit; export fewer nodes per call');
   if (res.error) throw new Error(res.error);
   return res;
+}
+
+// A screen or node too big for one FigCli answer is read shallow (children as stubs), then child by child.
+let calls = 0;
+function readNode(opts) {
+  calls++;
+  const full = evalJson(opts);
+  if (!full.tooLong) return full;
+  const top = evalJson(Object.assign({}, opts, { shallow: true }));
+  calls++;
+  if (top.tooLong) throw new Error('Node ' + opts.id + ' is too big even without its children');
+  const fill = (n) => {
+    if (!n.ch) return;
+    n.ch = n.ch.map((c) => (c.stub ? readNode({ mode: 'node', id: c.id }).tree : c));
+  };
+  fill(top.tree);
+  return top;
 }
 
 // 1. File check + list of screens.
@@ -69,12 +85,16 @@ fs.mkdirSync(OUT, { recursive: true });
 const screens = [];
 for (const f of frames) {
   const t0 = Date.now();
-  const s = evalJson({ mode: 'screen', id: f.id });
+  calls = 0;
+  const s = readNode({ mode: 'screen', id: f.id });
   s.section = f.section; s.w = f.w; s.h = f.h;
   if (!Object.keys(s.modes || {}).length) s.modes = f.modes;
   screens.push(s);
-  console.log(`  ${f.n} (${f.id}) ${Math.round((Date.now() - t0) / 100) / 10}s`);
+  console.log(`  ${f.n} (${f.id}) ${Math.round((Date.now() - t0) / 100) / 10}s, ${calls} call(s)`);
 }
+const out = { file: list.file, page: list.page, exported_at: new Date().toISOString(), screens };
+fs.writeFileSync(path.join(OUT, 'screens.json'), JSON.stringify(out, null, 1));
+console.log('Wrote', path.join(OUT, 'screens.json'));
 
 // 3. Images (artwork photos) and, with --png, the screen frames themselves.
 const images = new Map();
@@ -85,23 +105,33 @@ const collect = (n) => {
 };
 screens.forEach((s) => collect(s.tree));
 const fileName = (id) => id.replace(/[:;]/g, '-') + '.png';
+// Image layers inside instances: exported by the eval script and read back in base64 slices (JPG data; browsers
+// read it by content, so the .png name the generator expects still works).
+function readImage(id) {
+  const head = evalJson({ mode: 'img', id, scale: 2 });
+  let b64 = '';
+  for (let off = 0; off < head.len; off += 18000) b64 += evalJson({ mode: 'chunk', id, off }).d;
+  if (b64.length !== head.len) throw new Error(`image ${id}: got ${b64.length} of ${head.len}`);
+  return Buffer.from(b64, 'base64');
+}
 if (!flag('--no-images')) {
   const dir = path.join(OUT, 'assets');
+  var failed = [];
   fs.mkdirSync(dir, { recursive: true });
   for (const im of images.values()) {
     const p = path.join(dir, fileName(im.id));
     if (fs.existsSync(p)) continue;
-    fig(['export', 'node', im.id, '-o', p, '-s', '2']);
+    try { fs.writeFileSync(p, readImage(im.id)); } catch (e) { failed.push(im.id + ' ' + e.message.slice(0, 80)); }
   }
-  console.log(`  ${images.size} image layers in assets/`);
+  console.log(`  ${images.size - failed.length}/${images.size} image layers in assets/` + (failed.length ? ` (failed: ${failed.slice(0, 5).join(', ')}...)` : ''));
 }
 if (flag('--png')) {
   const dir = path.join(OUT, 'figma');
   fs.mkdirSync(dir, { recursive: true });
-  for (const s of screens) fig(['export', 'node', s.id, '-o', path.join(dir, fileName(s.id)), '-s', '1']);
+  for (const s of screens) {
+    const p = path.join(dir, fileName(s.id));
+    if (fs.existsSync(p)) continue;
+    try { fig(['export', 'node', s.id, '-o', p, '-s', '1'], 120000); } catch (e) { console.log('  ! screen PNG failed:', s.n); }
+  }
   console.log(`  ${screens.length} screen PNGs in figma/`);
 }
-
-const out = { file: list.file, page: list.page, exported_at: new Date().toISOString(), screens };
-fs.writeFileSync(path.join(OUT, 'screens.json'), JSON.stringify(out, null, 1));
-console.log('Wrote', path.join(OUT, 'screens.json'));
