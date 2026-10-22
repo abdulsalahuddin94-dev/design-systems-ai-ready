@@ -23,6 +23,48 @@ Each step ends with a report to Abdul and a go / no-go answer. Nothing moves to 
 - Compose code uses the real DS names, no raw values.
 - One comment completes the round trip prototype -> Figma -> prototype.
 
+## How step 1 runs
+
+```
+node tools/screens_export.cjs --file "<Design file>" --page <page> --png --out "My Projects/<Project>/prototype/data"
+python tools/build_prototype.py "My Projects/<Project>" --flow <flow name>
+npm --prefix "My Projects/<Project>/prototype" install      (first time)
+npm --prefix "My Projects/<Project>/prototype" run dev       (http://localhost:5190)
+node scripts/fidelity.mjs --shots <folder>                   (in the prototype folder, while dev runs)
+```
+
+`<Project>/prototype/adapters.json` (optional, project-specific) maps what the Storybook components take beyond the Figma properties (photos, nested texts) and the links between screens when the Figma file has no prototype reactions. Spec language: `tx:<layer>`, `tx*:<layer>` (all numbered copies), `img`, `ni:<layer>.c|v`, `v:<variant>`, `p:<property>`, `w:` / `h:`, `{"eq": [spec, value]}`, `{"const": x}`, `{"zip": {...}}`; events `"screen:<name>"`, `"overlay:<name>"`, `"back"`, `{"by_index": {...}}`; `instances` adapts one layer name.
+
+## Step 1 results (Music App, Listen, 2026-10-22)
+
+8 screens x Light/Dark, 0 components missing from Storybook, 0 raw values, Light and Dark frames identical in structure. Fidelity = matching pixels (pixelmatch, threshold 0.1) on the Figma frame's size:
+
+| Screen | Dark | Light |
+|---|---|---|
+| Explore - Full | 97.64% | 97.09% |
+| Explore - Viewport | 97.65% | 97.31% |
+| Search & Discover - Full | 97.95% | 97.99% |
+| Search & Discover - Viewport | 97.98% | 97.92% |
+| Library - Music | 97.99% | 97.79% |
+| Library - Podcasts | 94.42% | 93.97% |
+| Now Playing | 98.22% | 98.19% |
+| Lyrics | 96.68% | 96.55% |
+| **Average** | | **97.21%** |
+
+Round 1 was about 85% (missing photos, Section Header height). Every remaining difference is inside a Storybook component, i.e. the project's Storybook drifted from Figma; the fix belongs in the Storybook, not in the prototype:
+1. Player Utility Bar: Figma pads it 24 and aligns items to the top when it is 375 wide; Storybook centres with no padding (Now Playing, Lyrics).
+2. Track Metadata and Library Shortcut Tile: Figma wraps titles to 2 lines, Storybook truncates to 1 (Podcasts).
+3. Progress Indicator inside Podcast Episode Card: Figma shows the grey track, Storybook the lime fill.
+4. Section Header: Storybook min-height 36; Figma hugs to 24 when More is off (the prototype now takes Figma's height for every hugging instance).
+5. Top App Bar: no image prop for the profile Avatar.
+6. Now Playing title: a larger text style on a nested layer, an override the Storybook component cannot take.
+
+## Lessons from step 1
+- FigCli eval output stops at 20,000 characters: big screens are read shallow, then child by child (Explore Full = 14 calls).
+- FigCli `export node` hangs on layers inside instances, and every export (FigCli or `exportAsync`) cuts a layer at its clipping parent. Screens rebuilt from screenshots use one source image cropped many times (`scaleMode CROP`): read each layer's hash and transform, fetch each source once by hash, cut the crops locally (Pillow). Never take "the first image paint": hidden paints sit under the visible one.
+- A hidden Figma tab (another window on top, or minimized) makes node and image reads fail with "Unable to establish connection to Figma after 10 seconds"; reading image bytes by hash still works. Ask for the tab in front before image work.
+- JSX attribute strings take no escapes: strings with quotes go in `{...}`.
+
 ## Rules for the trial
 
 - All work happens in this branch's worktree; the Root stays on `master`.
