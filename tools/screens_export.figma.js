@@ -176,16 +176,27 @@
   }
 
   // Inside an instance: visible texts by layer name, nested instances (their component + variant), image layers.
+  // Also, for overrides the Storybook component takes as extra props: text style (ts) and max lines (ml) per text
+  // layer, and the names of hidden nested layers (hid).
+  const styleName = new Map();
+  async function textStyleOf(t) {
+    if (typeof t.textStyleId !== 'string' || !t.textStyleId) return null;
+    if (!styleName.has(t.textStyleId)) { const st = await figma.getStyleByIdAsync(t.textStyleId); styleName.set(t.textStyleId, st ? st.name : null); }
+    return styleName.get(t.textStyleId);
+  }
   async function instanceContent(inst) {
-    const tx = {}, ni = {}, img = [];
+    const tx = {}, ni = {}, img = [], ts = {}, ml = {}, hid = [];
     const seen = {};
     const walk = async (n, path) => {
       for (const c of n.children || []) {
-        if (c.visible === false) continue;
+        if (c.visible === false) { hid.push(c.name); continue; }
         const key = c.name;
         if (c.type === 'TEXT') {
           const k = seen[key] ? key + '#' + (++seen[key]) : (seen[key] = 1, key);
           tx[k] = c.characters;
+          const st = await textStyleOf(c);
+          if (st) ts[k] = st;
+          if (c.maxLines) ml[k] = c.maxLines;
         } else if (c.type === 'INSTANCE') {
           const info = await compName(c);
           const k = ni[key] ? key + '#' + Object.keys(ni).filter((x) => x.split('#')[0] === key).length : key;
@@ -197,7 +208,7 @@
     };
     await walk(inst, '');
     if (hasImage(inst)) img.push({ id: inst.id, n: inst.name, w: r1(inst.width), h: r1(inst.height) });
-    return { tx, ni, img };
+    return { tx, ni, img, ts, ml, hid };
   }
 
   async function nodeOf(n, stubKids) {
@@ -215,6 +226,10 @@
         tx: Object.keys(content.tx).length ? content.tx : undefined,
         ni: Object.keys(content.ni).length ? content.ni : undefined,
         img: content.img.length ? content.img : undefined,
+        ts: Object.keys(content.ts).length ? content.ts : undefined,
+        ml: Object.keys(content.ml).length ? content.ml : undefined,
+        hid: content.hid.length ? content.hid : undefined,
+        il: await layoutOf(n),
         f: (await fillToken(n)) || undefined,
       });
     }

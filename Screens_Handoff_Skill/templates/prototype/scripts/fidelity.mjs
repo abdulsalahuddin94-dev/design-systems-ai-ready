@@ -62,10 +62,25 @@ for (const s of screens) {
       const bad = pixelmatch(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.1, includeAA: false });
       fs.writeFileSync(path.join(outDir, `${s.slug}-${mode}-diff.png`), PNG.sync.write(diff));
       row.score = Math.round((1 - bad / (a.width * a.height)) * 10000) / 100;
+      // Second score, tolerant to 1px: a differing pixel still counts when the prototype has a close colour within 1px
+      // (text anti-aliasing and sub-pixel line placement differ between Figma and the browser).
+      let bad1 = 0;
+      const near = (i, j) => Math.abs(a.data[i] - b.data[j]) + Math.abs(a.data[i + 1] - b.data[j + 1]) + Math.abs(a.data[i + 2] - b.data[j + 2]) < 60;
+      for (let y = 0; y < a.height; y++) for (let x = 0; x < a.width; x++) {
+        const i = (y * a.width + x) * 4;
+        if (diff.data[i] !== 255 || diff.data[i + 1] !== 0) continue; // pixelmatch marks a difference in red
+        let ok = false;
+        for (let dy = -1; dy <= 1 && !ok; dy++) for (let dx = -1; dx <= 1 && !ok; dx++) {
+          const xx = x + dx, yy = y + dy;
+          if (xx >= 0 && yy >= 0 && xx < a.width && yy < a.height) ok = near(i, (yy * a.width + xx) * 4);
+        }
+        if (!ok) bad1++;
+      }
+      row.score1px = Math.round((1 - bad1 / (a.width * a.height)) * 10000) / 100;
       row.size = { figma: [a.width, a.height] };
     } else row.score = null;
     report.push(row);
-    console.log(`${s.name} ${mode}: ${row.score === null ? 'no Figma export' : row.score + '%'}`);
+    console.log(`${s.name} ${mode}: ${row.score === null ? 'no Figma export' : `${row.score}% (1px-tolerant ${row.score1px}%)`}`);
     if (SHOTS) {
       await page.setViewportSize({ width: 1100, height: 1000 });
       for (const lang of ['en', 'ar']) {
@@ -80,4 +95,5 @@ for (const s of screens) {
 await browser.close();
 fs.writeFileSync(path.join(outDir, 'report.json'), JSON.stringify(report, null, 1));
 const scored = report.filter((r) => r.score !== null);
-if (scored.length) console.log(`Average ${Math.round(scored.reduce((t, r) => t + r.score, 0) / scored.length * 100) / 100}% over ${scored.length} captures`);
+const avg = (k) => Math.round(scored.reduce((t, r) => t + r[k], 0) / scored.length * 100) / 100;
+if (scored.length) console.log(`Average ${avg('score')}% (1px-tolerant ${avg('score1px')}%) over ${scored.length} captures`);

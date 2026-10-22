@@ -143,6 +143,12 @@ def spec_value(spec, node):
         return [ni_field(i, field) for i in items]
     if kind in ('w', 'h') and not arg:
         return round(node[kind])
+    if kind == 'ts':  # text style of a nested text layer
+        return (node.get('ts') or {}).get(arg)
+    if kind == 'ml':  # max lines of a nested text layer
+        return (node.get('ml') or {}).get(arg)
+    if kind == 'hid':  # is a nested layer hidden in this instance
+        return arg in (node.get('hid') or [])
     if kind == 'v':
         return (node.get('v') or {}).get(arg)
     if kind == 'p':
@@ -181,10 +187,11 @@ def style_attr(style):
         return ''
     parts = []
     for k, v in style.items():
+        key = k if IDENT.match(k) else js(k)  # CSS custom properties ("--fp-pad") need quotes
         if isinstance(v, (int, float)):
-            parts.append('%s: %s' % (k, round(v, 1)))
+            parts.append('%s: %s' % (key, round(v, 1)))
         else:
-            parts.append('%s: %s' % (k, js(v)))
+            parts.append('%s: %s' % (key, js(v)))
     return ' style={{ %s }}' % ', '.join(parts)
 
 
@@ -408,8 +415,38 @@ def emit_instance(node, ctx, cls, style, attrs, click, pad):
             raw[ev] = '() => %s' % target_expr(spec, ctx)
     if click:
         raw[adapter.get('click', 'onClick')] = click
+    pad_override(node, ctx, style, attrs)
     inner = '<%s %s />' % (export, jsx_props(props, raw))
     return '%s<div className=%s%s%s>\n%s  %s\n%s</div>' % (pad, js(' '.join(cls)), attr_str(attrs), style_attr(style), pad, inner, pad)
+
+
+def main_style(ctx, name, variant):
+    """The main component's values (data/figma-styles.json, Light) for this variant, or None."""
+    entry = ctx.figma_styles.get(name)
+    if not entry:
+        return None
+    for key, modes in entry.items():
+        pairs = dict(p.split('=', 1) for p in key.split(', ') if '=' in p)
+        if pairs and all(variant.get(k) == v for k, v in pairs.items()):
+            return modes.get('Light') or next(iter(modes.values()))
+    first = entry.get('Default') or next(iter(entry.values()))
+    return first.get('Light') or next(iter(first.values()))
+
+
+def pad_override(node, ctx, style, attrs):
+    """An instance whose padding differs from its main component (an instance override, e.g. the Player Utility Bar
+    padded 24 in screens) passes it to the component's root through --fp-pad, with the bound Spacing tokens."""
+    il = node.get('il')
+    main = main_style(ctx, node.get('c'), node.get('v') or {})
+    if not il or not main or main.get('paddingTop') is None:
+        return
+    mine = il.get('p') or [0, 0, 0, 0]
+    theirs = [main.get('paddingTop'), main.get('paddingRight'), main.get('paddingBottom'), main.get('paddingLeft')]
+    if [round(v or 0) for v in mine] == [round(v or 0) for v in theirs]:
+        return
+    toks = il.get('pt') or [None] * 4
+    style['--fp-pad'] = ' '.join('var(%s)' % ctx.var(t) if t else '%spx' % round(v) for v, t in zip(mine, toks))
+    attrs['data-pad'] = ''
 
 
 # ---------- build ----------
@@ -469,6 +506,8 @@ def main():
     adapters_path = app / 'adapters.json'
     adapters = json.loads(adapters_path.read_text(encoding='utf-8')) if adapters_path.exists() else {}
     ctx = Ctx(project, data, adapters, cmap, var_css, text_css)
+    styles_path = project / 'data' / 'figma-styles.json'
+    ctx.figma_styles = json.loads(styles_path.read_text(encoding='utf-8')).get('components', {}) if styles_path.exists() else {}
 
     # One prototype screen per Figma screen; its Light and Dark frames become the mode switch.
     groups = {}

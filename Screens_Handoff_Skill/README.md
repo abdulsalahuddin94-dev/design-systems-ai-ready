@@ -59,6 +59,24 @@ Round 1 was about 85% (missing photos, Section Header height). Every remaining d
 5. Top App Bar: no image prop for the profile Avatar.
 6. Now Playing title: a larger text style on a nested layer, an override the Storybook component cannot take.
 
+### After fixing the 6 gaps in the project Storybook (2026-10-22, Abdul's choice)
+
+Main-component gaps fixed in the Storybook (Utility Bar items at the top, Tile label wraps, Section Header hugs, Top App Bar `image`); instance overrides carried by the export (`ts` text styles, `ml` max lines, `hid` hidden layers, `il` the instance's own auto layout) and taken by new lower-case override props, or, for padding, applied by the prototype when it differs from the main component in `data/figma-styles.json`. Storybook style check 100% (0 differences; Button strokes are now inset rings, and `tools/storybook_snap.cjs` reads such a ring as the stroke).
+
+| Screen | Dark | Light | Dark, 1px-tolerant | Light, 1px-tolerant |
+|---|---|---|---|---|
+| Explore - Full | 97.77% | 96.97% | 98.99% | 98.22% |
+| Explore - Viewport | 97.91% | 97.58% | 99.10% | 98.74% |
+| Search & Discover - Full | 97.95% | 97.99% | 99.28% | 99.27% |
+| Search & Discover - Viewport | 97.98% | 97.92% | 99.20% | 99.15% |
+| Library - Music | 98.19% | 97.97% | 98.90% | 98.65% |
+| Library - Podcasts | 94.98% | 94.65% | 97.72% | 97.30% |
+| Now Playing | 98.75% | 98.67% | 99.29% | 99.20% |
+| Lyrics | 97.84% | 97.70% | 98.61% | 98.37% |
+| **Average** | | **97.55%** | | **98.75%** |
+
+What is left is no longer a component difference: text anti-aliasing (the browser and Figma rasterize glyphs differently) and 1-2px sub-pixel line placement, which the strict score counts on every glyph edge, so text-dense screens score lowest (Library - Podcasts). The 1px-tolerant score counts a pixel as matching when the prototype has a close colour within 1px.
+
 ## Lessons from step 1
 - FigCli eval output stops at 20,000 characters: big screens are read shallow, then child by child (Explore Full = 14 calls).
 - FigCli `export node` hangs on layers inside instances, and every export (FigCli or `exportAsync`) cuts a layer at its clipping parent. Screens rebuilt from screenshots use one source image cropped many times (`scaleMode CROP`): read each layer's hash and transform, fetch each source once by hash, cut the crops locally (Pillow). Never take "the first image paint": hidden paints sit under the visible one.
