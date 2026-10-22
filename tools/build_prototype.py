@@ -165,7 +165,8 @@ def jsx_props(props, raw=None):
         if v is None:
             continue
         if IDENT.match(k):
-            simple.append('%s={%s}' % (k, js(v)) if not isinstance(v, str) else '%s=%s' % (k, js(v)))
+            plain = isinstance(v, str) and '\\' not in js(v)  # JSX attribute strings take no escapes
+            simple.append('%s=%s' % (k, js(v)) if plain else '%s={%s}' % (k, js(v)))
         else:
             spread[k] = v
     for k, expr in (raw or {}).items():
@@ -236,6 +237,11 @@ def emit(node, parent_layout, ctx, ind=2):
     click = reaction_handler(node, ctx)
 
     if t == 'I':
+        # Figma is the source of the instance's box: a hugging instance keeps the height Figma measured, so a
+        # component whose CSS differs (e.g. a min-height) cannot push the rest of the screen down.
+        if (node.get('s') or {}).get('v') == 'HUG' and 'height' not in style:
+            style['height'] = node['h']
+            attrs['data-fill-h'] = ''
         return emit_instance(node, ctx, cls, style, attrs, click, pad)
 
     attrs['data-figma-name'] = node.get('n')
@@ -268,9 +274,12 @@ def emit(node, parent_layout, ctx, ind=2):
         if lay.get('wr') is not None:
             cls.append('flex-wrap')
         cls += [c for c in (JUSTIFY.get(lay.get('pa')), ALIGN.get(lay.get('ca'))) if c]
-        g = spacing_class('gap', lay.get('g') if lay.get('pa') != 'SPACE_BETWEEN' else 0, lay.get('gt'), ctx)
+        horiz = lay['m'] == 'HORIZONTAL'
+        g = spacing_class('gap-x' if horiz else 'gap-y', lay.get('g') if lay.get('pa') != 'SPACE_BETWEEN' else 0, lay.get('gt'), ctx)
         if g:
             cls.append(g)
+        if lay.get('wr'):  # wrapped rows: Figma's counter-axis spacing
+            cls.append(spacing_class('gap-y', lay['wr'], lay.get('wt'), ctx))
         pt = lay.get('pt') or [None] * 4
         for side, value, token in zip(SIDES, lay.get('p') or [0] * 4, pt):
             c = spacing_class(side, value, token, ctx)
@@ -310,6 +319,8 @@ def attr_str(attrs):
             out.append(' onClick={%s}' % v)
         elif v == '':
             out.append(' %s=""' % k)
+        elif '\\' in js(v):
+            out.append(' %s={%s}' % (k, js(v)))
         else:
             out.append(' %s=%s' % (k, js(v)))
     return ''.join(out)

@@ -80,10 +80,11 @@ let frames = list.frames;
 if (ONLY.length) frames = frames.filter((f) => ONLY.some((o) => f.n.includes(o)));
 console.log(`${list.file} > ${list.page}: ${frames.length} screens`);
 
-// 2. One eval per screen.
+// 2. One eval per screen (--reuse keeps an existing screens.json and only fetches missing images / PNGs).
 fs.mkdirSync(OUT, { recursive: true });
-const screens = [];
-for (const f of frames) {
+const reuse = flag('--reuse') && fs.existsSync(path.join(OUT, 'screens.json'));
+const screens = reuse ? JSON.parse(fs.readFileSync(path.join(OUT, 'screens.json'), 'utf8')).screens : [];
+for (const f of reuse ? [] : frames) {
   const t0 = Date.now();
   calls = 0;
   const s = readNode({ mode: 'screen', id: f.id });
@@ -92,9 +93,11 @@ for (const f of frames) {
   screens.push(s);
   console.log(`  ${f.n} (${f.id}) ${Math.round((Date.now() - t0) / 100) / 10}s, ${calls} call(s)`);
 }
-const out = { file: list.file, page: list.page, exported_at: new Date().toISOString(), screens };
-fs.writeFileSync(path.join(OUT, 'screens.json'), JSON.stringify(out, null, 1));
-console.log('Wrote', path.join(OUT, 'screens.json'));
+if (!reuse) {
+  const out = { file: list.file, page: list.page, exported_at: new Date().toISOString(), screens };
+  fs.writeFileSync(path.join(OUT, 'screens.json'), JSON.stringify(out, null, 1));
+  console.log('Wrote', path.join(OUT, 'screens.json'));
+}
 
 // 3. Images (artwork photos) and, with --png, the screen frames themselves.
 const images = new Map();
@@ -107,23 +110,47 @@ screens.forEach((s) => collect(s.tree));
 const fileName = (id) => id.replace(/[:;]/g, '-') + '.png';
 // Image layers inside instances: exported by the eval script and read back in base64 slices (JPG data; browsers
 // read it by content, so the .png name the generator expects still works).
-function readImage(id) {
-  const head = evalJson({ mode: 'img', id, scale: 2 });
+// Pixel size of a PNG or JPEG buffer (enough to spot a clipped export), null when unknown.
+function imageSize(b) {
+  if (b[0] === 0x89) return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  for (let i = 2; i < b.length - 9;) {
+    if (b[i] !== 0xff) return null;
+    const m = b[i + 1], len = b.readUInt16BE(i + 2);
+    if (m >= 0xc0 && m <= 0xc3) return { h: b.readUInt16BE(i + 5), w: b.readUInt16BE(i + 7) };
+    i += 2 + len;
+  }
+  return null;
+}
+function readImage(id, original) {
+  const head = evalJson({ mode: 'img', id, scale: 2, original: !!original });
   let b64 = '';
-  for (let off = 0; off < head.len; off += 18000) b64 += evalJson({ mode: 'chunk', id, off }).d;
+  for (let off = 0; off < head.len; off += 18000) {
+    // A slice can fail when Figma is busy; the cached export stays in the page, so retry the slice alone.
+    for (let tries = 0; ; tries++) {
+      try { b64 += evalJson({ mode: 'chunk', id, off, keep: true }).d; break; } catch (e) { if (tries >= 2) throw e; }
+    }
+  }
   if (b64.length !== head.len) throw new Error(`image ${id}: got ${b64.length} of ${head.len}`);
   return Buffer.from(b64, 'base64');
 }
 if (!flag('--no-images')) {
   const dir = path.join(OUT, 'assets');
-  var failed = [];
+  var failed = [], clipped = 0;
   fs.mkdirSync(dir, { recursive: true });
   for (const im of images.values()) {
     const p = path.join(dir, fileName(im.id));
     if (fs.existsSync(p)) continue;
-    try { fs.writeFileSync(p, readImage(im.id)); } catch (e) { failed.push(im.id + ' ' + e.message.slice(0, 80)); }
+    try {
+      // Clipped by its parent (a card half or fully outside a scrolling rail): the export is cut or fails, so the
+      // original image is used instead.
+      let buf = null;
+      try { buf = readImage(im.id); } catch (e) { buf = null; }
+      const size = buf && imageSize(buf);
+      if (!buf || (size && Math.abs(size.w / size.h - im.w / im.h) > 0.02)) { buf = readImage(im.id, true); clipped++; }
+      fs.writeFileSync(p, buf);
+    } catch (e) { failed.push(im.id + ' ' + e.message.slice(0, 80)); }
   }
-  console.log(`  ${images.size - failed.length}/${images.size} image layers in assets/` + (failed.length ? ` (failed: ${failed.slice(0, 5).join(', ')}...)` : ''));
+  console.log(`  ${images.size - failed.length}/${images.size} image layers in assets/ (${clipped} clipped, taken from the original image)` + (failed.length ? ` (failed: ${failed.slice(0, 5).join(', ')}...)` : ''));
 }
 if (flag('--png')) {
   const dir = path.join(OUT, 'figma');

@@ -54,7 +54,18 @@
   if (OPTS.mode === 'img') {
     const n = await figma.getNodeByIdAsync(OPTS.id);
     if (!n) return JSON.stringify({ error: 'node not found: ' + OPTS.id });
-    const bytes = await n.exportAsync({ format: OPTS.format || 'JPG', constraint: { type: 'SCALE', value: OPTS.scale || 2 } });
+    let bytes;
+    if (OPTS.original) {
+      // A layer clipped by its parent exports only its visible part: take the image fill's own bytes instead.
+      // The topmost visible image paint (a layer can keep hidden image paints under the one that shows).
+      const shown = (x) => Array.isArray(x.fills) ? x.fills.filter((f) => f.type === 'IMAGE' && f.imageHash && f.visible !== false) : [];
+      const withImg = [n].concat('findAll' in n ? n.findAll((x) => x.visible !== false) : []).find((x) => shown(x).length);
+      const paint = withImg && shown(withImg).pop();
+      if (!paint) return JSON.stringify({ error: 'no image fill: ' + OPTS.id });
+      bytes = await figma.getImageByHash(paint.imageHash).getBytesAsync();
+    } else {
+      bytes = await n.exportAsync({ format: OPTS.format || 'JPG', constraint: { type: 'SCALE', value: OPTS.scale || 2 } });
+    }
     globalThis.__fpImg = globalThis.__fpImg || {};
     globalThis.__fpImg[OPTS.id] = figma.base64Encode(bytes);
     return JSON.stringify({ id: OPTS.id, len: globalThis.__fpImg[OPTS.id].length });
@@ -62,7 +73,7 @@
   if (OPTS.mode === 'chunk') {
     const s = (globalThis.__fpImg || {})[OPTS.id] || '';
     const part = s.slice(OPTS.off, OPTS.off + 18000);
-    if (OPTS.off + 18000 >= s.length) delete globalThis.__fpImg[OPTS.id];
+    if (OPTS.off + 18000 >= s.length && !OPTS.keep) delete globalThis.__fpImg[OPTS.id];
     return JSON.stringify({ d: part });
   }
 
@@ -104,6 +115,7 @@
       m: n.layoutMode, g: n.itemSpacing, gt: (await tok('itemSpacing')) || undefined,
       p: [n.paddingTop, n.paddingRight, n.paddingBottom, n.paddingLeft], pt: pt.some(Boolean) ? pt : undefined,
       pa: n.primaryAxisAlignItems, ca: n.counterAxisAlignItems, wr: n.layoutWrap === 'WRAP' ? n.counterAxisSpacing : undefined,
+      wt: n.layoutWrap === 'WRAP' ? (await tok('counterAxisSpacing')) || undefined : undefined,
     };
   }
   function sizingOf(n) {
