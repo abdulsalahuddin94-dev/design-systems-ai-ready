@@ -8,7 +8,7 @@ Reads   <project>/prototype/data/screens.json  (tools/screens_export.cjs)
         <project>/storybook/component-map.json (Figma component name -> Storybook React export)
         <project>/storybook/src/tokens/tokens.css, styles/text-styles.css (CSS names of tokens and text styles)
 Writes  <project>/prototype/ (a copy of Screens_Handoff_Skill/templates/prototype/ on the first run or with --refresh,
-        node_modules kept), src/generated/screens/*.tsx, routes.ts, theme.css, ds.config.json, public/assets/.
+        node_modules kept), src/generated/screens/*.tsx, routes.ts, theme.css, ds.config.json, public/figma-img/.
 
 The prototype reuses the project's Storybook components through the @ds alias; it never re-creates a component.
 Every element carries data-figma-node (Figma node id); every DS instance also data-component (its Figma name).
@@ -75,7 +75,8 @@ ASSETS = set()  # exported image files; an image without one is left to the comp
 
 def asset_url(node_id):
     name = re.sub(r'[:;]', '-', node_id) + '.png'
-    return '/assets/' + name if name in ASSETS else None
+    # Relative to the page, so the same build works at / (dev) and under a sub-path (GitHub Pages).
+    return 'figma-img/' + name if name in ASSETS else None
 
 
 # ---------- adapter specs ----------
@@ -584,7 +585,7 @@ def main():
     if head.exists() and '<!--FONTS-->' in idx.read_text(encoding='utf-8'):
         write(idx, idx.read_text(encoding='utf-8').replace('<!--FONTS-->', head.read_text(encoding='utf-8').strip()))
     if src_assets.exists():
-        dst = app / 'public' / 'assets'
+        dst = app / 'public' / 'figma-img'
         dst.mkdir(parents=True, exist_ok=True)
         for f in src_assets.glob('*.png'):
             shutil.copy2(f, dst / f.name)

@@ -18,7 +18,7 @@ Each step ends with a report to Abdul and a go / no-go answer. Nothing moves to 
 
 ## Success criteria
 
-- Fidelity **>= 98%** per screen on the Music App Listen screens (prototype vs Figma export, same size and mode).
+- Fidelity **>= 98%** per screen on the Music App Listen screens (prototype vs Figma export, same size and mode), measured with the **1px-tolerant score** (Abdul, 2026-10-22): a pixel matches when the prototype has a close colour within 1px, so browser text anti-aliasing and sub-pixel line placement do not count as design differences. The strict score (pixelmatch, threshold 0.1) is always reported next to it. Both come from `scripts/fidelity.mjs`.
 - Light and Dark, EN and AR (RTL) all render correctly.
 - Compose code uses the real DS names, no raw values.
 - One comment completes the round trip prototype -> Figma -> prototype.
@@ -31,7 +31,11 @@ python tools/build_prototype.py "My Projects/<Project>" --flow <flow name>
 npm --prefix "My Projects/<Project>/prototype" install      (first time)
 npm --prefix "My Projects/<Project>/prototype" run dev       (http://localhost:5190)
 node scripts/fidelity.mjs --shots <folder>                   (in the prototype folder, while dev runs)
+node scripts/check_live.mjs --url <local or live URL>         (every screen x mode x language, desktop + phone, navigation, Inspect)
+node tools/publish_prototype.cjs "My Projects/<Project>" --repo <owner>/<name> [--create]
 ```
+
+Step 2 (publish): `tools/publish_prototype.cjs` builds for the repo's sub-path, refuses to publish anything that looks like a secret, pushes the build to the `gh-pages` branch (normal commit, never a force push; no Actions workflow, so no `workflow` token scope), turns Pages on and prints the URL. `--create` makes a public repo with a short README, only after the user's yes. At phone width the prototype drops the phone frame, shows a screen picker and scales the screen to the width; Inspect works by tap.
 
 `<Project>/prototype/adapters.json` (optional, project-specific) maps what the Storybook components take beyond the Figma properties (photos, nested texts) and the links between screens when the Figma file has no prototype reactions. Spec language: `tx:<layer>`, `tx*:<layer>` (all numbered copies), `img`, `ni:<layer>.c|v`, `v:<variant>`, `p:<property>`, `w:` / `h:`, `{"eq": [spec, value]}`, `{"const": x}`, `{"zip": {...}}`; events `"screen:<name>"`, `"overlay:<name>"`, `"back"`, `{"by_index": {...}}`; `instances` adapts one layer name.
 
