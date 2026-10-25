@@ -38,3 +38,12 @@ aside ul { list-style: none; margin: 0; padding: 0; }
 @layer base {
   [data-code-panel] button, [data-toolbar] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
 }
+
+/* AR: icons that point a direction mirror (back, lists, lyrics); media playback controls and their progress bar stay
+   left to right, as in Material's bidirectionality guidance (play, next and previous follow the tape, not the text). */
+.fp-screen[dir='rtl'] svg[data-icon='arrow_back'],
+.fp-screen[dir='rtl'] svg[data-icon='queue_music'],
+.fp-screen[dir='rtl'] svg[data-icon='lyrics'],
+.fp-screen[dir='rtl'] svg[data-icon='sort'] { transform: scaleX(-1); }
+.fp-screen[dir='rtl'] [data-component='Playback Controls'],
+.fp-screen[dir='rtl'] [data-component='Playback Progress'] { direction: ltr; }

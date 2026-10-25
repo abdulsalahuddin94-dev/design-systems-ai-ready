@@ -6,6 +6,7 @@ import React from 'react';
 import { SCREENS, FLOWS, MODES, DEVICE, PROJECT } from '../generated/routes';
 import { useRoute, href, go } from './nav';
 import { CodePanel } from './CodePanel';
+import { useScreenLanguage } from './i18n';
 
 // Toolbar (shell chrome, the same dark bar in Light and Dark): segmented Light/Dark and EN/AR, Inspect and Code toggles.
 const ICONS: Record<string, React.ReactNode> = {
@@ -57,8 +58,10 @@ const Divider = () => <span aria-hidden="true" className="mx-1 h-5 w-px shrink-0
 function ScreenView({ slug, mode, lang, bare, height }: { slug: string; mode: string; lang: string; bare: boolean; height?: number }) {
   const def = SCREENS.find((s) => s.slug === slug) || SCREENS[0];
   const Comp = def.Component;
+  const ref = React.useRef<HTMLDivElement>(null);
+  useScreenLanguage(ref, lang, def.slug);
   return (
-    <div className="fp-screen" data-semantic={mode} dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang} data-screen={def.slug}
+    <div ref={ref} className="fp-screen" data-semantic={mode} dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang} data-screen={def.slug}
       style={{ width: def.w, height: bare ? def.h : Math.min(def.h, height ?? DEVICE.viewport), overflowY: bare ? 'hidden' : 'auto' }}>
       <Comp />
     </div>

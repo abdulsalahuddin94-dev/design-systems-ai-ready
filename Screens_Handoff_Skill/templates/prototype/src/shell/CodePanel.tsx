@@ -7,7 +7,18 @@ import React from 'react';
 type PlatformCode = { label: string; ext: string; code: string; ranges: Record<string, [number, number]> };
 type ScreenCode = { screen: string; slug: string; order?: string[]; platforms: Record<string, PlatformCode>; check?: { unknown: number; raw: number } };
 
-const SHORT: Record<string, string> = { compose: 'Compose', swiftui: 'SwiftUI', flutter: 'Flutter', 'react-native': 'React Native', web: 'React' };
+const SHORT: Record<string, string> = { compose: 'Compose', swiftui: 'SwiftUI', flutter: 'Flutter', 'react-native': 'React Native', web: 'React', strings: 'Strings' };
+
+// Arabic inside a left-to-right code line: each string literal with RTL text is isolated (<bdi>), so its quotes and
+// the punctuation after it stay in place. Display only: Copy takes the code text as it is, with no control characters.
+const RTL = /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/;
+function codeLine(l: string): React.ReactNode {
+  if (!RTL.test(l)) return l || ' ';
+  return l.split(/("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*')/).map((part, i) =>
+    i % 2 && RTL.test(part)
+      ? <React.Fragment key={i}>{part[0]}<bdi>{part.slice(1, -1)}</bdi>{part[part.length - 1]}</React.Fragment>
+      : part);
+}
 const cache: Record<string, Promise<ScreenCode | null>> = {};
 function loadCode(slug: string) {
   if (!cache[slug]) {
@@ -126,7 +137,7 @@ export function CodePanel({ slug, picked, narrow, onClose }: { slug: string; pic
                   <div key={n} data-line={n} data-hl={on ? '' : undefined}
                     className={`flex gap-3 px-2 ${on ? 'bg-amber-300/30 shadow-[inset_3px_0_0_#d97706] dark:bg-amber-400/15' : ''}`}>
                     <span aria-hidden="true" className="w-7 shrink-0 select-none text-right opacity-40">{n}</span>
-                    <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">{l || ' '}</span>
+                    <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">{codeLine(l)}</span>
                   </div>
                 );
               })}

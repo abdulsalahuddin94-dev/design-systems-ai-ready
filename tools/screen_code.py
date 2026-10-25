@@ -26,6 +26,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import platform_names as pn  # noqa: E402
 from build_prototype import base_name, slugify, parse_css_names, tx_list  # noqa: E402
+import prototype_strings  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 PLATFORMS = pn.SCREEN_PLATFORMS
@@ -143,7 +144,7 @@ class DS:
 class Ctx:
     def __init__(self, ds, slug_by_id, slug_by_name):
         self.ds, self.slug_by_id, self.slug_by_name = ds, slug_by_id, slug_by_name
-        self.unknown, self.raw = [], []
+        self.unknown, self.raw, self.snapped = [], [], []
 
     def tok(self, name, where):
         if not name:
@@ -189,7 +190,33 @@ def ir_frame(node, ctx, parent_axis, root=False):
     return {"kind": "stack", "id": node["id"], "name": where, "axis": axis, "gap": gap, "gap_figma": l.get("gt"),
             "pad": pad, "main": l.get("pa") or "MIN", "cross": l.get("ca") or "MIN", "fill": fill,
             "scroll": "v" if root else ("h" if overflow else None), "root": root,
-            "stretch": stretch, "grow": grow, "children": kids}
+            "stretch": stretch, "grow": grow, "children": kids,
+            "space": space_token(node, ctx, parent_axis) if not kids else None}
+
+
+def space_token(node, ctx, parent_axis):
+    """An empty fixed frame only holds space: the DS spacing (else size) token of its width in a row, height in a column."""
+    s = node.get("s") or {}
+    if parent_axis == "row" and s.get("h") != "FILL":
+        val = node.get("w")
+    elif parent_axis == "col" and s.get("v") != "FILL":
+        val = node.get("h")
+    else:
+        return None
+    if not val:
+        return None
+    for group in ("spacing", "size"):
+        for k, v in ctx.ds.variables.items():
+            if pn.token_group(v, ctx.ds.roles.get(v["collection"], "")) == group and ctx.ds.value(k) is not None                     and abs(ctx.ds.value(k) - val) < 0.5:
+                return k
+    # a one-off size snaps to the nearest spacing step (Scenario C rule), within 4
+    near = sorted((abs(ctx.ds.value(k) - val), k) for k, v in ctx.ds.variables.items()
+                  if pn.token_group(v, ctx.ds.roles.get(v["collection"], "")) == "spacing" and ctx.ds.value(k) is not None)
+    if near and near[0][0] <= 4:
+        ctx.snapped.append(f"empty frame {round(val)} -> {ctx.ds.variables[near[0][1]]['name']} ({node.get('n', '')})")
+        return near[0][1]
+    ctx.raw.append(f"empty frame {round(val)} without a spacing token ({node.get('n', '')})")
+    return None
 
 
 def ir_node(node, ctx, parent_axis):
@@ -414,6 +441,10 @@ class Renderer:
         p, kind = self.p, v[0]
         if kind == "str":
             return q(v[1], p)
+        if kind == "res":
+            self.refs.add(("string", v[1], p))
+            return {"compose": f"stringResource(R.string.{v[1]})", "swiftui": f'String(localized: "{v[1]}")',
+                    "flutter": f"AppLocalizations.of(context)!.{pn.camel(v[1], dedupe=False)}"}.get(p, f"t('{v[1]}')")
         if kind == "bool":
             return "true" if v[1] else "false"
         if kind in ("int", "lit"):
@@ -447,7 +478,8 @@ class Renderer:
         name = self.ds.comp(comp, p)
         self.used.add(comp)
         prev, self.cur = getattr(self, "cur", None), comp
-        args = [(pn.screen_prop(k, p), self.val(v, depth + 1), v) for k, v in node["args"]]
+        res = lambda v: ("res", self.ds.string_keys[v[1]]) if v[0] == "str" and v[1] in self.ds.string_keys else v  # noqa: E731
+        args = [(pn.screen_prop(k, p), self.val(res(v), depth + 1), res(v)) for k, v in node["args"]]
         args += [(pn.screen_prop(k, p), event_code(e, p), None) for k, e in node["events"]]
         self.cur = prev
         if p in ("compose", "swiftui", "flutter"):
@@ -499,9 +531,23 @@ class Renderer:
         out += [(side, k) for side, k in (("top", t), ("end", r), ("bottom", b), ("start", l)) if k]
         return out
 
-    def spacer(self, w, node, depth):
-        """An empty frame: a flexible Spacer when it fills its row / column, else nothing (it only held space)."""
+    def spacer(self, w, node, depth, parent=None):
+        """An empty frame: a flexible Spacer when it fills its row / column, a fixed one with the DS spacing token
+        of its width (in a row) or height (in a column), else nothing."""
         if not node.get("grow"):
+            k = node.get("space")
+            if not k:
+                return
+            t = self.tok(k)
+            row = parent == "row"
+            line = {
+                "compose": f"Spacer(modifier = Modifier.{'width' if row else 'height'}({t}))",
+                "swiftui": f"Spacer().frame({'width' if row else 'height'}: {t})",
+                "flutter": f"SizedBox({'width' if row else 'height'}: {t}),",
+                "react-native": f"<View style={{{{ {'width' if row else 'height'}: {t} }}}} />",
+                "web": f"<div style={{{{ {'width' if row else 'height'}: {q(t, 'web')}, flexShrink: 0 }}}} />",
+            }[self.p]
+            w.add(depth, line)
             return
         w.add(depth, {"compose": "Spacer(modifier = Modifier.weight(1f))", "swiftui": "Spacer()", "flutter": "const Spacer(),",
                       "react-native": "<View style={{ flex: 1 }} />", "web": "<div style={{ flex: 1 }} />"}[self.p])
@@ -509,7 +555,7 @@ class Renderer:
     def emit(self, w, node, depth, parent=None):
         start = len(w.lines)
         if node["kind"] == "stack" and not node["children"] and not node.get("root"):
-            self.spacer(w, node, depth)
+            self.spacer(w, node, depth, parent)
         elif node["kind"] == "stack":
             getattr(self, "stack_" + self.p.replace("-", "_"))(w, node, depth, parent)
         else:
@@ -759,7 +805,7 @@ class Renderer:
         for c in n["children"]:
             start = len(w.lines)
             if c["kind"] == "stack" and not c["children"]:
-                self.spacer(w, c, depth + 1)
+                self.spacer(w, c, depth + 1, n["axis"])
             elif c["kind"] == "stack":
                 self.stack_jsx(w, c, depth + 1, n["axis"], web, n)
             else:
@@ -820,7 +866,7 @@ def screen_file(ds, platform, ir, screen, figma_file, refs):
         head = ["// " + note, "// " + note2, "",
                 "import androidx.compose.foundation.*", "import androidx.compose.foundation.layout.*",
                 "import androidx.compose.material3.*", "import androidx.compose.runtime.Composable",
-                "import androidx.compose.ui.*", "", "@Composable", f"fun {fn}(navigate: (String) -> Unit) {{"]
+                "import androidx.compose.ui.*", "import androidx.compose.ui.res.stringResource", "", "@Composable", f"fun {fn}(navigate: (String) -> Unit) {{"]
         tail = ["}"]
     elif platform == "swiftui":
         r.emit(body, ir, 2)
@@ -832,7 +878,8 @@ def screen_file(ds, platform, ir, screen, figma_file, refs):
         body.ranges.setdefault(ir["id"], [1, len(body.lines)])
         body.lines[0] = "  " * 2 + "return " + body.lines[0].lstrip()
         body.lines[-1] += ";"
-        head = ["// " + note, "// " + note2, "", "import 'package:flutter/material.dart';", "",
+        head = ["// " + note, "// " + note2, "", "import 'package:flutter/material.dart';",
+                "import 'package:flutter_gen/gen_l10n/app_localizations.dart';", "",
                 f"class {fn} extends StatelessWidget {{", f"  const {fn}({{super.key, required this.navigate}});", "",
                 "  final void Function(String screen) navigate;", "", "  @override",
                 "  Widget build(BuildContext context) {"]
@@ -842,7 +889,7 @@ def screen_file(ds, platform, ir, screen, figma_file, refs):
         head = ["// " + note, "// " + note2, "", "import React from 'react';"]
         if platform == "react-native":
             head += ["import { ScrollView, View } from 'react-native';"]
-        head += ["__IMPORTS__", "", f"export function {fn}({{ navigate }}: {{ navigate: (screen: string) => void }}) {{", "  return ("]
+        head += ["__IMPORTS__", "import { t } from '@/i18n';", "", f"export function {fn}({{ navigate }}: {{ navigate: (screen: string) => void }}) {{", "  return ("]
         tail = ["  );", "}"]
     if "__IMPORTS__" in head:
         i = head.index("__IMPORTS__")
@@ -867,11 +914,11 @@ def screen_file(ds, platform, ir, screen, figma_file, refs):
 ALLOWED = {
     "compose": {"Column", "Row", "Modifier", "Arrangement", "Alignment", "Icon", "MaterialTheme", "AppTheme", "AppIcons",
                 "Composable", "R", "Spacer"},
-    "swiftui": {"VStack", "HStack", "ScrollView", "Spacer", "Image", "View", "DS", "SwiftUI"},
+    "swiftui": {"VStack", "HStack", "ScrollView", "Spacer", "Image", "View", "DS", "SwiftUI", "String"},
     "flutter": {"Column", "Row", "Padding", "EdgeInsets", "EdgeInsetsDirectional", "SizedBox", "Expanded", "ColoredBox",
                 "SingleChildScrollView", "Axis", "MainAxisAlignment", "CrossAxisAlignment", "MainAxisSize", "Icon",
                 "AssetImage", "Theme", "AppColors", "AppSpacing", "AppRadius", "AppSizes", "AppIcons", "AppTextStyles",
-                "StatelessWidget", "Widget", "BuildContext", "String", "Function", "Spacer"},
+                "StatelessWidget", "Widget", "BuildContext", "String", "Function", "Spacer", "AppLocalizations"},
     "react-native": {"ScrollView", "View", "React", "Icon"},
     "web": {"React", "Icon"},
 }
@@ -898,6 +945,13 @@ def check(code, platform, ds):
         if m.group(0) not in allowed_tokens:
             unknown.append(m.group(0))
     icon_names = re.findall(r"<Icon name=\"([\w-]+)\"", code_only)
+    keys = set(ds.string_keys.values())
+    camels = {pn.camel(k, dedupe=False) for k in keys}
+    res_pat = {"compose": r"R\.string\.(\w+)", "swiftui": r'String\(localized: "(\w+)"\)',
+               "flutter": r"AppLocalizations\.of\(context\)!\.(\w+)"}.get(platform, r"\bt\('(\w+)'\)")
+    for m in re.finditer(res_pat, code_only):
+        if m.group(1) not in (camels if platform == "flutter" else keys):
+            unknown.append("string " + m.group(1))
     # texts are content, not names: a track called "Pt. 2 | #149" is neither a component nor a raw colour
     code_only = re.sub(r'"(?:\\.|[^"\\\n])*"|\'(?:\\.|[^\'\\\n])*\'', '""', code_only)
     if platform in ("compose", "swiftui", "flutter"):
@@ -924,6 +978,8 @@ def run(project):
     if not data:
         sys.exit(f"No {app / 'data' / 'screens.json'}. Run tools/screens_export.cjs first.")
     ds = DS(project, data["screens"])
+    strings = prototype_strings.build(project)
+    ds.string_keys = strings["keys"]
     groups = {}
     prefix = (data.get("page") or "") + " / "
     for s in data["screens"]:
@@ -949,7 +1005,7 @@ def run(project):
         ir = ir_frame(frame["tree"], ctx, None, root=True)
         refs = set()
         entry = {"screen": g["name"], "slug": g["slug"], "figma": {m: f["id"] for m, f in g["frames"].items()},
-                 "label": "Reference code", "order": order, "platforms": {}}
+                 "label": "Reference code", "order": order + ["strings"], "platforms": {}}
         unknown, raw = list(ctx.unknown), list(ctx.raw)
         for p in PLATFORMS:
             code, ranges = screen_file(ds, p, ir, g, data["file"], refs)
@@ -957,6 +1013,14 @@ def run(project):
             unknown += [f"{p}: {x}" for x in u]
             raw += [f"{p}: {x}" for x in rw]
             entry["platforms"][p] = {"label": pn.SCREEN_LABEL[p], "ext": pn.SCREEN_EXT[p], "code": code, "ranges": ranges}
+        used = sorted({name for kind, name, _ in refs if kind == "string"})
+        table = {k: {"en": strings["en"][k], "ar": strings["ar"].get(k)} for k in used}
+        entry["platforms"]["strings"] = {
+            "label": "Strings (EN/AR)", "ext": "json", "ranges": {},
+            "code": "// UI strings of this screen: data/strings/en.json and ar.json (keys used by the code tabs).\n"
+                    "// Content (song, artist, playlist names) is not translated and stays in the code as data.\n"
+                    + json.dumps(table, ensure_ascii=False, indent=2) + "\n"}
+        missing_ar = [k for k in used if not strings["ar"].get(k)]
         # node ids of the other mode's frames point at the same lines (Light frames have their own ids)
         for m, f in g["frames"].items():
             if f is not frame:
@@ -965,9 +1029,10 @@ def run(project):
             if kind == "token" and name not in ds.variables or kind == "component" and name not in ds.components \
                     or kind == "icon" and name not in ds.icons or kind == "text_style" and name not in ds.text_styles:
                 unknown.append(f"{p}: {kind} {name}")
-        entry["check"] = {"unknown": len(set(unknown)), "raw": len(raw)}
+        entry["check"] = {"unknown": len(set(unknown)), "raw": len(raw), "untranslated": len(missing_ar)}
         (out / f"{g['slug']}.json").write_text(json.dumps(entry, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-        report["screens"].append({"slug": g["slug"], "unknown": sorted(set(unknown)), "raw": raw,
+        report["snapped"] = report.get("snapped", []) + ctx.snapped
+        report["screens"].append({"slug": g["slug"], "unknown": sorted(set(unknown)), "raw": raw, "untranslated": missing_ar,
                                   "lines": {p: entry["platforms"][p]["code"].count("\n") for p in PLATFORMS}})
         report["unknown"] += sorted(set(unknown))
         report["raw"] += raw
@@ -976,6 +1041,9 @@ def run(project):
     print(f"Reference code: {len(groups)} screens x {len(PLATFORMS)} platforms -> {out}")
     print(f"  code_map: {len(ds.map['components'])} components, {len(ds.map['tokens'])} tokens, {len(ds.map['icons'])} icons"
           + (" (Code Connect map used)" if ds.code_connect else " (no Code Connect map: names derived from Figma)"))
+    print(f"  Strings: {len(strings['en'])} UI strings as resources, Arabic {len(strings['en']) - len(strings['missing'])}, untranslated {len(strings['missing'])}; {len(strings['content'])} content texts kept as data")
+    for x in sorted(set(report.get("snapped", []))):
+        print("  Snapped to the nearest spacing step: " + x)
     print(f"  Check: unknown names {len(report['unknown'])}, raw values {len(report['raw'])}")
     for x in (report["unknown"] + report["raw"])[:20]:
         print("   - " + x)
