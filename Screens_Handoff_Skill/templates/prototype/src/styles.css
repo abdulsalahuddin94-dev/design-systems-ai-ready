@@ -49,3 +49,9 @@ aside ul { list-style: none; margin: 0; padding: 0; }
 .fp-screen[dir='rtl'] svg[data-icon='sort'] { transform: scaleX(-1); }
 .fp-screen[dir='rtl'] [data-component='Playback Controls'],
 .fp-screen[dir='rtl'] [data-component='Playback Progress'] { direction: ltr; }
+
+/* Comments: the element of a comment opened from the list or a link flashes; the selected pin pulses. */
+.fp-flash { outline: 3px solid #818cf8 !important; outline-offset: 2px; animation: fp-flash 0.6s ease-in-out 3; }
+@keyframes fp-flash { 50% { outline-color: transparent; } }
+.fp-pin-selected { animation: fp-pin 1s ease-in-out 3; }
+@keyframes fp-pin { 50% { transform: translate(-50%, -100%) scale(1.25); } }

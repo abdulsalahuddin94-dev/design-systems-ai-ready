@@ -80,7 +80,7 @@ function ScreenView({ slug, mode, lang, bare, height, pins, selected, onPin }: {
           {pins.map((p) => (
             <button key={p.id} type="button" data-pin={p.id} title={p.pending ? 'New comment' : `Comment ${p.n}`} onClick={() => onPin?.(p.id)}
               style={{ position: 'absolute', left: p.x, top: p.y, transform: 'translate(-50%, -100%)', pointerEvents: 'auto' }}
-              className={`flex h-6 min-w-6 items-center justify-center rounded-full rounded-bl-none border-2 border-white px-1 text-[11px] font-semibold text-white shadow-md ${p.pending ? 'bg-indigo-400 animate-pulse' : p.resolved ? 'bg-neutral-500' : 'bg-indigo-500'} ${selected === p.id ? 'ring-2 ring-indigo-300' : ''}`}>
+              className={`flex h-6 min-w-6 items-center justify-center rounded-full rounded-bl-none border-2 border-white px-1 text-[11px] font-semibold text-white shadow-md ${p.pending ? 'bg-indigo-400 animate-pulse' : p.resolved ? 'bg-neutral-500' : 'bg-indigo-500'} ${selected === p.id ? 'fp-pin-selected ring-2 ring-indigo-300' : ''}`}>
               {p.pending ? '+' : p.n}
             </button>
           ))}
@@ -190,7 +190,34 @@ export function App() {
   useCommentTap(commenting && !inspect, curDef?.w || 375, onTap);
   // Code and Comments share the side of the screen: opening one closes the other.
   const toggleCode = () => { setCode(!code); if (!code) setCommenting(false); };
-  const toggleComments = () => { setCommenting(!commenting); setPending(null); if (!commenting) { setCode(false); setInspect(false); } };
+  // A comment from the list or a link: switch to the theme and language it was made in, scroll its pin into view
+  // inside the device and flash the element it is on.
+  const focusComment = React.useCallback((c: Comment) => {
+    setSelected(c.id);
+    const target = href({ mode: c.theme, lang: c.lang, comment: c.id });
+    if (window.location.hash !== target) window.history.replaceState(null, '', target), window.dispatchEvent(new HashChangeEvent('hashchange'));
+    window.setTimeout(() => {
+      const screen = document.querySelector('.fp-screen') as HTMLElement | null;
+      if (!screen) return;
+      const visible = narrowRef.current ? screen.clientHeight * 0.4 : screen.clientHeight; // a phone sheet covers the bottom
+      screen.scrollTo({ top: Math.max(0, c.y - visible / 2), behavior: 'smooth' });
+      const el = c.figma_node ? screen.querySelector(`[data-figma-node="${c.figma_node}"]`) as HTMLElement | null : null;
+      el?.classList.add('fp-flash');
+      window.setTimeout(() => el?.classList.remove('fp-flash'), 1900);
+    }, 250);
+  }, []);
+  const narrowRef = React.useRef(false);
+  const focused = React.useRef<string | null>(null);
+  React.useEffect(() => { if (r.comment && !commenting) { setCommenting(true); setCode(false); setInspect(false); } }, [r.comment]); // eslint-disable-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    const c = r.comment && comments.find((x) => x.id === r.comment);
+    if (c && focused.current !== c.id) { focused.current = c.id; focusComment(c); }
+  }, [r.comment, comments, focusComment]);
+  const toggleComments = () => {
+    setCommenting(!commenting); setPending(null);
+    if (!commenting) { setCode(false); setInspect(false); }
+    else if (r.comment) window.history.replaceState(null, '', href({ comment: null }));
+  };
   React.useEffect(() => { if (!r.slug && SCREENS[0]) go(SCREENS[0].slug); }, [r.slug]);
   React.useEffect(() => { document.documentElement.dataset.shell = r.mode === 'Dark' ? 'dark' : 'light'; }, [r.mode]);
   if (!SCREENS.length) return <p className="p-6">No screens generated yet. Run tools/build_prototype.py.</p>;
@@ -206,6 +233,7 @@ export function App() {
 
   // Phone width: no side list (a screen picker instead), no phone frame, the screen scaled to the window width.
   const narrow = win.w < 768;
+  narrowRef.current = narrow;
   const toolbarH = 104 + BANNER_H;
   // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
   const room = win.w - 256 - (code ? 440 : commenting ? 360 : 0) - 32;
@@ -218,7 +246,7 @@ export function App() {
           ...comments.filter((c) => c.status !== 'resolved' || c.id === selected).map((c) => ({ id: c.id, n: comments.indexOf(c) + 1, x: (c.lang === 'ar') !== (r.lang === 'ar') ? def.w - c.x : c.x, y: c.y, resolved: c.status === 'resolved' })), // RTL mirrors the layout, so the pin mirrors too
           ...(pending ? [{ id: 'pending', n: 0, x: pending.x, y: pending.y, resolved: false, pending: true }] : []),
         ] : undefined}
-        onPin={(id) => { if (id !== 'pending') setSelected(id); }} />
+        onPin={(id) => { const c = comments.find((x) => x.id === id); if (c) focusComment(c); }} />
       {r.overlay && (
         <div className="absolute inset-0 bg-black/40">
           <ScreenView slug={r.overlay} mode={r.mode} lang={r.lang} bare={false} height={screenH} />
@@ -301,17 +329,19 @@ export function App() {
       {code && <CodePanel slug={slug} picked={picked} narrow={narrow} onClose={() => setCode(false)} />}
       {commenting && (
         <CommentsPanel comments={comments} pending={pending} narrow={narrow} selected={selected} error={commentError}
-          onCancel={() => setPending(null)} onSelect={setSelected} onClose={toggleComments}
-          onSubmit={async (body, author) => {
+          onCancel={() => setPending(null)} onClose={toggleComments}
+          onSelect={(id) => { const c = comments.find((x) => x.id === id); if (c) focusComment(c); }}
+          onSubmit={async (body, author, images) => {
             if (!pending) return;
             try {
               const made = await addComment({
                 screen: slug, figma_node: pending.figma_node, component: pending.component, theme: r.mode, lang: r.lang,
                 viewport: `${narrow ? 'phone' : 'desktop'} ${win.w}x${win.h}`, x: pending.x, y: pending.y, author: author || null, body,
-              });
+              }, images);
               setComments((c) => [...c, made]);
               setPending(null);
               setSelected(made.id);
+              focused.current = made.id;
               setCommentError(null);
             } catch (e) { setCommentError(String((e as Error).message || e)); throw e; }
           }} />

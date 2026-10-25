@@ -3,6 +3,7 @@
 // Usage (from the Root):
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --schema           writes prototype/supabase/schema.sql
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --pull             writes prototype/comments/inbox.json + inbox.md
+//                                                                                (+ comments/images/ with the reference images)
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --resolve <id>     marks one comment resolved
 //   [--env <file>]  a project override, default <project>/prototype/.env.local
 // Keys come from the shared file %USERPROFILE%/.atomica/supabase.env (one Supabase project for every Atomica
@@ -80,6 +81,20 @@ async function main() {
   const open = all.filter((c) => c.status !== 'resolved');
   const outDir = path.join(app, 'comments');
   fs.mkdirSync(outDir, { recursive: true });
+  // Reference images of open comments: comments/images/<comment id>-<n>.<ext> (public Storage URLs, no key needed).
+  const imgDir = path.join(outDir, 'images');
+  const local = {};
+  for (const c of open) for (const [i, p] of (c.images || []).entries()) {
+    const ext = (p.split('.').pop() || 'webp').replace(/[^a-z0-9]/gi, '').slice(0, 5) || 'webp';
+    const file = path.join(imgDir, `${c.id}-${i + 1}.${ext}`);
+    if (!fs.existsSync(file)) {
+      const r = await fetch(`${URL_}/storage/v1/object/public/prototype-comments/${p}`);
+      if (!r.ok) { console.error(`Image ${p}: HTTP ${r.status}`); continue; }
+      fs.mkdirSync(imgDir, { recursive: true });
+      fs.writeFileSync(file, Buffer.from(await r.arrayBuffer()));
+    }
+    (local[c.id] ||= []).push(`images/${path.basename(file)}`);
+  }
   fs.writeFileSync(path.join(outDir, 'inbox.json'), JSON.stringify({ project: PROJECT, pulled_at: new Date().toISOString(), comments: all }, null, 1) + '\n');
   // Markdown triage: open comments grouped by screen, then component (Figma node), oldest first.
   const md = [`# Prototype comments: ${PROJECT}`, '', `Pulled ${new Date().toISOString().slice(0, 16).replace('T', ' ')} UTC. Open ${open.length}, resolved ${all.length - open.length}.`, ''];
@@ -92,6 +107,7 @@ async function main() {
       for (const c of list) {
         md.push(`- **${(c.author || 'Anonymous').replace(/[*_`]/g, '')}** (${c.created_at.slice(0, 16).replace('T', ' ')}, ${c.theme || '-'} / ${(c.lang || '-').toUpperCase()}, ${c.viewport || '-'}): ${c.body.replace(/\s+/g, ' ')}`);
         md.push(`  - id \`${c.id}\` · pin ${Math.round(c.x)}, ${Math.round(c.y)} · Triage: fix / decision / info`);
+        for (const [i, f] of (local[c.id] || []).entries()) md.push(`  - image ${i + 1}: ![image ${i + 1}](${f})`);
       }
       md.push('');
     }

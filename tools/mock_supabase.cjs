@@ -23,7 +23,9 @@ if (!PROJECT) { console.error('Usage: node tools/mock_supabase.cjs --project <sl
 let rows = [];
 if (STORE && fs.existsSync(STORE)) rows = JSON.parse(fs.readFileSync(STORE, 'utf8'));
 const save = () => { if (STORE) fs.writeFileSync(STORE, JSON.stringify(rows, null, 1)); };
-const FIELDS = ['project', 'screen', 'figma_node', 'component', 'theme', 'lang', 'viewport', 'x', 'y', 'author', 'body', 'status'];
+const FIELDS = ['project', 'screen', 'figma_node', 'component', 'theme', 'lang', 'viewport', 'x', 'y', 'author', 'body', 'status', 'images'];
+const files = {}; // Storage: '<bucket>/<path>' -> { type, data }
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 
 function filters(url) {
   const f = [];
@@ -59,10 +61,37 @@ function valid(c) {
 http.createServer((req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'GET,POST,PATCH,DELETE,OPTIONS',
-      'access-control-allow-headers': 'apikey,authorization,content-type,prefer' });
+      'access-control-allow-headers': 'apikey,authorization,content-type,prefer,x-upsert' });
     return res.end();
   }
   const url = new URL(req.url, `http://localhost:${PORT}`);
+  // Storage (the bucket prototype-comments): public read; anon may add images under <slug>/<comment uuid>/ only.
+  const pub = /^\/storage\/v1\/object\/public\/([^/]+)\/(.+)$/.exec(url.pathname);
+  if (pub && req.method === 'GET') {
+    const f = files[`${pub[1]}/${pub[2]}`];
+    if (!f) return send(res, 404, { message: 'Object not found' });
+    res.writeHead(200, { 'content-type': f.type, 'access-control-allow-origin': '*' });
+    return res.end(f.data);
+  }
+  const up = /^\/storage\/v1\/object\/([^/]+)\/(.+)$/.exec(url.pathname);
+  if (up && req.method === 'POST') {
+    const who2 = role(req);
+    if (!who2) return send(res, 401, { message: 'Invalid API key' });
+    const chunks = [];
+    req.on('data', (d) => chunks.push(d));
+    req.on('end', () => {
+      const data = Buffer.concat(chunks);
+      const type = (req.headers['content-type'] || '').split(';')[0];
+      if (up[1] !== 'prototype-comments') return send(res, 404, { message: 'Bucket not found' });
+      if (who2 === 'anon' && !/^[a-z0-9-]{1,64}\/[0-9a-f-]{36}\/[^/]+$/.test(up[2])) return send(res, 403, { message: 'new row violates row-level security policy' });
+      if (!IMAGE_TYPES.includes(type)) return send(res, 415, { message: `mime type ${type} is not supported` });
+      if (data.length > 5 * 1024 * 1024) return send(res, 413, { message: 'The object exceeded the maximum allowed size' });
+      if (files[`${up[1]}/${up[2]}`]) return send(res, 409, { message: 'The resource already exists' });
+      files[`${up[1]}/${up[2]}`] = { type, data };
+      return send(res, 200, { Key: `${up[1]}/${up[2]}` });
+    });
+    return;
+  }
   if (url.pathname !== '/rest/v1/prototype_comments') return send(res, 404, { message: 'not found' });
   const who = role(req);
   if (!who) return send(res, 401, { message: 'Invalid API key' });
@@ -92,7 +121,9 @@ http.createServer((req, res) => {
           return send(res, 403, { message: 'new row violates row-level security policy for table "prototype_comments"' });
         const bad = valid(row);
         if (bad) return send(res, 400, { message: bad });
-        made.push({ id: crypto.randomUUID(), ...row, created_at: new Date().toISOString(), resolved_at: null });
+        if (Array.isArray(row.images) && row.images.length > 4) return send(res, 400, { message: 'at most 4 images' });
+        const id = /^[0-9a-f-]{36}$/.test(c.id || '') ? c.id : crypto.randomUUID();
+        made.push({ id, images: [], ...row, created_at: new Date().toISOString(), resolved_at: null });
       }
       rows.push(...made);
       save();

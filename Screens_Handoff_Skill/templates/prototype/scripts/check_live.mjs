@@ -8,6 +8,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from 'playwright-core';
+import { PNG } from 'pngjs';
 
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
@@ -251,8 +252,22 @@ for (const [device, viewport] of Object.entries(sizes)) {
     if (!(await page.locator('.fp-screen [data-pin="pending"]').count())) problems.push(`${device} comments: no pending pin`);
     if ((await at()) !== 'explore-viewport') problems.push(`${device} comments: the tap navigated`);
     if (await page.locator(`${cp} [data-comment-list] li`, { hasText: '· resolved' }).count()) problems.push(`${device} comments: resolved comments shown by default`);
-    await page.locator(`${cp} [data-comment-form] input[autocomplete="name"]`).fill('Atomica check');
+    await page.locator(`${cp} [data-comment-form] input[name="reviewer"]`).fill('Atomica check');
     await page.locator(`${cp} [data-comment-form] textarea`).fill(note);
+    // images: one picked with +, one pasted with Ctrl+V; a text file is refused
+    const png = (() => { const p = new PNG({ width: 64, height: 40 }); for (let i = 0; i < p.data.length; i += 4) p.data.set([99, 102, 241, 255], i); return PNG.sync.write(p); })();
+    await page.locator(`${cp} [data-image-picker]`).setInputFiles({ name: 'reference.png', mimeType: 'image/png', buffer: png });
+    try { await page.waitForSelector(`${cp} [data-attachments] img`, { timeout: 10000 }); } catch (e) { problems.push(`${device} comments: picked image not shown`); }
+    await page.locator(`${cp} [data-image-picker]`).setInputFiles({ name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('not an image') });
+    try { await page.waitForSelector(`${cp} [data-image-error]`, { timeout: 5000 }); } catch (e) { problems.push(`${device} comments: a text file was not refused`); }
+    await page.evaluate(async (sel) => {
+      const c = document.createElement('canvas'); c.width = 50; c.height = 30;
+      const g = c.getContext('2d'); g.fillStyle = '#e11d48'; g.fillRect(0, 0, 50, 30);
+      const blob = await new Promise((r) => c.toBlob(r, 'image/png'));
+      const dt = new DataTransfer(); dt.items.add(new File([blob], 'pasted.png', { type: 'image/png' }));
+      document.querySelector(`${sel} textarea`).dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
+    }, cp);
+    try { await page.waitForFunction((sel) => document.querySelectorAll(`${sel} [data-attachments] img`).length === 2, cp, { timeout: 10000 }); } catch (e) { problems.push(`${device} comments: pasted image not shown`); }
     await page.locator(`${cp} button[type="submit"]`).click();
     try {
       await page.waitForFunction(([sel, t]) => document.querySelector(`${sel} [data-comment-list]`)?.textContent.includes(t), [cp, note], { timeout: 30000 });
@@ -265,6 +280,34 @@ for (const [device, viewport] of Object.entries(sizes)) {
       postedIds.push(posted.id);
       if (!/Top App Bar/.test(posted.meta) || !/Dark \/ AR/.test(posted.meta)) problems.push(`${device} comments: metadata missing (${posted.meta.slice(0, 120)})`);
       if (!(await page.locator(`.fp-screen [data-pin="${posted.id}"]`).count())) problems.push(`${device} comments: no pin for the posted comment`);
+      // the two images are in the thread and open full size
+      const li = page.locator(`${cp} li`, { has: page.locator(`[data-comment-id="${posted.id}"]`) });
+      try { await page.waitForFunction(([sel, id]) => document.querySelector(`${sel} [data-comment-id="${id}"]`)?.closest('li')?.querySelectorAll('[data-comment-image] img').length === 2, [cp, posted.id], { timeout: 15000 }); }
+      catch (e) { problems.push(`${device} comments: the comment does not show its 2 images`); }
+      if (await li.locator('[data-comment-image]').count()) {
+        await li.locator('[data-comment-image]').first().click();
+        const ok = await page.waitForFunction(() => { const i = document.querySelector('[data-lightbox] img'); return i && i.complete && i.naturalWidth > 0; }, null, { timeout: 15000 }).then(() => true).catch(() => false);
+        if (!ok) problems.push(`${device} comments: image did not open full size`);
+        if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${device}-comments-image.png`) });
+        await page.keyboard.press('Escape');
+      }
+      // from the list to the pin: scroll the screen away, click the comment, the pin comes back into view
+      await page.evaluate(() => { const s = document.querySelector('.fp-screen'); s.scrollTop = s.scrollHeight; });
+      await page.locator(`${cp} [data-comment-id="${posted.id}"]`).click();
+      await page.waitForTimeout(1200);
+      const nav = await page.evaluate((id) => {
+        const s = document.querySelector('.fp-screen').getBoundingClientRect(), pin = document.querySelector(`.fp-screen [data-pin="${id}"]`)?.getBoundingClientRect();
+        return { hash: location.hash, inView: !!pin && pin.top >= s.top - 1 && pin.bottom <= s.bottom + 1 };
+      }, posted.id);
+      if (!nav.hash.includes(`comment=${posted.id}`) || !nav.inView) problems.push(`${device} comments: clicking the comment did not bring its pin into view (${JSON.stringify(nav)})`);
+      // a link to the comment opens its screen, theme and language with the panel and the comment selected
+      const other = await browser.newContext({ viewport });
+      const p3 = await other.newPage();
+      await p3.goto(`${URL}#/explore-viewport?mode=Light&lang=en&comment=${posted.id}`);
+      const linked = await p3.waitForFunction((id) => document.querySelector(`[data-comment-id="${id}"]`)?.closest('li')?.className.includes('bg-indigo') && location.hash.includes('mode=Dark') && location.hash.includes('lang=ar'), posted.id, { timeout: 30000 }).then(() => true).catch(() => false);
+      if (!linked) problems.push(`${device} comments: the link to the comment did not open it (${await p3.evaluate(() => location.hash)})`);
+      if (SHOTS) await p3.screenshot({ path: path.join(SHOTS, `${device}-comments-link.png`) });
+      await other.close();
     }
     if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1 || (() => { const m = document.querySelector('main'); return m.scrollWidth > m.clientWidth + 1; })()))
       problems.push(`${device} comments: horizontal scroll`);
