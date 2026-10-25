@@ -1,3 +1,4 @@
-# Design preview, not a real app: keep it out of search engines.
+# Design preview, not a real app. Crawlers may read it (so Safe Browsing reviews can check it and see the
+# noindex meta tag in index.html, which keeps it out of search results).
 User-agent: *
-Disallow: /
+Allow: /
