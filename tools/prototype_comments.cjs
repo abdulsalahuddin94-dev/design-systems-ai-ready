@@ -4,7 +4,8 @@
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --schema           writes prototype/supabase/schema.sql
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --pull             writes prototype/comments/inbox.json + inbox.md
 //                                                                                (+ comments/images/ with the reference images)
-//   node tools/prototype_comments.cjs "My Projects/<Project>" --resolve <id>     marks one comment resolved
+//   node tools/prototype_comments.cjs "My Projects/<Project>" --resolve <id> [--reply "text"]   marks one comment resolved,
+//                                                                                with the design team's answer shown under it
 //   [--env <file>]  a project override, default <project>/prototype/.env.local
 // Keys come from the shared file %USERPROFILE%/.atomica/supabase.env (one Supabase project for every Atomica
 // project, set up once per device), then the project's .env.local (git-ignored) overrides any of them. They hold:
@@ -68,7 +69,7 @@ async function main() {
     if (!/^[0-9a-f-]{36}$/i.test(id || '')) { console.error('--resolve needs a comment id (uuid)'); process.exit(2); }
     const r = await fetch(`${api}?id=eq.${id}&project=eq.${encodeURIComponent(PROJECT)}`, {
       method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
-      body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString() }),
+      body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString(), ...(opt('--reply') ? { reply: opt('--reply') } : {}) }),
     });
     if (!r.ok) { console.error(`Resolve failed: HTTP ${r.status} ${(await r.text()).slice(0, 200)}`); process.exit(1); }
     const hit = await r.json();

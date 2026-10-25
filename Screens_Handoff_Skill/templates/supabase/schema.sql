@@ -40,6 +40,9 @@ create policy "anon adds open prototype comments" on public.prototype_comments
   for insert to anon
   with check (project ~ '^[a-z0-9-]{1,64}$' and status = 'open' and resolved_at is null);
 
+-- The design team's answer, written with --resolve <id> --reply "..." (service key); reviewers see it under the comment.
+alter table public.prototype_comments add column if not exists reply text check (char_length(reply) <= 2000);
+
 -- Reference images of a comment (up to 4): storage paths <project>/<comment id>/<n>.webp in the bucket below.
 alter table public.prototype_comments add column if not exists images text[] not null default '{}';
 do $$ begin

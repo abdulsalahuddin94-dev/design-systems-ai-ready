@@ -25,7 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import platform_names as pn  # noqa: E402
-from build_prototype import base_name, slugify, parse_css_names, tx_list, pins  # noqa: E402
+from build_prototype import base_name, slugify, parse_css_names, tx_list, pins, load_screens  # noqa: E402
 import prototype_strings  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -1060,7 +1060,7 @@ def check(code, platform, ds):
 def run(project):
     project = Path(project).resolve()
     app = project / "prototype"
-    data = load(app / "data" / "screens.json")
+    data = load_screens(app / "data" / "screens.json") if (app / "data" / "screens.json").exists() else None
     if not data:
         sys.exit(f"No {app / 'data' / 'screens.json'}. Run tools/screens_export.cjs first.")
     ds = DS(project, data["screens"])

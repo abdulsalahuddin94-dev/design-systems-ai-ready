@@ -73,7 +73,7 @@ function ScreenView({ slug, mode, lang, bare, height, pins, selected, onPin }: {
   useScreenLanguage(ref, lang, def.slug);
   return (
     <div ref={ref} className="fp-screen" data-semantic={mode} dir={lang === 'ar' ? 'rtl' : 'ltr'} lang={lang} data-screen={def.slug}
-      style={{ width: def.w, height: bare ? def.h : Math.min(def.h, height ?? DEVICE.viewport), overflowY: bare ? 'hidden' : 'auto' }}>
+      style={{ width: def.w, height: bare ? def.h : Math.min(def.h, height ?? DEVICE.viewport), overflowY: bare || !def.scroll ? 'hidden' : 'auto' }}>
       <Comp />
       {pins && pins.length > 0 && (
         <div className="fp-pins" aria-label="Comment pins" style={{ position: 'absolute', left: 0, top: 0, width: def.w, height: def.h, pointerEvents: 'none' }}>
@@ -237,8 +237,11 @@ export function App() {
   const toolbarH = 104 + BANNER_H;
   // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
   const room = win.w - 256 - (code ? 440 : commenting ? 360 : 0) - 32;
-  const zoom = narrow ? Math.min(1, win.w / def.w) : Math.min(1, room / (def.w + 24));
-  const screenH = narrow ? Math.floor((win.h - toolbarH) / zoom) : DEVICE.viewport;
+  // a static (one-screen) frame never scrolls, so at phone width it also fits the height left under the toolbar
+  const zoom = narrow
+    ? Math.min(1, win.w / def.w, def.scroll ? 1 : (win.h - toolbarH) / def.h)
+    : Math.min(1, room / (def.w + 24));
+  const screenH = narrow ? (def.scroll ? Math.floor((win.h - toolbarH) / zoom) : def.h) : DEVICE.viewport;
   const screen = (
     <>
       <ScreenView slug={slug} mode={r.mode} lang={r.lang} bare={false} height={screenH} selected={selected}

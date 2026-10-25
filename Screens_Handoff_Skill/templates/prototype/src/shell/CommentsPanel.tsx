@@ -161,6 +161,11 @@ export function CommentsPanel({ comments, pending, narrow, selected, error, onSu
                   <span className="block text-[11px] opacity-50">{c.component || 'Frame'} · {c.figma_node} · {c.theme} / {c.lang.toUpperCase()} · {c.viewport}{c.status === 'resolved' ? ' · resolved' : ''}</span>
                 </span>
               </button>
+              {c.reply && (
+                <div className="ms-8 mt-1.5 rounded-md bg-emerald-500/10 px-2 py-1 text-xs" data-comment-reply="" dir="auto">
+                  <span className="font-semibold">Design team:</span> {c.reply}
+                </div>
+              )}
               <div className="mt-1.5 flex flex-wrap items-center gap-2 ps-8">
                 {(c.images || []).map((p, i) => (
                   <button key={p} type="button" onClick={() => setZoom(imageUrl(p))} aria-label={`Open image ${i + 1}`} data-comment-image=""

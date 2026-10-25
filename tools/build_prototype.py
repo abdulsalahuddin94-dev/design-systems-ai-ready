@@ -28,6 +28,48 @@ TEMPLATE = ROOT / 'Screens_Handoff_Skill' / 'templates' / 'prototype'
 MODE_SUFFIX = re.compile(r'\s*[/\-–—|(]\s*(Dark|Light)\)?\s*$', re.I)
 
 
+def load_screens(path):
+    """data/screens.json (the pure Figma export, never edited) with the prototype's own changes from data/overrides.json
+    applied on top, for changes made code-first (e.g. an approved review comment) before they are synced to Figma.
+    overrides.json: {"changes": [{"id", "comment", "screen", "op": "remove", "nodes": [Figma ids], "close_gap": true,
+    "description"}]}. remove deletes the nodes; close_gap on a child of the screen frame moves the later children up and
+    makes the frame shorter by its height, so bars pinned at the bottom stay at the bottom. A change whose nodes are no
+    longer in the export is reported as already in Figma (synced) and does nothing. data["_overrides"] lists the result."""
+    path = Path(path)
+    data = json.loads(path.read_text(encoding='utf-8'))
+    ov_path = path.parent / 'overrides.json'
+    changes = (json.loads(ov_path.read_text(encoding='utf-8')) if ov_path.exists() else {}).get('changes', [])
+    index = {}
+
+    def walk(n, parent, screen):
+        index[n['id']] = (n, parent, screen)
+        for c in n.get('ch') or []:
+            walk(c, n, screen)
+    for scr in data['screens']:
+        walk(scr['tree'], None, scr)
+    result = []
+    for ch in changes:
+        done = []
+        for nid in ch.get('nodes', []):
+            hit = index.get(nid)
+            if not hit or not hit[1]:
+                continue
+            node, parent, scr = hit
+            if ch.get('op') == 'remove':
+                parent['ch'] = [c for c in parent['ch'] if c is not node]
+                if ch.get('close_gap') and parent is scr['tree']:
+                    for sib in parent['ch']:
+                        if sib['y'] > node['y']:
+                            sib['y'] -= node['h']
+                    parent['h'] -= node['h']
+                    if isinstance(scr.get('h'), (int, float)) and scr is not parent:
+                        scr['h'] -= node['h']  # the frame entry keeps its own size next to its tree
+                done.append(nid)
+        result.append(dict(ch, applied=done, status='applied' if done else 'synced (not in the Figma export any more)'))
+    data['_overrides'] = result
+    return data
+
+
 def slugify(s):
     return re.sub(r'[^a-z0-9]+', '-', s.lower()).strip('-') or 'screen'
 
@@ -230,6 +272,13 @@ def pins(root):
     return out
 
 
+def fixed_screen(root, ctx):
+    """A screen frame no taller than the device (adapters.json viewport, default 812) is one static screen in Figma
+    (e.g. "Explore - Viewport"): the prototype shows it at its Figma height without scrolling, the content clipped
+    under its pinned bars as in Figma. Taller frames ("Full") scroll, with the pinned bars docked."""
+    return root['h'] <= (ctx.adapters.get('viewport', 812) if isinstance(ctx.adapters, dict) else 812) + 1
+
+
 def spacing_class(prefix, value, token, ctx):
     if token:
         return '%s-(%s)' % (prefix, ctx.var(token))
@@ -244,7 +293,11 @@ def sizing(node, parent_layout, ctx, cls, style, attrs):
     # parent_layout: 'ROOT' for the screen frame, None for a child of a frame without auto layout, else the parent's layout.
     s = node.get('s') or {}
     if parent_layout == 'ROOT':
-        style.update({'width': node['w'], 'minHeight': node['h'], 'position': 'relative'})
+        if fixed_screen(node, ctx):  # one device screen in Figma (a Viewport frame): its height, no scrolling
+            style.update({'width': node['w'], 'height': node['h'], 'position': 'relative'})
+            attrs['data-fixed-screen'] = ''
+        else:
+            style.update({'width': node['w'], 'minHeight': node['h'], 'position': 'relative'})
         return
     absolute = not parent_layout or s.get('abs')
     if absolute:
@@ -356,9 +409,12 @@ def emit(node, parent_layout, ctx, ind=2):
                 tok = 'md/sys/spacing/%d' % c['_gap']
                 dock.append('%s  <div aria-hidden="true" className=%s />' % (pad, js(spacing_class('h', c['_gap'], tok if ctx.has_var(tok) else None, ctx))))
             dock.append(emit(c2, {'m': 'VERTICAL'}, ctx, ind + 4))
-        dstyle = {'position': 'sticky', 'zIndex': 10, ('top' if side == 'top' else 'bottom'): 0}
-        if side == 'bottom':
-            dstyle['marginTop'] = 'auto'
+        if fixed_screen(node, ctx):  # a static screen: the bars sit over the content, where Figma puts them
+            dstyle = {'position': 'absolute', 'left': 0, 'right': 0, 'zIndex': 10, ('top' if side == 'top' else 'bottom'): 0}
+        else:
+            dstyle = {'position': 'sticky', 'zIndex': 10, ('top' if side == 'top' else 'bottom'): 0}
+            if side == 'bottom':
+                dstyle['marginTop'] = 'auto'
         tag = '%s<div className="fp-dock flex flex-col items-center self-stretch" data-dock=%s%s>' % (pad + '  ', js(side), style_attr(dstyle))
         block = [tag] + dock + ['%s  </div>' % pad]
         kids = (block + kids) if side == 'top' else (kids + block)
@@ -536,7 +592,7 @@ def main():
     screens_path = Path(a.screens) if a.screens else app / 'data' / 'screens.json'
     if not screens_path.exists():
         sys.exit('No %s. Run tools/screens_export.cjs first.' % screens_path)
-    data = json.loads(screens_path.read_text(encoding='utf-8'))
+    data = load_screens(screens_path)  # the Figma export + data/overrides.json (code-first changes)
     make_crops(screens_path.parent)
     src_assets = screens_path.parent / 'assets'
     if src_assets.exists():
@@ -609,8 +665,8 @@ def main():
             '  );',
             '}', ''])
         write(screens_dir / ('%s.tsx' % g['slug']), src)
-        route_lines.append('  { slug: %s, name: %s, w: %s, h: %s, figma: %s, Component: lazy(() => import(%s)) },' % (
-            js(g['slug']), js(g['name']), round(primary['w']), round(primary['h']),
+        route_lines.append('  { slug: %s, name: %s, w: %s, h: %s, scroll: %s, figma: %s, Component: lazy(() => import(%s)) },' % (
+            js(g['slug']), js(g['name']), round(primary['w']), round(primary['h']), js(not fixed_screen(primary['tree'], ctx)),
             js({m: f['id'] for m, f in frames.items()}), js('./screens/%s' % g['slug'])))
         report['screens'].append({'slug': g['slug'], 'name': g['name'], 'modes': sorted(frames), 'w': primary['w'], 'h': primary['h']})
 
@@ -620,7 +676,7 @@ def main():
         '// Generated by tools/build_prototype.py. Do not edit.',
         "import React from 'react';",
         'const lazy = (f: () => Promise<{ default: React.FC }>) => { const C = React.lazy(f); return () => <React.Suspense fallback={null}><C /></React.Suspense>; };',
-        'export type ScreenDef = { slug: string; name: string; w: number; h: number; figma: Record<string, string>; Component: React.FC };',
+        'export type ScreenDef = { slug: string; name: string; w: number; h: number; scroll: boolean; figma: Record<string, string>; Component: React.FC };',
         'export const PROJECT = %s;' % js({'name': project.name.replace('_', ' '), 'figmaFile': data['file'], 'exportedAt': data.get('exported_at', '')}),
         'export const DEVICE = { viewport: %d };' % adapters.get('viewport', 812),
         'export const MODES: string[] = %s;' % js(modes),
@@ -644,6 +700,8 @@ def main():
         for f in src_assets.glob('*.png'):
             shutil.copy2(f, dst / f.name)
 
+    report['overrides'] = data.get('_overrides', [])
+    report['code_ahead'] = sorted({slugify(o['screen']) for o in report['overrides'] if o.get('applied')})
     report['missing'] = ctx.missing
     report['raw'] = len(ctx.raw)
     report['raw_values'] = ctx.raw[:50]
@@ -654,6 +712,10 @@ def main():
     if report['structure_differs']:
         print('  Light and Dark frames differ in structure: ' + ', '.join(report['structure_differs']))
     print('  Raw values (no token): %d' % len(ctx.raw))
+    for o in report['overrides']:
+        print('  Override %s (%s): %s' % (o.get('id'), o['status'], o.get('description', '')))
+    if report['code_ahead']:
+        print('  Code ahead of Figma (pending sync): ' + ', '.join(report['code_ahead']))
     # Reference code for the Code panel (deterministic, DS names only; its check must report 0 / 0).
     import screen_code
     screen_code.run(project)

@@ -22,7 +22,9 @@ fs.mkdirSync(outDir, { recursive: true });
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 
 const routesSrc = fs.readFileSync(path.join(here, 'src', 'generated', 'routes.tsx'), 'utf8');
-const screens = [...routesSrc.matchAll(/\{ slug: "([^"]+)", name: "([^"]*)", w: (\d+), h: (\d+), figma: (\{[^}]*\})/g)]
+// Screens changed code-first (data/overrides.json) differ from Figma on purpose until they are synced.
+const codeAhead = (() => { try { return JSON.parse(fs.readFileSync(path.join(here, 'data', 'build-report.json'), 'utf8')).code_ahead || []; } catch (e) { return []; } })();
+const screens = [...routesSrc.matchAll(/\{ slug: "([^"]+)", name: "([^"]*)", w: (\d+), h: (\d+), (?:scroll: \w+, )?figma: (\{[^}]*\})/g)]
   .map((m) => ({ slug: m[1], name: m[2], w: +m[3], h: +m[4], figma: JSON.parse(m[5]) }))
   .filter((s) => !ONLY.length || ONLY.includes(s.slug));
 
@@ -54,7 +56,7 @@ for (const s of screens) {
     const el = await page.$('.fp-screen');
     const file = path.join(outDir, `${s.slug}-${mode}.png`);
     await el.screenshot({ path: file });
-    const row = { slug: s.slug, name: s.name, mode, figma: id };
+    const row = { slug: s.slug, name: s.name, mode, figma: id, codeAhead: codeAhead.includes(s.slug) };
     if (fs.existsSync(ref)) {
       const a = PNG.sync.read(fs.readFileSync(ref));
       const b = fit(PNG.sync.read(fs.readFileSync(file)), a.width, a.height);
@@ -80,7 +82,7 @@ for (const s of screens) {
       row.size = { figma: [a.width, a.height] };
     } else row.score = null;
     report.push(row);
-    console.log(`${s.name} ${mode}: ${row.score === null ? 'no Figma export' : `${row.score}% (1px-tolerant ${row.score1px}%)`}`);
+    console.log(`${s.name} ${mode}: ${row.score === null ? 'no Figma export' : `${row.score}% (1px-tolerant ${row.score1px}%)`}${row.codeAhead ? ' · code ahead of Figma (pending sync): not a failure' : ''}`);
     if (SHOTS) {
       await page.setViewportSize({ width: 1100, height: 1000 });
       for (const lang of ['en', 'ar']) {

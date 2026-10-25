@@ -18,11 +18,12 @@ export type Comment = {
   y: number;
   author: string | null;
   body: string;
+  reply?: string | null; // the design team's answer (written with --resolve --reply)
   images?: string[] | null; // storage paths (<project>/<comment id>/<n>.webp), or data: URLs in the local store
   status: 'open' | 'resolved';
   created_at: string;
 };
-export type NewComment = Omit<Comment, 'id' | 'project' | 'status' | 'created_at' | 'images'>;
+export type NewComment = Omit<Comment, 'id' | 'project' | 'status' | 'created_at' | 'images' | 'reply'>;
 
 const env = import.meta.env;
 const URL_ = (env.VITE_SUPABASE_URL || '').replace(/\/$/, '');

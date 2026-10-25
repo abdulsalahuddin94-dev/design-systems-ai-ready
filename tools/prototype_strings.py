@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from build_prototype import base_name, slugify  # noqa: E402
+from build_prototype import base_name, slugify, load_screens  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -58,7 +58,7 @@ def make_key(text, taken):
 
 def build(project):
     project = Path(project).resolve()
-    data = load(project / "prototype" / "data" / "screens.json")
+    data = load_screens(project / "prototype" / "data" / "screens.json")
     sdir = project / "data" / "strings"
     sdir.mkdir(parents=True, exist_ok=True)
     content = set(load(sdir / "content.json", {"texts": []}).get("texts", []))

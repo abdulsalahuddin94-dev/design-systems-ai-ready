@@ -133,7 +133,7 @@ http.createServer((req, res) => {
       if (who !== 'service') return send(res, 403, { message: 'permission denied for table prototype_comments' });
       const hit = rows.filter(match);
       if (req.method === 'DELETE') rows = rows.filter((r) => !hit.includes(r));
-      else for (const r of hit) for (const k of ['status', 'resolved_at', 'body']) if (body[k] !== undefined) r[k] = body[k];
+      else for (const r of hit) for (const k of ['status', 'resolved_at', 'body', 'reply']) if (body[k] !== undefined) r[k] = body[k];
       save();
       return send(res, 200, hit);
     }

@@ -106,6 +106,11 @@ for (const [device, viewport] of Object.entries(sizes)) {
         const sc = document.querySelector('.fp-screen');
         const dock = sc.querySelector('[data-dock="bottom"]');
         if (!dock) return null;
+        if (sc.scrollHeight <= sc.clientHeight + 1) {
+          // a static (Viewport) screen: no scrolling, the bar at the bottom over the content, as in Figma
+          const a = sc.getBoundingClientRect(), r = dock.getBoundingClientRect();
+          return { mid: Math.abs(r.bottom - a.bottom) <= 2, end: true, hidden: false, fixed: true };
+        }
         const at = () => { const a = sc.getBoundingClientRect(), r = dock.getBoundingClientRect(); return Math.abs(r.bottom - a.bottom) <= 2; };
         sc.scrollTop = (sc.scrollHeight - sc.clientHeight) / 2;
         await new Promise((r) => setTimeout(r, 150));
@@ -119,6 +124,9 @@ for (const [device, viewport] of Object.entries(sizes)) {
       if (d && (!d.mid || !d.end)) problems.push(`${device} ${slug}: pinned bottom bar not at the bottom while scrolling (${JSON.stringify(d)})`);
       if (d && d.hidden) problems.push(`${device} ${slug}: content hidden behind the pinned bottom bar at the end of the scroll`);
       if (d) docks++;
+      const fixedScreen = await page.evaluate(() => !!document.querySelector('.fp-screen [data-fixed-screen]'));
+      const scrolls = await page.evaluate(() => { const s = document.querySelector('.fp-screen'); return s.scrollHeight > s.clientHeight + 1 && getComputedStyle(s).overflowY !== 'hidden'; });
+      if (fixedScreen && scrolls) problems.push(`${device} ${slug}: a Viewport (one-screen) frame scrolls`);
     }
     // AR: directional icons mirror, media controls stay left to right
     await page.goto(`${URL}#/now-playing?mode=Dark&lang=ar`);
