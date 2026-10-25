@@ -36,7 +36,9 @@ aside ul { list-style: none; margin: 0; padding: 0; }
 /* Code panel and toolbar (shell chrome): no preflight runs, so their buttons drop the browser's own colours and borders
    (in the base layer, so the Tailwind size and colour classes still win). */
 @layer base {
-  [data-code-panel] button, [data-toolbar] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
+  [data-code-panel] button, [data-toolbar] button, [data-comments-panel] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
+  [data-comments-panel] input, [data-comments-panel] textarea { font-family: inherit; color: inherit; }
+  .fp-pins button { font-family: system-ui, sans-serif; cursor: pointer; }
 }
 
 /* AR: icons that point a direction mirror (back, lists, lyrics); media playback controls and their progress bar stay

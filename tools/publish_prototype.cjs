@@ -6,7 +6,8 @@
 // Builds <project>/prototype with Vite for the sub-path /<name>/, checks the build for secrets, pushes it to the repo's
 // gh-pages branch (a normal commit on top of the last one, never a force push), and turns Pages on for that branch.
 // Uses the gh-pages branch, not a GitHub Actions workflow, so no `workflow` token scope is needed. A new repo also gets
-// a short README on its default branch. Prints the live URL.
+// a short README on its default branch. Prints the live URL. Comments: Vite reads prototype/.env.local (the public
+// anon key, VITE_*); the build is refused if the service key from that file appears in it.
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -41,6 +42,13 @@ const SECRET = /(ghp_|gho_|github_pat_|figd_|sk-ant-|sk-[A-Za-z0-9]{20}|-----BEG
 const walk = (d) => fs.readdirSync(d, { withFileTypes: true }).flatMap((e) => (e.isDirectory() ? walk(path.join(d, e.name)) : [path.join(d, e.name)]));
 const leaks = walk(dist).filter((f) => /\.(js|css|html|json|txt|map)$/.test(f) && SECRET.test(fs.readFileSync(f, 'utf8')));
 if (leaks.length) { console.error('Possible secrets, nothing published:\n' + leaks.join('\n')); process.exit(3); }
+// The comments service key (prototype/.env.local, SUPABASE_SERVICE_KEY) must never reach the build; the anon key may.
+const envFile = path.join(app, '.env.local');
+const service = fs.existsSync(envFile) && ((/^\s*SUPABASE_SERVICE_KEY\s*=\s*(.+?)\s*$/m.exec(fs.readFileSync(envFile, 'utf8')) || [])[1] || '').replace(/^["']|["']$/g, '');
+if (service && walk(dist).some((f) => fs.readFileSync(f, 'utf8').includes(service))) {
+  console.error('The Supabase service key is in the build. Nothing published.');
+  process.exit(3);
+}
 
 // 3. The repo.
 let exists = true;

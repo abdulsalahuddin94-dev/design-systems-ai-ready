@@ -33,6 +33,7 @@ npm --prefix "My Projects/<Project>/prototype" run dev       (http://localhost:5
 node scripts/fidelity.mjs --shots <folder>                   (in the prototype folder, while dev runs)
 node scripts/check_live.mjs --url <local or live URL>         (every screen x mode x language, desktop + phone, navigation, Inspect, Code panel; --code-only for the panel alone)
 node tools/publish_prototype.cjs "My Projects/<Project>" --repo <owner>/<name> [--create]
+node tools/prototype_comments.cjs "My Projects/<Project>" --schema | --pull | --resolve <id>
 ```
 
 Step 2 (publish): `tools/publish_prototype.cjs` builds for the repo's sub-path, refuses to publish anything that looks like a secret, pushes the build to the `gh-pages` branch (normal commit, never a force push; no Actions workflow, so no `workflow` token scope), turns Pages on and prints the URL. `--create` makes a public repo with a short README, only after the user's yes. At phone width the prototype drops the phone frame, shows a screen picker and scales the screen to the width; Inspect works by tap.
@@ -96,6 +97,15 @@ What is left is no longer a component difference: text anti-aliasing (the browse
 ## Step 3 results (Music App, Listen, 2026-10-25)
 
 8 screens x 5 platforms, `data/code_map.json` with 40 components, 255 tokens and 38 icons (no Code Connect map in this project, so names are derived from Figma). Check: unknown names 0, raw values 0. Live check: 80 code views (8 screens x 5 platforms x desktop and phone), Inspect -> highlight on every platform, Copy, Light/Dark, EN/AR, no sideways scroll.
+
+## Step 4: comments (2026-10-25, in progress)
+
+- **Overlay:** a **Comment** toggle in the toolbar (it closes Code and Inspect). A tap on the screen drops a pin and opens a small form (name optional, text); the comment keeps the screen, the element's `data-figma-node` and DS component, theme, language, viewport and the pin position in Figma pixels. The Comments panel lists the screen's comments (resolved ones hidden unless "Show resolved"); pins mirror when the comment was made in the other text direction. Side panel on desktop, bottom sheet at phone width. Reviewers need no account.
+- **Store:** with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in `<project>/prototype/.env.local` (git-ignored) the page talks to the Supabase REST API with the public anon key (no client library); without them it keeps comments in the browser ("Local test store"), so the overlay works before Supabase exists.
+- **Supabase:** `node tools/prototype_comments.cjs "My Projects/<Project>" --schema` writes `prototype/supabase/schema.sql` from `templates/supabase/schema.sql` (table `prototype_comments`; RLS: anon may only read and add open comments of this project; no anon update or delete). Run it once in the Supabase SQL Editor.
+- **Triage:** `--pull` writes `prototype/comments/inbox.json` and `inbox.md` (open comments by screen, then component and Figma node; each with its id and "Triage: fix / decision / info"); `--resolve <id>` marks one resolved. Both use `SUPABASE_SERVICE_KEY` from the same `.env.local`; it is never printed, never committed, and `publish_prototype.cjs` refuses to publish a build that contains it (Vite only exposes `VITE_*` values). Nothing is applied to Figma without the owner's approval of the triage.
+- **Test before Supabase:** `node tools/mock_supabase.cjs --project <slug> [--store <file>]` is a local stand-in for the REST API with the same rules (test keys `mock-anon-key` / `mock-service-key`); build with `vite build --mode mock` and a `.env.mock` pointing at it. `check_live.mjs --comments` posts one test comment per device and checks the form, pin, metadata, the shared list in a second browser and the layout.
+- Results with the mock: comments posted and read back on desktop and phone (Dark / AR), a second browser sees them, `--pull` and `--resolve` work, resolved comments are hidden by default; the anon key cannot update, delete, post to another project or post a resolved comment (403), no key is refused (401); the service key is not in the bundle.
 
 ## Lessons from step 1
 - FigCli eval output stops at 20,000 characters: big screens are read shallow, then child by child (Explore Full = 14 calls).

@@ -1,5 +1,5 @@
 // Live check of a prototype (local dev or the published URL), in the prototype folder:
-//   node scripts/check_live.mjs --url <https://.../name/ or http://localhost:5190/> [--shots <folder>] [--code-only]
+//   node scripts/check_live.mjs --url <https://.../name/ or http://localhost:5190/> [--shots <folder>] [--code-only] [--comments]
 // For every screen x Light/Dark x EN/AR, on desktop (1280 x 900) and phone width (390 x 844): the page renders DS
 // components, no image is broken, no console error. Then: navigation (bottom navigation, Mini Player, Lyrics, back) and
 // Inspect (a tap shows the component and Figma node without navigating), and the Code panel: every screen in every
@@ -13,7 +13,10 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const URL = opt('--url', 'http://localhost:5190/').replace(/\/?$/, '/');
 const SHOTS = opt('--shots', null);
-const CODE_ONLY = args.includes('--code-only'); // skip the screen x mode x language loop (quick panel check)
+const CODE_ONLY = args.includes('--code-only');
+const COMMENTS = args.includes('--comments'); // also post one test comment per device and read it back
+let commentStore = null;
+const postedIds = []; // skip the screen x mode x language loop (quick panel check)
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 const routes = fs.readFileSync(path.join(process.cwd(), 'src', 'generated', 'routes.tsx'), 'utf8');
 const slugs = [...routes.matchAll(/\{ slug: "([^"]+)"/g)].map((m) => m[1]);
@@ -205,11 +208,61 @@ for (const [device, viewport] of Object.entries(sizes)) {
     if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${device}-code-${mode}-${lang}.png`) });
   }
   if (bgs.Light === bgs.Dark) problems.push(`${device} code panel: same background in Light and Dark (${bgs.Light})`);
+
+  // Comments (only with --comments: it posts one real test comment per device to the prototype's store).
+  if (COMMENTS) {
+    const cp = '[data-comments-panel]';
+    const note = `Live check (${device}) ${new Date().toISOString().slice(0, 19)}`;
+    await page.goto(`${URL}#/explore-viewport?mode=Dark&lang=ar`);
+    await page.reload();
+    await page.waitForSelector('.fp-screen [data-component]');
+    await page.getByRole('button', { name: 'Comment', exact: true }).click();
+    const kind2 = await page.locator(cp).getAttribute('data-comments-panel').catch(() => null);
+    if (kind2 !== (device === 'phone' ? 'sheet' : 'side')) problems.push(`${device} comments panel: shown as "${kind2}"`);
+    const store = await page.locator(`${cp} [data-store]`).getAttribute('data-store');
+    commentStore = store;
+    // tap the Top App Bar (top of the screen, never under the phone sheet)
+    await page.locator('.fp-screen [data-component="Top App Bar"]').first().click({ position: { x: 40, y: 20 } });
+    if (!(await page.locator(`${cp} [data-comment-form]`).count())) problems.push(`${device} comments: no form after a tap on the screen`);
+    if (!(await page.locator('.fp-screen [data-pin="pending"]').count())) problems.push(`${device} comments: no pending pin`);
+    if ((await at()) !== 'explore-viewport') problems.push(`${device} comments: the tap navigated`);
+    if (await page.locator(`${cp} [data-comment-list] li`, { hasText: '· resolved' }).count()) problems.push(`${device} comments: resolved comments shown by default`);
+    await page.locator(`${cp} [data-comment-form] input[autocomplete="name"]`).fill('Atomica check');
+    await page.locator(`${cp} [data-comment-form] textarea`).fill(note);
+    await page.locator(`${cp} button[type="submit"]`).click();
+    try {
+      await page.waitForFunction(([sel, t]) => document.querySelector(`${sel} [data-comment-list]`)?.textContent.includes(t), [cp, note], { timeout: 15000 });
+    } catch (e) { problems.push(`${device} comments: posted comment not in the list (${await page.locator(`${cp} [role="alert"]`).textContent().catch(() => '')})`); }
+    const posted = await page.evaluate(([sel, t]) => {
+      const b = [...document.querySelectorAll(`${sel} [data-comment-id]`)].find((x) => x.textContent.includes(t));
+      return b ? { id: b.dataset.commentId, meta: b.textContent } : null;
+    }, [cp, note]);
+    if (posted) {
+      postedIds.push(posted.id);
+      if (!/Top App Bar/.test(posted.meta) || !/Dark \/ AR/.test(posted.meta)) problems.push(`${device} comments: metadata missing (${posted.meta.slice(0, 120)})`);
+      if (!(await page.locator(`.fp-screen [data-pin="${posted.id}"]`).count())) problems.push(`${device} comments: no pin for the posted comment`);
+    }
+    if (await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1 || (() => { const m = document.querySelector('main'); return m.scrollWidth > m.clientWidth + 1; })()))
+      problems.push(`${device} comments: horizontal scroll`);
+    if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${device}-comments.png`) });
+    // shared store: a fresh browser sees it after a reload
+    if (store === 'shared' && posted) {
+      const other = await browser.newContext({ viewport });
+      const p2 = await other.newPage();
+      await p2.goto(`${URL}#/explore-viewport?mode=Light&lang=en`);
+      await p2.waitForSelector('.fp-screen [data-component]');
+      await p2.getByRole('button', { name: 'Comment', exact: true }).click();
+      try { await p2.waitForSelector(`[data-comment-id="${posted.id}"]`, { timeout: 15000 }); } catch (e) { problems.push(`${device} comments: another browser does not see the comment`); }
+      if (SHOTS) await p2.screenshot({ path: path.join(SHOTS, `${device}-comments-other-browser-light-en.png`) });
+      await other.close();
+    }
+  }
   await context.close();
 }
 await browser.close();
 console.log(`${pages} screen views checked (${slugs.length} screens x Light/Dark x EN/AR x desktop/phone) + navigation + Inspect`);
 console.log(`${codeViews} code views checked (${slugs.length} screens x (5 platforms + Strings) x desktop/phone) + highlight + Copy + Light/Dark + EN/AR`);
+if (COMMENTS) console.log(`Comments (${commentStore} store): posted ${postedIds.length} test comment(s): ${postedIds.join(', ')}`);
 if (fitNotes.size) console.log(`Arabic fit notes (${fitNotes.size}):\n` + [...fitNotes].join('\n'));
 console.log(problems.length ? `${problems.length} problem(s):\n` + problems.join('\n') : 'No problems');
 process.exit(problems.length ? 1 : 0);
