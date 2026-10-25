@@ -1,0 +1,3 @@
+# Design preview, not a real app: keep it out of search engines.
+User-agent: *
+Disallow: /

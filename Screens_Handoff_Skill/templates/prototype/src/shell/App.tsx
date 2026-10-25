@@ -59,6 +59,9 @@ function Toggle({ label, icon, pressed, onClick, hint, compact }: {
 
 const Divider = () => <span aria-hidden="true" className="mx-1 h-5 w-px shrink-0 bg-[#333]" />;
 
+// Said on every page: browsers flag look-alike app screens on new URLs as phishing; this is a design preview.
+const BANNER_H = 28;
+
 type Pin = { id: string; n: number; x: number; y: number; resolved: boolean; pending?: boolean };
 
 function ScreenView({ slug, mode, lang, bare, height, pins, selected, onPin }: {
@@ -203,7 +206,7 @@ export function App() {
 
   // Phone width: no side list (a screen picker instead), no phone frame, the screen scaled to the window width.
   const narrow = win.w < 768;
-  const toolbarH = 104;
+  const toolbarH = 104 + BANNER_H;
   // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
   const room = win.w - 256 - (code ? 440 : commenting ? 360 : 0) - 32;
   const zoom = narrow ? Math.min(1, win.w / def.w) : Math.min(1, room / (def.w + 24));
@@ -225,7 +228,14 @@ export function App() {
   );
 
   return (
-    <div className={`flex h-full ${r.mode === 'Dark' ? 'dark' : ''}`}>
+    <div className="flex h-full flex-col">
+    <div role="note" data-banner="" style={{ height: BANNER_H }}
+      className="box-border flex shrink-0 items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap bg-neutral-800 px-4 text-center text-xs text-neutral-100">
+      <span className="font-semibold">Design prototype by Atomica</span>
+      <span className="opacity-80 md:hidden">· not a real app · no login</span>
+      <span className="hidden opacity-80 md:inline">· not a real app · no login · comments go to the design team</span>
+    </div>
+    <div className={`flex min-h-0 flex-1 ${r.mode === 'Dark' ? 'dark' : ''}`}>
       <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-black/10 p-4 md:block dark:border-white/10">
         <div className="mb-1 text-xs uppercase tracking-wide opacity-60">Live prototype</div>
         <div className="mb-4 text-lg font-semibold">{PROJECT.name}</div>
@@ -306,6 +316,7 @@ export function App() {
             } catch (e) { setCommentError(String((e as Error).message || e)); throw e; }
           }} />
       )}
+    </div>
     </div>
   );
 }

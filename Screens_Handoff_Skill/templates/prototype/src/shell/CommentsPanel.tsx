@@ -56,14 +56,15 @@ export function CommentsPanel({ comments, pending, narrow, selected, error, onSu
 
       {pending ? (
         <form onSubmit={submit} className="mx-4 mb-3 rounded-lg border border-indigo-400/60 p-3" data-comment-form="">
-          <div className="mb-2 text-xs opacity-70">New comment on <b>{pending.component || 'Frame'}</b> · {pending.figma_node || '-'}</div>
+          <div className="mb-1 text-sm font-semibold">Design feedback</div>
+          <div className="mb-2 text-xs opacity-70">On <b>{pending.component || 'Frame'}</b> · {pending.figma_node || '-'}. No login; only your comment and the optional name are saved.</div>
           <label className="mb-2 block text-xs">
             <span className="mb-1 block opacity-70">Name (optional)</span>
-            <input value={author} maxLength={80} onChange={(e) => setAuthor(e.target.value)} className={field} autoComplete="name" />
+            <input value={author} maxLength={80} onChange={(e) => setAuthor(e.target.value)} className={field} name="reviewer" autoComplete="off" />
           </label>
           <label className="block text-xs">
             <span className="mb-1 block opacity-70">Comment</span>
-            <textarea ref={text} value={body} required maxLength={2000} rows={3} onChange={(e) => setBody(e.target.value)} className={field} />
+            <textarea ref={text} name="feedback" value={body} required maxLength={2000} rows={3} onChange={(e) => setBody(e.target.value)} className={field} />
           </label>
           {error && <div role="alert" className="mt-2 text-xs text-red-500">{error}</div>}
           <div className="mt-2 flex justify-end gap-2">
@@ -73,7 +74,7 @@ export function CommentsPanel({ comments, pending, narrow, selected, error, onSu
           </div>
         </form>
       ) : (
-        <div className="mx-4 mb-3 rounded-lg bg-black/5 px-3 py-2 text-xs opacity-80 dark:bg-white/10">Tap an element on the screen to comment on it.</div>
+        <div className="mx-4 mb-3 rounded-lg bg-black/5 px-3 py-2 text-xs opacity-80 dark:bg-white/10">Tap an element on the screen to leave design feedback on it.</div>
       )}
 
       <div className="flex items-center justify-between border-t border-black/10 px-4 py-2 text-xs dark:border-white/10">

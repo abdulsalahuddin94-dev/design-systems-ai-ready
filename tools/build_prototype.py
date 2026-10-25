@@ -636,6 +636,8 @@ def main():
     idx = app / 'index.html'
     if head.exists() and '<!--FONTS-->' in idx.read_text(encoding='utf-8'):
         write(idx, idx.read_text(encoding='utf-8').replace('<!--FONTS-->', head.read_text(encoding='utf-8').strip()))
+    if '<!--PROJECT-->' in idx.read_text(encoding='utf-8'):
+        write(idx, idx.read_text(encoding='utf-8').replace('<!--PROJECT-->', project.name.replace('_', ' ')))
     if src_assets.exists():
         dst = app / 'public' / 'figma-img'
         dst.mkdir(parents=True, exist_ok=True)
