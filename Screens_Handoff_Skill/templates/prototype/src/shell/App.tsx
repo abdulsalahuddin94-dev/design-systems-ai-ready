@@ -1,9 +1,11 @@
-// Prototype shell: flow list on the left, the screen inside a phone frame, Light/Dark and EN/AR switches, Inspect.
+// Prototype shell: flow list on the left, the screen inside a phone frame, Light/Dark and EN/AR switches, Inspect,
+// and the Code panel (reference code per platform; an element picked with Inspect highlights its lines).
 // The shell is chrome only (neutral colors); everything inside the phone comes from the generated screens, which use
 // the project's DS components and tokens. ?bare=1 renders the screen alone at its Figma size (fidelity captures).
 import React from 'react';
 import { SCREENS, FLOWS, MODES, DEVICE, PROJECT } from '../generated/routes';
 import { useRoute, href, go } from './nav';
+import { CodePanel } from './CodePanel';
 
 function Segmented({ value, options, onChange, label }: { value: string; options: string[]; onChange: (v: string) => void; label: string }) {
   return (
@@ -41,17 +43,28 @@ function useWindowSize() {
   return s;
 }
 
-/** Inspect: hover (desktop) or tap (touch) an element to see its DS component and Figma node; a tap does not navigate. */
-function Inspector() {
+/** Inspect: hover (desktop) or tap (touch) an element to see its DS component and Figma node; a tap does not navigate.
+ *  A tap also reports the element's Figma node and its parents' nodes, so the Code panel can highlight its lines. */
+function Inspector({ onPick }: { onPick: (ids: string[]) => void }) {
   const [hit, setHit] = React.useState<{ c: string; id: string } | null>(null);
   React.useEffect(() => {
     const read = (e: Event) => {
       const el = (e.target as HTMLElement).closest('[data-component], [data-figma-node]') as HTMLElement | null;
       if (!el || !el.closest('.fp-screen')) return null;
-      return { c: el.dataset.component || el.dataset.figmaName || 'Frame', id: el.dataset.figmaNode || '' };
+      return { c: el.dataset.component || el.dataset.figmaName || 'Frame', id: el.dataset.figmaNode || '', el };
     };
-    const over = (e: MouseEvent) => setHit(read(e));
-    const tap = (e: MouseEvent) => { const h = read(e); if (h) { e.preventDefault(); e.stopPropagation(); setHit(h); } };
+    const chain = (el: HTMLElement) => {
+      const ids: string[] = [];
+      for (let n: HTMLElement | null = el; n && !n.classList.contains('fp-screen'); n = n.parentElement) {
+        if (n.dataset.figmaNode) ids.push(n.dataset.figmaNode);
+      }
+      return ids;
+    };
+    const over = (e: MouseEvent) => { const h = read(e); setHit(h && { c: h.c, id: h.id }); };
+    const tap = (e: MouseEvent) => {
+      const h = read(e);
+      if (h) { e.preventDefault(); e.stopPropagation(); setHit({ c: h.c, id: h.id }); onPick(chain(h.el)); }
+    };
     document.addEventListener('mouseover', over);
     document.addEventListener('click', tap, true);
     return () => { document.removeEventListener('mouseover', over); document.removeEventListener('click', tap, true); };
@@ -63,6 +76,9 @@ export function App() {
   const r = useRoute();
   const win = useWindowSize();
   const [inspect, setInspect] = React.useState(false);
+  const [code, setCode] = React.useState(false);
+  const [picked, setPicked] = React.useState<string[]>([]);
+  React.useEffect(() => { setPicked([]); }, [r.slug]);
   React.useEffect(() => { if (!r.slug && SCREENS[0]) go(SCREENS[0].slug); }, [r.slug]);
   React.useEffect(() => { document.documentElement.dataset.shell = r.mode === 'Dark' ? 'dark' : 'light'; }, [r.mode]);
   if (!SCREENS.length) return <p className="p-6">No screens generated yet. Run tools/build_prototype.py.</p>;
@@ -130,8 +146,10 @@ export function App() {
           <Segmented label="Language" value={r.lang === 'ar' ? 'AR' : 'EN'} options={['EN', 'AR']} onChange={(l) => { window.location.hash = href({ lang: l.toLowerCase() }); }} />
           <button type="button" aria-pressed={inspect} onClick={() => setInspect(!inspect)}
             className={`rounded-lg px-3 py-1 text-sm ${inspect ? 'bg-pink-600 text-white' : 'bg-black/5 dark:bg-white/10'}`}>Inspect</button>
+          <button type="button" aria-pressed={code} onClick={() => setCode(!code)}
+            className={`rounded-lg px-3 py-1 text-sm ${code ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-black/5 dark:bg-white/10'}`}>Code</button>
         </div>
-        {inspect && narrow && <Inspector />}
+        {inspect && narrow && <Inspector onPick={setPicked} />}
         {narrow ? (
           <div data-inspect={inspect ? 'on' : 'off'} className="relative" style={{ zoom }} aria-label="Screen">{screen}</div>
         ) : (
@@ -142,8 +160,10 @@ export function App() {
             </div>
           </div>
         )}
-        {inspect && !narrow && <Inspector />}
+        {inspect && !narrow && <Inspector onPick={setPicked} />}
+        {code && narrow && <div aria-hidden="true" className="h-[60vh] shrink-0" />}
       </main>
+      {code && <CodePanel slug={slug} picked={picked} narrow={narrow} onClose={() => setCode(false)} />}
     </div>
   );
 }

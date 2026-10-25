@@ -8,7 +8,8 @@ Reads   <project>/prototype/data/screens.json  (tools/screens_export.cjs)
         <project>/storybook/component-map.json (Figma component name -> Storybook React export)
         <project>/storybook/src/tokens/tokens.css, styles/text-styles.css (CSS names of tokens and text styles)
 Writes  <project>/prototype/ (a copy of Screens_Handoff_Skill/templates/prototype/ on the first run or with --refresh,
-        node_modules kept), src/generated/screens/*.tsx, routes.ts, theme.css, ds.config.json, public/figma-img/.
+        node_modules kept), src/generated/screens/*.tsx, routes.ts, theme.css, ds.config.json, public/figma-img/,
+        and the Code panel's reference code through tools/screen_code.py (public/code/, data/code_map.json).
 
 The prototype reuses the project's Storybook components through the @ds alias; it never re-creates a component.
 Every element carries data-figma-node (Figma node id); every DS instance also data-component (its Figma name).
@@ -600,6 +601,9 @@ def main():
     if report['structure_differs']:
         print('  Light and Dark frames differ in structure: ' + ', '.join(report['structure_differs']))
     print('  Raw values (no token): %d' % len(ctx.raw))
+    # Reference code for the Code panel (deterministic, DS names only; its check must report 0 / 0).
+    import screen_code
+    screen_code.run(project)
     print('Run: npm --prefix "%s" install (first time), then npm --prefix "%s" run dev' % (app, app))
 
 

@@ -12,7 +12,7 @@ Each step ends with a report to Abdul and a go / no-go answer. Nothing moves to 
 
 1. **Local prototype from Figma.** `tools/screens_export.figma.js` (read-only) exports each screen of the flow as a tree of DS instances (main component, variant properties, text overrides, auto layout, sizes) plus its prototype reactions (routes, overlays) into `data/screens.json`. `tools/build_prototype.py` generates the screens and routes into a copy of `templates/prototype/` (Vite + React + TypeScript + Tailwind v4, `@theme` from the project's `data/tokens.json`, the project's Storybook components reused, never re-created). Android device frame, Light/Dark and EN/AR toggles, flow list on the left; every element carries `data-figma-node` and `data-component`. Fidelity check: each prototype screen against the Figma export of the same frame, Light and Dark, up to 3 fix rounds. Runs locally only; nothing is published.
 2. **Every mode.** All screens of the flow in Light/Dark and EN/AR (RTL), with the prototype interactions from Figma (navigate, overlays, back).
-3. **Code handoff.** A Code tab per screen with Jetpack Compose code that uses the real DS names (md.sys tokens, component and property names as in Figma and Storybook).
+3. **Code handoff.** A Code panel per screen with reference code for Jetpack Compose, SwiftUI, Flutter, React Native and React (Web), using only the real DS names (component, property and token names derived from Figma, as in the Storybook). Generated, never written by an LLM at runtime.
 4. **Comment round trip.** A reviewer comments on an element in the prototype; the comment lands in Figma on the matching node (`data-figma-node`), and a fix in Figma regenerates the prototype.
 5. **Decide.** Measure tokens and time, compare with building the same screens by hand, and decide whether this becomes a workflow step (intake, decisions, dashboard).
 
@@ -20,7 +20,7 @@ Each step ends with a report to Abdul and a go / no-go answer. Nothing moves to 
 
 - Fidelity **>= 98%** per screen on the Music App Listen screens (prototype vs Figma export, same size and mode), measured with the **1px-tolerant score** (Abdul, 2026-10-22): a pixel matches when the prototype has a close colour within 1px, so browser text anti-aliasing and sub-pixel line placement do not count as design differences. The strict score (pixelmatch, threshold 0.1) is always reported next to it. Both come from `scripts/fidelity.mjs`.
 - Light and Dark, EN and AR (RTL) all render correctly.
-- Compose code uses the real DS names, no raw values.
+- The reference code (every platform) uses only names that exist in the DS and no raw values: the check reports unknown names 0 and raw values 0.
 - One comment completes the round trip prototype -> Figma -> prototype.
 
 ## How step 1 runs
@@ -31,11 +31,18 @@ python tools/build_prototype.py "My Projects/<Project>" --flow <flow name>
 npm --prefix "My Projects/<Project>/prototype" install      (first time)
 npm --prefix "My Projects/<Project>/prototype" run dev       (http://localhost:5190)
 node scripts/fidelity.mjs --shots <folder>                   (in the prototype folder, while dev runs)
-node scripts/check_live.mjs --url <local or live URL>         (every screen x mode x language, desktop + phone, navigation, Inspect)
+node scripts/check_live.mjs --url <local or live URL>         (every screen x mode x language, desktop + phone, navigation, Inspect, Code panel; --code-only for the panel alone)
 node tools/publish_prototype.cjs "My Projects/<Project>" --repo <owner>/<name> [--create]
 ```
 
 Step 2 (publish): `tools/publish_prototype.cjs` builds for the repo's sub-path, refuses to publish anything that looks like a secret, pushes the build to the `gh-pages` branch (normal commit, never a force push; no Actions workflow, so no `workflow` token scope), turns Pages on and prints the URL. `--create` makes a public repo with a short README, only after the user's yes. At phone width the prototype drops the phone frame, shows a screen picker and scales the screen to the width; Inspect works by tap.
+
+Step 3 (code panel): `tools/build_prototype.py` ends by running `tools/screen_code.py` (also runnable alone). It is deterministic: the same `data/screens.json` always gives the same code, no LLM is called.
+- `data/code_map.json` in the project: every DS component (name, properties, variant values), token, text style and icon -> what developers type per platform. Names come from `tools/platform_names.py` (`screen_component`, `screen_prop`, `screen_enum`, `screen_token`, `screen_text_style`, `screen_icon`; Flutter and React Native added there). A Code Connect map in `data/code-connect.json` (`{"<Figma component>": {"compose": "Name", ...}}`) wins over the derived component names when it exists.
+- `prototype/public/code/<slug>.json`: per platform the code and the line range of every Figma node. Layout comes from the Figma auto layout (Column / Row, VStack / HStack, flex) with spacing, padding and colours as DS tokens; instances become DS component calls with their variant, property, nested item (First Item, Second Tab ...) and adapter values; links from `adapters.json` / the Figma reactions become `navigate("<screen>")`.
+- Platform names: Compose `MaterialTheme.colorScheme.surface`, `AppTheme.spacing.spacing16`, `MaterialTheme.shapes.medium`, enums `MediaCardSize.Large`; SwiftUI `DS.Colors.surface`, `DS.Spacing.spacing16`, `.large`; Flutter `Theme.of(context).colorScheme.surface`, `AppSpacing.spacing16`; React Native `tokens.color.surface`; React (Web) the Storybook components with their Figma property names and the DS CSS variables (`var(--md-sys-spacing-16)`), no Tailwind classes.
+- Check (fails the build step when not 0 / 0): every component, token, text style and icon the generator used exists in the DS, and a scan of the finished code finds no name outside `code_map` plus each platform's layout primitives (Column, VStack, View ...) and no raw colour or size (hex, `0x`, `dp` / `px` / `pt` / `sp` literals). Texts are content and are skipped.
+- Panel: **Code** button in the toolbar; platform tabs (the project's platform first), **Copy**, the label "Reference code, not production code"; with Inspect on, a tapped element highlights its lines (the element's Figma node, else its nearest parent's). Side panel on desktop, bottom sheet at phone width; follows Light/Dark; the code stays left to right in AR; long lines wrap, so nothing scrolls sideways.
 
 `<Project>/prototype/adapters.json` (optional, project-specific) maps what the Storybook components take beyond the Figma properties (photos, nested texts) and the links between screens when the Figma file has no prototype reactions. Spec language: `tx:<layer>`, `tx*:<layer>` (all numbered copies), `img`, `ni:<layer>.c|v`, `v:<variant>`, `p:<property>`, `w:` / `h:`, `{"eq": [spec, value]}`, `{"const": x}`, `{"zip": {...}}`; events `"screen:<name>"`, `"overlay:<name>"`, `"back"`, `{"by_index": {...}}`; `instances` adapts one layer name.
 
@@ -81,11 +88,19 @@ Main-component gaps fixed in the Storybook (Utility Bar items at the top, Tile l
 
 What is left is no longer a component difference: text anti-aliasing (the browser and Figma rasterize glyphs differently) and 1-2px sub-pixel line placement, which the strict score counts on every glyph edge, so text-dense screens score lowest (Library - Podcasts). The 1px-tolerant score counts a pixel as matching when the prototype has a close colour within 1px.
 
+## Step 3 results (Music App, Listen, 2026-10-25)
+
+8 screens x 5 platforms, `data/code_map.json` with 40 components, 255 tokens and 38 icons (no Code Connect map in this project, so names are derived from Figma). Check: unknown names 0, raw values 0. Live check: 80 code views (8 screens x 5 platforms x desktop and phone), Inspect -> highlight on every platform, Copy, Light/Dark, EN/AR, no sideways scroll.
+
 ## Lessons from step 1
 - FigCli eval output stops at 20,000 characters: big screens are read shallow, then child by child (Explore Full = 14 calls).
 - FigCli `export node` hangs on layers inside instances, and every export (FigCli or `exportAsync`) cuts a layer at its clipping parent. Screens rebuilt from screenshots use one source image cropped many times (`scaleMode CROP`): read each layer's hash and transform, fetch each source once by hash, cut the crops locally (Pillow). Never take "the first image paint": hidden paints sit under the visible one.
 - A hidden Figma tab (another window on top, or minimized) makes node and image reads fail with "Unable to establish connection to Figma after 10 seconds"; reading image bytes by hash still works. Ask for the tab in front before image work.
 - JSX attribute strings take no escapes: strings with quotes go in `{...}`.
+- Git Bash rewrites an argument that starts with `/` into a Windows path (`--base /name/` became `C:/Program Files/Git/name/`). Run Vite from Node (`tools/publish_prototype.cjs`) or set `MSYS_NO_PATHCONV=1`; check the built `index.html` asset paths.
+- Running `npx` through `execFileSync(..., { shell: true })` prints Node's DEP0190 warning; call `node node_modules/vite/bin/vite.js` with `process.execPath` instead (no shell).
+- Step 3: the prototype has no Tailwind preflight, so new shell buttons keep the browser's grey background and black text (unreadable in Dark). Reset them in `@layer base`, never unlayered (an unlayered rule beats the Tailwind size classes).
+- The reference-code tree is shared by the five renderers: platform details (a Compose modifier, an RN style) are passed as arguments, never stored on the tree, or they leak into the next platform.
 
 ## Rules for the trial
 

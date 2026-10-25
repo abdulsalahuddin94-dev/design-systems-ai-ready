@@ -25,12 +25,15 @@ if (!project || !repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
 }
 const [owner, name] = repo.split('/');
 const app = path.join(project, 'prototype');
-const run = (cmd, a, o = {}) => execFileSync(cmd, a, Object.assign({ encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], shell: process.platform === 'win32' && cmd === 'npx' }, o));
+// No shell: arguments go to the program as they are (no quoting problems, no Node DEP0190 warning).
+const run = (cmd, a, o = {}) => execFileSync(cmd, a, Object.assign({ encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }, o));
 const git = (cwd, ...a) => run('git', a, { cwd });
 
 // 1. Build for the sub-path.
 console.log(`Building ${path.relative(ROOT, app)} for /${name}/ ...`);
-run('npx', ['vite', 'build', '--base', `/${name}/`], { cwd: app });
+const viteBin = path.join(app, 'node_modules', 'vite', 'bin', 'vite.js');
+if (!fs.existsSync(viteBin)) { console.error(`No ${path.relative(ROOT, viteBin)}. Run npm install in the prototype folder first.`); process.exit(5); }
+run(process.execPath, [viteBin, 'build', '--base', `/${name}/`], { cwd: app });
 const dist = path.join(app, 'dist');
 
 // 2. No secrets in what goes public (tokens of GitHub, Figma, OpenAI / Anthropic style keys, private keys).
