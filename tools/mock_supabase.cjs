@@ -3,8 +3,8 @@
 // so the comment overlay and tools/prototype_comments.cjs can be tested before a Supabase project exists.
 // Usage: node tools/mock_supabase.cjs --project <slug> [--port 54321] [--store <file.json>]
 // Keys: anon = "mock-anon-key", service = "mock-service-key" (test values, never real keys).
-// Same rules as Screens_Handoff_Skill/templates/supabase/schema.sql: the anon key may read and add open comments of
-// <slug> only; update and delete need the service key. Supports the PostgREST subset the tools use:
+// Same rules as Screens_Handoff_Skill/templates/supabase/schema.sql: the anon key may read and add open comments
+// (project slug [a-z0-9-]); update and delete need the service key. --project only names the default slug. Supports the PostgREST subset the tools use:
 // GET ?project=eq.x&screen=eq.y&status=eq.open&order=created_at.asc, POST (Prefer: return=representation), PATCH ?id=eq.x.
 'use strict';
 const http = require('http');
@@ -71,7 +71,7 @@ http.createServer((req, res) => {
   req.on('end', () => {
     const { match, order } = filters(url);
     // RLS: the anon role only sees this project's rows
-    const visible = rows.filter((r) => who === 'service' || r.project === PROJECT);
+    const visible = rows.filter((r) => who === 'service' || /^[a-z0-9-]{1,64}$/.test(r.project));
     if (req.method === 'GET') {
       let out = visible.filter(match);
       if (order) {
@@ -88,7 +88,7 @@ http.createServer((req, res) => {
       for (const c of list) {
         const row = Object.fromEntries(FIELDS.filter((k) => c[k] !== undefined).map((k) => [k, c[k]]));
         row.status = row.status || 'open';
-        if (who === 'anon' && (row.project !== PROJECT || row.status !== 'open'))
+        if (who === 'anon' && (!/^[a-z0-9-]{1,64}$/.test(row.project || '') || row.status !== 'open'))
           return send(res, 403, { message: 'new row violates row-level security policy for table "prototype_comments"' });
         const bad = valid(row);
         if (bad) return send(res, 400, { message: bad });

@@ -1,8 +1,9 @@
 -- Live Prototype comments (Screens_Handoff_Skill, step 4). Run once in the Supabase SQL Editor of the test project.
--- tools/prototype_comments.cjs --schema writes this file for a project with {{PROJECT}} filled in.
--- Reviewers post from the public prototype with the anon key: they can add a comment and read the comments of this
--- project only. Nobody with the anon key can change or delete a comment; triage (--pull) and --resolve use the
--- service key, which stays in the owner's local .env.local and bypasses these policies.
+-- One Supabase project serves every Atomica project: rows are kept apart by their project slug (the prototype sends
+-- its own, tools/prototype_comments.cjs reads only its project's rows). Run once; new projects need no Supabase step.
+-- Reviewers post from the public prototype with the anon key: they can add open comments and read comments. Nobody
+-- with the anon key can change or delete a comment; triage (--pull) and --resolve use the service key, which stays in
+-- the owner's ~/.atomica/supabase.env and bypasses these policies. Safe to run again (it replaces the policies).
 
 create table if not exists public.prototype_comments (
   id          uuid primary key default gen_random_uuid(),
@@ -27,14 +28,16 @@ create index if not exists prototype_comments_project_screen on public.prototype
 alter table public.prototype_comments enable row level security;
 
 drop policy if exists "anon reads this project's comments" on public.prototype_comments;
-create policy "anon reads this project's comments" on public.prototype_comments
-  for select to anon
-  using (project = '{{PROJECT}}');
-
 drop policy if exists "anon adds open comments to this project" on public.prototype_comments;
-create policy "anon adds open comments to this project" on public.prototype_comments
+drop policy if exists "anon reads prototype comments" on public.prototype_comments;
+create policy "anon reads prototype comments" on public.prototype_comments
+  for select to anon
+  using (project ~ '^[a-z0-9-]{1,64}$');
+
+drop policy if exists "anon adds open prototype comments" on public.prototype_comments;
+create policy "anon adds open prototype comments" on public.prototype_comments
   for insert to anon
-  with check (project = '{{PROJECT}}' and status = 'open' and resolved_at is null);
+  with check (project ~ '^[a-z0-9-]{1,64}$' and status = 'open' and resolved_at is null);
 
 -- No update or delete policy for anon: with RLS on, those are refused.
 revoke update, delete, truncate on public.prototype_comments from anon;

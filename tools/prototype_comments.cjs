@@ -4,8 +4,9 @@
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --schema           writes prototype/supabase/schema.sql
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --pull             writes prototype/comments/inbox.json + inbox.md
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --resolve <id>     marks one comment resolved
-//   [--env <file>]  default <project>/prototype/.env.local
-// The env file (git-ignored, on the owner's device only) holds:
+//   [--env <file>]  a project override, default <project>/prototype/.env.local
+// Keys come from the shared file %USERPROFILE%/.atomica/supabase.env (one Supabase project for every Atomica
+// project, set up once per device), then the project's .env.local (git-ignored) overrides any of them. They hold:
 //   VITE_SUPABASE_URL=https://<ref>.supabase.co
 //   VITE_SUPABASE_ANON_KEY=<anon / publishable key> (public by design: the prototype page uses it)
 //   SUPABASE_SERVICE_KEY=<service_role / secret key> (secret: only this tool reads it; Vite never exposes non-VITE_ keys)
@@ -36,23 +37,24 @@ function readEnv(file) {
   }
   return env;
 }
+const SHARED = path.join(require('os').homedir(), '.atomica', 'supabase.env');
 const envFile = path.resolve(opt('--env', path.join(app, '.env.local')));
-const env = readEnv(envFile);
+const env = { ...readEnv(SHARED), ...readEnv(envFile) };
 const PROJECT = env.VITE_COMMENTS_PROJECT || slug(path.basename(project));
 
 if (flag('--schema')) {
   const tpl = fs.readFileSync(path.join(ROOT, 'Screens_Handoff_Skill', 'templates', 'supabase', 'schema.sql'), 'utf8');
   const out = path.join(app, 'supabase', 'schema.sql');
   fs.mkdirSync(path.dirname(out), { recursive: true });
-  fs.writeFileSync(out, tpl.split('{{PROJECT}}').join(PROJECT));
-  console.log(`Wrote ${path.relative(ROOT, out)} for project "${PROJECT}". Run it once in the Supabase SQL Editor.`);
+  fs.writeFileSync(out, tpl);
+  console.log(`Wrote ${path.relative(ROOT, out)}. Run it once in the Supabase SQL Editor; it serves every project (rows are kept apart by their project slug, "${PROJECT}" here).`);
   process.exit(0);
 }
 
 const URL_ = (env.VITE_SUPABASE_URL || '').replace(/\/$/, '');
 const KEY = env.SUPABASE_SERVICE_KEY;
 if (!URL_ || !KEY) {
-  console.error(`No VITE_SUPABASE_URL / SUPABASE_SERVICE_KEY in ${path.relative(ROOT, envFile)}. See the header of this file for the format.`);
+  console.error(`No VITE_SUPABASE_URL / SUPABASE_SERVICE_KEY in ~/.atomica/supabase.env or ${path.relative(ROOT, envFile)}. See the header of this file for the format.`);
   process.exit(3);
 }
 // Legacy service_role keys are JWTs and also go in Authorization; the newer secret keys (sb_secret_...) only in apikey.

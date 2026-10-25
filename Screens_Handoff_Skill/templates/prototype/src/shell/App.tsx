@@ -171,7 +171,13 @@ export function App() {
   React.useEffect(() => {
     if (!commenting || !curSlug) return;
     let live = true;
-    const load = () => listComments(curSlug).then((c) => { if (live) { setComments(c); setCommentError(null); } })
+    // A refresh that started before a post finished must not drop the new comment: keep this browser's recent posts.
+    const load = () => listComments(curSlug).then((c) => {
+      if (!live) return;
+      const ids = new Set(c.map((x) => x.id));
+      setComments((prev) => [...c, ...prev.filter((x) => !ids.has(x.id) && Date.now() - Date.parse(x.created_at) < 120000)]);
+      setCommentError(null);
+    })
       .catch((e) => { if (live) setCommentError(String(e.message || e)); });
     load();
     const t = window.setInterval(load, 20000);

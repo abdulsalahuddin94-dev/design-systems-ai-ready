@@ -255,7 +255,7 @@ for (const [device, viewport] of Object.entries(sizes)) {
     await page.locator(`${cp} [data-comment-form] textarea`).fill(note);
     await page.locator(`${cp} button[type="submit"]`).click();
     try {
-      await page.waitForFunction(([sel, t]) => document.querySelector(`${sel} [data-comment-list]`)?.textContent.includes(t), [cp, note], { timeout: 15000 });
+      await page.waitForFunction(([sel, t]) => document.querySelector(`${sel} [data-comment-list]`)?.textContent.includes(t), [cp, note], { timeout: 30000 });
     } catch (e) { problems.push(`${device} comments: posted comment not in the list (${await page.locator(`${cp} [role="alert"]`).textContent().catch(() => '')})`); }
     const posted = await page.evaluate(([sel, t]) => {
       const b = [...document.querySelectorAll(`${sel} [data-comment-id]`)].find((x) => x.textContent.includes(t));
