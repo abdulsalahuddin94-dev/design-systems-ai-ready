@@ -33,8 +33,8 @@ aside ul { list-style: none; margin: 0; padding: 0; }
 /* Inspect mode: outline every DS instance and show its component name. */
 [data-inspect='on'] [data-component] { outline: 1px dashed rgba(255, 0, 128, 0.7); outline-offset: -1px; cursor: help; }
 
-/* Code panel (shell chrome): no preflight runs, so its buttons drop the browser's own colours and borders
+/* Code panel and toolbar (shell chrome): no preflight runs, so their buttons drop the browser's own colours and borders
    (in the base layer, so the Tailwind size and colour classes still win). */
 @layer base {
-  [data-code-panel] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
+  [data-code-panel] button, [data-toolbar] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
 }

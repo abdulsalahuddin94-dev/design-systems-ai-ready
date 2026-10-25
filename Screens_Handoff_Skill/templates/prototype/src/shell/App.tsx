@@ -7,18 +7,52 @@ import { SCREENS, FLOWS, MODES, DEVICE, PROJECT } from '../generated/routes';
 import { useRoute, href, go } from './nav';
 import { CodePanel } from './CodePanel';
 
-function Segmented({ value, options, onChange, label }: { value: string; options: string[]; onChange: (v: string) => void; label: string }) {
+// Toolbar (shell chrome, the same dark bar in Light and Dark): segmented Light/Dark and EN/AR, Inspect and Code toggles.
+const ICONS: Record<string, React.ReactNode> = {
+  Light: <><circle cx="12" cy="12" r="4" /><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" /></>,
+  Dark: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z" />,
+  Inspect: <><circle cx="12" cy="12" r="7" /><circle cx="12" cy="12" r="2" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3" /></>,
+  Code: <path d="m8 7-5 5 5 5M16 7l5 5-5 5M14 4l-4 16" />,
+};
+function Icon({ name }: { name: string }) {
   return (
-    <div role="radiogroup" aria-label={label} className="inline-flex rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      {ICONS[name]}
+    </svg>
+  );
+}
+const CONTROL = 'inline-flex h-8 items-center justify-center gap-1.5 rounded-lg px-2.5 text-[13px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-400';
+const IDLE = 'bg-transparent text-neutral-400 hover:bg-white/10 hover:text-neutral-100';
+
+function Segmented({ value, options, onChange, label, icons, compact }: {
+  value: string; options: string[]; onChange: (v: string) => void; label: string; icons?: boolean; compact?: boolean;
+}) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex items-center gap-0.5">
       {options.map((o) => (
-        <button key={o} type="button" role="radio" aria-checked={value === o} onClick={() => onChange(o)}
-          className={`rounded-md px-3 py-1 text-sm ${value === o ? 'bg-white shadow-sm text-black' : 'opacity-70'}`}>
-          {o}
+        <button key={o} type="button" role="radio" aria-checked={value === o} title={`${label}: ${o}`} onClick={() => onChange(o)}
+          className={`${CONTROL} ${value === o ? 'bg-neutral-100 text-neutral-900' : IDLE}`}>
+          {icons && ICONS[o] ? <Icon name={o} /> : null}
+          <span className={icons && compact ? 'sr-only' : ''}>{o}</span>
         </button>
       ))}
     </div>
   );
 }
+
+function Toggle({ label, icon, pressed, onClick, hint, compact }: {
+  label: string; icon: string; pressed: boolean; onClick: () => void; hint: string; compact?: boolean;
+}) {
+  return (
+    <button type="button" aria-pressed={pressed} title={hint} onClick={onClick}
+      className={`${CONTROL} ${pressed ? 'bg-indigo-400/15 text-indigo-200 ring-1 ring-inset ring-indigo-400' : IDLE}`}>
+      <Icon name={icon} />
+      <span className={compact ? 'sr-only' : ''}>{label}</span>
+    </button>
+  );
+}
+
+const Divider = () => <span aria-hidden="true" className="mx-1 h-5 w-px shrink-0 bg-[#333]" />;
 
 function ScreenView({ slug, mode, lang, bare, height }: { slug: string; mode: string; lang: string; bare: boolean; height?: number }) {
   const def = SCREENS.find((s) => s.slug === slug) || SCREENS[0];
@@ -95,7 +129,9 @@ export function App() {
   // Phone width: no side list (a screen picker instead), no phone frame, the screen scaled to the window width.
   const narrow = win.w < 768;
   const toolbarH = 104;
-  const zoom = narrow ? Math.min(1, win.w / def.w) : 1;
+  // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
+  const room = win.w - 256 - (code ? 440 : 0) - 32;
+  const zoom = narrow ? Math.min(1, win.w / def.w) : Math.min(1, room / (def.w + 24));
   const screenH = narrow ? Math.floor((win.h - toolbarH) / zoom) : DEVICE.viewport;
   const screen = (
     <>
@@ -133,8 +169,8 @@ export function App() {
         ))}
         <div className="mt-6 text-xs opacity-60">Figma: {PROJECT.figmaFile}<br />Exported {PROJECT.exportedAt.slice(0, 10)}</div>
       </aside>
-      <main className="flex min-w-0 flex-1 flex-col items-center overflow-auto">
-        <div className="flex w-full flex-wrap items-center justify-center gap-2 p-3 md:gap-3">
+      <main className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto overflow-x-hidden">
+        <div className="box-border flex w-full flex-wrap items-center justify-center gap-2 p-3">
           <label className="w-full md:hidden">
             <span className="sr-only">Screen</span>
             <select value={slug} onChange={(e) => go(e.target.value)}
@@ -142,18 +178,25 @@ export function App() {
               {SCREENS.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
             </select>
           </label>
-          <Segmented label="Color mode" value={r.mode} options={MODES} onChange={(m) => { window.location.hash = href({ mode: m }); }} />
-          <Segmented label="Language" value={r.lang === 'ar' ? 'AR' : 'EN'} options={['EN', 'AR']} onChange={(l) => { window.location.hash = href({ lang: l.toLowerCase() }); }} />
-          <button type="button" aria-pressed={inspect} onClick={() => setInspect(!inspect)}
-            className={`rounded-lg px-3 py-1 text-sm ${inspect ? 'bg-pink-600 text-white' : 'bg-black/5 dark:bg-white/10'}`}>Inspect</button>
-          <button type="button" aria-pressed={code} onClick={() => setCode(!code)}
-            className={`rounded-lg px-3 py-1 text-sm ${code ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900' : 'bg-black/5 dark:bg-white/10'}`}>Code</button>
+          <div role="toolbar" aria-label="Prototype controls" data-toolbar=""
+            className="flex items-center rounded-xl border border-[#333] bg-[#1E1E1E] p-1 text-neutral-200 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
+            <Segmented label="Color mode" value={r.mode} options={MODES} icons compact={narrow} onChange={(m) => { window.location.hash = href({ mode: m }); }} />
+            <Divider />
+            <Segmented label="Language" value={r.lang === 'ar' ? 'AR' : 'EN'} options={['EN', 'AR']} onChange={(l) => { window.location.hash = href({ lang: l.toLowerCase() }); }} />
+            <Divider />
+            <div className="flex items-center gap-0.5">
+              <Toggle label="Inspect" icon="Inspect" pressed={inspect} onClick={() => setInspect(!inspect)} compact={narrow}
+                hint="Inspect: hover or tap an element to see its DS component and Figma node" />
+              <Toggle label="Code" icon="Code" pressed={code} onClick={() => setCode(!code)} compact={narrow}
+                hint="Code: reference code of this screen per platform" />
+            </div>
+          </div>
         </div>
         {inspect && narrow && <Inspector onPick={setPicked} />}
         {narrow ? (
           <div data-inspect={inspect ? 'on' : 'off'} className="relative" style={{ zoom }} aria-label="Screen">{screen}</div>
         ) : (
-          <div data-inspect={inspect ? 'on' : 'off'} className="relative my-2 rounded-[44px] bg-neutral-900 p-3 shadow-2xl ring-1 ring-black/40" aria-label="Android phone">
+          <div data-inspect={inspect ? 'on' : 'off'} className="relative my-2 shrink-0 rounded-[44px] bg-neutral-900 p-3 shadow-2xl ring-1 ring-black/40" style={{ zoom }} aria-label="Android phone">
             <div className="relative overflow-hidden rounded-[32px]">
               {screen}
               <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-2.5 h-3 w-3 -translate-x-1/2 rounded-full bg-black" />

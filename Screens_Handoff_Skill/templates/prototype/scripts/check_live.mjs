@@ -20,7 +20,8 @@ const slugs = [...routes.matchAll(/\{ slug: "([^"]+)"/g)].map((m) => m[1]);
 const fnName = Object.fromEntries([...routes.matchAll(/\{ slug: "([^"]+)", name: "([^"]+)"/g)].map((m) => [m[1], m[2].replace(/[^A-Za-z0-9]/g, '') + 'Screen']));
 
 async function launch() {
-  for (const channel of ['msedge', 'chrome', undefined]) {
+  // Chrome first: Edge's SmartScreen can block a new github.io site with a warning page (seen 2026-10-25).
+  for (const channel of ['chrome', 'msedge', undefined]) {
     try { return await chromium.launch(channel ? { channel } : {}); } catch (e) { /* next */ }
   }
   throw new Error('No Chromium-based browser found');
@@ -45,10 +46,13 @@ for (const [device, viewport] of Object.entries(sizes)) {
     const r = await page.evaluate(() => ({
       comps: document.querySelectorAll('.fp-screen [data-component]').length,
       broken: [...document.querySelectorAll('.fp-screen img')].filter((i) => i.complete && i.naturalWidth === 0).map((i) => i.getAttribute('src')),
-      dir: document.querySelector('.fp-screen').getAttribute('dir'),
-      mode: document.querySelector('.fp-screen').getAttribute('data-semantic'),
+      dir: document.querySelector('.fp-screen')?.getAttribute('dir'),
+      mode: document.querySelector('.fp-screen')?.getAttribute('data-semantic'),
+      gone: !document.querySelector('.fp-screen'),
       overflowX: document.documentElement.scrollWidth > window.innerWidth + 1,
     }));
+    // the screen unmounted after it rendered (e.g. a lazy screen chunk failed to load)
+    if (r.gone) { problems.push(`${device} ${slug} ${mode} ${lang}: screen disappeared ${errors[0] ? '- ' + errors[0].slice(0, 120) : ''}`); continue; }
     pages++;
     if (r.broken.length) problems.push(`${device} ${slug} ${mode} ${lang}: ${r.broken.length} broken image(s), e.g. ${r.broken[0]}`);
     if (r.dir !== (lang === 'ar' ? 'rtl' : 'ltr') || r.mode !== mode) problems.push(`${device} ${slug} ${mode} ${lang}: mode/dir not applied`);
@@ -148,7 +152,8 @@ for (const [device, viewport] of Object.entries(sizes)) {
       bg: getComputedStyle(document.querySelector(sel)).backgroundColor,
       dir: getComputedStyle(document.querySelector(`${sel} pre`)).direction,
       code: !!document.querySelector(`${sel} [data-line]`),
-      overflowX: document.documentElement.scrollWidth > window.innerWidth + 1,
+      overflowX: document.documentElement.scrollWidth > window.innerWidth + 1
+        || (() => { const m = document.querySelector('main'); return m.scrollWidth > m.clientWidth + 1; })(),
     }), panel);
     bgs[mode] = r.bg;
     if (!r.code || r.dir !== 'ltr' || r.overflowX) problems.push(`${device} code ${mode} ${lang}: code ${r.code}, direction ${r.dir}, horizontal scroll ${r.overflowX}`);
