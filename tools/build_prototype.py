@@ -57,6 +57,9 @@ class Ctx:
         self.uses_nav = set()
 
     # ---- tokens ----
+    def has_var(self, token):
+        return any(k.split('::', 1)[-1] == token for k in self.var_css)
+
     def var(self, token):
         """Figma variable name -> CSS custom property (from tokens.css), e.g. md/sys/color/surface -> --md-sys-color-surface."""
         if not token:
@@ -202,6 +205,31 @@ ALIGN = {'MIN': 'items-start', 'CENTER': 'items-center', 'MAX': 'items-end', 'BA
 SIDES = ['pt', 'pr', 'pb', 'pl']
 
 
+def pins(root):
+    """Children of a screen frame that stay in place while the screen scrolls, from Figma: scroll behaviour FIXED
+    (Fix position when scrolling), or positioned absolutely against the frame's bottom or top edge, together with the
+    absolute children stacked on them (a Mini Player above a Bottom Navigation). Returns {'top': [...], 'bottom': [...]},
+    each in screen order, with 'gap' = the Figma distance to the previous child of the group."""
+    kids = root.get('ch') or []
+    out = {'top': [], 'bottom': []}
+    H = root['h']
+    fixed = [c for c in kids if (c.get('s') or {}).get('abs') or (c.get('s') or {}).get('sb') == 'FIXED']
+    edge = H
+    for c in sorted(fixed, key=lambda c: -(c['y'] + c['h'])):
+        if c['y'] + c['h'] >= edge - 16:   # touches the frame's bottom, or the bottom group within 16
+            out['bottom'].insert(0, c)
+            edge = c['y']
+    edge = 0
+    for c in sorted((c for c in fixed if c not in out['bottom']), key=lambda c: c['y']):
+        if c['y'] <= edge + 16:
+            out['top'].append(c)
+            edge = c['y'] + c['h']
+    for side in out.values():
+        for prev, c in zip([None] + side[:-1], side):
+            c['_gap'] = max(0, round(c['y'] - (prev['y'] + prev['h']))) if prev else 0
+    return out
+
+
 def spacing_class(prefix, value, token, ctx):
     if token:
         return '%s-(%s)' % (prefix, ctx.var(token))
@@ -302,7 +330,10 @@ def emit(node, parent_layout, ctx, ind=2):
         style['backgroundImage'] = 'url(%s)' % asset_url(node['id'])
         style['backgroundSize'] = 'cover'
     if node.get('clip'):
-        cls.append('overflow-hidden')
+        if parent_layout == 'ROOT':
+            style['overflow'] = 'clip'  # clip, not hidden: hidden would stop the pinned dock from sticking to the screen
+        else:
+            cls.append('overflow-hidden')
     if node.get('rt'):
         style['borderRadius'] = 'var(%s)' % ctx.var(node['rt'])
     elif node.get('r'):
@@ -310,7 +341,27 @@ def emit(node, parent_layout, ctx, ind=2):
     if click:
         attrs['onClick'] = click
         cls.append('cursor-pointer')
-    kids = [emit(c, lay, ctx, ind + 2) for c in node.get('ch') or []]
+    pinned = pins(node) if parent_layout == 'ROOT' else {'top': [], 'bottom': []}
+    pinned_ids = {c['id'] for side in pinned.values() for c in side}
+    kids = [emit(c, lay, ctx, ind + 2) for c in node.get('ch') or [] if c['id'] not in pinned_ids]
+    for side, at in (('top', 0), ('bottom', None)):
+        if not pinned[side]:
+            continue
+        # The dock stays at the top / bottom of the screen while the content scrolls, and takes its own height, so
+        # nothing ends up hidden behind it.
+        dock = []
+        for c in pinned[side]:
+            c2 = dict(c, s={k: v for k, v in (c.get('s') or {}).items() if k not in ('abs', 'sb')})
+            if c['_gap']:
+                tok = 'md/sys/spacing/%d' % c['_gap']
+                dock.append('%s  <div aria-hidden="true" className=%s />' % (pad, js(spacing_class('h', c['_gap'], tok if ctx.has_var(tok) else None, ctx))))
+            dock.append(emit(c2, {'m': 'VERTICAL'}, ctx, ind + 4))
+        dstyle = {'position': 'sticky', 'zIndex': 10, ('top' if side == 'top' else 'bottom'): 0}
+        if side == 'bottom':
+            dstyle['marginTop'] = 'auto'
+        tag = '%s<div className="fp-dock flex flex-col items-center self-stretch" data-dock=%s%s>' % (pad + '  ', js(side), style_attr(dstyle))
+        block = [tag] + dock + ['%s  </div>' % pad]
+        kids = (block + kids) if side == 'top' else (kids + block)
     open_tag = '%s<div className=%s%s%s>' % (pad, js(' '.join(cls)), attr_str(attrs), style_attr(style))
     if not kids:
         return open_tag[:-1] + ' />'

@@ -34,6 +34,7 @@ const problems = [];
 const sizes = { desktop: { width: 1280, height: 900 }, phone: { width: 390, height: 844 } };
 let pages = 0;
 let codeViews = 0;
+let docks = 0;
 const fit = {};
 const fitNotes = new Set();
 const arDict = await fetch(`${URL}strings/ar.json`).then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
@@ -95,6 +96,29 @@ for (const [device, viewport] of Object.entries(sizes)) {
     for (const c of Object.keys(ar)) if ((ar[c] || 0) > (en[c] || 0)) fitNotes.add(`${device} ${slug}: ${c} cuts ${ar[c]} text(s) in AR vs ${en[c] || 0} in EN`);
   }
   if (!CODE_ONLY) {
+    // Pinned bars (Figma fixed / absolute at the bottom edge): visible while scrolling, and they hide no content at the end
+    for (const slug of slugs) {
+      await page.goto(`${URL}#/${slug}?mode=Dark&lang=en`);
+      await page.waitForSelector('.fp-screen [data-component]');
+      await page.waitForTimeout(300);
+      const d = await page.evaluate(async () => {
+        const sc = document.querySelector('.fp-screen');
+        const dock = sc.querySelector('[data-dock="bottom"]');
+        if (!dock) return null;
+        const at = () => { const a = sc.getBoundingClientRect(), r = dock.getBoundingClientRect(); return Math.abs(r.bottom - a.bottom) <= 2; };
+        sc.scrollTop = (sc.scrollHeight - sc.clientHeight) / 2;
+        await new Promise((r) => setTimeout(r, 150));
+        const mid = at();
+        sc.scrollTop = sc.scrollHeight;
+        await new Promise((r) => setTimeout(r, 150));
+        const top = dock.getBoundingClientRect().top;
+        const hidden = [...sc.querySelectorAll('[data-component]')].filter((e) => !dock.contains(e)).some((e) => e.getBoundingClientRect().bottom > top + 1);
+        return { mid, end: at(), hidden };
+      });
+      if (d && (!d.mid || !d.end)) problems.push(`${device} ${slug}: pinned bottom bar not at the bottom while scrolling (${JSON.stringify(d)})`);
+      if (d && d.hidden) problems.push(`${device} ${slug}: content hidden behind the pinned bottom bar at the end of the scroll`);
+      if (d) docks++;
+    }
     // AR: directional icons mirror, media controls stay left to right
     await page.goto(`${URL}#/now-playing?mode=Dark&lang=ar`);
     await page.waitForSelector('.fp-screen [data-component]');
@@ -261,6 +285,7 @@ for (const [device, viewport] of Object.entries(sizes)) {
 }
 await browser.close();
 console.log(`${pages} screen views checked (${slugs.length} screens x Light/Dark x EN/AR x desktop/phone) + navigation + Inspect`);
+if (!CODE_ONLY) console.log(`${docks} pinned bottom bars checked while scrolling (screen x desktop/phone)`);
 console.log(`${codeViews} code views checked (${slugs.length} screens x (5 platforms + Strings) x desktop/phone) + highlight + Copy + Light/Dark + EN/AR`);
 if (COMMENTS) console.log(`Comments (${commentStore} store): posted ${postedIds.length} test comment(s): ${postedIds.join(', ')}`);
 if (fitNotes.size) console.log(`Arabic fit notes (${fitNotes.size}):\n` + [...fitNotes].join('\n'));

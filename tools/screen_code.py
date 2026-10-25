@@ -25,7 +25,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import platform_names as pn  # noqa: E402
-from build_prototype import base_name, slugify, parse_css_names, tx_list  # noqa: E402
+from build_prototype import base_name, slugify, parse_css_names, tx_list, pins  # noqa: E402
 import prototype_strings  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -183,7 +183,16 @@ def ir_frame(node, ctx, parent_axis, root=False):
             ctx.raw.append(f"padding {pv} without a token ({where})")
         pad.append(k if pv and k else None)
     fill = ctx.tok(node.get("f"), where) if isinstance(node.get("f"), str) else None
-    kids = [ir_node(c, ctx, axis) for c in node.get("ch", [])]
+    dock, pinned_ids = [], set()
+    if root:
+        for c in pins(node)["bottom"]:
+            pinned_ids.add(c["id"])
+            if c["_gap"]:
+                dock.append(("gap", ctx.tok("md/sys/spacing/%d" % c["_gap"], where)))
+            item = ir_node(dict(c, s={k: v for k, v in (c.get("s") or {}).items() if k not in ("abs", "sb")}), ctx, "col")
+            if item:
+                dock.append(("node", item))
+    kids = [ir_node(c, ctx, axis) for c in node.get("ch", []) if c["id"] not in pinned_ids]
     kids = [k for k in kids if k]
     overflow = axis == "row" and node.get("clip") and sum(c.get("w", 0) for c in node.get("ch", [])) > node.get("w", 0) + 1
     stretch, grow = fill_of(node, parent_axis)
@@ -191,7 +200,7 @@ def ir_frame(node, ctx, parent_axis, root=False):
             "pad": pad, "main": l.get("pa") or "MIN", "cross": l.get("ca") or "MIN", "fill": fill,
             "scroll": "v" if root else ("h" if overflow else None), "root": root,
             "stretch": stretch, "grow": grow, "children": kids,
-            "space": space_token(node, ctx, parent_axis) if not kids else None}
+            "space": space_token(node, ctx, parent_axis) if not kids else None, "dock": dock}
 
 
 def space_token(node, ctx, parent_axis):
@@ -531,6 +540,22 @@ class Renderer:
         out += [(side, k) for side, k in (("top", t), ("end", r), ("bottom", b), ("start", l)) if k]
         return out
 
+    def dock_items(self, w, dock, depth, start=None):
+        """The pinned bottom group (Mini Player, Bottom Navigation ...) with its Figma gaps as spacing tokens."""
+        for kind, item in dock:
+            if kind == "gap":
+                if not item:
+                    continue
+                t = self.tok(item)
+                w.add(depth, {"compose": f"Spacer(modifier = Modifier.height({t}))", "swiftui": f"Spacer().frame(height: {t})",
+                              "flutter": f"SizedBox(height: {t}),", "react-native": f"<View style={{{{ height: {t} }}}} />",
+                              "web": f"<div style={{{{ height: {q(t, 'web')} }}}} />"}[self.p])
+            else:
+                s0 = len(w.lines)
+                self.child_inst(w, item, depth, "col", {"_stretch_default": False}) if self.p in ("react-native", "web") \
+                    else self.child_inst(w, item, depth, "col")
+                w.mark(item["id"], s0)
+
     def spacer(self, w, node, depth, parent=None):
         """An empty frame: a flexible Spacer when it fills its row / column, a fixed one with the DS spacing token
         of its width (in a row) or height (in a column), else nothing."""
@@ -567,6 +592,8 @@ class Renderer:
         m = []
         if node.get("root"):
             m.append(".fillMaxSize()")
+            if node.get("dock"):
+                m.append(".padding(innerPadding)")
         elif node["grow"]:
             m.append(".weight(1f)")
         if node["stretch"]:
@@ -589,6 +616,21 @@ class Renderer:
         return "Modifier" + m[0] if len(m) == 1 else "Modifier\n" + "\n".join(m)
 
     def stack_compose(self, w, n, depth, parent):
+        if n.get("root") and n.get("dock"):
+            # pinned bottom group from Figma -> Scaffold bottomBar; the content scrolls above it
+            w.add(depth, "Scaffold(")
+            w.add(depth + 1, "bottomBar = {")
+            w.add(depth + 2, "Column(horizontalAlignment = Alignment.CenterHorizontally) {")
+            self.dock_items(w, n["dock"], depth + 3)
+            w.add(depth + 2, "}")
+            w.add(depth + 1, "},")
+            w.add(depth, ") { innerPadding ->")
+            self._stack_compose(w, n, depth + 1, parent)
+            w.add(depth, "}")
+            return
+        self._stack_compose(w, n, depth, parent)
+
+    def _stack_compose(self, w, n, depth, parent):
         col = n["axis"] == "col"
         params = []
         mods = self.compose_mods(n, parent)
@@ -668,6 +710,13 @@ class Renderer:
             w.add(depth, "}")
             for x in outer_mods:
                 w.add(depth, x)
+        if n.get("root") and n.get("dock"):
+            # pinned bottom group from Figma: stays above the home indicator while the content scrolls
+            w.add(depth, ".safeAreaInset(edge: .bottom, spacing: 0) {")
+            w.add(depth + 1, "VStack(spacing: 0) {")
+            self.dock_items(w, n["dock"], depth + 2)
+            w.add(depth + 1, "}")
+            w.add(depth, "}")
 
     # Flutter -----------------------------------------------------------------------------------------
     def edge(self, pad):
@@ -703,10 +752,19 @@ class Renderer:
         if not n.get("root"):
             w.add(depth, f"// {n['name']}")
         wraps = self.wrappers_flutter(n, parent)
+        docked = n.get("root") and n.get("dock")
+        if docked:
+            # pinned bottom group from Figma -> Scaffold bottomNavigationBar; the background moves to the Scaffold
+            wraps = [x for x in wraps if not x.startswith("ColoredBox(")]
+            w.add(depth, "Scaffold(")
+            if n.get("fill"):
+                w.add(depth + 1, f"backgroundColor: {self.tok(n['fill'])},")
+            depth += 1
+            trailing = ","
         # each wrapper opens a call whose child is the next wrapper, then the Row / Column
         d = depth
         for i, x in enumerate(wraps):
-            w.add(d, ("child: " if i else "") + x)
+            w.add(d, ("child: " if i else ("body: " if docked else "")) + x)
             d += 1
         params = []
         gap = n["gap"] if n["gap"] and self.ds.value(n["gap"]) != 0 else None
@@ -720,7 +778,7 @@ class Renderer:
             params.append(f"crossAxisAlignment: {ca}")
         if not col and n.get("scroll") == "h" or col and n.get("scroll") == "v":
             params.append("mainAxisSize: MainAxisSize.min")
-        prefix = "child: " if wraps else ""
+        prefix = "child: " if wraps else ("body: " if docked else "")
         w.add(d, f"{prefix}{'Column' if col else 'Row'}(")
         for prm in params:
             w.add(d + 1, prm + ",")
@@ -732,6 +790,14 @@ class Renderer:
         for i in range(len(wraps)):
             d -= 1
             w.add(d, ")" + ("," if i < len(wraps) - 1 or trailing else ""))
+        if docked:
+            w.add(depth, "bottomNavigationBar: Column(")
+            w.add(depth + 1, "mainAxisSize: MainAxisSize.min,")
+            w.add(depth + 1, "children: [")
+            self.dock_items(w, n["dock"], depth + 2)
+            w.add(depth + 1, "],")
+            w.add(depth, "),")
+            w.add(depth - 1, ")")
 
     # React Native / Web --------------------------------------------------------------------------------
     def style_items(self, n, parent, web):
@@ -784,10 +850,10 @@ class Renderer:
         items = self.self_style(n, parent, parent_node) + self.style_items(n, parent, web)
         if not n.get("root"):
             w.add(depth, f"{{/* {n['name']} */}}")
-        style = "{{ " + ", ".join(items) + " }}"
+        style = "{{ " + ", ".join(items) + " }}" if items else ""
         if web:
             tag = "div"
-            open_ = f"<div style={style}>"
+            open_ = f"<div style={style}>" if style else "<div>"
         elif n.get("scroll"):
             tag = "ScrollView"
             outer = [x for x in items if x.startswith(("flex:", "alignSelf", "backgroundColor"))]
@@ -797,7 +863,7 @@ class Renderer:
             open_ = f"<ScrollView {attrs}contentContainerStyle={{{{ {', '.join(inner)} }}}}>"
         else:
             tag = "View"
-            open_ = f"<View style={style}>"
+            open_ = f"<View style={style}>" if style else "<View>"
         if len(open_) + depth * 2 > WIDTH:
             if web or not n.get("scroll"):
                 open_ = f"<{tag}\n  style={{{{\n" + "".join(f"    {x},\n" for x in items) + "  }}\n>"
@@ -814,10 +880,30 @@ class Renderer:
         w.add(depth, f"</{tag}>")
 
     def stack_react_native(self, w, n, depth, parent):
-        self.stack_jsx(w, n, depth, parent, False)
+        self.jsx_root(w, n, depth, parent, False)
 
     def stack_web(self, w, n, depth, parent):
-        self.stack_jsx(w, n, depth, parent, True)
+        self.jsx_root(w, n, depth, parent, True)
+
+    def jsx_root(self, w, n, depth, parent, web):
+        if not (n.get("root") and n.get("dock")):
+            return self.stack_jsx(w, n, depth, parent, web)
+        # pinned bottom group from Figma: the screen is a column; the content scrolls, the dock stays under it
+        bg = f"{'background' if web else 'backgroundColor'}: {self.jsv(n['fill'], web)}" if n.get("fill") else ""
+        outer = ", ".join(x for x in (("display: 'flex', flexDirection: 'column', height: '100%'" if web else "flex: 1"), bg) if x)
+        tag = "div" if web else "View"
+        w.add(depth, f"<{tag} style={{{{ {outer} }}}}>")
+        inner = dict(n, fill=None)
+        if web:
+            w.add(depth + 1, "<div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>")
+            self.stack_jsx(w, dict(inner, scroll=None), depth + 2, parent, web)
+            w.add(depth + 1, "</div>")
+        else:
+            self.stack_jsx(w, inner, depth + 1, parent, web)
+        w.add(depth + 1, f"<{tag} style={{{{ {'display: ' + chr(39) + 'flex' + chr(39) + ', flexDirection: ' + chr(39) + 'column' + chr(39) + ', ' if web else ''}alignItems: 'center' }}}}>")
+        self.dock_items(w, n["dock"], depth + 2)
+        w.add(depth + 1, f"</{tag}>")
+        w.add(depth, f"</{tag}>")
 
     # instances inside a stack ----------------------------------------------------------------------
     def child_inst(self, w, n, depth, parent, parent_node=None):
@@ -913,12 +999,12 @@ def screen_file(ds, platform, ir, screen, figma_file, refs):
 
 ALLOWED = {
     "compose": {"Column", "Row", "Modifier", "Arrangement", "Alignment", "Icon", "MaterialTheme", "AppTheme", "AppIcons",
-                "Composable", "R", "Spacer"},
+                "Composable", "R", "Spacer", "Scaffold"},
     "swiftui": {"VStack", "HStack", "ScrollView", "Spacer", "Image", "View", "DS", "SwiftUI", "String"},
     "flutter": {"Column", "Row", "Padding", "EdgeInsets", "EdgeInsetsDirectional", "SizedBox", "Expanded", "ColoredBox",
                 "SingleChildScrollView", "Axis", "MainAxisAlignment", "CrossAxisAlignment", "MainAxisSize", "Icon",
                 "AssetImage", "Theme", "AppColors", "AppSpacing", "AppRadius", "AppSizes", "AppIcons", "AppTextStyles",
-                "StatelessWidget", "Widget", "BuildContext", "String", "Function", "Spacer", "AppLocalizations"},
+                "StatelessWidget", "Widget", "BuildContext", "String", "Function", "Spacer", "AppLocalizations", "Scaffold"},
     "react-native": {"ScrollView", "View", "React", "Icon"},
     "web": {"React", "Icon"},
 }

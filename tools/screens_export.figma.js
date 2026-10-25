@@ -143,6 +143,7 @@
     const s = {};
     if ('layoutSizingHorizontal' in n) { s.h = n.layoutSizingHorizontal; s.v = n.layoutSizingVertical; }
     if (n.layoutPositioning === 'ABSOLUTE') s.abs = true;
+    if (n.scrollBehavior && n.scrollBehavior !== 'SCROLLS') s.sb = n.scrollBehavior; // Figma "Fix position when scrolling"
     if (n.layoutGrow) s.grow = n.layoutGrow;
     return s;
   }
