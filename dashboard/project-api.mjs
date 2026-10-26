@@ -3,6 +3,7 @@
 // every action that changes something runs the workflow's own tools or starts a Claude conversation.
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 
 const readJson = (file, fallback = null) => {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return fallback; }
@@ -106,14 +107,87 @@ export function pipeline(o) {
   return { steps, next };
 }
 
-export async function handleProjectApi(req, res, url, { send, projectDir }) {
-  const m = url.pathname.match(/^\/api\/project\/([^/]+)\/([\w-]+)$/);
+// ---------- Review: comments from the live prototype ----------
+// The workflow's own tool talks to Supabase (keys stay in ~/.atomica/supabase.env); the dashboard only runs it.
+function commentsTool(root, dir, ...args) {
+  const r = spawnSync(process.execPath, [path.join(root, "tools", "prototype_comments.cjs"), dir, ...args], { encoding: "utf8", timeout: 60000 });
+  return { code: r.status, out: (r.stdout || "").trim(), err: (r.stderr || "").trim() };
+}
+const triageFile = (dir) => path.join(dir, "prototype", "comments", "triage.json");
+
+export function readComments(dir) {
+  const inbox = readJson(path.join(dir, "prototype", "comments", "inbox.json"), null);
+  const triage = readJson(triageFile(dir), {});
+  const imgDir = path.join(dir, "prototype", "comments", "images");
+  let files = [];
+  try { files = fs.readdirSync(imgDir); } catch {}
+  const comments = (inbox?.comments || []).map((c) => ({
+    ...c,
+    localImages: files.filter((f) => f.startsWith(c.id + "-")).sort(),
+    triage: triage[c.id] || null,
+  }));
+  return { pulledAt: inbox?.pulled_at || null, project: inbox?.project || null, comments };
+}
+
+function decide(dir, id, decision, note) {
+  const file = triageFile(dir);
+  const all = readJson(file, {});
+  all[id] = { ...(all[id] || {}), status: decision, note: note || all[id]?.note || null, decidedAt: new Date().toISOString() };
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
+  return all[id];
+}
+
+const MIME = { ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif" };
+
+export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root }) {
+  const m = url.pathname.match(/^\/api\/project\/([^/]+)\/([\w-]+(?:\/[\w-]+)?)$/);
   if (!m) return false;
   const dir = projectDir(decodeURIComponent(m[1]));
   if (!dir) { send(res, 404, { error: "unknown project" }); return true; }
   if (req.method === "GET" && m[2] === "overview") {
     const o = await projectOverview(dir);
     send(res, 200, { overview: o, pipeline: pipeline(o) });
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "comments") { send(res, 200, readComments(dir)); return true; }
+  if (req.method === "POST" && m[2] === "comments/pull") {
+    const r = commentsTool(root, dir, "--pull");
+    if (r.code !== 0) { send(res, 400, { error: r.err || "Pull failed", detail: r.out }); return true; }
+    send(res, 200, { message: r.out, ...readComments(dir) });
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "comments/resolve") {
+    const b = await readBody(req);
+    if (!/^[0-9a-f-]{36}$/i.test(String(b.id || ""))) { send(res, 400, { error: "bad comment id" }); return true; }
+    const args = ["--resolve", b.id];
+    if (b.reply) args.push("--reply", String(b.reply).slice(0, 2000));
+    const r = commentsTool(root, dir, ...args);
+    if (/SCHEMA_UPDATE_NEEDED/.test(r.err)) { send(res, 409, { error: "Supabase schema update needed: open Connect services.", schema: true }); return true; }
+    if (r.code !== 0) { send(res, 400, { error: r.err || "Could not close the comment" }); return true; }
+    if (b.decision) decide(dir, b.id, b.decision, b.reply);
+    commentsTool(root, dir, "--pull");
+    send(res, 200, { message: r.out, ...readComments(dir) });
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "comments/decide") {
+    const b = await readBody(req);
+    if (!/^[0-9a-f-]{36}$/i.test(String(b.id || "")) || !["approved", "rejected", "asked", "proposed"].includes(b.decision)) { send(res, 400, { error: "bad decision" }); return true; }
+    send(res, 200, { triage: decide(dir, b.id, b.decision, b.note) });
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "comment-image") {
+    const f = path.basename(String(url.searchParams.get("f") || ""));
+    const file = path.join(dir, "prototype", "comments", "images", f);
+    if (!f || !MIME[path.extname(f).toLowerCase()] || !fs.existsSync(file)) { send(res, 404, { error: "no image" }); return true; }
+    res.writeHead(200, { "Content-Type": MIME[path.extname(f).toLowerCase()], "Cache-Control": "no-store" });
+    res.end(fs.readFileSync(file));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "schema-status") {
+    const r = commentsTool(root, dir, "--schema-status");
+    if (r.code !== 0) { send(res, 200, { keys: false, upToDate: false, error: r.err }); return true; }
+    try { send(res, 200, JSON.parse(r.out)); } catch { send(res, 200, { keys: false, upToDate: false, error: r.out }); }
     return true;
   }
   send(res, 404, { error: "unknown project action" });

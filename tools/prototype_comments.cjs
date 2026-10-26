@@ -6,6 +6,7 @@
 //                                                                                (+ comments/images/ with the reference images)
 //   node tools/prototype_comments.cjs "My Projects/<Project>" --resolve <id> [--reply "text"]   marks one comment resolved,
 //                                                                                with the design team's answer shown under it
+//   node tools/prototype_comments.cjs "My Projects/<Project>" --schema-status    prints JSON: keys found, schema up to date, bucket
 //   [--env <file>]  a project override, default <project>/prototype/.env.local
 // Keys come from the shared file %USERPROFILE%/.atomica/supabase.env (one Supabase project for every Atomica
 // project, set up once per device), then the project's .env.local (git-ignored) overrides any of them. They hold:
@@ -23,7 +24,7 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); return i >= 0 ? args[i + 1] : d; };
 const flag = (k) => args.includes(k);
 const project = args[0] && !args[0].startsWith('--') ? path.resolve(ROOT, args[0]) : null;
-if (!project || !(flag('--schema') || flag('--pull') || flag('--resolve'))) {
+if (!project || !(flag('--schema') || flag('--pull') || flag('--resolve') || flag('--schema-status'))) {
   console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(1, 15).join('\n'));
   process.exit(2);
 }
@@ -64,6 +65,21 @@ const headers = { apikey: KEY, 'content-type': 'application/json', ...(KEY.start
 const api = `${URL_}/rest/v1/prototype_comments`;
 
 async function main() {
+  if (flag('--schema-status')) {
+    // Read-only: does the table have the current columns, and does the image bucket exist? No key is printed.
+    const out = { keys: true, url: URL_.replace(/^https?:\/\//, ''), table: false, reply: false, images: false, bucket: false };
+    const t = await fetch(`${api}?select=id&limit=1`, { headers });
+    out.table = t.ok;
+    for (const col of ['reply', 'images']) {
+      const r = await fetch(`${api}?select=${col}&limit=1`, { headers });
+      out[col] = r.ok;
+    }
+    const b = await fetch(`${URL_}/storage/v1/bucket/prototype-comments`, { headers });
+    out.bucket = b.ok;
+    out.upToDate = out.table && out.reply && out.images && out.bucket;
+    console.log(JSON.stringify(out));
+    return;
+  }
   if (flag('--resolve')) {
     const id = opt('--resolve');
     if (!/^[0-9a-f-]{36}$/i.test(id || '')) { console.error('--resolve needs a comment id (uuid)'); process.exit(2); }
@@ -71,7 +87,13 @@ async function main() {
       method: 'PATCH', headers: { ...headers, Prefer: 'return=representation' },
       body: JSON.stringify({ status: 'resolved', resolved_at: new Date().toISOString(), ...(opt('--reply') ? { reply: opt('--reply') } : {}) }),
     });
-    if (!r.ok) { console.error(`Resolve failed: HTTP ${r.status} ${(await r.text()).slice(0, 200)}`); process.exit(1); }
+    if (!r.ok) {
+      const t = await r.text();
+      // The Supabase project has an older schema (no reply / images column): say so, so callers can ask for the update.
+      if (/PGRST204/.test(t) && /'(reply|images)' column/.test(t)) { console.error('SCHEMA_UPDATE_NEEDED: run the current schema.sql once in Supabase (adds replies and images).'); process.exit(3); }
+      console.error(`Resolve failed: HTTP ${r.status} ${t.slice(0, 200)}`);
+      process.exit(1);
+    }
     const hit = await r.json();
     console.log(hit.length ? `Resolved ${id} (${hit[0].screen} · ${hit[0].component || hit[0].figma_node}).` : `No comment ${id} in "${PROJECT}".`);
     return;

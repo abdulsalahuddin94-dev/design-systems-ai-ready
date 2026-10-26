@@ -64,6 +64,7 @@ async function renderProjectPage(name, page) {
   const main = el("main", { class: "project" });
   app.replaceChildren(main);
   if (page === "pipeline") return drawPipeline(main, p, o, data?.pipeline);
+  if (page === "review") return drawReview(main, p, o);
   main.append(head(p, PROJECT_PAGES.find((x) => x[0] === page)?.[1] || page, "Coming in the next build stage."),
     el("p", { class: "p-empty" }, "This page is part of the dashboard plan (Pipeline, Plan, Design, Review, Sync, Connect services) and is built next."));
 }
@@ -110,4 +111,96 @@ function drawPipeline(main, p, o, pl) {
         el("button", { class: "ghost sm", type: "button", onclick: () => { location.hash = `#/project/${encodeURIComponent(p.name)}/sync`; } }, "Sync"))),
     el("section", { class: "p-panel" }, el("h2", { class: "section-title" }, "Activity"),
       el("div", { class: "p-feed" }, o.activity.length ? o.activity.map((a) => el("div", {}, el("time", {}, a.date), el("span", {}, a.title))) : el("p", { class: "muted" }, "No changelog entries yet.")))));
+}
+
+// ---------- Review: comments from the live prototype ----------
+// Pull from Supabase, triage with Claude, decide here, reply and close. Changes are applied online in the
+// prototype first (overrides); Figma sync is asked at the end, on the Sync page.
+const REVIEW_PROMPTS = {
+  triage: (p) => `Triage the open prototype comments of "${p}" (My Projects/${p}/prototype/comments/inbox.json). For each open comment write an entry in prototype/comments/triage.json: {"<id>": {"kind": "fix" | "decision" | "info", "proposal": "<what to change, DS components and tokens only>", "affects": ["<screen slugs>"], "status": "proposed"}}. Keep existing decisions. Do not change the prototype or Figma yet.`,
+  apply: (p, c) => `Apply this approved prototype comment of "${p}" online in the prototype first (prototype/data/overrides.json, DS components and tokens only, then rebuild and check), and add it to status.json > prototype.pending_figma_sync. Do not touch Figma. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Proposal: ${c.triage.proposal}` : ""}. When done, tell me the reply to close it with.`,
+  ask: (p, c) => `Help me decide on this prototype comment of "${p}" before anything changes. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Current proposal: ${c.triage.proposal}` : ""}. Give me the options with a recommendation.`,
+};
+const kindLabel = { fix: "Fix", decision: "Decision", info: "Info" };
+const decisionLabel = { proposed: "Proposed", approved: "Approved", rejected: "Rejected", asked: "Asked in chat" };
+
+async function drawReview(main, p, o) {
+  const enc = encodeURIComponent(p.name);
+  let filter = "open";
+  let data = await api(`/api/project/${enc}/comments`).catch((e) => { showError(e); return { comments: [] }; });
+  const notice = el("div", { class: "p-notice", role: "status", hidden: true });
+  const showSchemaNotice = () => {
+    notice.hidden = false;
+    notice.replaceChildren(icon("i-alert"), el("span", {}, el("b", {}, "Supabase schema update needed: "), "replies and images need the current schema. "),
+      el("a", { href: `#/project/${enc}/connect` }, "Open Connect services"));
+  };
+  const pull = el("button", { class: "ghost sm", type: "button" }, icon("i-download"), "Pull comments");
+  pull.onclick = async () => {
+    pull.disabled = true;
+    try { data = await api(`/api/project/${enc}/comments/pull`, {}); toast(data.message || "Pulled."); draw(); }
+    catch (e) { showError(e); }
+    finally { pull.disabled = false; }
+  };
+  const triage = el("button", { class: "primary sm", type: "button", onclick: () => start({ prompt: REVIEW_PROMPTS.triage(p.name), project: p.name, title: `Triage comments: ${p.title}` }).catch(showError) }, icon("i-sparkles"), "Triage open comments");
+  main.append(head(p, "Review", "Comments from the live prototype: decide, apply online, reply and close.", [pull, triage]), notice);
+  const tabs = el("div", { class: "p-seg", role: "tablist", "aria-label": "Filter comments" });
+  const pulled = el("span", { class: "muted small" });
+  const list = el("div", { class: "rv-list" });
+  main.append(el("div", { class: "rv-bar" }, tabs, pulled), list);
+
+  // Where "Show on screen" opens: the local preview when it runs, else the live link.
+  const base = o?.local?.running ? o.local.url : o?.publish?.url;
+  const screenLink = (c) => base && c.screen ? `${base.replace(/\/?$/, "/")}#/${c.screen}?${new URLSearchParams({ mode: c.theme || "Dark", lang: c.lang || "en", comment: c.id })}` : null;
+
+  async function closeWith(c, decision) {
+    const reply = await askText({ title: "Reply & close", help: `The reply shows under ${c.author || "this"} comment in the prototype.`, okLabel: "Reply & close", placeholder: decision === "rejected" ? "Why it stays as it is…" : "What changed…" });
+    if (!reply) return;
+    try { data = await api(`/api/project/${enc}/comments/resolve`, { id: c.id, reply, decision }); notice.hidden = true; toast("Comment closed."); draw(); }
+    catch (e) { if (/schema update needed/i.test(e.message)) showSchemaNotice(); else showError(e); }
+  }
+  async function setDecision(c, decision) {
+    try { const r = await api(`/api/project/${enc}/comments/decide`, { id: c.id, decision }); c.triage = { ...(c.triage || {}), ...r.triage }; draw(); }
+    catch (e) { showError(e); }
+  }
+
+  function card(c) {
+    const t = c.triage;
+    const open = c.status !== "resolved";
+    const link = screenLink(c);
+    const chat = (kind) => start({ prompt: REVIEW_PROMPTS[kind](p.name, c), project: p.name, title: `${kind === "apply" ? "Apply" : "Ask"}: ${c.screen}` }).catch(showError);
+    const img = (f) => `/api/project/${enc}/comment-image?f=${encodeURIComponent(f)}`;
+    return el("article", { class: `rv-card${open ? "" : " done"}`, "data-id": c.id },
+      el("header", {},
+        el("span", { class: "avatar", "aria-hidden": "true" }, (c.author || "?").trim().charAt(0).toUpperCase()),
+        el("div", { class: "who" }, el("b", {}, c.author || "Anonymous"), el("span", { class: "muted small" }, `${fmtDate(c.created_at)} · ${c.theme || "-"} / ${(c.lang || "-").toUpperCase()} · ${c.viewport || "-"}`)),
+        t?.kind ? el("span", { class: `tag k-${t.kind}` }, kindLabel[t.kind] || t.kind) : null,
+        el("span", { class: `tag ${open ? "open" : "res"}` }, open ? (t?.status && t.status !== "proposed" ? decisionLabel[t.status] : "Open") : "Resolved")),
+      el("div", { class: "where mono" }, c.screen || "-", c.component ? ` › ${c.component}` : "", c.figma_node ? ` · ${c.figma_node}` : ""),
+      el("p", { class: "body", dir: "auto" }, c.body),
+      c.localImages?.length ? el("div", { class: "thumbs" }, c.localImages.map((f, i) => el("a", { href: img(f), target: "_blank", rel: "noopener" },
+        el("img", { src: img(f), alt: `Reference image ${i + 1}`, loading: "lazy" })))) : null,
+      t?.proposal ? el("div", { class: "triage" }, el("span", { class: "kicker" }, "Proposal"), el("p", {}, t.proposal),
+        t.affects?.length ? el("span", { class: "muted small" }, `Affects: ${t.affects.join(", ")}`) : null) : null,
+      c.reply ? el("div", { class: "reply" }, el("span", { class: "kicker" }, "Reply"), el("p", { dir: "auto" }, c.reply)) : null,
+      el("div", { class: "p-actions" },
+        open ? [
+          el("button", { class: "primary sm", type: "button", onclick: async () => { await setDecision(c, "approved"); chat("apply"); } }, icon("i-check"), "Apply online"),
+          el("button", { class: "ghost sm", type: "button", onclick: () => setDecision(c, "rejected") }, icon("i-x"), "Reject"),
+          el("button", { class: "ghost sm", type: "button", onclick: async () => { await setDecision(c, "asked"); chat("ask"); } }, icon("i-message"), "Ask"),
+          el("button", { class: "ghost sm", type: "button", onclick: () => closeWith(c, t?.status && t.status !== "proposed" ? t.status : null) }, icon("i-send"), "Reply & close"),
+        ] : null,
+        link ? el("a", { class: "ghost sm", href: link, target: "_blank", rel: "noopener" }, icon("i-external"), "Show on screen") : null));
+  }
+
+  function draw() {
+    const all = data.comments || [];
+    const openN = all.filter((c) => c.status !== "resolved").length;
+    tabs.replaceChildren(...[["open", `Open ${openN}`], ["resolved", `Resolved ${all.length - openN}`], ["all", `All ${all.length}`]].map(([k, label]) =>
+      el("button", { type: "button", role: "tab", class: k === filter ? "on" : null, "aria-selected": String(k === filter), onclick: () => { filter = k; draw(); } }, label)));
+    pulled.textContent = data.pulledAt ? `Pulled ${fmtDate(data.pulledAt)}` : "Not pulled yet";
+    const shown = all.filter((c) => filter === "all" || (filter === "open") === (c.status !== "resolved")).reverse();
+    list.replaceChildren(...(shown.length ? shown.map(card)
+      : [el("p", { class: "p-empty" }, all.length ? (filter === "open" ? "No open comments. Everything is answered." : "Nothing here.") : "No comments yet. Pull comments to fetch them from the live prototype.")]));
+  }
+  draw();
 }
