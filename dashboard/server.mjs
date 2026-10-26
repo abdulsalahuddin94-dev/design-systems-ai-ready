@@ -1178,7 +1178,7 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
   try {
     if (req.method === "GET" && p === "/api/projects") return send(res, 200, { projects: listProjects() });
-    if (p.startsWith("/api/project/") && await handleProjectApi(req, res, url, { send, projectDir, readBody, root: ROOT })) return;
+    if (p.startsWith("/api/project/") && await handleProjectApi(req, res, url, { send, projectDir, readBody, root: ROOT, integrations })) return;
     if (req.method === "POST" && p === "/api/projects") { const b = await readBody(req); const r = createProject(b.title); return send(res, r.ok ? 200 : 400, r); }
     const pr = p.match(/^\/api\/projects\/([^/]+)(\/inputs|\/restore)?$/);
     if (pr) {

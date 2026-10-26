@@ -67,6 +67,7 @@ async function renderProjectPage(name, page) {
   if (page === "review") return drawReview(main, p, o);
   if (page === "sync") return drawSync(main, p);
   if (page === "design") return drawDesign(main, p);
+  if (page === "connect") return drawConnect(main, p);
   main.append(head(p, PROJECT_PAGES.find((x) => x[0] === page)?.[1] || page, "Coming in the next build stage."),
     el("p", { class: "p-empty" }, "This page is part of the dashboard plan (Pipeline, Plan, Design, Review, Sync, Connect services) and is built next."));
 }
@@ -448,4 +449,90 @@ async function drawDesign(main, p) {
   }
 
   drawMode(); drawBar(); loadFrame(); openChat();
+}
+
+// ---------- Connect services: status lights and the one-time Supabase setup ----------
+async function copyText(text) {
+  try { await Promise.race([navigator.clipboard.writeText(text), new Promise((_, no) => setTimeout(no, 1000))]); return true; } catch {
+    const t = el("textarea", { style: "position:fixed;opacity:0;pointer-events:none" });
+    t.value = text; document.body.append(t); t.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch {}
+    t.remove(); return ok;
+  }
+}
+
+async function drawConnect(main, p) {
+  const enc = encodeURIComponent(p.name);
+  const recheck = el("button", { class: "ghost sm", type: "button" }, icon("i-refresh"), "Check again");
+  main.append(head(p, "Connect services", "What this computer is connected to. Set up once per computer; every project uses it.", [recheck]));
+  const body = el("div", {}, el("p", { class: "p-empty" }, "Checking…"));
+  main.append(body);
+  let c;
+  const load = async () => { body.replaceChildren(el("p", { class: "p-empty" }, "Checking…")); c = await api(`/api/project/${enc}/connect`); draw(); };
+  recheck.onclick = () => load().catch(showError);
+
+  const light = (state) => el("span", { class: `dot ${state === "ok" ? "good" : state === "warn" ? "wait" : "bad"}` });
+  const card = (title, state, summary, ...rest) => el("section", { class: "p-panel svc", "data-svc": title },
+    el("header", {}, light(state), el("h2", {}, title), el("span", { class: `tag ${state === "ok" ? "res" : state === "warn" ? "k-decision" : "open"}` }, state === "ok" ? "Connected" : state === "warn" ? "Needs a look" : "Not connected")),
+    el("p", { class: "small" }, summary), ...rest.filter(Boolean));
+  const copyBtn = (label, get) => el("button", { class: "ghost sm", type: "button", onclick: async () => { toast((await copyText(await get())) ? "Copied." : "Could not copy. Select the text instead."); } }, icon("i-copy"), label);
+
+  function supabaseCard() {
+    const s = c.supabase;
+    const sc = s.schema;
+    const keysOk = s.url && s.anon && s.service;
+    const state = keysOk && sc?.upToDate ? "ok" : keysOk ? "warn" : "bad";
+    const summary = !keysOk ? "Prototype comments need a free Supabase project. Paste its three values once; they are saved on this computer only."
+      : sc?.error ? `Supabase did not answer the check: ${sc.error}`
+      : sc?.upToDate ? `Comments, replies and images work (${s.host}).`
+      : `Connected to ${s.host}, but the database needs the current schema: ${[!sc?.table && "the comments table", !sc?.reply && "replies", !sc?.images && "images", !sc?.bucket && "the image bucket"].filter(Boolean).join(", ")} missing.`;
+    const kv = el("dl", { class: "p-kv" },
+      ...[["Project URL", s.url], ["Public key", s.anon], ["Secret key", s.service]].flatMap(([k, ok]) => [el("dt", {}, k), el("dd", {}, light(ok ? "ok" : "bad"), ok ? " saved" : " missing")]),
+      el("dt", {}, "Schema"), el("dd", {}, sc ? [light(sc.upToDate ? "ok" : "warn"), sc.upToDate ? " up to date" : " update needed"] : "–"),
+      el("dt", {}, "Saved in"), el("dd", { class: "mono" }, s.file, s.projectOverride ? " (this project's prototype/.env.local overrides it)" : ""));
+    const steps = keysOk && sc && !sc.upToDate && !sc.error ? el("ol", { class: "small steps" },
+      el("li", {}, "Copy the schema SQL."),
+      el("li", {}, "Open the Supabase SQL Editor, paste it and press Run. It is safe to run again: it only adds what is missing."),
+      el("li", {}, "Press Check again.")) : null;
+    const form = el("form", { class: "svc-form", autocomplete: "off" },
+      el("label", {}, "Project URL", el("input", { name: "url", type: "url", placeholder: "https://<ref>.supabase.co", spellcheck: "false" })),
+      el("label", {}, "Public key (publishable or anon)", el("input", { name: "anon", type: "password", placeholder: "sb_publishable_…", spellcheck: "false", autocomplete: "off" })),
+      el("label", {}, "Secret key (secret or service_role)", el("input", { name: "service", type: "password", placeholder: "sb_secret_…", spellcheck: "false", autocomplete: "new-password" })),
+      el("p", { class: "muted small" }, "Supabase > Project Settings > API Keys. Leave a field empty to keep what is saved. The secret key never leaves this computer and is never shown again."),
+      el("div", { class: "p-actions" }, el("button", { class: "primary sm", type: "submit" }, "Save keys")));
+    form.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const f = new FormData(form);
+      try { c = await api(`/api/project/${enc}/connect/supabase`, { url: f.get("url"), anon: f.get("anon"), service: f.get("service") }); form.reset(); toast("Saved on this computer."); draw(); }
+      catch (e) { showError(e); }
+    };
+    const details = el("details", { class: "svc-more", open: !keysOk || null }, el("summary", {}, keysOk ? "Change the keys" : "Set up Supabase"), form);
+    return card("Supabase (comments)", state, summary, kv, steps,
+      el("div", { class: "p-actions" },
+        copyBtn("Copy schema SQL", () => fetch(`/api/project/${enc}/schema-sql`).then((r) => r.text())),
+        s.sqlEditor ? el("a", { class: "ghost sm", href: s.sqlEditor, target: "_blank", rel: "noopener" }, icon("i-external"), "Open SQL Editor") : null,
+        el("button", { class: "ghost sm", type: "button", onclick: () => load().catch(showError) }, icon("i-refresh"), "Schema status")),
+      details);
+  }
+
+  function draw() {
+    const f = c.figcli, g = c.github, sb = c.storybook, pw = c.playwright;
+    body.replaceChildren(el("div", { class: "svc-grid" },
+      card("Figma (FigCli Yolo)", f.port ? "ok" : "warn",
+        f.port ? "Figma is open with the debugging port; Claude can read and write the open files." : "Figma is not reachable on port 9222. Open Figma Desktop; after a Figma update run FigCli's connect yourself (it patches Figma, so Claude never runs it).",
+        f.lines.length ? el("dl", { class: "p-kv" }, f.lines.flatMap((l) => { const [k, ...v] = l.split(":"); return [el("dt", {}, k.trim()), el("dd", {}, v.join(":").trim() || "–")]; })) : null),
+      card("GitHub", g?.signedIn ? "ok" : g?.cli ? "warn" : "bad",
+        g?.signedIn ? `Signed in as ${g.account}. Publishing the prototype and team projects use it.` : g?.cli ? "GitHub CLI is installed but not signed in." : "GitHub CLI (gh) is not installed.",
+        !g?.signedIn && g?.cli ? el("div", { class: "p-actions" }, el("button", { class: "ghost sm", type: "button", onclick: async () => { try { toast((await api("/api/github/login", {})).ok ? "GitHub sign-in opened in a new window." : "Could not open it."); } catch (e) { showError(e); } } }, icon("i-login"), "Sign in with GitHub")) : null),
+      supabaseCard(),
+      sb ? card("Storybook MCP", sb.running ? "ok" : "warn",
+        sb.running ? `Storybook runs on port ${sb.port}; its MCP is at ${sb.mcp}.` : `Storybook is not running (port ${sb.port}). Start it to give Claude the components' docs and props.`,
+        el("p", { class: "muted small" }, "Register it once on this computer (local scope, never committed):"),
+        el("pre", { class: "mono svc-cmd" }, sb.add),
+        el("div", { class: "p-actions" }, copyBtn("Copy command", () => sb.add)))
+        : card("Storybook MCP", "warn", "This project has no Storybook yet."),
+      card("Playwright (checks)", pw.core && pw.chrome ? "ok" : "warn",
+        pw.core && pw.chrome ? "Ready: fidelity and live checks run in Chrome." : [!pw.core && "the prototype's playwright-core is not installed (npm install in the prototype folder)", !pw.chrome && "Google Chrome is not installed"].filter(Boolean).join("; ") + ".")));
+  }
+  await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not run the checks.")); showError(e); });
 }

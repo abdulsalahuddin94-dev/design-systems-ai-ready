@@ -151,4 +151,15 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .ws-note{position:absolute;right:14px;bottom:12px;max-width:300px;font-size:12px;color:var(--ink-2);padding:8px 10px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet)}
 .ws-off{max-width:420px;display:grid;gap:10px;justify-items:center}
 @media (max-width:1100px){main.project.design-ws{grid-template-columns:1fr;height:auto;overflow:visible}.ws-col{border-right:0;border-bottom:1px solid var(--rule);height:70dvh}.ws-stage{height:90dvh}}
-@media (max-width:980px){.pipe{grid-template-columns:1fr}.pipe .step+.step{border-left:1px solid var(--rule);border-top:0}.grid2,.sync{grid-template-columns:1fr}.p-tally{flex-wrap:wrap}main.project{padding:18px 16px}}
+/* connect services */
+.svc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.svc[data-svc^="Supabase"]{grid-row:span 2}
+.svc header{display:flex;align-items:center;gap:8px}
+.svc header h2{font-size:15px;font-weight:650;flex:1}
+.svc .steps{margin:0;padding-left:18px;display:grid;gap:4px}
+.svc-cmd{margin:0;padding:8px 10px;border-radius:6px;background:var(--paper);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}
+.svc-more summary{cursor:pointer;font-weight:600;font-size:13.5px}
+.svc-form{display:grid;gap:10px;margin-top:10px}
+.svc-form label{display:grid;gap:4px;font-size:13px;font-weight:600}
+.svc-form input{border:1px solid var(--rule-2);border-radius:var(--r);padding:8px 10px;background:var(--sheet);color:var(--ink);font:13px var(--mono)}
+@media (max-width:980px){.pipe{grid-template-columns:1fr}.pipe .step+.step{border-left:1px solid var(--rule);border-top:0}.grid2,.sync,.svc-grid{grid-template-columns:1fr}.p-tally{flex-wrap:wrap}main.project{padding:18px 16px}}

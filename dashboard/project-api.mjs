@@ -313,9 +313,76 @@ function publishPrototype(root, dir, repo) {
   });
 }
 
+// ---------- Connect services: what this computer is connected to ----------
+// Read-only checks, except the Supabase form, which writes only ~/.atomica/supabase.env (one Supabase project for
+// every Atomica project on this computer). Key values are never sent back to the page or printed.
+const SUPABASE_ENV = () => path.join(os.homedir(), ".atomica", "supabase.env");
+const envKeys = (text) => Object.fromEntries([...text.matchAll(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/gm)].filter((m) => !m[0].trim().startsWith("#")).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+
+async function answers(url, ms = 500) {
+  try { const r = await fetch(url, { signal: AbortSignal.timeout(ms) }); return r.status < 500; } catch { return false; }
+}
+
+async function connectState(root, dir, integrations) {
+  const shared = envKeys(readText(SUPABASE_ENV()));
+  const project = envKeys(readText(path.join(dir, "prototype", ".env.local")));
+  const env = { ...shared, ...project };
+  const ref = (String(env.VITE_SUPABASE_URL || "").match(/^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/) || [])[1] || null;
+  let schema = null;
+  if (env.VITE_SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+    const r = commentsTool(root, dir, "--schema-status");
+    try { schema = JSON.parse(r.out); } catch { schema = { error: (r.err || r.out || "").slice(0, 200) }; }
+  }
+  // Storybook: the port from the project's storybook/package.json ("storybook dev -p 6009").
+  const sbPkg = readText(path.join(dir, "storybook", "package.json"));
+  const sbPort = +((sbPkg.match(/storybook dev[^"]*-p\s*(\d+)/) || [])[1] || 0) || null;
+  const sbRunning = sbPort ? await answers(`http://127.0.0.1:${sbPort}/`) || await answers(`http://[::1]:${sbPort}/`) : false;
+  const sbName = `${path.basename(dir).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-storybook`;
+  // Playwright: the prototype's playwright-core and an installed Chrome (the fidelity and live checks use them).
+  const pw = fs.existsSync(path.join(dir, "prototype", "node_modules", "playwright-core", "package.json"));
+  const chrome = [process.env.PROGRAMFILES, process.env["PROGRAMFILES(X86)"], process.env.LOCALAPPDATA].filter(Boolean)
+    .some((d) => fs.existsSync(path.join(d, "Google", "Chrome", "Application", "chrome.exe"))) || fs.existsSync("/Applications/Google Chrome.app");
+  const integ = integrations ? integrations() : null;
+  return {
+    figcli: { port: await answers("http://127.0.0.1:9222/json/version"), lines: integ?.figma?.lines || [] },
+    github: integ ? { cli: integ.github.cli, signedIn: integ.github.signedIn, account: integ.github.account } : null,
+    supabase: {
+      file: "~/.atomica/supabase.env",
+      url: !!env.VITE_SUPABASE_URL, anon: !!env.VITE_SUPABASE_ANON_KEY, service: !!env.SUPABASE_SERVICE_KEY,
+      projectOverride: Object.keys(project).some((k) => /SUPABASE/.test(k)),
+      ref, host: ref ? `${ref}.supabase.co` : null,
+      sqlEditor: ref ? `https://supabase.com/dashboard/project/${ref}/sql/new` : null,
+      schema,
+    },
+    storybook: sbPort ? { port: sbPort, running: sbRunning, mcp: `http://localhost:${sbPort}/mcp`, name: sbName, add: `claude mcp add --transport http ${sbName} http://localhost:${sbPort}/mcp --scope local` } : null,
+    playwright: { core: pw, chrome },
+  };
+}
+
+// The Supabase form: only fields the user filled are written; the rest of the file is kept.
+function saveSupabase(b) {
+  const url = String(b.url || "").trim().replace(/\/$/, "");
+  const anon = String(b.anon || "").trim();
+  const service = String(b.service || "").trim();
+  if (url && !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(url)) return "The Project URL looks like https://<ref>.supabase.co.";
+  if (anon && !/^(eyJ[\w-]+\.[\w-]+\.[\w-]+|sb_publishable_[\w-]+)$/.test(anon)) return "The public key starts with sb_publishable_ (or eyJ for an older anon key).";
+  if (service && !/^(eyJ[\w-]+\.[\w-]+\.[\w-]+|sb_secret_[\w-]+)$/.test(service)) return "The secret key starts with sb_secret_ (or eyJ for an older service_role key).";
+  if (service && anon && service === anon) return "The secret key and the public key are the same; paste the secret one in its own field.";
+  if (/^sb_publishable_/.test(service)) return "That is the public (publishable) key; the secret key starts with sb_secret_.";
+  if (!url && !anon && !service) return "Nothing to save.";
+  const file = SUPABASE_ENV();
+  const lines = readText(file).split(/\r?\n/).filter((l) => l.trim() !== "");
+  const set = (k, v) => { if (!v) return; const i = lines.findIndex((l) => new RegExp(`^\\s*${k}\\s*=`).test(l)); if (i >= 0) lines[i] = `${k}=${v}`; else lines.push(`${k}=${v}`); };
+  if (!lines.length) lines.push("# Atomica: one Supabase project for every Atomica project on this computer (prototype comments).", "# The secret key stays on this computer; only tools/prototype_comments.cjs reads it.");
+  set("VITE_SUPABASE_URL", url); set("VITE_SUPABASE_ANON_KEY", anon); set("SUPABASE_SERVICE_KEY", service);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, lines.join("\n") + "\n", { mode: 0o600 });
+  return null;
+}
+
 const MIME = { ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif" };
 
-export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root }) {
+export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root, integrations }) {
   const m = url.pathname.match(/^\/api\/project\/([^/]+)\/([\w-]+(?:\/[\w-]+)?)$/);
   if (!m) return false;
   const dir = projectDir(decodeURIComponent(m[1]));
@@ -391,6 +458,18 @@ export async function handleProjectApi(req, res, url, { send, projectDir, readBo
     if (st.publishing) { send(res, 409, { error: "Already publishing." }); return true; }
     const r = await publishPrototype(root, dir, st.repo);
     send(res, r.ok ? 200 : 400, r.ok ? { ...(await designState(dir)), output: r.output } : { error: r.output || "Publish failed" });
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "connect") { send(res, 200, await connectState(root, dir, integrations)); return true; }
+  if (req.method === "POST" && m[2] === "connect/supabase") {
+    const err = saveSupabase(await readBody(req));
+    if (err) { send(res, 400, { error: err }); return true; }
+    send(res, 200, await connectState(root, dir, integrations));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "schema-sql") {
+    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+    res.end(readText(path.join(root, "Screens_Handoff_Skill", "templates", "supabase", "schema.sql")));
     return true;
   }
   send(res, 404, { error: "unknown project action" });
