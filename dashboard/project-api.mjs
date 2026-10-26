@@ -3,7 +3,8 @@
 // every action that changes something runs the workflow's own tools or starts a Claude conversation.
 import fs from "node:fs";
 import path from "node:path";
-import { spawnSync } from "node:child_process";
+import os from "node:os";
+import { spawn, spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
 
 const readJson = (file, fallback = null) => {
@@ -29,11 +30,14 @@ export function changelogEntries(text, limit = 6) {
 
 // Is the prototype's local dev server answering (Vite, port 5190 by default)?
 async function localPreview(port = 5190) {
-  const url = `http://127.0.0.1:${port}/`;
-  try {
-    const r = await fetch(url, { signal: AbortSignal.timeout(400) });
-    return { running: r.ok, url: `http://localhost:${port}/` };
-  } catch { return { running: false, url: `http://localhost:${port}/` }; }
+  // Vite started with `npm run dev` may listen on ::1 only (Node 17+ on Windows), so both addresses are tried.
+  for (const host of ["127.0.0.1", "[::1]"]) {
+    try {
+      const r = await fetch(`http://${host}:${port}/`, { signal: AbortSignal.timeout(400) });
+      if (r.ok) return { running: true, url: `http://localhost:${port}/` };
+    } catch {}
+  }
+  return { running: false, url: `http://localhost:${port}/` };
 }
 
 export async function projectOverview(folder) {
@@ -213,6 +217,102 @@ function unqueueRequest(dir, ref) {
   fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
 }
 
+// ---------- Design: the prototype workspace (chat on the left, preview on the right) ----------
+// Screens come from the generated routes (the same slugs the prototype uses). The local preview is the prototype's
+// own Vite dev server on 5190; the dashboard starts and stops only the one it started itself.
+const PREVIEW_PORT = 5190;
+const previews = new Map(); // project dir -> child process started here
+const publishing = new Set();
+
+function designScreens(dir) {
+  const routes = readText(path.join(dir, "prototype", "src", "generated", "routes.tsx"));
+  const status = readJson(path.join(dir, "status.json"), {});
+  const build = readJson(path.join(dir, "prototype", "data", "build-report.json"), {});
+  const ahead = new Set(build.code_ahead || []);
+  return [...routes.matchAll(/\{\s*slug:\s*"([^"]+)",\s*name:\s*"([^"]+)",\s*w:\s*(\d+),\s*h:\s*(\d+)/g)].map((m) => ({
+    slug: m[1], name: m[2], w: +m[3], h: +m[4],
+    source: status.prototype?.screens?.[m[2]]?.source || (ahead.has(m[2]) ? "code" : "figma"),
+  }));
+}
+
+async function designState(dir) {
+  const status = readJson(path.join(dir, "status.json"), {});
+  const proto = path.join(dir, "prototype");
+  const publish = readJson(path.join(proto, "data", "publish.json"), null) || (status.prototype?.url ? { url: status.prototype.url, at: null } : null);
+  const built = mtime(path.join(proto, "src", "generated", "routes.tsx"));
+  const ours = previews.get(dir);
+  return {
+    hasPrototype: fs.existsSync(path.join(proto, "package.json")),
+    installed: fs.existsSync(path.join(proto, "node_modules", "vite", "bin", "vite.js")),
+    screens: designScreens(dir),
+    designMode: status.prototype?.design_mode || null,
+    local: { ...(await localPreview(PREVIEW_PORT)), ours: !!(ours && ours.exitCode === null) },
+    publish,
+    unpublished: publish?.at ? built > Date.parse(publish.at) : false,
+    publishing: publishing.has(dir),
+    repo: publishRepo(publish),
+  };
+}
+
+// owner/name from publish.json, or from the GitHub Pages link.
+function publishRepo(publish) {
+  if (publish?.repo) return publish.repo;
+  const m = String(publish?.url || "").match(/^https:\/\/([\w-]+)\.github\.io\/([\w.-]+)\/?$/);
+  return m ? `${m[1]}/${m[2]}` : null;
+}
+
+function setDesignMode(dir, mode) {
+  const file = path.join(dir, "status.json");
+  const status = readJson(file, {});
+  status.prototype = { ...(status.prototype || {}), design_mode: mode };
+  fs.writeFileSync(file, JSON.stringify(status, null, 2) + "\n");
+}
+
+// The public Supabase keys for comments (VITE_ only, as publish_prototype.cjs does); never the service key.
+function previewEnv() {
+  const env = { ...process.env };
+  const shared = readText(path.join(os.homedir(), ".atomica", "supabase.env"));
+  for (const m of shared.matchAll(/^\s*(VITE_SUPABASE_URL|VITE_SUPABASE_ANON_KEY)\s*=\s*(.*?)\s*$/gm)) if (!env[m[1]]) env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  delete env.SUPABASE_SERVICE_KEY;
+  return env;
+}
+
+async function startPreview(dir) {
+  if ((await localPreview(PREVIEW_PORT)).running) return { ok: true };
+  const proto = path.join(dir, "prototype");
+  const vite = path.join(proto, "node_modules", "vite", "bin", "vite.js");
+  if (!fs.existsSync(vite)) return { ok: false, error: "The prototype's packages are not installed (npm install in its prototype folder)." };
+  const child = spawn(process.execPath, [vite, "--port", String(PREVIEW_PORT), "--strictPort", "--host", "127.0.0.1"], { cwd: proto, env: previewEnv(), stdio: "ignore", windowsHide: true });
+  previews.set(dir, child);
+  child.on("exit", () => { if (previews.get(dir) === child) previews.delete(dir); });
+  for (let i = 0; i < 40; i++) {
+    await new Promise((r) => setTimeout(r, 400));
+    if ((await localPreview(PREVIEW_PORT)).running) return { ok: true };
+    if (child.exitCode !== null) break;
+  }
+  return { ok: false, error: "The local preview did not start (is port 5190 used by another program?)." };
+}
+
+function stopPreview(dir) {
+  const child = previews.get(dir);
+  if (!child) return { ok: false, error: "This preview was not started from the dashboard; stop it where it runs." };
+  child.kill();
+  previews.delete(dir);
+  return { ok: true };
+}
+
+// Publish = tools/publish_prototype.cjs to the repo it already uses (never --create from here).
+function publishPrototype(root, dir, repo) {
+  return new Promise((resolve) => {
+    publishing.add(dir);
+    const child = spawn(process.execPath, [path.join(root, "tools", "publish_prototype.cjs"), dir, "--repo", repo], { cwd: root, windowsHide: true });
+    let out = "";
+    child.stdout.on("data", (d) => { out += d; });
+    child.stderr.on("data", (d) => { out += d; });
+    child.on("close", (code) => { publishing.delete(dir); resolve({ ok: code === 0, output: out.trim().split(/\r?\n/).slice(-6).join("\n") }); });
+  });
+}
+
 const MIME = { ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif" };
 
 export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root }) {
@@ -273,6 +373,24 @@ export async function handleProjectApi(req, res, url, { send, projectDir, readBo
     if (m[2] === "sync/queue") queueRequest(dir, { ref, kind: ref.startsWith("push:") ? "push-figma" : "pull-figma", title: String(b.title || "").slice(0, 400) });
     else unqueueRequest(dir, ref);
     send(res, 200, await syncState(root, dir));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "design") { send(res, 200, await designState(dir)); return true; }
+  if (req.method === "POST" && m[2] === "design/mode") {
+    const b = await readBody(req);
+    if (!["code-first", "figma-first"].includes(b.mode)) { send(res, 400, { error: "bad mode" }); return true; }
+    setDesignMode(dir, b.mode);
+    send(res, 200, await designState(dir));
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "preview/start") { const r = await startPreview(dir); send(res, r.ok ? 200 : 400, r.ok ? await designState(dir) : r); return true; }
+  if (req.method === "POST" && m[2] === "preview/stop") { const r = stopPreview(dir); send(res, r.ok ? 200 : 400, r.ok ? await designState(dir) : r); return true; }
+  if (req.method === "POST" && m[2] === "publish") {
+    const st = await designState(dir);
+    if (!st.repo) { send(res, 400, { error: "No GitHub repo is recorded for this prototype yet: publish it once from the chat." }); return true; }
+    if (st.publishing) { send(res, 409, { error: "Already publishing." }); return true; }
+    const r = await publishPrototype(root, dir, st.repo);
+    send(res, r.ok ? 200 : 400, r.ok ? { ...(await designState(dir)), output: r.output } : { error: r.output || "Publish failed" });
     return true;
   }
   send(res, 404, { error: "unknown project action" });

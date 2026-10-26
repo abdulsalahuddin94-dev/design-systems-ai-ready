@@ -66,6 +66,7 @@ async function renderProjectPage(name, page) {
   if (page === "pipeline") return drawPipeline(main, p, o, data?.pipeline);
   if (page === "review") return drawReview(main, p, o);
   if (page === "sync") return drawSync(main, p);
+  if (page === "design") return drawDesign(main, p);
   main.append(head(p, PROJECT_PAGES.find((x) => x[0] === page)?.[1] || page, "Coming in the next build stage."),
     el("p", { class: "p-empty" }, "This page is part of the dashboard plan (Pipeline, Plan, Design, Review, Sync, Connect services) and is built next."));
 }
@@ -254,4 +255,197 @@ async function drawSync(main, p) {
       el("p", { class: "note" }, "After a push: Figma audit, re-export, the override reports \"synced\" and the screen's source goes back to Figma.")].filter(Boolean));
   }
   await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not read the sync state.")); showError(e); });
+}
+
+// ---------- Design: Lovable-like workspace ----------
+// Left: this project's design conversation (the same chat as everywhere, mounted in a panel). Right: the prototype,
+// local (Vite on this computer) or live (the published link). Publish runs tools/publish_prototype.cjs; Push to Figma
+// only queues a request for the Sync page. Code first / Figma first is asked once per project.
+const MODE_TEXT = {
+  "code-first": ["Code first", "New screens and changes are built in the prototype first; Figma follows when you sync."],
+  "figma-first": ["Figma first", "Changes are designed in the Figma Design file first, then the prototype is rebuilt from it."],
+};
+const DESIGN_PROMPT = (p, mode, screen, where, text) => `Design workspace for "${p}" (My Projects/${p}), ${MODE_TEXT[mode][0].toLowerCase()}. ${mode === "code-first"
+  ? "Build each change in the prototype first (prototype/data/overrides.json, or a code-first screen), rebuild and check it, and add it to status.json > prototype.pending_figma_sync. Do not touch Figma."
+  : "Design each change in the Figma Design file first with the saved tool (ask me before each write), audit it, then re-export and rebuild the prototype."} Rules: only the project's design-system components and tokens (its Storybook React components and data/tokens.json), never raw values; a missing component or size is a DS gap: tell me and give me the options, never invent one. The preview shows "${screen}" (${where}). Request: ${text}`;
+const designKey = (name) => `designChat:${name}`;
+const readStore = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } };
+const writeStore = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+async function drawDesign(main, p) {
+  const enc = encodeURIComponent(p.name);
+  main.classList.add("design-ws");
+  let st = await api(`/api/project/${enc}/design`).catch((e) => { showError(e); return null; });
+  if (!st) { main.append(el("p", { class: "p-empty" }, "Could not read this project's prototype.")); return; }
+  const view = { where: st.local.running ? "local" : "live", device: "phone", screen: st.screens[0]?.slug || "", mode: "Dark" };
+  try { Object.assign(view, JSON.parse(localStorage.getItem(`designView:${p.name}`) || "{}")); } catch {}
+  if (!st.screens.some((s) => s.slug === view.screen)) view.screen = st.screens[0]?.slug || "";
+  const saveView = () => { try { localStorage.setItem(`designView:${p.name}`, JSON.stringify(view)); } catch {} };
+
+  // ----- left: chat -----
+  const modeSeg = el("div", { class: "p-seg", role: "radiogroup", "aria-label": "How changes start" });
+  const chatBody = el("div", { class: "ws-chat" });
+  const chatCol = el("section", { class: "ws-col", "aria-label": "Design conversation" },
+    el("div", { class: "ws-head" },
+      el("div", { class: "crumbs" }, el("a", { href: "#/projects" }, "Projects"), ` / ${p.title}`),
+      el("div", { class: "row" }, el("h1", {}, "Design"), modeSeg),
+      el("p", { class: "muted small" }, "Only design-system components and tokens. A missing component becomes a DS gap first.")),
+    chatBody);
+
+  const setMode = async (mode) => {
+    try { st = await api(`/api/project/${enc}/design/mode`, { mode }); drawMode(); if (!sessionId()) drawStarter(); }
+    catch (e) { showError(e); }
+  };
+  function drawMode() {
+    modeSeg.replaceChildren(...Object.entries(MODE_TEXT).map(([k, [label, d]]) => el("button", { type: "button", role: "radio", class: st.designMode === k ? "on" : null, "aria-checked": String(st.designMode === k), title: d, onclick: () => setMode(k) }, label)));
+  }
+  const sessionId = () => readStore(designKey(p.name))?.id || null;
+  const screenName = () => st.screens.find((s) => s.slug === view.screen)?.name || view.screen || "no screen";
+
+  // No conversation yet: ask Code first / Figma first (once per project), then a composer that starts one.
+  function drawStarter() {
+    if (!st.designMode) {
+      chatBody.replaceChildren(el("div", { class: "ws-ask sheet" },
+        el("span", { class: "kicker" }, "Before the first change"),
+        el("h4", {}, "How should new screens and changes start in this project?"),
+        el("div", { class: "opts-list" }, Object.entries(MODE_TEXT).map(([k, [label, d]]) =>
+          el("button", { type: "button", class: "opt-btn", onclick: () => setMode(k) }, el("span", { class: "l" }, label), el("span", { class: "d" }, d)))),
+        el("p", { class: "muted small" }, "You can switch it any time at the top of this panel.")));
+      return;
+    }
+    const images = [];
+    const thumbs = el("div", { class: "attachments" });
+    const drawThumbs = () => thumbs.replaceChildren(...images.map((src, i) => el("figure", {}, el("img", { src, alt: "Image to send" }),
+      el("button", { type: "button", "aria-label": "Remove", onclick: () => { images.splice(i, 1); drawThumbs(); } }, icon("i-x")))));
+    const addFiles = (files) => { for (const f of files) { if (!/^image\/(png|jpeg|gif|webp)$/.test(f.type)) continue; const r = new FileReader(); r.onload = () => { images.push(r.result); drawThumbs(); }; r.readAsDataURL(f); } };
+    const ta = el("textarea", { rows: "4", dir: "auto", "aria-label": "Describe a screen, a flow or a change", placeholder: "Describe a screen, a flow or a change… (Arabic or English). Ctrl+V pastes a screenshot." });
+    const file = el("input", { type: "file", accept: "image/png,image/jpeg,image/gif,image/webp", multiple: true, hidden: true, onchange: (ev) => { addFiles(ev.target.files); ev.target.value = ""; } });
+    const go = el("button", { class: "primary sm", type: "submit" }, icon("i-send"), "Build");
+    ta.addEventListener("paste", (ev) => { const f = [...(ev.clipboardData?.files || [])]; if (f.length) { ev.preventDefault(); addFiles(f); } });
+    ta.addEventListener("keydown", (ev) => { if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); form.requestSubmit(); } });
+    const form = el("form", { class: "ws-start", onsubmit: async (ev) => {
+      ev.preventDefault();
+      const text = ta.value.trim();
+      if (!text && !images.length) return;
+      go.disabled = true;
+      try {
+        const s = await api("/api/sessions", { prompt: DESIGN_PROMPT(p.name, st.designMode, screenName(), view.where === "local" ? "local preview" : "live link", text || "See the attached image."), images, project: p.name, title: `Design: ${p.title}` });
+        writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || null });
+        mountChat(s.id);
+      } catch (e) { showError(e); go.disabled = false; }
+    } },
+      thumbs, ta,
+      el("div", { class: "row" },
+        el("label", { class: "addimg", title: "Add an image (or paste one with Ctrl+V)" }, file, icon("i-plus"), el("span", { class: "sr" }, "Add an image")),
+        el("span", { class: "muted small" }, "Ctrl+V to paste a screenshot"), el("span", { style: "flex:1" }), go));
+    form.addEventListener("dragover", (ev) => ev.preventDefault());
+    form.addEventListener("drop", (ev) => { ev.preventDefault(); addFiles(ev.dataTransfer.files); });
+    chatBody.replaceChildren(el("div", { class: "ws-empty" },
+      el("p", {}, el("b", {}, MODE_TEXT[st.designMode][0]), `: ${MODE_TEXT[st.designMode][1]}`),
+      el("p", { class: "muted small" }, `Claude sees which screen the preview shows ("${screenName()}").`)), form);
+    ta.focus();
+  }
+  function mountChat(id) {
+    chatBody.replaceChildren();
+    renderChat(id, chatBody);
+    chatBody.append(el("div", { class: "ws-chat-foot" }, el("button", { type: "button", class: "textbtn", onclick: () => {
+      try { localStorage.removeItem(designKey(p.name)); } catch {}
+      if (current?.es) { current.es.close(); current.cleanup?.(); current = null; }
+      drawStarter();
+    } }, icon("i-plus"), "New design conversation")));
+  }
+  // Reuse this project's design conversation: still running, or continued from its Claude session after a restart.
+  async function openChat() {
+    const saved = readStore(designKey(p.name));
+    if (!saved) return drawStarter();
+    try {
+      const { live, past } = await api("/api/sessions");
+      let s = live.find((x) => x.id === saved.id) || (saved.claudeSessionId && live.find((x) => x.claudeSessionId === saved.claudeSessionId));
+      if (!s && saved.claudeSessionId && past.some((x) => x.claudeSessionId === saved.claudeSessionId))
+        s = await api("/api/sessions", { resume: saved.claudeSessionId, project: p.name, title: `Design: ${p.title}` });
+      if (!s) { try { localStorage.removeItem(designKey(p.name)); } catch {} return drawStarter(); }
+      writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || saved.claudeSessionId || null });
+      mountChat(s.id);
+    } catch (e) { showError(e); drawStarter(); }
+  }
+
+  // ----- right: preview -----
+  const whereSeg = el("div", { class: "p-seg", role: "radiogroup", "aria-label": "Preview" });
+  const screenPick = el("select", { "aria-label": "Screen", onchange: () => { view.screen = screenPick.value; saveView(); loadFrame(); } },
+    st.screens.map((s) => el("option", { value: s.slug }, s.name)));
+  const deviceSeg = el("div", { class: "p-seg icons", role: "radiogroup", "aria-label": "Device" });
+  const frame = el("iframe", { title: "Prototype preview", class: "ws-frame" });
+  const refresh = el("button", { class: "iconbtn sq", type: "button", "aria-label": "Refresh", title: "Refresh", onclick: () => loadFrame(true) }, icon("i-refresh"));
+  const newTab = el("a", { class: "iconbtn sq", target: "_blank", rel: "noopener", "aria-label": "Open in a new tab", title: "Open in a new tab" }, icon("i-external"));
+  const unpub = el("span", { class: "unpub", title: "The local build is newer than the last publish" }, "unpublished changes");
+  const push = el("button", { class: "ghost sm", type: "button", title: "Queue this screen for the Figma sync (Sync page)" }, icon("i-upload"), "Push to Figma");
+  const publish = el("button", { class: "primary sm", type: "button" }, "Publish");
+  const confirmBox = el("span", { class: "ws-confirm", hidden: true });
+  const badge = el("span", { class: "tag k-decision srcbadge", hidden: true });
+  const canvas = el("div", { class: "ws-canvas" });
+  const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" },
+    el("div", { class: "ws-bar" }, whereSeg, screenPick, deviceSeg, refresh, newTab, el("span", { class: "sp" }), unpub, push, publish, confirmBox),
+    canvas);
+  main.append(chatCol, stage);
+
+  const baseUrl = () => (view.where === "local" ? st.local.url : st.publish?.url) || null;
+  const screenUrl = () => baseUrl() && view.screen ? `${baseUrl().replace(/\/?$/, "/")}#/${view.screen}?mode=${view.mode}&lang=en` : baseUrl();
+  function loadFrame(force) {
+    const url = screenUrl();
+    const sc = st.screens.find((s) => s.slug === view.screen);
+    badge.hidden = !(sc?.source === "code");
+    badge.textContent = `${sc?.name || ""} · code ahead of Figma`;
+    newTab.href = url || "#";
+    newTab.toggleAttribute("aria-disabled", !url);
+    if (view.where === "local" && !st.local.running) {
+      canvas.replaceChildren(el("div", { class: "p-empty ws-off" },
+        el("p", {}, el("b", {}, "The local preview is not running.")),
+        st.installed ? el("button", { class: "primary sm", type: "button", onclick: startLocal }, icon("i-zap"), "Start local preview")
+          : el("p", { class: "muted small" }, "Its packages are not installed: ask in the chat to install them (npm install in the prototype folder)."),
+        st.publish?.url ? el("button", { class: "ghost sm", type: "button", onclick: () => { view.where = "live"; saveView(); drawBar(); loadFrame(); } }, "Show the live link") : null));
+      return;
+    }
+    if (!url) { canvas.replaceChildren(el("p", { class: "p-empty ws-off" }, "Not published yet. Publish once from the chat to get a live link.")); return; }
+    // The frame is another origin, so a refresh reloads it with a cache-busting query; a screen switch only changes the hash.
+    if (force) { const u = new URL(url); u.searchParams.set("r", Date.now()); frame.src = u.href; frame.dataset.src = url; }
+    else if (frame.dataset.src !== url) { frame.dataset.src = url; frame.src = url; }
+    canvas.replaceChildren(...[badge, el("div", { class: `ws-device ${view.device}` }, frame),
+      view.where === "live" ? el("p", { class: "ws-note" }, "Live shows the published link with real comments. If the browser shows a safety warning inside the frame, use Open in a new tab.") : null].filter(Boolean));
+  }
+  async function startLocal(ev) {
+    const b = ev.currentTarget; b.disabled = true; b.lastChild.textContent = "Starting…";
+    try { st = await api(`/api/project/${enc}/preview/start`, {}); drawBar(); loadFrame(); }
+    catch (e) { showError(e); b.disabled = false; b.lastChild.textContent = "Start local preview"; }
+  }
+  function drawBar() {
+    whereSeg.replaceChildren(...[["local", "Local"], ["live", "Live"]].map(([k, label]) => el("button", { type: "button", role: "radio", class: view.where === k ? "on" : null, "aria-checked": String(view.where === k), onclick: () => { view.where = k; saveView(); drawBar(); loadFrame(); } },
+      k === "local" ? el("span", { class: `dot ${st.local.running ? "good" : "wait"}` }) : null, label)));
+    deviceSeg.replaceChildren(...[["phone", "Phone", "i-phone"], ["desktop", "Desktop", "i-monitor"]].map(([k, label, ic]) => el("button", { type: "button", role: "radio", class: view.device === k ? "on" : null, "aria-checked": String(view.device === k), "aria-label": label, title: label, onclick: () => { view.device = k; saveView(); drawBar(); loadFrame(); } }, icon(ic))));
+    screenPick.value = view.screen;
+    unpub.hidden = !st.unpublished;
+    publish.disabled = st.publishing || !st.repo;
+    publish.textContent = st.publishing ? "Publishing…" : "Publish";
+    publish.title = st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first";
+  }
+  push.onclick = async () => {
+    const sc = st.screens.find((s) => s.slug === view.screen);
+    if (!sc) return;
+    try { await api(`/api/project/${enc}/sync/queue`, { ref: `push:screen:${sc.slug}`, title: `Push screen "${sc.name}" from the prototype to Figma` }); toast(`"${sc.name}" is queued for Figma. Nothing changed in Figma yet: run the queue on the Sync page.`, { label: "Open Sync", icon: "i-refresh", run: () => { location.hash = `#/project/${enc}/sync`; } }); }
+    catch (e) { showError(e); }
+  };
+  publish.onclick = () => {
+    confirmBox.hidden = false; publish.hidden = true;
+    confirmBox.replaceChildren(el("span", { class: "small" }, `Publish to ${st.repo}?`),
+      el("button", { class: "primary sm", type: "button", onclick: doPublish }, "Yes, publish"),
+      el("button", { class: "ghost sm", type: "button", onclick: () => { confirmBox.hidden = true; publish.hidden = false; } }, "Cancel"));
+  };
+  async function doPublish() {
+    confirmBox.hidden = true; publish.hidden = false;
+    st.publishing = true; drawBar();
+    try { st = await api(`/api/project/${enc}/publish`, {}); toast("Published. GitHub Pages updates in about a minute."); }
+    catch (e) { showError(e); st.publishing = false; }
+    drawBar();
+  }
+
+  drawMode(); drawBar(); loadFrame(); openChat();
 }

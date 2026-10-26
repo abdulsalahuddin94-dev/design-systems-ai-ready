@@ -862,8 +862,9 @@ const QUICK = [
   { label: "Project status", hint: "Checkpoints, to-dos, what is next", prompt: (p) => `Show the status of the project "${p}": checkpoints, user to-dos and the next step. Do not change anything.` },
 ];
 
-function renderChat(id) {
-  const app = $("#app");
+// mount: where the conversation goes (the whole page, or the Design workspace's chat panel in project-pages.js).
+function renderChat(id, mount) {
+  const app = mount || $("#app");
   app.replaceChildren($("#tpl-chat").content.cloneNode(true));
   const log = $("#log");
   const input = $("#input");
