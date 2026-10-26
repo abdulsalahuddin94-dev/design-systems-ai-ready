@@ -162,4 +162,23 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .svc-form{display:grid;gap:10px;margin-top:10px}
 .svc-form label{display:grid;gap:4px;font-size:13px;font-weight:600}
 .svc-form input{border:1px solid var(--rule-2);border-radius:var(--r);padding:8px 10px;background:var(--sheet);color:var(--ink);font:13px var(--mono)}
-@media (max-width:980px){.pipe{grid-template-columns:1fr}.pipe .step+.step{border-left:1px solid var(--rule);border-top:0}.grid2,.sync,.svc-grid{grid-template-columns:1fr}.p-tally{flex-wrap:wrap}main.project{padding:18px 16px}}
+/* plan */
+.plan{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+.plan-steps{overflow:hidden;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);display:grid}
+.pstep{display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:10px;padding:11px 14px;border:0;border-bottom:1px solid var(--rule);align-items:center;text-align:left;background:none;color:var(--ink);font:inherit;cursor:pointer}
+.pstep:last-child{border-bottom:0}
+.pstep:disabled{cursor:default;opacity:.7}
+.pstep.on{background:var(--paper);box-shadow:inset 3px 0 0 var(--cyan)}
+.pstep .no{font:600 12px var(--mono);color:var(--ink-3)}
+.pstep b{font-size:13.5px;font-weight:600;display:block}
+.pstep small{font-size:12px;color:var(--ink-3)}
+.cp{font:600 10px var(--mono);letter-spacing:.04em;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:var(--magenta-soft);color:var(--magenta-ink);white-space:nowrap}
+.cp.ok{background:var(--paper);color:var(--good)}
+.plan-doc{padding:20px 22px;display:grid;gap:12px;background:var(--sheet);border:1px solid var(--rule);border-radius:var(--r);min-width:0}
+.plan-doc>header{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.plan-doc h3{font-size:18px;flex:1}
+.plan-doc .md{font-size:14px;line-height:1.55;overflow-wrap:anywhere}
+.plan-doc .md table{border-collapse:collapse;width:100%;font-size:13px;display:block;overflow-x:auto}
+.plan-doc .md th,.plan-doc .md td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}
+.plan-none{display:grid;gap:10px;justify-items:center;border:0;padding:20px}
+@media (max-width:980px){.pipe{grid-template-columns:1fr}.pipe .step+.step{border-left:1px solid var(--rule);border-top:0}.grid2,.sync,.svc-grid,.plan{grid-template-columns:1fr}.p-tally{flex-wrap:wrap}main.project{padding:18px 16px}}

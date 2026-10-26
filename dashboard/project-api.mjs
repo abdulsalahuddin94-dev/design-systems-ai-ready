@@ -380,6 +380,60 @@ function saveSupabase(b) {
   return null;
 }
 
+// ---------- Plan: from PRD and research to approved flows and screen specs ----------
+// Reads <project>/Planning/: one NN-<step>.md per step, with a short front matter (status: draft | waiting | done,
+// approved: <date>). Three light checkpoints (IA, Flows, Gaps and plan). Read-only, except Approve, which writes
+// only that step's front matter.
+const PLAN_STEPS = [
+  ["00", "Input digest", "PRD, research, meetings read", false],
+  ["01", "Users and jobs", "personas and jobs to be done", false],
+  ["02", "Information architecture", "sitemap, navigation", true],
+  ["03", "Flows", "every screen, state and decision", true],
+  ["04", "Screen specs", "DS components per section", false],
+  ["05", "Gaps and plan", "DS gaps, Code first or Figma first", true],
+  ["06", "Usability pre-check", "Nielsen heuristics", false],
+];
+function frontMatter(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const front = {};
+  if (m) for (const l of m[1].split(/\r?\n/)) { const kv = l.match(/^\s*([\w-]+)\s*:\s*(.*?)\s*$/); if (kv) front[kv[1]] = kv[2].replace(/^["']|["']$/g, ""); }
+  return { front, body: m ? text.slice(m[0].length) : text };
+}
+function planState(dir) {
+  const pdir = path.join(dir, "Planning");
+  let files = [];
+  try { files = fs.readdirSync(pdir).filter((f) => /^\d\d-.*\.md$/i.test(f)).sort(); } catch {}
+  const inputs = {};
+  for (const k of ["Brand", "Inspiration", "Screens", "Research"]) { try { inputs[k] = fs.readdirSync(path.join(dir, "Inputs", k)).filter((f) => !f.startsWith(".")).length; } catch { inputs[k] = 0; } }
+  try { inputs.Other = fs.readdirSync(path.join(dir, "Inputs"), { withFileTypes: true }).filter((e) => e.isFile() && !e.name.startsWith(".")).length; } catch { inputs.Other = 0; }
+  const steps = PLAN_STEPS.map(([no, title, hint, checkpoint]) => {
+    const mine = files.filter((f) => f.startsWith(no + "-"));
+    const docs = mine.map((f) => {
+      const { front, body } = frontMatter(readText(path.join(pdir, f)));
+      return { file: f, title: front.title || (body.match(/^#\s+(.+)$/m) || [])[1] || f, status: front.status || "draft", approved: front.approved || null };
+    });
+    const status = !docs.length ? "todo" : docs.every((d) => d.approved || d.status === "done") ? "done" : docs.some((d) => d.status === "waiting") ? "waiting" : "draft";
+    return { no, title, hint, checkpoint, docs, status };
+  });
+  const next = steps.find((x) => x.status !== "done");
+  return { exists: files.length > 0, folder: "Planning/", inputs, steps, next: next ? next.no : null };
+}
+function planFile(dir, f) {
+  const name = path.basename(String(f || ""));
+  if (!/^\d\d-[\w .-]+\.md$/i.test(name)) return null;
+  const file = path.join(dir, "Planning", name);
+  if (!fs.existsSync(file)) return null;
+  return { file, name, ...frontMatter(readText(file)) };
+}
+function approvePlan(dir, f) {
+  const doc = planFile(dir, f);
+  if (!doc) return false;
+  const front = { ...doc.front, status: "done", approved: `${new Date().toISOString().slice(0, 10)} (dashboard)` };
+  const fm = Object.entries(front).map(([k, v]) => `${k}: ${v}`).join("\n");
+  fs.writeFileSync(doc.file, `---\n${fm}\n---\n${doc.body.replace(/^\n+/, "")}`);
+  return true;
+}
+
 const MIME = { ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif" };
 
 export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root, integrations }) {
@@ -470,6 +524,19 @@ export async function handleProjectApi(req, res, url, { send, projectDir, readBo
   if (req.method === "GET" && m[2] === "schema-sql") {
     res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
     res.end(readText(path.join(root, "Screens_Handoff_Skill", "templates", "supabase", "schema.sql")));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "plan") { send(res, 200, planState(dir)); return true; }
+  if (req.method === "GET" && m[2] === "plan-file") {
+    const doc = planFile(dir, url.searchParams.get("f"));
+    if (!doc) { send(res, 404, { error: "no such planning file" }); return true; }
+    send(res, 200, { name: doc.name, front: doc.front, body: doc.body, path: `My Projects/${path.basename(dir)}/Planning/${doc.name}` });
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "plan/approve") {
+    const b = await readBody(req);
+    if (!approvePlan(dir, b.file)) { send(res, 404, { error: "no such planning file" }); return true; }
+    send(res, 200, planState(dir));
     return true;
   }
   send(res, 404, { error: "unknown project action" });

@@ -68,8 +68,8 @@ async function renderProjectPage(name, page) {
   if (page === "sync") return drawSync(main, p);
   if (page === "design") return drawDesign(main, p);
   if (page === "connect") return drawConnect(main, p);
-  main.append(head(p, PROJECT_PAGES.find((x) => x[0] === page)?.[1] || page, "Coming in the next build stage."),
-    el("p", { class: "p-empty" }, "This page is part of the dashboard plan (Pipeline, Plan, Design, Review, Sync, Connect services) and is built next."));
+  if (page === "plan") return drawPlan(main, p);
+  main.append(el("p", { class: "p-empty" }, "Unknown page."));
 }
 
 function head(p, title, sub, right = []) {
@@ -535,4 +535,69 @@ async function drawConnect(main, p) {
         pw.core && pw.chrome ? "Ready: fidelity and live checks run in Chrome." : [!pw.core && "the prototype's playwright-core is not installed (npm install in the prototype folder)", !pw.chrome && "Google Chrome is not installed"].filter(Boolean).join("; ") + ".")));
   }
   await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not run the checks.")); showError(e); });
+}
+
+// ---------- Plan: Planning/ steps, documents and the three light checkpoints ----------
+const PLAN_PROMPTS = {
+  start: (p) => `Plan the next work of "${p}" (My Projects/${p}) before anything is built: read its Inputs (PRD, research, meeting notes, screenshots) and write the Planning/ folder, one NN-<step>.md per step (00 Input digest, 01 Users and jobs, 02 Information architecture, 03 Flows, 04 Screen specs, 05 Gaps and plan, 06 Usability pre-check), each with front matter "status: draft | waiting | done". If there is no PRD, draft one from a short brief and mark every assumption. Stop at the three checkpoints (02, 03, 05) with "status: waiting" for my approval. Screen specs use only DS components; missing ones are DS gaps.`,
+  next: (p, step) => `Continue the plan of "${p}" (My Projects/${p}/Planning): step ${step.no} ${step.title}. Keep the same file format and stop at the next checkpoint for my approval.`,
+  change: (p, name, text) => `Change the planning document My Projects/${p}/Planning/${name} as follows, then set it back to "status: waiting" for my approval: ${text}`,
+};
+const planStatus = { todo: ["", "not started"], draft: ["k-decision", "draft"], waiting: ["open", "waiting on you"], done: ["res", "done"] };
+
+async function drawPlan(main, p) {
+  const enc = encodeURIComponent(p.name);
+  let st = await api(`/api/project/${enc}/plan`).catch((e) => { showError(e); return null; });
+  if (!st) { main.append(el("p", { class: "p-empty" }, "Could not read the Planning folder.")); return; }
+  const inputs = Object.entries(st.inputs).filter(([, n]) => n).map(([k, n]) => `${n} ${k === "Other" ? "other" : k}`);
+  const chatBtn = el("button", { class: "primary sm", type: "button" }, icon("i-message"), st.exists ? "Continue the plan in chat" : "Start planning in chat");
+  main.append(head(p, "Plan", "From PRD and research to approved flows and screen specs, before anything is built.", [
+    el("span", { class: "p-pill" }, `Inputs: ${inputs.length ? inputs.join(", ") : "none yet"}`), chatBtn]));
+  const list = el("div", { class: "sheet plan-steps" });
+  const doc = el("article", { class: "sheet plan-doc" });
+  main.append(el("div", { class: "plan" }, list, doc));
+  let open = null;
+  chatBtn.onclick = () => {
+    const step = st.steps.find((x) => x.no === st.next);
+    start({ prompt: st.exists && step ? PLAN_PROMPTS.next(p.name, step) : PLAN_PROMPTS.start(p.name), project: p.name, title: `Plan: ${p.title}` }).catch(showError);
+  };
+
+  function drawList() {
+    list.replaceChildren(...st.steps.map((x) => {
+      const [cls, label] = planStatus[x.status];
+      const sel = open && x.docs.some((d) => d.file === open);
+      return el("button", { type: "button", class: `pstep${sel ? " on" : ""}`, disabled: !x.docs.length || null, onclick: () => x.docs[0] && showDoc(x.docs[0].file) },
+        el("span", { class: "no" }, x.no),
+        el("span", {}, el("b", {}, x.title), el("small", {}, x.docs.length > 1 ? `${x.docs.length} documents` : x.hint)),
+        x.checkpoint ? el("span", { class: `cp${x.status === "done" ? " ok" : ""}` }, x.status === "done" ? "checkpoint ✓" : "checkpoint") : el("span", { class: `tag ${cls}` }, label));
+    }));
+  }
+  async function showDoc(file) {
+    open = file; drawList();
+    let d;
+    try { d = await api(`/api/project/${enc}/plan-file?f=${encodeURIComponent(file)}`); } catch (e) { showError(e); return; }
+    const step = st.steps.find((x) => x.docs.some((y) => y.file === file));
+    const meta = step.docs.find((y) => y.file === file);
+    const waiting = !meta.approved && meta.status !== "done";
+    doc.replaceChildren(...[
+      el("header", {}, el("h3", {}, `${step.no} · ${meta.title}`),
+        step.checkpoint ? el("span", { class: `cp${waiting ? "" : " ok"}` }, waiting ? (meta.status === "waiting" ? "checkpoint: waiting on you" : "checkpoint: draft") : `approved ${meta.approved || ""}`) : null),
+      step.docs.length > 1 ? el("div", { class: "p-seg" }, step.docs.map((y) => el("button", { type: "button", class: y.file === file ? "on" : null, onclick: () => showDoc(y.file) }, y.title))) : null,
+      el("div", { class: "md", dir: "auto", html: markdown(d.body) }),
+      el("div", { class: "p-actions" },
+        waiting ? el("button", { class: "primary sm", type: "button", onclick: async () => { try { st = await api(`/api/project/${enc}/plan/approve`, { file }); toast("Approved."); showDoc(file); } catch (e) { showError(e); } } }, icon("i-check"), step.checkpoint ? "Approve" : "Mark done") : null,
+        el("button", { class: "ghost sm", type: "button", onclick: async () => {
+          const t = await askText({ title: "Ask for changes", help: `What should change in ${d.name}? Claude edits it and sends it back for approval.`, okLabel: "Send to chat" });
+          if (t) start({ prompt: PLAN_PROMPTS.change(p.name, d.name, t), project: p.name, title: `Plan: ${d.name}` }).catch(showError);
+        } }, icon("i-message"), "Ask for changes"),
+        el("button", { class: "ghost sm", type: "button", onclick: async () => { toast((await copyText(d.path)) ? `Copied: ${d.path}` : d.path); } }, icon("i-copy"), "Copy file path"))].filter(Boolean));
+  }
+
+  drawList();
+  const first = st.steps.find((x) => x.no === st.next && x.docs.length) || st.steps.filter((x) => x.docs.length).pop();
+  if (first) showDoc(first.docs[0].file);
+  else doc.replaceChildren(el("div", { class: "p-empty plan-none" },
+    el("p", {}, el("b", {}, "No plan yet.")),
+    el("p", { class: "small" }, "Claude reads the Inputs (or drafts a PRD from a short brief, with every assumption marked), then writes users and jobs, the information architecture, flows with every state, screen specs from DS components and the gap list. It stops at three checkpoints for your approval."),
+    el("button", { class: "primary sm", type: "button", onclick: () => chatBtn.click() }, icon("i-message"), "Start planning in chat")));
 }
