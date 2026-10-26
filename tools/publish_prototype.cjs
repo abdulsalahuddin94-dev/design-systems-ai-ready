@@ -91,6 +91,12 @@ try { git(tmp, 'commit', '-q', '-m', `Publish prototype (${new Date().toISOStrin
 if (changed) git(tmp, 'push', '-q', `https://github.com/${repo}.git`, 'HEAD:gh-pages');
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(changed ? 'Pushed the build to gh-pages.' : 'gh-pages already has this build.');
+// What the dashboard shows as "Last publish": the live link, when, and the build that went up.
+const indexHtml = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+fs.writeFileSync(path.join(app, 'data', 'publish.json'), JSON.stringify({
+  url: `https://${owner}.github.io/${name}/`, repo, at: new Date().toISOString(),
+  build: (indexHtml.match(/assets\/index-([\w-]+)\.js/) || [])[1] || null, changed,
+}, null, 1) + '\n');
 
 // 5. Pages from gh-pages /.
 try { run('gh', ['api', `repos/${repo}/pages`]); } catch (e) {

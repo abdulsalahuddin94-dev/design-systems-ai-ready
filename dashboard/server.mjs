@@ -16,10 +16,12 @@ import { fileURLToPath } from "node:url";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { TOOLS, toolStatus, loginCommand, antigravityPath, usageStore, handoffCommand, LIMIT_RE, which } from "./tools.mjs";
 import { startAcp } from "./acp.mjs";
+import { handleProjectApi } from "./project-api.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
-const PROJECTS = path.join(ROOT, "My Projects");
+// DASHBOARD_PROJECTS points a dashboard run from a git worktree at the real projects folder (My Projects is git-ignored).
+const PROJECTS = process.env.DASHBOARD_PROJECTS ? path.resolve(process.env.DASHBOARD_PROJECTS) : path.join(ROOT, "My Projects");
 const PUBLIC = path.join(HERE, "public");
 const STATE = path.join(ROOT, ".claude", ".state");
 const HISTORY = path.join(STATE, "dashboard-sessions.json");
@@ -1120,6 +1122,7 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
   try {
     if (req.method === "GET" && p === "/api/projects") return send(res, 200, { projects: listProjects() });
+    if (p.startsWith("/api/project/") && await handleProjectApi(req, res, url, { send, projectDir })) return;
     if (req.method === "POST" && p === "/api/projects") { const b = await readBody(req); const r = createProject(b.title); return send(res, r.ok ? 200 : 400, r); }
     const pr = p.match(/^\/api\/projects\/([^/]+)(\/inputs|\/restore)?$/);
     if (pr) {

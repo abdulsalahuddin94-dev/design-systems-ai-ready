@@ -139,12 +139,14 @@ let projects = [];
 window.addEventListener("hashchange", route);
 function route() {
   const m = location.hash.match(/^#\/chat\/([\w-]+)/);
-  const page = m ? "chat" : /^#\/settings/.test(location.hash) ? "settings" : /^#\/projects/.test(location.hash) ? "projects" : /^#\/styles/.test(location.hash) ? "styles" : "home";
-  for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", a.dataset.nav === page);
+  const pm = location.hash.match(/^#\/project\/([^/]+)(?:\/([\w-]+))?/); // project pages (project-pages.js)
+  const page = m ? "chat" : pm ? "project" : /^#\/settings/.test(location.hash) ? "settings" : /^#\/projects/.test(location.hash) ? "projects" : /^#\/styles/.test(location.hash) ? "styles" : "home";
+  for (const a of document.querySelectorAll("[data-nav]")) a.classList.toggle("on", a.dataset.nav === (page === "project" ? "projects" : page));
+  if (page !== "project") hideProjectNav();
   // Inside a project the conversation gets the whole width: the app sidebar steps aside.
   document.body.classList.toggle("focus", page === "chat");
   if (current?.es) { current.es.close(); current = null; }
-  if (page === "chat") renderChat(m[1]); else if (page === "settings") renderSettings(); else if (page === "projects") renderProjects(); else if (page === "styles") renderStyles(); else renderHome();
+  if (page === "chat") renderChat(m[1]); else if (page === "project") renderProjectPage(decodeURIComponent(pm[1]), pm[2] || "pipeline"); else if (page === "settings") renderSettings(); else if (page === "projects") renderProjects(); else if (page === "styles") renderStyles(); else renderHome();
 }
 
 // ---------- Settings ----------
@@ -497,7 +499,8 @@ function renderProjects() {
   loadProjects();
 }
 
-const openProject = (p) => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError);
+// A project opens on its Pipeline page; "Continue in chat" there starts the conversation (project-pages.js).
+const openProject = (p) => { location.hash = `#/project/${encodeURIComponent(p.name)}/pipeline`; };
 
 function rowActions(p) {
   return el("span", { class: "row-actions" },
@@ -1305,6 +1308,7 @@ $("#perm").addEventListener("click", openPerm);
 refreshPerm();
 // The sidebar's Add to the workflow buttons live outside the page templates, so they are bound once.
 for (const b of document.querySelectorAll(".sidenav [data-add]")) b.addEventListener("click", () => openAdd(b.dataset.add));
+initRail();
 route();
 checkUpdates(true);
 refreshAccount();
