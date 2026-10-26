@@ -193,7 +193,19 @@ async function main(args) {
   if (!res.changed.length && !res.errors.length) console.log("No DS file changed in Figma since its last Storybook sync (or Figma was not reachable).");
 }
 
-module.exports = { check, describe };
+// For the dashboard's Sync page: one project folder -> compare() result, null (nothing new or no key / token),
+// or {error}. Never throws; waits at most TOTAL_MS.
+async function checkFolder(folder) {
+  const status = readJson(path.join(folder, "status.json"));
+  const key = status && status.figma && status.figma.design_system && status.figma.design_system.file_key;
+  if (!key) return null;
+  const tok = token();
+  if (!tok) return { error: "no-token" };
+  const result = await withTimeout(versions(key, tok), TOTAL_MS, { error: "offline" });
+  try { return compare({ folder, status }, result); } catch (e) { return null; }
+}
+
+module.exports = { check, describe, checkFolder };
 
 if (require.main === module) {
   main(process.argv.slice(2)).catch(() => {}).finally(() => { process.exitCode = 0; });

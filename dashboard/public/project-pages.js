@@ -65,6 +65,7 @@ async function renderProjectPage(name, page) {
   app.replaceChildren(main);
   if (page === "pipeline") return drawPipeline(main, p, o, data?.pipeline);
   if (page === "review") return drawReview(main, p, o);
+  if (page === "sync") return drawSync(main, p);
   main.append(head(p, PROJECT_PAGES.find((x) => x[0] === page)?.[1] || page, "Coming in the next build stage."),
     el("p", { class: "p-empty" }, "This page is part of the dashboard plan (Pipeline, Plan, Design, Review, Sync, Connect services) and is built next."));
 }
@@ -203,4 +204,54 @@ async function drawReview(main, p, o) {
       : [el("p", { class: "p-empty" }, all.length ? (filter === "open" ? "No open comments. Everything is answered." : "Nothing here.") : "No comments yet. Pull comments to fetch them from the live prototype.")]));
   }
   draw();
+}
+
+// ---------- Sync: prototype <-> Figma <-> Storybook ----------
+// Push / Pull only queue a request (data/sync-queue.json); "Run the queue in chat" hands the queued requests to
+// Claude, who does the Figma and Storybook work with the workflow's rules and asks before each write.
+const SYNC_PROMPT = (p, queue) => `Work through the queued sync requests of "${p}" (My Projects/${p}/data/sync-queue.json), one at a time, with the workflow's rules: open the right Figma file with the saved tool, ask me before each Figma write, audit after each change, then re-export so the prototype override reports "synced", update status.json > prototype.pending_figma_sync, the CHANGELOG and the Storybook as needed, and mark each request done in the queue. Requests:\n${queue.map((q, i) => `${i + 1}. [${q.kind}] ${q.title || q.ref}`).join("\n")}`;
+
+async function drawSync(main, p) {
+  const enc = encodeURIComponent(p.name);
+  const pill = el("span", { class: "p-pill", role: "status" });
+  const runBtn = el("button", { class: "primary sm", type: "button" }, icon("i-message"), "Run the queue in chat");
+  main.append(head(p, "Sync", "What differs between the prototype, Figma and Storybook. Nothing moves without your click.", [pill, runBtn]));
+  const body = el("div", {}, el("p", { class: "p-empty" }, "Reading the project and Figma's version history…"));
+  main.append(body);
+  let s;
+  const load = async () => { s = await api(`/api/project/${enc}/sync`); draw(); };
+  const act = async (url, item) => {
+    try { s = await api(`/api/project/${enc}/${url}`, { ref: item.ref, title: item.title }); draw(); }
+    catch (e) { showError(e); }
+  };
+  runBtn.onclick = () => s?.queue.length && start({ prompt: SYNC_PROMPT(p.name, s.queue), project: p.name, title: `Sync: ${p.title}` }).catch(showError);
+
+  const row = (item, verb) => el("div", { class: `srow${item.queued ? " queued" : ""}`, "data-ref": item.ref },
+    el("div", {}, el("b", {}, item.title),
+      el("div", { class: "cmeta" }, (item.meta || [item.screen, item.comment ? "from a review comment" : null, item.approved ? `approved: ${item.approved}` : null, item.file ? `Figma: ${item.file}` : null]).filter(Boolean).map((t) => el("span", {}, t)))),
+    item.queued
+      ? el("div", { class: "p-actions" }, el("span", { class: "tag k-decision" }, "Queued"), el("button", { class: "ghost sm", type: "button", onclick: () => act("sync/unqueue", item) }, icon("i-undo"), "Undo"))
+      : el("button", { class: "ghost sm", type: "button", onclick: () => act("sync/queue", item) }, verb));
+
+  const side = (title, items, verb, allVerb, empty) => el("section", { class: "sheet sync-side" },
+    el("div", { class: "shead" }, el("h3", {}, title),
+      items.some((x) => !x.queued) ? el("button", { class: "ghost sm", type: "button", onclick: async () => { for (const x of items.filter((y) => !y.queued)) await act("sync/queue", x); } }, allVerb) : null),
+    items.length ? items.map((x) => row(x, verb)) : el("p", { class: "muted srow-empty" }, empty));
+
+  function draw() {
+    pill.replaceChildren(el("span", { class: `dot ${s.figma.figcli ? "good" : "wait"}` }),
+      s.figma.figcli ? ` FigCli connected${s.figma.designFiles[0] ? ` · ${s.figma.designFiles[0]}` : ""}` : " Figma not connected (FigCli port closed)");
+    runBtn.disabled = !s.queue.length;
+    runBtn.title = s.queue.length ? `${s.queue.length} queued request${s.queue.length > 1 ? "s" : ""}` : "Queue a push or pull first";
+    body.replaceChildren(...[
+      el("div", { class: "sync" },
+        side("In the prototype, not in Figma", s.push, "Push to Figma", "Push all to Figma", "Nothing pending: every prototype change is in Figma."),
+        side("In Figma, not in Storybook", s.pull, "Pull from Figma", "Pull all",
+          s.figma.versionsError === "no-token" ? "No Figma token on this computer, so Figma's version history was not read. CHANGELOG shows nothing pending." : "Nothing pending: Storybook matches the DS file.")),
+      s.queue.length ? el("p", { class: "note" }, `${s.queue.length} request${s.queue.length > 1 ? "s" : ""} queued. Nothing has changed in Figma or Storybook yet: run the queue in chat when you are ready.`) : null,
+      s.rules.length ? el("section", { class: "p-panel", style: "margin-top:16px" }, el("h2", { class: "section-title" }, "Prototype rules (no Figma change)"),
+        s.rules.map((r) => el("p", { class: "small" }, r.rule))) : null,
+      el("p", { class: "note" }, "After a push: Figma audit, re-export, the override reports \"synced\" and the screen's source goes back to Figma.")].filter(Boolean));
+  }
+  await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not read the sync state.")); showError(e); });
 }

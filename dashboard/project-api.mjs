@@ -4,6 +4,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
 
 const readJson = (file, fallback = null) => {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return fallback; }
@@ -138,6 +139,80 @@ function decide(dir, id, decision, note) {
   return all[id];
 }
 
+// ---------- Sync: what differs between the prototype, Figma and Storybook ----------
+// Nothing moves from here: Push / Pull only add a request to data/sync-queue.json, which a chat run then works
+// through with the workflow's own rules (FigCli, audit, the user's approvals).
+const queueFile = (dir) => path.join(dir, "data", "sync-queue.json");
+
+// Changelog entries still marked "Storybook synced: no".
+export function unsyncedEntries(text) {
+  const body = text.replace(/```[\s\S]*?```/g, "");
+  const parts = body.split(/^(?=## \d{4}-\d{2}-\d{2})/m).slice(1);
+  return parts.filter((e) => /Storybook synced:\s*no\b/i.test(e)).map((e) => {
+    const m = e.match(/^## (\d{4}-\d{2}-\d{2})\s*[·-]\s*(.+)$/m);
+    return { date: m?.[1] || null, title: (m?.[2] || "").trim() };
+  });
+}
+
+// Is Figma open with FigCli Yolo's debugging port (9222)? Read-only, no token.
+async function figcliPort() {
+  try {
+    const r = await fetch("http://127.0.0.1:9222/json/version", { signal: AbortSignal.timeout(500) });
+    return r.ok;
+  } catch { return false; }
+}
+
+const versionsCache = new Map();
+async function syncState(root, dir) {
+  const status = readJson(path.join(dir, "status.json"), {});
+  const overrides = readJson(path.join(dir, "prototype", "data", "overrides.json"), { changes: [] });
+  const queue = readJson(queueFile(dir), { requests: [] }).requests || [];
+  const queued = (ref) => queue.find((q) => q.ref === ref && q.status === "queued") || null;
+  const push = (status.prototype?.pending_figma_sync || []).map((c) => {
+    const ov = (overrides.changes || []).find((o) => o.id === c.override);
+    const ref = `push:${c.override || c.comment || c.change}`;
+    return { ref, title: ov?.description || c.change, change: c.change, file: c.file, screen: ov?.screen || null, comment: c.comment || null, approved: ov?.approved || null, queued: queued(ref) };
+  });
+  const pull = [];
+  let versions = null;
+  try {
+    // tools/figma_versions.cjs: the DS file's Figma history since the last Storybook sync (at most ~3 s, skipped offline).
+    const fv = createRequire(import.meta.url)(path.join(root, "tools", "figma_versions.cjs"));
+    const hit = versionsCache.get(dir);
+    if (hit && Date.now() - hit.at < 60000) versions = hit.value; // Queue / Undo clicks reuse the last read
+    else if (fv.checkFolder) { versions = await fv.checkFolder(dir); versionsCache.set(dir, { at: Date.now(), value: versions }); }
+  } catch {}
+  if (versions?.changed) {
+    const ref = `pull:figma-versions:${versions.latest}`;
+    pull.push({ ref, title: `DS file: ${versions.changed} Figma version${versions.changed > 1 ? "s" : ""} since the last Storybook sync`, meta: ["Figma version history", `${String(versions.latest).slice(0, 16).replace("T", " ")}${versions.editors?.length ? ` · ${versions.editors.join(", ")}` : ""}`], queued: queued(ref) });
+  }
+  for (const e of unsyncedEntries(readText(path.join(dir, "CHANGELOG.md")))) {
+    const ref = `pull:changelog:${e.date}:${e.title}`;
+    pull.push({ ref, title: e.title, meta: ["CHANGELOG, Storybook synced: no", e.date], queued: queued(ref) });
+  }
+  return {
+    push, pull,
+    rules: status.prototype?.rules || [],
+    queue: queue.filter((q) => q.status === "queued"),
+    figma: { designSystem: status.figma?.design_system?.name || null, designFiles: (status.figma?.design_files || []).map((f) => f.name), figcli: await figcliPort(), versionsChecked: versions !== null, versionsError: versions?.error || null },
+  };
+}
+
+function queueRequest(dir, item) {
+  const file = queueFile(dir);
+  const all = readJson(file, { requests: [] });
+  all.requests ||= [];
+  if (!all.requests.some((q) => q.ref === item.ref && q.status === "queued")) all.requests.push({ ...item, status: "queued", at: new Date().toISOString() });
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
+}
+function unqueueRequest(dir, ref) {
+  const file = queueFile(dir);
+  const all = readJson(file, { requests: [] });
+  all.requests = (all.requests || []).filter((q) => !(q.ref === ref && q.status === "queued"));
+  fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
+}
+
 const MIME = { ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif" };
 
 export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root }) {
@@ -188,6 +263,16 @@ export async function handleProjectApi(req, res, url, { send, projectDir, readBo
     const r = commentsTool(root, dir, "--schema-status");
     if (r.code !== 0) { send(res, 200, { keys: false, upToDate: false, error: r.err }); return true; }
     try { send(res, 200, JSON.parse(r.out)); } catch { send(res, 200, { keys: false, upToDate: false, error: r.out }); }
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "sync") { send(res, 200, await syncState(root, dir)); return true; }
+  if (req.method === "POST" && (m[2] === "sync/queue" || m[2] === "sync/unqueue")) {
+    const b = await readBody(req);
+    const ref = String(b.ref || "");
+    if (!/^(push|pull):/.test(ref) || ref.length > 600) { send(res, 400, { error: "bad request" }); return true; }
+    if (m[2] === "sync/queue") queueRequest(dir, { ref, kind: ref.startsWith("push:") ? "push-figma" : "pull-figma", title: String(b.title || "").slice(0, 400) });
+    else unqueueRequest(dir, ref);
+    send(res, 200, await syncState(root, dir));
     return true;
   }
   send(res, 404, { error: "unknown project action" });
