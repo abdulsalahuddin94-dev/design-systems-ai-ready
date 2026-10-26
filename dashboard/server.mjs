@@ -10,6 +10,7 @@
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -306,11 +307,64 @@ const usage = usageStore(STATE);
 
 function saveHistory(s) {
   const all = readJson(HISTORY, []);
-  const row = { id: s.id, claudeSessionId: s.claudeSessionId, project: s.project, title: s.title, started: s.started, updated: Date.now() };
   // A continued conversation keeps one row (same Claude session), so the list never shows it twice.
-  const next = [row, ...all.filter((r) => r.id !== s.id && !(s.claudeSessionId && r.claudeSessionId === s.claudeSessionId))].slice(0, 40);
+  const same = (r) => r.id === s.id || (s.claudeSessionId && r.claudeSessionId === s.claudeSessionId);
+  const old = all.find(same);
+  // preview = the first thing the user wrote, so conversations of the same project can be told apart in the list.
+  const row = { id: s.id, claudeSessionId: s.claudeSessionId, project: s.project, title: s.title, preview: old?.preview || s.preview || "", started: old?.started || s.started, updated: Date.now() };
+  const next = [row, ...all.filter((r) => !same(r))].slice(0, 40);
   try { fs.mkdirSync(STATE, { recursive: true }); fs.writeFileSync(HISTORY, JSON.stringify(next, null, 2)); } catch {}
   pruneLogs(next);
+}
+
+// ---------- conversation titles ----------
+// The first thing the user typed names a conversation in the recent list. The dashboard's own start prompts are skipped
+// (every project conversation begins with the same one), so the title is what the user actually asked.
+const AUTO_PROMPT = /^Start the intake \(Design_System_Intake_Skill\)\./;
+const previewOf = (text) => {
+  const t = String(text || "").replace(/\s+/g, " ").trim();
+  return !t || AUTO_PROMPT.test(t) || t.startsWith("<") || t.startsWith("[Request interrupted") ? "" : t.slice(0, 160);
+};
+
+// Conversations saved before titles existed: read the first typed message from Claude Code's own transcript once.
+function transcriptPreview(claudeSessionId) {
+  if (!/^[\w-]{8,}$/.test(String(claudeSessionId || ""))) return "";
+  const base = path.join(os.homedir(), ".claude", "projects");
+  let dirs = [];
+  try { dirs = fs.readdirSync(base); } catch { return ""; }
+  for (const d of dirs) {
+    const file = path.join(base, d, `${claudeSessionId}.jsonl`);
+    let fd;
+    try { fd = fs.openSync(file, "r"); } catch { continue; }
+    try {
+      const buf = Buffer.alloc(2 * 1024 * 1024);
+      const n = fs.readSync(fd, buf, 0, buf.length, 0);
+      for (const line of buf.subarray(0, n).toString("utf8").split("\n")) {
+        if (!line.includes('"type":"user"')) continue;
+        let m;
+        try { m = JSON.parse(line); } catch { continue; }
+        if (m.type !== "user" || m.isSidechain || m.isMeta) continue;
+        const c = m.message?.content;
+        const text = typeof c === "string" ? c : Array.isArray(c) ? c.filter((x) => x.type === "text").map((x) => x.text).join(" ") : "";
+        const p = previewOf(text);
+        if (p) return p;
+      }
+    } finally { fs.closeSync(fd); }
+    return "";
+  }
+  return "";
+}
+
+function fillPreviews() {
+  const all = readJson(HISTORY, []);
+  let changed = false;
+  for (const r of all) {
+    if ((r.preview && previewOf(r.preview)) || (!r.preview && r.previewChecked) || !r.claudeSessionId) continue;
+    r.preview = transcriptPreview(r.claudeSessionId);
+    r.previewChecked = true;
+    changed = true;
+  }
+  if (changed) { try { fs.writeFileSync(HISTORY, JSON.stringify(all, null, 2)); } catch {} }
 }
 
 // ---------- saved conversation windows ----------
@@ -365,6 +419,7 @@ function emit(s, event) {
   s.log.push(event);
   if (s.log.length > 4000) s.log.splice(0, s.log.length - 4000);
   if (!SKIP_SAVE.has(event.type)) scheduleSave(s);
+  if (event.type === "user" && !s.preview) s.preview = previewOf(event.text);
   const line = `data: ${JSON.stringify(event)}\n\n`;
   for (const res of s.clients) res.write(line);
 }
@@ -509,6 +564,7 @@ function startSession({ prompt, project, title, images, resume }) {
     model: getSettings().claudeModel, limit: null, held: [], autoResume: true,
     agent: "claude", gemini: null, geminiNote: "",
   };
+  if (resume) s.preview = readJson(HISTORY, []).find((r) => r.claudeSessionId === resume)?.preview || "";
   sessions.set(id, s);
   runQuery(s, resume);
   if (prompt || (images && images.length)) {
@@ -1083,7 +1139,7 @@ function runInTerminal(cmd) {
 }
 
 function sessionSummary(s) {
-  return { id: s.id, project: s.project, title: s.title, started: s.started, busy: s.busy, ended: s.ended, live: true, claudeSessionId: s.claudeSessionId,
+  return { id: s.id, project: s.project, title: s.title, preview: s.preview || "", started: s.started, busy: s.busy, ended: s.ended, live: true, claudeSessionId: s.claudeSessionId,
     model: s.model || "", limit: s.limit, held: s.held.length, autoResume: s.autoResume, agent: s.agent };
 }
 
@@ -1162,8 +1218,20 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && p === "/api/sessions") {
       const live = [...sessions.values()].map(sessionSummary);
       const liveIds = new Set(live.map((s) => s.id));
-      const past = readJson(HISTORY, []).filter((r) => !liveIds.has(r.id) && r.claudeSessionId);
+      fillPreviews();
+      const past = readJson(HISTORY, []).filter((r) => !liveIds.has(r.id) && r.claudeSessionId && !r.hidden);
       return send(res, 200, { live, past });
+    }
+    // Hide a past conversation from the recent list (Undo shows it again). Nothing is deleted: Claude Code keeps its
+    // transcript, and the row drops out with the oldest ones after 40 conversations.
+    if (req.method === "POST" && p === "/api/sessions/hide") {
+      const body = await readBody(req);
+      const all = readJson(HISTORY, []);
+      const row = all.find((r) => r.claudeSessionId && r.claudeSessionId === body.claudeSessionId);
+      if (!row) return send(res, 404, { error: "That conversation is not in the list." });
+      if (body.hidden === false) delete row.hidden; else row.hidden = true;
+      try { fs.writeFileSync(HISTORY, JSON.stringify(all, null, 2)); } catch {}
+      return send(res, 200, { ok: true });
     }
     if (req.method === "POST" && p === "/api/sessions") {
       const body = await readBody(req);
