@@ -339,7 +339,7 @@ export function App() {
       <span className="hidden opacity-80 md:inline">· not a real app · no login · comments go to the design team</span>
     </div>}
     <div className={`flex min-h-0 flex-1 ${r.mode === 'Dark' ? 'dark' : ''}`}>
-      {!embed && <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-black/10 p-4 md:block dark:border-white/10">
+      {!embed && <aside className="dark hidden w-64 shrink-0 overflow-y-auto border-r border-white/10 bg-[#2a2a2d] p-4 text-neutral-100 md:block">{/* same in Light and Dark */}
         <div className="mb-1 text-xs uppercase tracking-wide opacity-60">Live prototype</div>
         <div className="mb-4 text-lg font-semibold">{PROJECT.name}</div>
         {FLOWS.map((f) => (
