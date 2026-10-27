@@ -460,10 +460,32 @@ async function drawDesign(main, p) {
       el("button", { class: "primary sm", type: "button", onclick: doPublish }, "Yes, publish"),
       el("button", { class: "ghost sm", type: "button", onclick: () => { confirmBox.hidden = true; publish.hidden = false; } }, "Cancel"));
   };
+  // GitHub Pages serves a new build about a minute after the push (and caches the old page meanwhile): poll the live
+  // index for the build that was just published, then reload the Live preview so it never shows the old one.
+  async function waitForLive(build) {
+    const url = st.publish?.url;
+    if (!build || !url) return;
+    for (let i = 0; i < 36; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      if (!canvas.isConnected) return;
+      try {
+        const html = await (await fetch(`${url}?r=${Date.now()}`, { cache: "no-store" })).text();
+        if (html.includes(`index-${build}.js`)) {
+          if (view.where === "live") loadFrame(true);
+          toast("The live link now shows the new build.");
+          return;
+        }
+      } catch {}
+    }
+  }
   async function doPublish() {
     confirmBox.hidden = true; publish.hidden = false;
     st.publishing = true; drawBar();
-    try { st = await api(`/api/project/${enc}/publish`, {}); toast("Published. GitHub Pages updates in about a minute."); }
+    try {
+      st = await api(`/api/project/${enc}/publish`, {});
+      toast("Published. The live link updates in about a minute; the Live preview reloads by itself.");
+      waitForLive(st.publish?.build);
+    }
     catch (e) { showError(e); st.publishing = false; }
     drawBar();
   }
