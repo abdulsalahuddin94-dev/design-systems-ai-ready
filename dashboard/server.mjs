@@ -555,7 +555,9 @@ function cancelLogin() {
   return { ok: true };
 }
 
-function startSession({ prompt, project, title, images, resume }) {
+// context: instructions Claude gets with the first message but the conversation does not show (the Design page's
+// workspace rules); the bubble shows only what the user typed.
+function startSession({ prompt, context, project, title, images, resume }) {
   const id = crypto.randomUUID();
   const s = {
     id, project: project || null, title: title || (prompt || "").slice(0, 60) || "Conversation",
@@ -568,7 +570,9 @@ function startSession({ prompt, project, title, images, resume }) {
   sessions.set(id, s);
   runQuery(s, resume);
   if (prompt || (images && images.length)) {
-    s.inbox.push(userMessage(prompt, images));
+    s.inbox.push(userMessage(context ? `${String(context).slice(0, 8000)}
+
+${prompt || ""}` : prompt, images));
     emit(s, { type: "user", text: prompt || "", images: images || [] });
   } else {
     s.busy = false;

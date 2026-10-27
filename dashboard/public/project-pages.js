@@ -266,9 +266,10 @@ const MODE_TEXT = {
   "code-first": ["Code first", "New screens and changes are built in the prototype first; Figma follows when you sync."],
   "figma-first": ["Figma first", "Changes are designed in the Figma Design file first, then the prototype is rebuilt from it."],
 };
-const DESIGN_PROMPT = (p, mode, screen, where, text) => `Design workspace for "${p}" (My Projects/${p}), ${MODE_TEXT[mode][0].toLowerCase()}. ${mode === "code-first"
+// Sent to Claude with the first message but not shown in the conversation (only the typed request is).
+const DESIGN_CONTEXT = (p, mode, screen, where) => `Design workspace for "${p}" (My Projects/${p}), ${MODE_TEXT[mode][0].toLowerCase()}. ${mode === "code-first"
   ? "Build each change in the prototype first (prototype/data/overrides.json, or a code-first screen), rebuild and check it, and add it to status.json > prototype.pending_figma_sync. Do not touch Figma."
-  : "Design each change in the Figma Design file first with the saved tool (ask me before each write), audit it, then re-export and rebuild the prototype."} Rules: only the project's design-system components and tokens (its Storybook React components and data/tokens.json), never raw values; a missing component or size is a DS gap: tell me and give me the options, never invent one. The preview shows "${screen}" (${where}). Request: ${text}`;
+  : "Design each change in the Figma Design file first with the saved tool (ask me before each write), audit it, then re-export and rebuild the prototype."} Rules: only the project's design-system components and tokens (its Storybook React components and data/tokens.json), never raw values; a missing component or size is a DS gap: tell me and give me the options, never invent one. The preview shows "${screen}" (${where}). My request follows.`;
 const designKey = (name) => `designChat:${name}`;
 const readStore = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } };
 const writeStore = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
@@ -319,7 +320,7 @@ async function drawDesign(main, p) {
     const drawThumbs = () => thumbs.replaceChildren(...images.map((src, i) => el("figure", {}, el("img", { src, alt: "Image to send" }),
       el("button", { type: "button", "aria-label": "Remove", onclick: () => { images.splice(i, 1); drawThumbs(); } }, icon("i-x")))));
     const addFiles = (files) => { for (const f of files) { if (!/^image\/(png|jpeg|gif|webp)$/.test(f.type)) continue; const r = new FileReader(); r.onload = () => { images.push(r.result); drawThumbs(); }; r.readAsDataURL(f); } };
-    const ta = el("textarea", { rows: "4", dir: "auto", "aria-label": "Describe a screen, a flow or a change", placeholder: "Describe a screen, a flow or a change… (Arabic or English). Ctrl+V pastes a screenshot." });
+    const ta = el("textarea", { rows: "3", dir: "auto", "aria-label": "Describe a screen, a flow or a change", placeholder: "Describe a screen, a flow or a change… (Arabic or English). Ctrl+V pastes a screenshot." });
     const file = el("input", { type: "file", accept: "image/png,image/jpeg,image/gif,image/webp", multiple: true, hidden: true, onchange: (ev) => { addFiles(ev.target.files); ev.target.value = ""; } });
     const go = el("button", { class: "primary sm", type: "submit" }, icon("i-send"), "Build");
     ta.addEventListener("paste", (ev) => { const f = [...(ev.clipboardData?.files || [])]; if (f.length) { ev.preventDefault(); addFiles(f); } });
@@ -330,7 +331,7 @@ async function drawDesign(main, p) {
       if (!text && !images.length) return;
       go.disabled = true;
       try {
-        const s = await api("/api/sessions", { prompt: DESIGN_PROMPT(p.name, st.designMode, screenName(), view.where === "local" ? "local preview" : "live link", text || "See the attached image."), images, project: p.name, title: `Design: ${p.title}` });
+        const s = await api("/api/sessions", { prompt: text || "See the attached image.", context: DESIGN_CONTEXT(p.name, st.designMode, screenName(), view.where === "local" ? "local preview" : "live link"), images, project: p.name, title: `Design: ${p.title}` });
         writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || null });
         mountChat(s.id);
       } catch (e) { showError(e); go.disabled = false; }
@@ -349,6 +350,15 @@ async function drawDesign(main, p) {
   function mountChat(id) {
     chatBody.replaceChildren();
     renderChat(id, chatBody);
+    // Lovable-like composer for the narrow panel: the text box on top, then one row with attach, tool and model, and
+    // a single Send / Stop button; the status sits on its own line above the composer. Same elements, only moved.
+    const form = chatBody.querySelector("#composer");
+    const row = form.querySelector(".composer-row");
+    row.append(el("div", { class: "ws-cbar" }, row.querySelector(".attach"), form.querySelector("#agent-wrap"), form.querySelector("#model-wrap"), el("span", { class: "sp" }), row.querySelector("#stop"), row.querySelector("#send")));
+    const status = form.querySelector("#status-line");
+    status.classList.add("ws-status");
+    form.before(status);
+    form.querySelector(".composer-foot")?.remove();
     chatBody.append(el("div", { class: "ws-chat-foot" }, el("button", { type: "button", class: "textbtn", onclick: () => {
       try { localStorage.removeItem(designKey(p.name)); } catch {}
       if (current?.es) { current.es.close(); current.cleanup?.(); current = null; }
@@ -390,13 +400,14 @@ async function drawDesign(main, p) {
   main.append(chatCol, stage);
 
   const baseUrl = () => (view.where === "local" ? st.local.url : st.publish?.url) || null;
-  const screenUrl = () => baseUrl() && view.screen ? `${baseUrl().replace(/\/?$/, "/")}#/${view.screen}?mode=${view.mode}&lang=en` : baseUrl();
+  // embed=1: the prototype hides its own screen list, banner and picker (this page has them); a new tab shows it whole.
+  const screenUrl = (embed = true) => baseUrl() && view.screen ? `${baseUrl().replace(/\/?$/, "/")}#/${view.screen}?mode=${view.mode}&lang=en${embed ? "&embed=1" : ""}` : baseUrl();
   function loadFrame(force) {
     const url = screenUrl();
     const sc = st.screens.find((s) => s.slug === view.screen);
     badge.hidden = !(sc?.source === "code");
     badge.textContent = `${sc?.name || ""} · code ahead of Figma`;
-    newTab.href = url || "#";
+    newTab.href = screenUrl(false) || "#";
     newTab.toggleAttribute("aria-disabled", !url);
     if (view.where === "local" && !st.local.running) {
       canvas.replaceChildren(el("div", { class: "p-empty ws-off" },

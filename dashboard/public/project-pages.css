@@ -106,7 +106,7 @@ a.ghost.sm,a.primary.sm{text-decoration:none}
 .cmeta{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:4px;font-size:12px;color:var(--ink-3)}
 .note{margin-top:12px;font-size:13px;color:var(--ink-2)}
 /* design: Lovable-like workspace (chat panel + preview stage) */
-main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);display:grid;grid-template-columns:380px minmax(0,1fr);overflow:hidden}
+main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);display:grid;grid-template-columns:clamp(300px,27vw,420px) minmax(0,1fr);overflow:hidden}
 .ws-col{display:flex;flex-direction:column;min-height:0;border-right:1px solid var(--rule);background:var(--sheet)}
 .ws-head{padding:14px 16px 12px;border-bottom:1px solid var(--rule);display:grid;gap:6px}
 .ws-head .crumbs{margin:0}
@@ -117,8 +117,26 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .ws-chat .chat-layout>.side{display:none}
 .ws-chat .chat{flex:1;border:0;border-radius:0;background:none}
 .ws-chat .log{padding:16px 14px 8px}
-.ws-chat .composer-foot .note{font-size:12px}
-.ws-chat .composer-row textarea{min-height:64px}
+/* composer: text box on top (2-8 lines), then attach, tool, model and one Send / Stop button */
+.ws-chat .composer{padding:8px 12px 10px;gap:0}
+.ws-chat .composer-row{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}
+.ws-chat .composer-row textarea{width:100%;min-height:calc(2 * 1.45em + 22px);max-height:calc(8 * 1.45em + 22px);font-size:14px}
+.ws-cbar{display:flex;align-items:center;gap:6px;min-width:0}
+.ws-cbar .sp{flex:1}
+.ws-cbar .attach{width:34px;height:34px}
+.ws-cbar .model-pick{min-width:0;flex:0 1 auto}
+.ws-cbar .model-pick select{max-width:120px;text-overflow:ellipsis}
+.ws-chat .composer .ws-cbar .primary,.ws-chat .composer .ws-cbar .ghost{height:34px;padding:0 12px;flex:none}
+.ws-chat:has(#stop:not([hidden])) #send{display:none}
+.ws-status{margin:0;padding:6px 14px 2px;font-size:12px;color:var(--ink-3);display:flex;align-items:center;gap:8px;min-height:22px;border-top:1px solid var(--rule)}
+.ws-chat:has(#stop:not([hidden])) .ws-status::before{content:"";flex:none;width:18px;height:6px;background:radial-gradient(circle,var(--cyan) 2.2px,transparent 2.6px) 0 50%/6px 6px repeat-x;animation:ws-dots 1.2s steps(4) infinite}
+@keyframes ws-dots{from{width:0}to{width:24px}}
+@media (prefers-reduced-motion:reduce){.ws-chat:has(#stop:not([hidden])) .ws-status::before{animation:none;width:18px}}
+.ws-chat .typing{display:none} /* the status line above the composer shows the working dots */
+.ws-col{container-type:inline-size}
+@container (max-width:360px){.ws-cbar #stop,.ws-cbar #send{font-size:0;gap:0;padding:0 10px}.ws-cbar #stop .ic,.ws-cbar #send .ic{margin:0}.ws-cbar #agent-wrap .ic{display:none}.ws-cbar .model-pick{padding-left:6px}.ws-cbar .model-pick select{min-width:52px;max-width:84px}}
+/* mixed Arabic and English: each line takes its own direction */
+.ws-chat .msg,.ws-chat .msg p,.ws-chat .msg li,.ws-chat textarea,.ws-start textarea{unicode-bidi:plaintext}
 .ws-chat-foot{padding:6px 14px 10px;border-top:1px solid var(--rule)}
 .ws-chat-foot .textbtn{font-size:12.5px;color:var(--ink-2)}
 .ws-ask{margin:16px 14px;padding:16px;display:grid;gap:10px;border:1px solid var(--rule);border-radius:var(--r)}

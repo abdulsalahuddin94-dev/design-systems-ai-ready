@@ -234,9 +234,10 @@ export function App() {
   // Phone width: no side list (a screen picker instead), no phone frame, the screen scaled to the window width.
   const narrow = win.w < 768;
   narrowRef.current = narrow;
-  const toolbarH = 104 + BANNER_H;
+  const embed = r.embed; // inside the Atomica dashboard: no banner, side list or screen picker (the dashboard has them)
+  const toolbarH = (narrow && !embed ? 104 : 56) + (embed ? 0 : BANNER_H);
   // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
-  const room = win.w - 256 - (code ? 440 : commenting ? 360 : 0) - 32;
+  const room = win.w - (embed ? 0 : 256) - (code ? 440 : commenting ? 360 : 0) - 32;
   // a static (one-screen) frame never scrolls, so at phone width it also fits the height left under the toolbar
   const zoom = narrow
     ? Math.min(1, win.w / def.w, def.scroll ? 1 : (win.h - toolbarH) / def.h)
@@ -260,14 +261,14 @@ export function App() {
 
   return (
     <div className="flex h-full flex-col">
-    <div role="note" data-banner="" style={{ height: BANNER_H }}
+    {!embed && <div role="note" data-banner="" style={{ height: BANNER_H }}
       className="box-border flex shrink-0 items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap bg-neutral-800 px-4 text-center text-xs text-neutral-100">
       <span className="font-semibold">Design prototype by Atomica</span>
       <span className="opacity-80 md:hidden">· not a real app · no login</span>
       <span className="hidden opacity-80 md:inline">· not a real app · no login · comments go to the design team</span>
-    </div>
+    </div>}
     <div className={`flex min-h-0 flex-1 ${r.mode === 'Dark' ? 'dark' : ''}`}>
-      <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-black/10 p-4 md:block dark:border-white/10">
+      {!embed && <aside className="hidden w-64 shrink-0 overflow-y-auto border-r border-black/10 p-4 md:block dark:border-white/10">
         <div className="mb-1 text-xs uppercase tracking-wide opacity-60">Live prototype</div>
         <div className="mb-4 text-lg font-semibold">{PROJECT.name}</div>
         {FLOWS.map((f) => (
@@ -289,16 +290,16 @@ export function App() {
           </nav>
         ))}
         <div className="mt-6 text-xs opacity-60">Figma: {PROJECT.figmaFile}<br />Exported {PROJECT.exportedAt.slice(0, 10)}</div>
-      </aside>
+      </aside>}
       <main className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto overflow-x-hidden">
         <div className="box-border flex w-full flex-wrap items-center justify-center gap-2 p-3">
-          <label className="w-full md:hidden">
+          {!embed && <label className="w-full md:hidden">
             <span className="sr-only">Screen</span>
             <select value={slug} onChange={(e) => go(e.target.value)}
               className="w-full rounded-lg bg-black/5 px-3 py-1.5 text-sm dark:bg-white/10 [&>option]:bg-white [&>option]:text-black">
               {SCREENS.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
             </select>
-          </label>
+          </label>}
           <div role="toolbar" aria-label="Prototype controls" data-toolbar=""
             className="flex items-center rounded-xl border border-[#333] bg-[#1E1E1E] p-1 text-neutral-200 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
             <Segmented label="Color mode" value={r.mode} options={MODES} icons compact={narrow} onChange={(m) => { window.location.hash = href({ mode: m }); }} />
