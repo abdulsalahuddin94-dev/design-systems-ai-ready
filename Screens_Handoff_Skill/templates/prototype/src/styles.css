@@ -16,6 +16,12 @@
 html, body, #root { margin: 0; height: 100%; }
 body { font-family: system-ui, sans-serif; background: #e9e9ec; color: #1b1b1f; }
 :root[data-shell='dark'] body { background: #121214; color: #e6e6ea; }
+/* Inside the Atomica dashboard the page is see-through: the dashboard's own canvas shows around the device. */
+:root[data-embed] body { background: transparent; }
+/* A web screen scrolls inside its browser frame with a slim scrollbar (phone screens keep theirs hidden). */
+.fp-web .fp-screen { scrollbar-width: thin; scrollbar-color: rgba(128, 128, 140, 0.45) transparent; }
+.fp-web .fp-screen::-webkit-scrollbar { display: block; width: 8px; }
+.fp-web .fp-screen::-webkit-scrollbar-thumb { background: rgba(128, 128, 140, 0.45); border-radius: 8px; }
 /* Shell chrome only (no preflight runs): plain links and lists in the flow list. */
 aside a { color: inherit; text-decoration: none; }
 aside ul { list-style: none; margin: 0; padding: 0; }
@@ -36,7 +42,7 @@ aside ul { list-style: none; margin: 0; padding: 0; }
 /* Code panel and toolbar (shell chrome): no preflight runs, so their buttons drop the browser's own colours and borders
    (in the base layer, so the Tailwind size and colour classes still win). */
 @layer base {
-  [data-code-panel] button, [data-toolbar] button, [data-comments-panel] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
+  [data-code-panel] button, [data-toolbar] button, [data-toolbar] select, [data-comments-panel] button { color: inherit; font-family: inherit; border: 0; cursor: pointer; }
   [data-comments-panel] input, [data-comments-panel] textarea { font-family: inherit; color: inherit; }
   .fp-pins button { font-family: system-ui, sans-serif; cursor: pointer; }
 }

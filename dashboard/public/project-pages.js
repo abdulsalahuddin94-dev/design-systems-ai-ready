@@ -281,9 +281,13 @@ async function drawDesign(main, p) {
   main.classList.add("design-ws");
   let st = await api(`/api/project/${enc}/design`).catch((e) => { showError(e); return null; });
   if (!st) { main.append(el("p", { class: "p-empty" }, "Could not read this project's prototype.")); return; }
-  const view = { where: st.local.running ? "local" : "live", device: "phone", screen: st.screens[0]?.slug || "", mode: "Dark" };
+  // device: the frame (a phone for mobile screens, a browser window for web ones); the prototype fits it to the canvas
+  const view = { where: st.local.running ? "local" : "live", device: (st.screens[0]?.w || 375) >= 600 ? "desktop" : "phone", screen: st.screens[0]?.slug || "", mode: "Dark" };
   try { Object.assign(view, JSON.parse(localStorage.getItem(`designView:${p.name}`) || "{}")); } catch {}
   if (!st.screens.some((s) => s.slug === view.screen)) view.screen = st.screens[0]?.slug || "";
+  // the frame follows the screen (phone for mobile, browser window for web); the toolbar toggle overrides it for now
+  const autoDevice = () => ((st.screens.find((s) => s.slug === view.screen)?.w || 375) >= 600 ? "desktop" : "phone");
+  view.device = autoDevice();
   const saveView = () => { try { localStorage.setItem(`designView:${p.name}`, JSON.stringify(view)); } catch {} };
 
   // ----- left: chat -----
@@ -431,7 +435,7 @@ async function drawDesign(main, p) {
     const b = baseUrl();
     if (!b || !view.screen) return b;
     const p = new URLSearchParams({ mode: view.mode, lang: "en" });
-    if (embed) { p.set("embed", "1"); if (view.tool) p.set("tool", view.tool); if (view.tool === "comment" && view.comment) p.set("comment", view.comment); }
+    if (embed) { p.set("embed", "1"); p.set("device", view.device); if (view.tool) p.set("tool", view.tool); if (view.tool === "comment" && view.comment) p.set("comment", view.comment); }
     return `${b.replace(/\/?$/, "/")}#/${view.screen}?${p}`;
   };
   function loadFrame(force) {
@@ -451,8 +455,7 @@ async function drawDesign(main, p) {
     // The frame is another origin, so a refresh reloads it with a cache-busting query; anything else only changes the hash.
     if (force) { const u = new URL(url); u.searchParams.set("r", Date.now()); frame.src = u.href; frame.dataset.src = url; }
     else if (frame.dataset.src !== url) { frame.dataset.src = url; frame.src = url; }
-    if (!canvas.contains(frame)) canvas.replaceChildren(badge, el("div", { class: `ws-device ${view.device}` }, frame));
-    else frame.parentElement.className = `ws-device ${view.device}`;
+    if (!canvas.contains(frame)) canvas.replaceChildren(badge, el("div", { class: "ws-device" }, frame));
   }
   async function startLocal(ev) {
     const b = ev.currentTarget; b.disabled = true; b.lastChild.textContent = "Starting…";
@@ -467,7 +470,7 @@ async function drawDesign(main, p) {
     onclick: () => setTool(view.tool === k ? null : k) }, icon(ic), count ? el("span", { class: "ws-count" }, String(count)) : null);
   const openOnScreen = () => comments.filter((c) => c.status !== "resolved" && c.screen === view.screen).length;
   function drawBar() {
-    const screenPick = el("select", { "aria-label": "Screen", onchange: () => { view.screen = screenPick.value; view.comment = null; pop.hidden = true; saveView(); loadFrame(); drawBar(); } },
+    const screenPick = el("select", { "aria-label": "Screen", onchange: () => { view.screen = screenPick.value; view.device = autoDevice(); view.comment = null; pop.hidden = true; saveView(); loadFrame(); drawBar(); } },
       st.screens.map((s) => el("option", { value: s.slug }, s.name)));
     screenPick.value = view.screen;
     // "…": a menu above the pill (outside it, so the pill's scrolling never clips it)

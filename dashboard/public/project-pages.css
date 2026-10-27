@@ -159,11 +159,10 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .ws-confirm{display:inline-flex;align-items:center;gap:6px}
 .ws-confirm[hidden]{display:none}
 .ws-canvas{flex:1;position:relative;display:grid;place-items:stretch center;overflow:auto;padding:20px 24px;background-image:radial-gradient(var(--rule) 1px,transparent 1px);background-size:18px 18px}
-.ws-device{background:var(--sheet);border:1px solid var(--rule);box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden}
-.ws-device{height:100%;min-height:520px}
-.ws-device.phone{width:430px;max-width:100%;border-radius:14px} /* the prototype draws its own viewer; no extra bezel */
-.ws-device.desktop{width:100%;border-radius:10px}
-.ws-frame{width:100%;height:100%;border:0;display:block;background:var(--paper)}
+/* The frame fills the canvas and is see-through: the prototype (embed) fits the whole phone, or a browser window for
+   web screens, into it and draws only the device, so the canvas colors show around it in Light and Dark. */
+.ws-device{width:100%;height:100%;min-height:420px}
+.ws-frame{width:100%;height:100%;border:0;display:block;background:transparent;color-scheme:normal}
 .srcbadge{position:absolute;top:14px;left:14px;z-index:1}
 .srcbadge[hidden]{display:none}
 .ws-note{position:absolute;right:14px;bottom:12px;max-width:300px;font-size:12px;color:var(--ink-2);padding:8px 10px;border:1px solid var(--rule);border-radius:var(--r);background:var(--sheet)}
@@ -201,7 +200,7 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .plan-none{display:grid;gap:10px;justify-items:center;border:0;padding:20px}
 /* design preview: floating controls (Lovable-like pill), Publish top right, comments on the design */
 .ws-stage{position:relative}
-.ws-canvas{padding:56px 24px 84px}
+.ws-canvas{padding:52px 16px 76px;overflow:hidden}
 .ws-pill{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:4px;padding:5px;border-radius:14px;background:#17191E;color:#E9ECF1;border:1px solid #2A2E36;box-shadow:0 8px 28px rgba(0,0,0,.28);max-width:calc(100% - 24px);overflow-x:auto;white-space:nowrap}
 .ws-pill[hidden],.ws-pill-open[hidden]{display:none}
 .ws-pill select{border:0;border-radius:9px;background:#23262D;color:#E9ECF1;padding:6px 8px;font:500 12.5px var(--sans);max-width:170px;min-width:90px}

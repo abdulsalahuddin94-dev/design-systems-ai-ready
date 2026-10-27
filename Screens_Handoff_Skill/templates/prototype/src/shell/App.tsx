@@ -167,12 +167,16 @@ export function App() {
   const [pending, setPending] = React.useState<Pending | null>(null);
   const [selected, setSelected] = React.useState<string | null>(null);
   const [commentError, setCommentError] = React.useState<string | null>(null);
+  // The floating controls at the bottom (Lovable-like pill); collapsed to a round button, remembered per browser.
+  const [pillOpen, setPillOpen] = React.useState(() => { try { return localStorage.getItem('fpPill') !== 'closed'; } catch { return true; } });
+  const setPill = (open: boolean) => { setPillOpen(open); try { localStorage.setItem('fpPill', open ? 'open' : 'closed'); } catch { /* private window */ } };
   React.useEffect(() => { setPicked([]); setPending(null); setSelected(null); }, [r.slug]);
   const curSlug = r.slug || SCREENS[0]?.slug || '';
   const curDef = SCREENS.find((s) => s.slug === curSlug) || SCREENS[0];
-  // Comments of this screen: loaded when the panel opens or the screen changes, refreshed every 20 s while open.
+  // Comments of this screen: loaded when the screen changes (the Comment button shows the open count), refreshed every
+  // 20 s while the panel is open.
   React.useEffect(() => {
-    if (!commenting || !curSlug) return;
+    if (!curSlug) return;
     let live = true;
     // A refresh that started before a post finished must not drop the new comment: keep this browser's recent posts.
     const load = () => listComments(curSlug).then((c) => {
@@ -183,7 +187,7 @@ export function App() {
     })
       .catch((e) => { if (live) setCommentError(String(e.message || e)); });
     load();
-    const t = window.setInterval(load, 20000);
+    const t = commenting ? window.setInterval(load, 20000) : 0;
     return () => { live = false; window.clearInterval(t); };
   }, [commenting, curSlug]);
   const onTap = React.useCallback((p: Pending) => { setPending(p); setSelected(null); }, []);
@@ -241,6 +245,7 @@ export function App() {
   };
   React.useEffect(() => { if (!r.slug && SCREENS[0]) go(SCREENS[0].slug); }, [r.slug]);
   React.useEffect(() => { document.documentElement.dataset.shell = r.mode === 'Dark' ? 'dark' : 'light'; }, [r.mode]);
+  React.useEffect(() => { if (r.embed) document.documentElement.dataset.embed = ''; else delete document.documentElement.dataset.embed; }, [r.embed]);
   if (!SCREENS.length) return <p className="p-6">No screens generated yet. Run tools/build_prototype.py.</p>;
   const slug = r.slug || SCREENS[0].slug;
   const def = SCREENS.find((s) => s.slug === slug) || SCREENS[0];
@@ -256,14 +261,59 @@ export function App() {
   const narrow = win.w < 768;
   narrowRef.current = narrow;
   const embed = r.embed; // inside the Atomica dashboard: no banner, side list or screen picker (the dashboard has them)
-  const toolbarH = (narrow && !embed ? 104 : 56) + (embed ? 0 : BANNER_H);
+  // Embedded, the frame follows the screen: a phone for mobile screens, a browser window for web ones (or device=).
+  const device = embed ? (r.device === 'phone' || r.device === 'desktop' ? r.device : def.w >= 600 ? 'desktop' : 'phone') : null;
+  const PILL_H = 72; // room kept free for the floating controls at the bottom
+  const toolbarH = embed ? 0 : BANNER_H + PILL_H;
+  const BAR = 36; // browser frame top bar
+  const phoneH = def.scroll ? DEVICE.viewport : def.h;
   // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
   const room = win.w - (embed ? 0 : 256) - (code ? 440 : commenting ? 360 : 0) - 32;
   // a static (one-screen) frame never scrolls, so at phone width it also fits the height left under the toolbar
-  const zoom = narrow
-    ? Math.min(1, win.w / def.w, def.scroll ? 1 : (win.h - toolbarH) / def.h)
-    : Math.min(1, room / (def.w + 24));
-  const screenH = narrow ? (def.scroll ? Math.floor((win.h - toolbarH) / zoom) : def.h) : DEVICE.viewport;
+  // the whole phone is always visible: it scales to fit the width and the height; a long screen scrolls inside it
+  const zoom = device === 'phone' ? Math.min(1, (win.w - 24) / (def.w + 24), (win.h - 24) / (phoneH + 24))
+    : device === 'desktop' ? Math.min(1, (win.w - 32) / def.w)
+    : narrow ? Math.min(1, win.w / def.w, def.scroll ? 1 : (win.h - toolbarH) / def.h)
+    : Math.min(1, room / (def.w + 24), (win.h - toolbarH - 16) / (DEVICE.viewport + 24));
+  const screenH = device === 'phone' ? phoneH
+    : device === 'desktop' ? Math.floor((win.h - 24) / zoom) - BAR
+    : narrow ? (def.scroll ? Math.floor((win.h - toolbarH) / zoom) : def.h) : DEVICE.viewport;
+  const openCount = comments.filter((c) => c.status !== 'resolved').length;
+  const pill = !embed && !((code || commenting) && narrow) && (pillOpen ? (
+    <div role="toolbar" aria-label="Prototype controls" data-toolbar=""
+      className="fixed bottom-4 left-1/2 z-40 flex max-w-[calc(100vw-24px)] -translate-x-1/2 items-center gap-0.5 overflow-x-auto whitespace-nowrap rounded-2xl border border-[#2A2E36] bg-[#17191E] p-1.5 text-neutral-200 shadow-[0_8px_28px_rgba(0,0,0,0.3)]">
+      <label className="shrink-0">
+        <span className="sr-only">Screen</span>
+        <select value={slug} onChange={(e) => go(e.target.value)}
+          className="h-8 max-w-[150px] rounded-lg bg-[#23262D] px-2 text-[12.5px] font-medium text-neutral-100 [&>option]:bg-[#23262D]">
+          {SCREENS.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
+        </select>
+      </label>
+      <Divider />
+      <Segmented label="Color mode" value={r.mode} options={MODES} icons compact onChange={(m) => { window.location.hash = href({ mode: m }); }} />
+      <Divider />
+      <Segmented label="Language" value={r.lang === 'ar' ? 'AR' : 'EN'} options={['EN', 'AR']} onChange={(l) => { window.location.hash = href({ lang: l.toLowerCase() }); }} />
+      <Divider />
+      <Toggle label="Inspect" icon="Inspect" pressed={inspect} onClick={() => setInspect(!inspect)} compact
+        hint="Inspect: hover or tap an element to see its DS component and Figma node" />
+      <Toggle label="Code" icon="Code" pressed={code} onClick={toggleCode} compact
+        hint="Code: reference code of this screen per platform" />
+      <span className="relative inline-flex">
+        <Toggle label="Comment" icon="Comment" pressed={commenting} onClick={toggleComments} compact
+          hint="Comment: tap an element to leave a comment for the design team" />
+        {openCount > 0 && <span aria-label={`${openCount} open comments`} className="pointer-events-none absolute -right-1 -top-1 min-w-4 rounded-full bg-pink-600 px-1 text-center text-[10px] font-bold leading-4 text-white">{openCount}</span>}
+      </span>
+      <Divider />
+      <button type="button" aria-label="Hide the controls" title="Hide the controls" onClick={() => setPill(false)} className={`${CONTROL} ${IDLE}`}>
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+      </button>
+    </div>
+  ) : (
+    <button type="button" data-toolbar="" aria-label="Show the prototype controls" title="Show the prototype controls" onClick={() => setPill(true)}
+      className="fixed bottom-4 right-4 z-40 grid h-10 w-10 place-items-center rounded-full border border-[#2A2E36] bg-[#17191E] text-neutral-100 shadow-[0_8px_28px_rgba(0,0,0,0.3)]">
+      <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 6-6 6 6 6" /></svg>
+    </button>
+  ));
   const screen = (
     <>
       <ScreenView slug={slug} mode={r.mode} lang={r.lang} bare={false} height={screenH} selected={selected}
@@ -312,36 +362,21 @@ export function App() {
         ))}
         <div className="mt-6 text-xs opacity-60">Figma: {PROJECT.figmaFile}<br />Exported {PROJECT.exportedAt.slice(0, 10)}</div>
       </aside>}
-      <main className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto overflow-x-hidden">
-        {embed ? <div aria-hidden="true" className="h-3 shrink-0" /> : <div className="box-border flex w-full flex-wrap items-center justify-center gap-2 p-3">
-          {!embed && <label className="w-full md:hidden">
-            <span className="sr-only">Screen</span>
-            <select value={slug} onChange={(e) => go(e.target.value)}
-              className="w-full rounded-lg bg-black/5 px-3 py-1.5 text-sm dark:bg-white/10 [&>option]:bg-white [&>option]:text-black">
-              {SCREENS.map((s) => <option key={s.slug} value={s.slug}>{s.name}</option>)}
-            </select>
-          </label>}
-          <div role="toolbar" aria-label="Prototype controls" data-toolbar=""
-            className="flex items-center rounded-xl border border-[#333] bg-[#1E1E1E] p-1 text-neutral-200 shadow-[0_4px_16px_rgba(0,0,0,0.25)]">
-            <Segmented label="Color mode" value={r.mode} options={MODES} icons compact={narrow} onChange={(m) => { window.location.hash = href({ mode: m }); }} />
-            <Divider />
-            <Segmented label="Language" value={r.lang === 'ar' ? 'AR' : 'EN'} options={['EN', 'AR']} onChange={(l) => { window.location.hash = href({ lang: l.toLowerCase() }); }} />
-            <Divider />
-            <div className="flex items-center gap-0.5">
-              <Toggle label="Inspect" icon="Inspect" pressed={inspect} onClick={() => setInspect(!inspect)} compact={narrow}
-                hint="Inspect: hover or tap an element to see its DS component and Figma node" />
-              <Toggle label="Code" icon="Code" pressed={code} onClick={toggleCode} compact={narrow}
-                hint="Code: reference code of this screen per platform" />
-              <Toggle label="Comment" icon="Comment" pressed={commenting} onClick={toggleComments} compact={narrow}
-                hint="Comment: tap an element to leave a comment for the design team" />
-            </div>
-          </div>
-        </div>}
+      <main className={`flex min-w-0 flex-1 flex-col items-center overflow-x-hidden ${embed ? 'justify-center overflow-y-hidden' : 'overflow-y-auto'}`}>
+        {!embed && <div aria-hidden="true" className="h-3 shrink-0" />}
         {inspect && narrow && <Inspector onPick={setPicked} />}
-        {narrow ? (
+        {device === 'desktop' ? (
+          <div data-inspect={inspect ? 'on' : 'off'} className="fp-web relative shrink-0 overflow-hidden rounded-[10px] border border-black/10 bg-white shadow-[0_10px_30px_rgba(0,0,0,0.14)] dark:border-white/10 dark:bg-[#1b1d22]" style={{ zoom, width: def.w }} aria-label="Browser window">
+            <div className="box-border flex items-center gap-2 border-b border-black/10 bg-neutral-100 px-3 dark:border-white/10 dark:bg-[#23262d]" style={{ height: BAR }}>
+              <span aria-hidden="true" className="flex gap-1.5">{['#ff5f57', '#febc2e', '#28c840'].map((c) => <i key={c} className="block h-2.5 w-2.5 rounded-full" style={{ background: c }} />)}</span>
+              <span className="mx-auto max-w-[60%] truncate rounded-md bg-white px-3 py-0.5 text-[11px] text-neutral-500 dark:bg-white/10 dark:text-neutral-300">{PROJECT.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.app/{slug}</span>
+            </div>
+            {screen}
+          </div>
+        ) : narrow && !embed ? (
           <div data-inspect={inspect ? 'on' : 'off'} className="relative" style={{ zoom }} aria-label="Screen">{screen}</div>
         ) : (
-          <div data-inspect={inspect ? 'on' : 'off'} className="relative my-2 shrink-0 rounded-[44px] bg-neutral-900 p-3 shadow-2xl ring-1 ring-black/40" style={{ zoom }} aria-label="Android phone">
+          <div data-inspect={inspect ? 'on' : 'off'} className={`relative shrink-0 rounded-[44px] bg-neutral-900 p-3 shadow-2xl ring-1 ring-black/40 dark:ring-white/15 ${embed ? '' : 'my-2'}`} style={{ zoom }} aria-label="Android phone">
             <div className="relative overflow-hidden rounded-[32px]">
               {screen}
               <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-2.5 h-3 w-3 -translate-x-1/2 rounded-full bg-black" />
@@ -350,7 +385,9 @@ export function App() {
         )}
         {inspect && !narrow && <Inspector onPick={setPicked} />}
         {(code || commenting) && narrow && <div aria-hidden="true" className="h-[60vh] shrink-0" />}
+        {!embed && <div aria-hidden="true" className="shrink-0" style={{ height: PILL_H }} />}
       </main>
+      {pill}
       {code && <CodePanel slug={slug} picked={picked} narrow={narrow} onClose={() => setCode(false)} />}
       {commenting && !embed && (
         <CommentsPanel comments={comments} pending={pending} narrow={narrow} selected={selected} error={commentError}
