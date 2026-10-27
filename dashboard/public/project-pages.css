@@ -200,7 +200,22 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .plan-none{display:grid;gap:10px;justify-items:center;border:0;padding:20px}
 /* design preview: floating controls (Lovable-like pill), Publish top right, comments on the design */
 .ws-stage{position:relative}
-.ws-canvas{padding:52px 16px 76px;overflow:hidden}
+/* full-bleed: the design canvas fills the preview; the controls, badge and Publish float over it (the prototype keeps
+   the device clear of them) */
+.ws-canvas{padding:0;overflow:hidden}
+.ws-device{min-height:0}
+.ws-pubpop{position:absolute;top:52px;right:14px;z-index:8;width:380px;max-width:calc(100% - 28px);padding:16px;border-radius:14px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 14px 36px rgba(0,0,0,.22);display:grid;gap:12px}
+.ws-pubpop[hidden]{display:none}
+.ws-pubpop header{display:flex;align-items:center;gap:8px}
+.ws-pubpop header b{font-size:17px;flex:1}
+.ws-pubpop .pub-url,.ws-pubpop .pub-share{display:grid;gap:6px;padding:10px 12px;border:1px solid var(--rule);border-radius:10px}
+.ws-pubpop>*{min-width:0}
+.ws-pubpop .row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+.ws-pubpop .pub-url a.mono{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--ink)}
+.ws-pubpop .pub-note{display:flex;gap:8px;align-items:flex-start;color:var(--ink-2);margin:0}
+.ws-pubpop .pub-note .ic{width:16px;height:16px;flex:none;color:var(--good)}
+.ws-pubpop>.primary{justify-self:end}
+.ws-publish .primary .dot{margin-right:4px}
 .ws-pill{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:4px;padding:5px;border-radius:14px;background:#17191E;color:#E9ECF1;border:1px solid #2A2E36;box-shadow:0 8px 28px rgba(0,0,0,.28);max-width:calc(100% - 24px);overflow-x:auto;white-space:nowrap}
 .ws-pill[hidden],.ws-pill-open[hidden]{display:none}
 .ws-pill select{border:0;border-radius:9px;background:#23262D;color:#E9ECF1;padding:6px 8px;font:500 12.5px var(--sans);max-width:170px;min-width:90px}
@@ -227,7 +242,7 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .ws-pill-open{position:absolute;right:14px;bottom:16px;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid #2A2E36;background:#17191E;color:#E9ECF1;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .ws-pill-open .ic{width:16px;height:16px}
 .ws-publish{position:absolute;top:12px;right:14px;z-index:5;display:flex;align-items:center;gap:8px}
-.ws-clist{position:absolute;top:12px;left:14px;z-index:4;width:250px;max-height:calc(100% - 120px);overflow:auto;padding:10px;border-radius:12px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 8px 24px rgba(0,0,0,.12);display:grid;gap:4px;align-content:start}
+.ws-clist{position:absolute;top:48px;left:14px;z-index:4;width:250px;max-height:calc(100% - 120px);overflow:auto;padding:10px;border-radius:12px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 8px 24px rgba(0,0,0,.12);display:grid;gap:4px;align-content:start}
 .ws-clist[hidden]{display:none}
 .ws-clist h3{font-size:13px;font-weight:650;margin:0 0 4px}
 .ws-clist button{display:flex;gap:8px;align-items:flex-start;text-align:left;border:0;background:none;color:var(--ink);padding:6px;border-radius:8px;cursor:pointer;font:13px var(--sans)}

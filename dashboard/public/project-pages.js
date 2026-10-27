@@ -422,7 +422,9 @@ async function drawDesign(main, p) {
   const list = el("aside", { class: "ws-clist", "aria-label": "Comments on this screen", hidden: true });
   const pop = el("div", { class: "ws-pop", role: "dialog", "aria-label": "Comment", hidden: true });
   const menu = el("div", { class: "ws-menu", role: "menu", hidden: true });
-  const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" }, canvas, pubBox, list, pop, menu, pill, openPill);
+  const pubPop = el("div", { class: "ws-pubpop", role: "dialog", "aria-label": "Publish", hidden: true });
+  let liveState = null; // null | "waiting" | "live": after a publish, until GitHub Pages serves the new build
+  const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" }, canvas, pubBox, pubPop, list, pop, menu, pill, openPill);
   main.append(chatCol, stage);
 
   let comments = []; // from the dashboard (pulled from Supabase): author, body, images, triage
@@ -498,11 +500,10 @@ async function drawDesign(main, p) {
       el("button", { class: "ws-tool", type: "button", "aria-label": "Refresh", title: "Refresh", onclick: () => loadFrame(true) }, icon("i-refresh")),
       more,
       el("button", { class: "ws-tool", type: "button", "aria-label": "Hide the controls", title: "Hide the controls", onclick: () => setCollapsed(true) }, icon("i-right")));
-    const pub = el("button", { class: "primary sm", type: "button", disabled: st.publishing || !st.repo || null, title: st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first" }, st.publishing ? "Publishing…" : "Publish");
-    pub.onclick = () => pubBox.replaceChildren(el("span", { class: "small" }, `Publish to ${st.repo}?`),
-      el("button", { class: "primary sm", type: "button", onclick: doPublish }, "Yes, publish"),
-      el("button", { class: "ghost sm", type: "button", onclick: drawBar }, "Cancel"));
-    pubBox.replaceChildren(...[st.unpublished ? el("span", { class: "unpub" }, "unpublished changes") : null, pub].filter(Boolean));
+    const pub = el("button", { class: "primary sm", type: "button", "aria-expanded": String(!pubPop.hidden), "aria-haspopup": "dialog", onclick: () => { pubPop.hidden = !pubPop.hidden; drawPubPop(); } },
+      st.unpublished ? el("span", { class: "dot bad", "aria-hidden": "true" }) : null, st.publishing ? "Publishing…" : "Publish");
+    pubBox.replaceChildren(pub);
+    drawPubPop();
     drawList();
   }
 
@@ -602,18 +603,51 @@ async function drawDesign(main, p) {
       try {
         const html = await (await fetch(`${url}?r=${Date.now()}`, { cache: "no-store" })).text();
         if (html.includes(`index-${build}.js`)) {
+          liveState = "live";
           if (view.where === "live") loadFrame(true);
-          toast("The live link now shows the new build.");
+          toast("Live: the link now shows the new version.");
+          drawBar();
           return;
         }
       } catch {}
     }
   }
+  // Publish popover: status, the live link (copy / open), share it, and Publish changes.
+  const shareText = () => `${p.title} prototype (design preview, not a real app): ${st.publish?.url || ""}`;
+  function drawPubPop() {
+    if (pubPop.hidden) return;
+    const url = st.publish?.url;
+    const published = !!url;
+    const status = st.publishing ? "Publishing…" : liveState === "waiting" ? "Published · waiting for the live link to update" : st.unpublished ? "Unpublished changes" : published ? "Up to date" : "Not published yet";
+    const copy = async (text, done) => toast((await copyText(text)) ? done : "Could not copy. Select the text instead.");
+    pubPop.replaceChildren(...[
+      el("header", {}, el("span", { class: `dot ${!published ? "wait" : st.unpublished || st.publishing || liveState === "waiting" ? "wait" : "good"}` }),
+        el("b", {}, published ? "Published" : "Not published"),
+        el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pubPop.hidden = true; drawBar(); } }, icon("i-x"))),
+      el("p", { class: "muted small" }, status, st.publish?.at ? ` · last published ${fmtDate(st.publish.at)}` : ""),
+      published ? el("div", { class: "pub-url" },
+        el("span", { class: "kicker" }, "Website URL"),
+        el("div", { class: "row" }, el("a", { class: "mono", href: url, target: "_blank", rel: "noopener" }, url.replace(/^https?:\/\//, "")),
+          el("button", { class: "iconbtn sq", type: "button", "aria-label": "Copy the link", title: "Copy the link", onclick: () => copy(url, "Link copied.") }, icon("i-copy")),
+          el("a", { class: "iconbtn sq", href: url, target: "_blank", rel: "noopener", "aria-label": "Open the live link", title: "Open the live link" }, icon("i-external")))) : null,
+      published ? el("div", { class: "pub-share" },
+        el("span", { class: "kicker" }, "Share"),
+        el("div", { class: "row" },
+          el("button", { class: "ghost sm", type: "button", onclick: () => copy(shareText(), "Message with the link copied.") }, icon("i-copy"), "Copy message"),
+          navigator.share ? el("button", { class: "ghost sm", type: "button", onclick: () => navigator.share({ title: `${p.title} prototype`, text: shareText(), url }).catch(() => {}) }, icon("i-send"), "Share…") : null,
+          el("a", { class: "ghost sm", href: `mailto:?subject=${encodeURIComponent(`${p.title} prototype`)}&body=${encodeURIComponent(shareText())}` }, "Email"),
+          el("a", { class: "ghost sm", href: `https://wa.me/?text=${encodeURIComponent(shareText())}`, target: "_blank", rel: "noopener" }, "WhatsApp"))) : null,
+      published ? el("p", { class: "pub-note small" }, icon("i-shield"), el("span", {}, "Visible to anyone with the link. Until it moves to its own domain, some browsers may show a safety warning on first open; reviewers can continue to the site.")) : null,
+      el("button", { class: "primary", type: "button", disabled: st.publishing || !st.repo || (published && !st.unpublished) || null, onclick: doPublish,
+        title: st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first" },
+        st.publishing ? "Publishing…" : published ? "Publish changes" : "Publish"),
+    ].filter(Boolean));
+  }
   async function doPublish() {
     st.publishing = true; drawBar();
     try {
       st = await api(`/api/project/${enc}/publish`, {});
-      toast("Published. The live link updates in about a minute; the Live preview reloads by itself.");
+      liveState = "waiting";
       waitForLive(st.publish?.build);
     }
     catch (e) { showError(e); st.publishing = false; }

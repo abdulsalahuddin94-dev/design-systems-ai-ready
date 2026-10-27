@@ -264,19 +264,21 @@ export function App() {
   // Embedded, the frame follows the screen: a phone for mobile screens, a browser window for web ones (or device=).
   const device = embed ? (r.device === 'phone' || r.device === 'desktop' ? r.device : def.w >= 600 ? 'desktop' : 'phone') : null;
   const PILL_H = 72; // room kept free for the floating controls at the bottom
+  // embedded, the canvas fills the dashboard preview and its controls float on top: keep the device clear of them
+  const EMBED_TOP = 24, EMBED_BOTTOM = 80;
   const toolbarH = embed ? 0 : BANNER_H + PILL_H;
   const BAR = 36; // browser frame top bar
   const phoneH = def.scroll ? DEVICE.viewport : def.h;
   // Desktop: the phone frame shrinks when the side list and the Code panel leave less room (no sideways scroll).
   const room = win.w - (embed ? 0 : 256) - (code ? 440 : commenting ? 360 : 0) - 32;
   // a static (one-screen) frame never scrolls, so at phone width it also fits the height left under the toolbar
-  // the whole phone is always visible: it scales to fit the width and the height; a long screen scrolls inside it
-  const zoom = device === 'phone' ? Math.min(1, (win.w - 24) / (def.w + 24), (win.h - 24) / (phoneH + 24))
+  // the phone fills the height it has (up or down, limited only by the width); a long screen scrolls inside it
+  const zoom = device === 'phone' ? Math.min((win.w - 24) / (def.w + 24), (win.h - EMBED_TOP - EMBED_BOTTOM) / (phoneH + 24))
     : device === 'desktop' ? Math.min(1, (win.w - 32) / def.w)
     : narrow ? Math.min(1, win.w / def.w, def.scroll ? 1 : (win.h - toolbarH) / def.h)
-    : Math.min(1, room / (def.w + 24), (win.h - toolbarH - 16) / (DEVICE.viewport + 24));
+    : Math.min(room / (def.w + 24), (win.h - toolbarH - 32) / (DEVICE.viewport + 24)); // 32: the spacer above and the frame margin
   const screenH = device === 'phone' ? phoneH
-    : device === 'desktop' ? Math.floor((win.h - 24) / zoom) - BAR
+    : device === 'desktop' ? Math.floor((win.h - EMBED_TOP - EMBED_BOTTOM) / zoom) - BAR
     : narrow ? (def.scroll ? Math.floor((win.h - toolbarH) / zoom) : def.h) : DEVICE.viewport;
   const openCount = comments.filter((c) => c.status !== 'resolved').length;
   const pill = !embed && !((code || commenting) && narrow) && (pillOpen ? (
@@ -362,7 +364,7 @@ export function App() {
         ))}
         <div className="mt-6 text-xs opacity-60">Figma: {PROJECT.figmaFile}<br />Exported {PROJECT.exportedAt.slice(0, 10)}</div>
       </aside>}
-      <main className={`flex min-w-0 flex-1 flex-col items-center overflow-x-hidden ${embed ? 'justify-center overflow-y-hidden' : 'overflow-y-auto'}`}>
+      <main className={`flex min-w-0 flex-1 flex-col items-center overflow-x-hidden ${embed ? 'justify-center overflow-y-hidden' : 'overflow-y-auto'}`} style={embed ? { paddingTop: EMBED_TOP, paddingBottom: EMBED_BOTTOM, boxSizing: 'border-box' } : undefined}>
         {!embed && <div aria-hidden="true" className="h-3 shrink-0" />}
         {inspect && narrow && <Inspector onPick={setPicked} />}
         {device === 'desktop' ? (
