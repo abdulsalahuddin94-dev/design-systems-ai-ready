@@ -365,6 +365,15 @@ async function drawDesign(main, p) {
       drawStarter();
     } }, icon("i-plus"), "New design conversation")));
   }
+  // The dashboard restarted mid-conversation: the chat found (or continued) it under a new id; mount that one here.
+  const onReconnect = (ev) => {
+    if (!chatBody.isConnected) { window.removeEventListener("chat-reconnect", onReconnect); return; }
+    if (ev.detail.from !== sessionId()) return;
+    ev.preventDefault();
+    writeStore(designKey(p.name), { id: ev.detail.to, claudeSessionId: ev.detail.claudeSessionId });
+    mountChat(ev.detail.to);
+  };
+  window.addEventListener("chat-reconnect", onReconnect);
   // Reuse this project's design conversation: still running, or continued from its Claude session after a restart.
   async function openChat() {
     const saved = readStore(designKey(p.name));

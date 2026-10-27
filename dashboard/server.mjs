@@ -22,7 +22,21 @@ import { handleProjectApi } from "./project-api.mjs";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
 // DASHBOARD_PROJECTS points a dashboard run from a git worktree at the real projects folder (My Projects is git-ignored).
-const PROJECTS = process.env.DASHBOARD_PROJECTS ? path.resolve(process.env.DASHBOARD_PROJECTS) : path.join(ROOT, "My Projects");
+// Where the projects live: DASHBOARD_PROJECTS, else this checkout's My Projects when it has any, else (a git worktree of
+// the workflow, e.g. a trial branch) the main checkout's My Projects, which is git-ignored and so never in a worktree.
+function findProjects() {
+  if (process.env.DASHBOARD_PROJECTS) return path.resolve(process.env.DASHBOARD_PROJECTS);
+  const own = path.join(ROOT, "My Projects");
+  const hasProjects = (d) => { try { return fs.readdirSync(d, { withFileTypes: true }).some((e) => e.isDirectory() && !e.name.startsWith("_") && !e.name.startsWith(".")); } catch { return false; } };
+  if (hasProjects(own)) return own;
+  const r = spawnSync("git", ["-C", ROOT, "rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8", windowsHide: true });
+  const main = r.status === 0 ? path.join(path.dirname(r.stdout.trim()), "My Projects") : null;
+  return main && hasProjects(main) ? main : own;
+}
+const PROJECTS = findProjects();
+// Projects outside this checkout: every conversation may read and write there (project data only), and is told so.
+const PROJECTS_OUTSIDE = path.relative(ROOT, PROJECTS).startsWith("..");
+const PROJECTS_NOTE = PROJECTS_OUTSIDE ? `Project folders ("My Projects/<Project>") are in ${PROJECTS}, outside this working folder; read and write project data there. Do not change any other file outside this working folder (the main checkout's workflow files and its master branch stay as they are). The workflow's tools and skills are the ones in this working folder.` : "";
 const PUBLIC = path.join(HERE, "public");
 const STATE = path.join(ROOT, ".claude", ".state");
 const HISTORY = path.join(STATE, "dashboard-sessions.json");
@@ -55,7 +69,7 @@ const git = (args, timeout = 20000) => {
 // ---------- projects ----------
 // Folders listed in private/dashboard-hidden.txt (one name per line, git-ignored) never appear.
 function hiddenProjects() {
-  return new Set(readText(path.join(ROOT, "private", "dashboard-hidden.txt"))
+  return new Set(readText(path.join(path.dirname(PROJECTS), "private", "dashboard-hidden.txt")) // next to My Projects (the main checkout when run from a worktree)
     .split(/\r?\n/).map((s) => s.trim().toLowerCase()).filter((s) => s && !s.startsWith("#")));
 }
 
@@ -609,6 +623,7 @@ function runQuery(s, resume) {
     prompt: s.inbox,
     options: {
       cwd: ROOT,
+      ...(PROJECTS_OUTSIDE ? { additionalDirectories: [PROJECTS], systemPrompt: { type: "preset", preset: "claude_code", append: PROJECTS_NOTE } } : {}),
       settingSources: ["user", "project", "local"],
       includePartialMessages: true,
       abortController: s.abort,

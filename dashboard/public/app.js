@@ -986,9 +986,36 @@ function renderChat(id, mount) {
   // Events from Claude
   const es = new EventSource(`/api/sessions/${id}/events`);
   current.es = es;
+  // The dashboard restarted (or the stream dropped): reconnect by itself. A conversation that is no longer running
+  // is continued from its Claude session (same history); the page that hosts it is told the new id ("chat-reconnect").
+  let reconnecting = null;
   es.onerror = () => {
-    if (es.readyState === EventSource.CLOSED) add(el("div", { class: "sys err" }, "Lost the connection to the dashboard. Is its window still open?"));
+    if (es.readyState !== EventSource.CLOSED || reconnecting) return;
+    reconnecting = add(el("div", { class: "sys reconnecting" }, "Reconnecting…"));
+    reconnect();
   };
+  async function reconnect() {
+    const sess = state.session || {};
+    for (let i = 0; i < 60; i++) {
+      if (current?.es !== es) return; // the user left this conversation
+      try {
+        const { live, past } = await api("/api/sessions");
+        let to = live.find((x) => x.id === id) || (sess.claudeSessionId && live.find((x) => x.claudeSessionId === sess.claudeSessionId));
+        if (!to && sess.claudeSessionId && past.some((x) => x.claudeSessionId === sess.claudeSessionId))
+          to = await api("/api/sessions", { resume: sess.claudeSessionId, project: sess.project, title: sess.title });
+        if (to) {
+          current.cleanup?.(); current = null;
+          const ev = new CustomEvent("chat-reconnect", { cancelable: true, detail: { from: id, to: to.id, claudeSessionId: to.claudeSessionId || sess.claudeSessionId || null } });
+          if (!window.dispatchEvent(ev)) return; // a host page (the Design workspace) mounts it again itself
+          if (to.id !== id) location.hash = `#/chat/${to.id}`; else renderChat(id, mount);
+          return;
+        }
+      } catch {}
+      await new Promise((r) => setTimeout(r, 1500));
+    }
+    reconnecting.textContent = "Lost the connection to the dashboard. Is its window still open?";
+    reconnecting.classList.add("err");
+  }
   es.onmessage = (ev) => {
     const e = JSON.parse(ev.data);
     switch (e.type) {
@@ -1061,6 +1088,8 @@ function renderChat(id, mount) {
         break;
       case "result":
         state.toolRow = null; state.live = null;
+        // a new conversation gets its Claude session id with the first reply: keep it, so a reconnect can continue it
+        if (state.session && !state.session.claudeSessionId) api("/api/sessions").then((r) => { const me = r.live.find((x) => x.id === id); if (me?.claudeSessionId) state.session.claudeSessionId = me.claudeSessionId; }).catch(() => {});
         attention(e.ok ? "Done" : "Stopped", e.at);
         if (!e.ok && e.error) add(el("div", { class: "sys err" }, e.error));
         break;
