@@ -120,11 +120,11 @@ function drawPipeline(main, p, o, pl) {
 // Pull from Supabase, triage with Claude, decide here, reply and close. Changes are applied online in the
 // prototype first (overrides); Figma sync is asked at the end, on the Sync page.
 const REVIEW_PROMPTS = {
-  triage: (p) => `Triage the open prototype comments of "${p}" (My Projects/${p}/prototype/comments/inbox.json). For each open comment write an entry in prototype/comments/triage.json: {"<id>": {"kind": "fix" | "decision" | "info", "proposal": "<what to change, DS components and tokens only>", "affects": ["<screen slugs>"], "status": "proposed"}}. Keep existing decisions. Do not change the prototype or Figma yet.`,
+  triage: (p) => `Triage the open prototype comments of "${p}" (My Projects/${p}/prototype/comments/inbox.json). For each open comment write an entry in prototype/comments/triage.json: {"<id>": {"kind": "fix" | "flow" | "decision" | "info", "proposal": "<what to change, DS components and tokens only>", "affects": ["<screen slugs>"], "status": "proposed"}}. Use "flow" when a comment asks for a new flow or new screens: its proposal is a short flow map, and applying it starts with a screen spec and a mini checkpoint, never a direct build. Keep existing decisions. Do not change the prototype or Figma yet.`,
   apply: (p, c) => `Apply this approved prototype comment of "${p}" online in the prototype first (prototype/data/overrides.json, DS components and tokens only, then rebuild and check), and add it to status.json > prototype.pending_figma_sync. Do not touch Figma. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Proposal: ${c.triage.proposal}` : ""}. When done, tell me the reply to close it with.`,
   ask: (p, c) => `Help me decide on this prototype comment of "${p}" before anything changes. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Current proposal: ${c.triage.proposal}` : ""}. Give me the options with a recommendation.`,
 };
-const kindLabel = { fix: "Fix", decision: "Decision", info: "Info" };
+const kindLabel = { fix: "Fix", flow: "New flow", decision: "Decision", info: "Info" };
 const decisionLabel = { proposed: "Proposed", approved: "Approved", rejected: "Rejected", asked: "Asked in chat" };
 
 async function drawReview(main, p, o) {
@@ -187,12 +187,14 @@ async function drawReview(main, p, o) {
       c.reply ? el("div", { class: "reply" }, el("span", { class: "kicker" }, "Reply"), el("p", { dir: "auto" }, c.reply)) : null,
       el("div", { class: "p-actions" },
         open ? [
-          el("button", { class: "primary sm", type: "button", onclick: async () => { await setDecision(c, "approved"); chat("apply"); } }, icon("i-check"), "Apply online"),
+          // Apply opens the Design workspace on this comment: its screen, its pin, and the request waiting in the chat box.
+          el("button", { class: "primary sm", type: "button", onclick: async () => { await setDecision(c, "approved"); location.hash = `#/project/${enc}/design?comment=${c.id}&apply=1`; } }, icon("i-check"), "Apply online"),
           el("button", { class: "ghost sm", type: "button", onclick: () => setDecision(c, "rejected") }, icon("i-x"), "Reject"),
           el("button", { class: "ghost sm", type: "button", onclick: async () => { await setDecision(c, "asked"); chat("ask"); } }, icon("i-message"), "Ask"),
           el("button", { class: "ghost sm", type: "button", onclick: () => closeWith(c, t?.status && t.status !== "proposed" ? t.status : null) }, icon("i-send"), "Reply & close"),
         ] : null,
-        link ? el("a", { class: "ghost sm", href: link, target: "_blank", rel: "noopener" }, icon("i-external"), "Show on screen") : null));
+        el("a", { class: "ghost sm", href: `#/project/${enc}/design?comment=${c.id}` }, icon("i-phone"), "Show on screen"),
+        link ? el("a", { class: "ghost sm", href: link, target: "_blank", rel: "noopener", title: "Open in the prototype (new tab)" }, icon("i-external")) : null));
   }
 
   function draw() {
@@ -302,6 +304,14 @@ async function drawDesign(main, p) {
     modeSeg.replaceChildren(...Object.entries(MODE_TEXT).map(([k, [label, d]]) => el("button", { type: "button", role: "radio", class: st.designMode === k ? "on" : null, "aria-checked": String(st.designMode === k), title: d, onclick: () => setMode(k) }, label)));
   }
   const sessionId = () => readStore(designKey(p.name))?.id || null;
+  // A request waiting for the chat box (Apply online / Ask on a comment): filled in, never sent; the user presses Send.
+  let pendingPrefill = null;
+  function prefill(text) {
+    const ta = chatBody.querySelector("#input") || chatBody.querySelector(".ws-start textarea");
+    if (!ta) { pendingPrefill = text; return; }
+    pendingPrefill = null;
+    ta.value = text; ta.dispatchEvent(new Event("input", { bubbles: true })); ta.focus();
+  }
   const screenName = () => st.screens.find((s) => s.slug === view.screen)?.name || view.screen || "no screen";
 
   // No conversation yet: ask Code first / Figma first (once per project), then a composer that starts one.
@@ -342,6 +352,7 @@ async function drawDesign(main, p) {
         el("span", { class: "muted small" }, "Ctrl+V to paste a screenshot"), el("span", { style: "flex:1" }), go));
     form.addEventListener("dragover", (ev) => ev.preventDefault());
     form.addEventListener("drop", (ev) => { ev.preventDefault(); addFiles(ev.dataTransfer.files); });
+    queueMicrotask(() => { if (pendingPrefill) prefill(pendingPrefill); });
     chatBody.replaceChildren(el("div", { class: "ws-empty" },
       el("p", {}, el("b", {}, MODE_TEXT[st.designMode][0]), `: ${MODE_TEXT[st.designMode][1]}`),
       el("p", { class: "muted small" }, `Claude sees which screen the preview shows ("${screenName()}").`)), form);
@@ -359,6 +370,7 @@ async function drawDesign(main, p) {
     status.classList.add("ws-status");
     form.before(status);
     form.querySelector(".composer-foot")?.remove();
+    if (pendingPrefill) prefill(pendingPrefill);
     chatBody.append(el("div", { class: "ws-chat-foot" }, el("button", { type: "button", class: "textbtn", onclick: () => {
       try { localStorage.removeItem(designKey(p.name)); } catch {}
       if (current?.es) { current.es.close(); current.cleanup?.(); current = null; }
@@ -390,34 +402,43 @@ async function drawDesign(main, p) {
   }
 
   // ----- right: preview -----
-  const whereSeg = el("div", { class: "p-seg", role: "radiogroup", "aria-label": "Preview" });
-  const screenPick = el("select", { "aria-label": "Screen", onchange: () => { view.screen = screenPick.value; saveView(); loadFrame(); } },
-    st.screens.map((s) => el("option", { value: s.slug }, s.name)));
-  const deviceSeg = el("div", { class: "p-seg icons", role: "radiogroup", "aria-label": "Device" });
+  // Controls float at the bottom of the canvas (Lovable-like pill, collapsible to a round button); Publish sits at the
+  // top right. Comments are reviewed on the design itself: the prototype (embed=1, tool=comment) draws the pins and
+  // tells this page which pin was picked and where, and the comment opens here with its actions.
+  const q = new URLSearchParams(location.hash.split("?")[1] || "");
+  Object.assign(view, { tool: null, comment: null });
+  let collapsed = false;
+  try { collapsed = localStorage.getItem("designPill") === "closed"; } catch {}
   const frame = el("iframe", { title: "Prototype preview", class: "ws-frame" });
-  const refresh = el("button", { class: "iconbtn sq", type: "button", "aria-label": "Refresh", title: "Refresh", onclick: () => loadFrame(true) }, icon("i-refresh"));
-  const newTab = el("a", { class: "iconbtn sq", target: "_blank", rel: "noopener", "aria-label": "Open in a new tab", title: "Open in a new tab" }, icon("i-external"));
-  const unpub = el("span", { class: "unpub", title: "The local build is newer than the last publish" }, "unpublished changes");
-  const push = el("button", { class: "ghost sm", type: "button", title: "Queue this screen for the Figma sync (Sync page)" }, icon("i-upload"), "Push to Figma");
-  const publish = el("button", { class: "primary sm", type: "button" }, "Publish");
-  const confirmBox = el("span", { class: "ws-confirm", hidden: true });
-  const badge = el("span", { class: "tag k-decision srcbadge", hidden: true });
   const canvas = el("div", { class: "ws-canvas" });
-  const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" },
-    el("div", { class: "ws-bar" }, whereSeg, screenPick, deviceSeg, refresh, newTab, el("span", { class: "sp" }), unpub, push, publish, confirmBox),
-    canvas);
+  const badge = el("span", { class: "tag k-decision srcbadge", hidden: true });
+  const pill = el("div", { class: "ws-pill", role: "toolbar", "aria-label": "Preview controls" });
+  const openPill = el("button", { class: "ws-pill-open", type: "button", "aria-label": "Show the preview controls", title: "Show the preview controls", onclick: () => setCollapsed(false) }, icon("i-left"));
+  const pubBox = el("div", { class: "ws-publish" });
+  const list = el("aside", { class: "ws-clist", "aria-label": "Comments on this screen", hidden: true });
+  const pop = el("div", { class: "ws-pop", role: "dialog", "aria-label": "Comment", hidden: true });
+  const menu = el("div", { class: "ws-menu", role: "menu", hidden: true });
+  const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" }, canvas, pubBox, list, pop, menu, pill, openPill);
   main.append(chatCol, stage);
 
+  let comments = []; // from the dashboard (pulled from Supabase): author, body, images, triage
+  let pins = []; // from the prototype: the open comments of this screen, numbered as their pins
+  const setCollapsed = (on) => { collapsed = on; try { localStorage.setItem("designPill", on ? "closed" : "open"); } catch {} drawBar(); };
   const baseUrl = () => (view.where === "local" ? st.local.url : st.publish?.url) || null;
-  // embed=1: the prototype hides its own screen list, banner and picker (this page has them); a new tab shows it whole.
-  const screenUrl = (embed = true) => baseUrl() && view.screen ? `${baseUrl().replace(/\/?$/, "/")}#/${view.screen}?mode=${view.mode}&lang=en${embed ? "&embed=1" : ""}` : baseUrl();
+  // embed=1: the prototype hides its own screen list, banner, picker and toolbar (this page has them); a new tab shows
+  // it whole. tool and comment drive its comment, code and inspect modes.
+  const screenUrl = (embed = true) => {
+    const b = baseUrl();
+    if (!b || !view.screen) return b;
+    const p = new URLSearchParams({ mode: view.mode, lang: "en" });
+    if (embed) { p.set("embed", "1"); if (view.tool) p.set("tool", view.tool); if (view.tool === "comment" && view.comment) p.set("comment", view.comment); }
+    return `${b.replace(/\/?$/, "/")}#/${view.screen}?${p}`;
+  };
   function loadFrame(force) {
     const url = screenUrl();
     const sc = st.screens.find((s) => s.slug === view.screen);
     badge.hidden = !(sc?.source === "code");
     badge.textContent = `${sc?.name || ""} · code ahead of Figma`;
-    newTab.href = screenUrl(false) || "#";
-    newTab.toggleAttribute("aria-disabled", !url);
     if (view.where === "local" && !st.local.running) {
       canvas.replaceChildren(el("div", { class: "p-empty ws-off" },
         el("p", {}, el("b", {}, "The local preview is not running.")),
@@ -427,39 +448,146 @@ async function drawDesign(main, p) {
       return;
     }
     if (!url) { canvas.replaceChildren(el("p", { class: "p-empty ws-off" }, "Not published yet. Publish once from the chat to get a live link.")); return; }
-    // The frame is another origin, so a refresh reloads it with a cache-busting query; a screen switch only changes the hash.
+    // The frame is another origin, so a refresh reloads it with a cache-busting query; anything else only changes the hash.
     if (force) { const u = new URL(url); u.searchParams.set("r", Date.now()); frame.src = u.href; frame.dataset.src = url; }
     else if (frame.dataset.src !== url) { frame.dataset.src = url; frame.src = url; }
-    canvas.replaceChildren(...[badge, el("div", { class: `ws-device ${view.device}` }, frame),
-      view.where === "live" ? el("p", { class: "ws-note" }, "Live shows the published link with real comments. If the browser shows a safety warning inside the frame, use Open in a new tab.") : null].filter(Boolean));
+    if (!canvas.contains(frame)) canvas.replaceChildren(badge, el("div", { class: `ws-device ${view.device}` }, frame));
+    else frame.parentElement.className = `ws-device ${view.device}`;
   }
   async function startLocal(ev) {
     const b = ev.currentTarget; b.disabled = true; b.lastChild.textContent = "Starting…";
     try { st = await api(`/api/project/${enc}/preview/start`, {}); drawBar(); loadFrame(); }
     catch (e) { showError(e); b.disabled = false; b.lastChild.textContent = "Start local preview"; }
   }
+
+  const seg = (label, items, cur, pick, icons) => el("div", { class: `ws-seg${icons ? " icons" : ""}`, role: "radiogroup", "aria-label": label },
+    items.map(([k, text, ic]) => el("button", { type: "button", role: "radio", class: cur === k ? "on" : null, "aria-checked": String(cur === k), "aria-label": text, title: text, onclick: () => pick(k) },
+      ic ? icon(ic) : null, icons ? null : text)));
+  const tool = (k, label, ic, count) => el("button", { type: "button", class: `ws-tool${view.tool === k ? " on" : ""}`, "aria-pressed": String(view.tool === k), title: label, "aria-label": label,
+    onclick: () => setTool(view.tool === k ? null : k) }, icon(ic), count ? el("span", { class: "ws-count" }, String(count)) : null);
+  const openOnScreen = () => comments.filter((c) => c.status !== "resolved" && c.screen === view.screen).length;
   function drawBar() {
-    whereSeg.replaceChildren(...[["local", "Local"], ["live", "Live"]].map(([k, label]) => el("button", { type: "button", role: "radio", class: view.where === k ? "on" : null, "aria-checked": String(view.where === k), onclick: () => { view.where = k; saveView(); drawBar(); loadFrame(); } },
-      k === "local" ? el("span", { class: `dot ${st.local.running ? "good" : "wait"}` }) : null, label)));
-    deviceSeg.replaceChildren(...[["phone", "Phone", "i-phone"], ["desktop", "Desktop", "i-monitor"]].map(([k, label, ic]) => el("button", { type: "button", role: "radio", class: view.device === k ? "on" : null, "aria-checked": String(view.device === k), "aria-label": label, title: label, onclick: () => { view.device = k; saveView(); drawBar(); loadFrame(); } }, icon(ic))));
+    const screenPick = el("select", { "aria-label": "Screen", onchange: () => { view.screen = screenPick.value; view.comment = null; pop.hidden = true; saveView(); loadFrame(); drawBar(); } },
+      st.screens.map((s) => el("option", { value: s.slug }, s.name)));
     screenPick.value = view.screen;
-    unpub.hidden = !st.unpublished;
-    publish.disabled = st.publishing || !st.repo;
-    publish.textContent = st.publishing ? "Publishing…" : "Publish";
-    publish.title = st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first";
+    // "…": a menu above the pill (outside it, so the pill's scrolling never clips it)
+    menu.replaceChildren(
+      el("button", { type: "button", onclick: () => { menu.hidden = true; pushToFigma(); } }, icon("i-upload"), "Push this screen to Figma"),
+      el("a", { href: screenUrl(false) || "#", target: "_blank", rel: "noopener", onclick: () => { menu.hidden = true; } }, icon("i-external"), "Open in a new tab"),
+      el("a", { href: `#/project/${enc}/review` }, icon("i-message"), "All comments (Review)"));
+    const more = el("button", { class: "ws-tool", type: "button", "aria-label": "More", title: "More", "aria-expanded": String(!menu.hidden), onclick: (ev) => {
+      const b = ev.currentTarget.getBoundingClientRect(), s2 = stage.getBoundingClientRect();
+      menu.style.left = `${Math.min(b.left - s2.left, s2.width - 250)}px`; menu.style.bottom = `${s2.bottom - b.top + 10}px`;
+      menu.hidden = !menu.hidden; ev.currentTarget.setAttribute("aria-expanded", String(!menu.hidden));
+    } }, el("b", {}, "…"));
+    pill.hidden = collapsed; openPill.hidden = !collapsed;
+    pill.replaceChildren(
+      seg("Preview", [["local", "Local"], ["live", "Live"]], view.where, (k) => { view.where = k; saveView(); drawBar(); loadFrame(); }),
+      screenPick,
+      el("span", { class: "ws-div" }),
+      seg("Device", [["phone", "Phone", "i-phone"], ["desktop", "Desktop", "i-monitor"]], view.device, (k) => { view.device = k; saveView(); drawBar(); loadFrame(); }, true),
+      seg("Color mode", [["Light", "Light", "i-sun"], ["Dark", "Dark", "i-moon"]], view.mode, (k) => { view.mode = k; saveView(); drawBar(); loadFrame(); }, true),
+      el("span", { class: "ws-div" }),
+      tool("comment", "Comments", "i-message", openOnScreen()),
+      tool("inspect", "Inspect", "i-search"),
+      tool("code", "Code", "i-terminal"),
+      el("span", { class: "ws-div" }),
+      el("button", { class: "ws-tool", type: "button", "aria-label": "Refresh", title: "Refresh", onclick: () => loadFrame(true) }, icon("i-refresh")),
+      more,
+      el("button", { class: "ws-tool", type: "button", "aria-label": "Hide the controls", title: "Hide the controls", onclick: () => setCollapsed(true) }, icon("i-right")));
+    const pub = el("button", { class: "primary sm", type: "button", disabled: st.publishing || !st.repo || null, title: st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first" }, st.publishing ? "Publishing…" : "Publish");
+    pub.onclick = () => pubBox.replaceChildren(el("span", { class: "small" }, `Publish to ${st.repo}?`),
+      el("button", { class: "primary sm", type: "button", onclick: doPublish }, "Yes, publish"),
+      el("button", { class: "ghost sm", type: "button", onclick: drawBar }, "Cancel"));
+    pubBox.replaceChildren(...[st.unpublished ? el("span", { class: "unpub" }, "unpublished changes") : null, pub].filter(Boolean));
+    drawList();
   }
-  push.onclick = async () => {
+
+  async function loadComments(pull) {
+    try { comments = (await api(`/api/project/${enc}/comments${pull ? "/pull" : ""}`, pull ? {} : undefined)).comments || []; }
+    catch (e) { showError(e); }
+    drawBar();
+  }
+  async function setTool(k) {
+    view.tool = k; view.comment = null; pop.hidden = true;
+    loadFrame(); drawBar();
+    if (k === "comment") await loadComments(true);
+  }
+  const byId = (id) => comments.find((c) => c.id === id);
+  function drawList() {
+    list.hidden = view.tool !== "comment";
+    if (list.hidden) return;
+    const open = comments.filter((c) => c.status !== "resolved" && c.screen === view.screen);
+    const n = (c) => pins.find((x) => x.id === c.id)?.n;
+    list.replaceChildren(el("h3", {}, `Comments on this screen · ${open.length}`),
+      ...(open.length ? open.map((c) => el("button", { type: "button", class: view.comment === c.id ? "on" : null, onclick: () => focusComment(c.id) },
+        el("span", { class: "pin" }, String(n(c) || "•")), el("span", { class: "t", dir: "auto" }, el("b", {}, c.author || "Anonymous"), ` ${c.body}`)))
+        : [el("p", { class: "muted small" }, "No open comments on this screen.")]),
+      el("a", { class: "small", href: `#/project/${enc}/review` }, "All comments"));
+  }
+  function focusComment(id) {
+    view.comment = id; pop.hidden = true;
+    loadFrame(); drawList();
+  }
+
+  // The prototype says which pin was picked and where it is (in the frame's own coordinates).
+  const onMessage = (ev) => {
+    if (!canvas.isConnected) { window.removeEventListener("message", onMessage); return; }
+    if (ev.source !== frame.contentWindow || !ev.data || typeof ev.data !== "object") return;
+    if (ev.data.type === "atomica:comments") { pins = ev.data.items || []; if (pins.some((x) => !byId(x.id))) loadComments(true); else drawList(); }
+    if (ev.data.type === "atomica:comment") { view.comment = ev.data.id; showPop(ev.data.id, ev.data.rect); drawList(); }
+  };
+  window.addEventListener("message", onMessage);
+
+  function showPop(id, rect) {
+    const c = byId(id);
+    if (!c || !rect) { pop.hidden = true; return; }
+    const f = frame.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    const x = f.left - s.left + rect.x + rect.w, y = f.top - s.top + rect.y;
+    const w = 320, right = x + 12 + w <= s.width - 12;
+    pop.style.left = `${right ? x + 12 : Math.max(12, x - rect.w - 12 - w)}px`;
+    pop.hidden = false;
+    const t = c.triage;
+    const img = (f2) => `/api/project/${enc}/comment-image?f=${encodeURIComponent(f2)}`;
+    pop.replaceChildren(...[
+      el("header", {}, el("span", { class: "avatar", "aria-hidden": "true" }, (c.author || "?").trim().charAt(0).toUpperCase()),
+        el("div", { class: "who" }, el("b", {}, c.author || "Anonymous"), el("span", { class: "muted small" }, `${fmtDate(c.created_at)} · ${c.component || "Frame"}`)),
+        t?.status && t.status !== "proposed" ? el("span", { class: "tag open" }, decisionLabel[t.status]) : null,
+        el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pop.hidden = true; } }, icon("i-x"))),
+      el("div", { class: "pop-body" }, el("p", { class: "body", dir: "auto" }, c.body),
+        c.localImages?.length ? el("div", { class: "thumbs" }, c.localImages.map((f2, i) => el("a", { href: img(f2), target: "_blank", rel: "noopener" }, el("img", { src: img(f2), alt: `Reference image ${i + 1}` })))) : null,
+        t?.proposal ? el("div", { class: "triage" }, el("span", { class: "kicker" }, "Claude's proposal"), el("p", {}, t.proposal)) : null),
+      el("div", { class: "p-actions" },
+        el("button", { class: "primary sm", type: "button", onclick: () => act(c, "approved", APPLY_TEXT(c, screenName())) }, icon("i-check"), "Apply online"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => act(c, "rejected") }, icon("i-x"), "Reject"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => act(c, "asked", ASK_TEXT(c, screenName())) }, icon("i-message"), "Ask"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => replyClose(c) }, icon("i-send"), "Reply & close"))].filter(Boolean));
+    // next to the pin, kept clear of the controls at the bottom
+    pop.style.top = `${Math.max(12, Math.min(y - 8, s.height - pop.offsetHeight - 84))}px`;
+  }
+  async function act(c, decision, text) {
+    try { const r = await api(`/api/project/${enc}/comments/decide`, { id: c.id, decision }); c.triage = { ...(c.triage || {}), ...r.triage }; }
+    catch (e) { showError(e); return; }
+    if (text) { prefill(text); toast("The request is in the chat box: check it, then press Send."); }
+    else toast(decision === "rejected" ? "Marked as rejected. Reply & close tells the reviewer why." : "Saved.");
+    if (!pop.hidden) showPop(c.id, null);
+    pop.hidden = true;
+  }
+  async function replyClose(c) {
+    const reply = await askText({ title: "Reply & close", help: `The reply shows under ${c.author || "this"} comment in the prototype.`, okLabel: "Reply & close", placeholder: "What changed…" });
+    if (!reply) return;
+    try {
+      const r = await api(`/api/project/${enc}/comments/resolve`, { id: c.id, reply, decision: c.triage?.status && c.triage.status !== "proposed" ? c.triage.status : null });
+      comments = r.comments || comments; pop.hidden = true; view.comment = null; toast("Comment closed."); loadFrame(true); drawBar();
+    } catch (e) { showError(e); }
+  }
+
+  async function pushToFigma() {
     const sc = st.screens.find((s) => s.slug === view.screen);
     if (!sc) return;
     try { await api(`/api/project/${enc}/sync/queue`, { ref: `push:screen:${sc.slug}`, title: `Push screen "${sc.name}" from the prototype to Figma` }); toast(`"${sc.name}" is queued for Figma. Nothing changed in Figma yet: run the queue on the Sync page.`, { label: "Open Sync", icon: "i-refresh", run: () => { location.hash = `#/project/${enc}/sync`; } }); }
     catch (e) { showError(e); }
-  };
-  publish.onclick = () => {
-    confirmBox.hidden = false; publish.hidden = true;
-    confirmBox.replaceChildren(el("span", { class: "small" }, `Publish to ${st.repo}?`),
-      el("button", { class: "primary sm", type: "button", onclick: doPublish }, "Yes, publish"),
-      el("button", { class: "ghost sm", type: "button", onclick: () => { confirmBox.hidden = true; publish.hidden = false; } }, "Cancel"));
-  };
+  }
   // GitHub Pages serves a new build about a minute after the push (and caches the old page meanwhile): poll the live
   // index for the build that was just published, then reload the Live preview so it never shows the old one.
   async function waitForLive(build) {
@@ -479,7 +607,6 @@ async function drawDesign(main, p) {
     }
   }
   async function doPublish() {
-    confirmBox.hidden = true; publish.hidden = false;
     st.publishing = true; drawBar();
     try {
       st = await api(`/api/project/${enc}/publish`, {});
@@ -490,8 +617,25 @@ async function drawDesign(main, p) {
     drawBar();
   }
 
+  // Opened from Review (Apply online / Show on screen): that comment's screen, comments on, its pin focused, and for
+  // Apply the request waiting in the chat box.
+  if (q.get("comment")) {
+    await loadComments(false);
+    const c = byId(q.get("comment"));
+    if (c) {
+      if (st.screens.some((s) => s.slug === c.screen)) view.screen = c.screen;
+      if (c.theme) view.mode = c.theme;
+      view.tool = "comment"; view.comment = c.id;
+      if (q.get("apply")) pendingPrefill = APPLY_TEXT(c, st.screens.find((s) => s.slug === c.screen)?.name || c.screen);
+    }
+    history.replaceState(null, "", `#/project/${enc}/design`);
+  }
   drawMode(); drawBar(); loadFrame(); openChat();
 }
+
+// What Apply online and Ask put in the Design chat box (the user checks it and presses Send).
+const APPLY_TEXT = (c, screen) => `Apply ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` (${c.component}${c.figma_node ? ` ${c.figma_node}` : ""})` : ""}: "${c.body}". If it asks for a new flow or new screens, plan it first (flow map and screen spec) and wait for my OK before building; otherwise make the change in the prototype. Then give me the reply to close the comment with (id ${c.id}).`;
+const ASK_TEXT = (c, screen) => `Help me decide on ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` (${c.component})` : ""} before anything changes: "${c.body}". Give me the options with a recommendation (comment id ${c.id}).`;
 
 // ---------- Connect services: status lights and the one-time Supabase setup ----------
 async function copyText(text) {

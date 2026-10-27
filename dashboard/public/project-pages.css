@@ -199,4 +199,52 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .plan-doc .md table{border-collapse:collapse;width:100%;font-size:13px;display:block;overflow-x:auto}
 .plan-doc .md th,.plan-doc .md td{border-bottom:1px solid var(--rule);padding:6px 8px;text-align:left;vertical-align:top}
 .plan-none{display:grid;gap:10px;justify-items:center;border:0;padding:20px}
+/* design preview: floating controls (Lovable-like pill), Publish top right, comments on the design */
+.ws-stage{position:relative}
+.ws-canvas{padding:56px 24px 84px}
+.ws-pill{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:5;display:flex;align-items:center;gap:4px;padding:5px;border-radius:14px;background:#17191E;color:#E9ECF1;border:1px solid #2A2E36;box-shadow:0 8px 28px rgba(0,0,0,.28);max-width:calc(100% - 24px);overflow-x:auto;white-space:nowrap}
+.ws-pill[hidden],.ws-pill-open[hidden]{display:none}
+.ws-pill select{border:0;border-radius:9px;background:#23262D;color:#E9ECF1;padding:6px 8px;font:500 12.5px var(--sans);max-width:170px;min-width:90px}
+.ws-pill select option{background:#23262D;color:#E9ECF1}
+.ws-div{width:1px;height:20px;background:#2F333B;margin:0 3px;flex:none}
+.ws-seg{display:inline-flex;background:#23262D;border-radius:10px;padding:2px;flex:none}
+.ws-seg button{border:0;background:none;color:#AEB4BF;font:600 12px var(--sans);padding:5px 10px;border-radius:8px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.ws-seg.icons button{padding:5px 8px}
+.ws-seg button.on{background:#E9ECF1;color:#121418}
+.ws-seg .ic,.ws-tool .ic{width:15px;height:15px}
+.ws-tool{position:relative;border:0;background:none;color:#C9CED7;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;cursor:pointer;flex:none}
+.ws-tool:hover{background:#23262D;color:#fff}
+.ws-tool.on{background:color-mix(in srgb,var(--cyan) 22%,transparent);color:#fff;box-shadow:inset 0 0 0 1px var(--cyan)}
+.ws-count{position:absolute;top:-3px;right:-3px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--magenta);color:#fff;font:700 10px/16px var(--sans);text-align:center}
+.ws-more{position:relative;flex:none}
+.ws-more summary{list-style:none;cursor:pointer;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:#C9CED7;font-weight:700}
+.ws-more summary::-webkit-details-marker{display:none}
+.ws-more[open] summary,.ws-more summary:hover{background:#23262D;color:#fff}
+.ws-menu{position:absolute;min-width:230px;padding:6px;border-radius:12px;background:#17191E;border:1px solid #2A2E36;box-shadow:0 8px 28px rgba(0,0,0,.3);display:grid;gap:2px;z-index:30}
+.ws-menu button,.ws-menu a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;border:0;background:none;color:#E9ECF1;font:500 13px var(--sans);text-decoration:none;cursor:pointer;text-align:left}
+.ws-menu[hidden]{display:none}
+.ws-menu button:hover,.ws-menu a:hover{background:#23262D}
+.ws-menu .ic{width:15px;height:15px}
+.ws-pill-open{position:absolute;right:14px;bottom:16px;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid #2A2E36;background:#17191E;color:#E9ECF1;display:grid;place-items:center;cursor:pointer;box-shadow:0 8px 28px rgba(0,0,0,.28)}
+.ws-pill-open .ic{width:16px;height:16px}
+.ws-publish{position:absolute;top:12px;right:14px;z-index:5;display:flex;align-items:center;gap:8px}
+.ws-clist{position:absolute;top:12px;left:14px;z-index:4;width:250px;max-height:calc(100% - 120px);overflow:auto;padding:10px;border-radius:12px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 8px 24px rgba(0,0,0,.12);display:grid;gap:4px;align-content:start}
+.ws-clist[hidden]{display:none}
+.ws-clist h3{font-size:13px;font-weight:650;margin:0 0 4px}
+.ws-clist button{display:flex;gap:8px;align-items:flex-start;text-align:left;border:0;background:none;color:var(--ink);padding:6px;border-radius:8px;cursor:pointer;font:13px var(--sans)}
+.ws-clist button:hover,.ws-clist button.on{background:var(--paper)}
+.ws-clist .pin{flex:none;min-width:20px;height:20px;border-radius:10px 10px 10px 2px;background:#6366F1;color:#fff;font:700 11px/20px var(--sans);text-align:center}
+.ws-clist .t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;unicode-bidi:plaintext}
+.ws-pop{position:absolute;z-index:6;width:320px;max-width:calc(100% - 24px);max-height:min(440px,calc(100% - 110px));grid-template-rows:auto minmax(0,1fr) auto;padding:14px;border-radius:12px;background:var(--sheet);border:1px solid var(--rule);box-shadow:0 12px 32px rgba(0,0,0,.2);display:grid;gap:10px}
+.ws-pop[hidden]{display:none}
+.ws-pop header{display:flex;align-items:center;gap:8px}
+.ws-pop .who{display:flex;flex-direction:column;flex:1;min-width:0}
+.ws-pop .avatar{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--magenta-soft);color:var(--magenta-ink);font:700 12px var(--sans);flex:none}
+.ws-pop .pop-body{overflow:auto;display:grid;gap:10px;min-height:0;align-content:start}
+.ws-pop .body{font-size:14px;line-height:1.45;unicode-bidi:plaintext;overflow-wrap:anywhere}
+.ws-pop .thumbs img{width:72px;height:54px}
+.ws-pop .p-actions{gap:6px}
+.tag.k-flow{background:var(--magenta-soft);color:var(--magenta-ink);border-color:transparent}
+/* a chat page opened while the menu is collapsed: the conversation takes the whole width */
+body.rail.focus .shell{grid-template-columns:minmax(0,1fr)}
 @media (max-width:980px){.pipe{grid-template-columns:1fr}.pipe .step+.step{border-left:1px solid var(--rule);border-top:0}.grid2,.sync,.svc-grid,.plan{grid-template-columns:1fr}.p-tally{flex-wrap:wrap}main.project{padding:18px 16px}}

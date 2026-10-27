@@ -187,7 +187,28 @@ export function App() {
     return () => { live = false; window.clearInterval(t); };
   }, [commenting, curSlug]);
   const onTap = React.useCallback((p: Pending) => { setPending(p); setSelected(null); }, []);
-  useCommentTap(commenting && !inspect, curDef?.w || 375, onTap);
+  useCommentTap(commenting && !inspect && !r.embed, curDef?.w || 375, onTap); // embedded: review only, no new pins
+  // Inside the Atomica dashboard (embed=1) its toolbar picks the tool through the URL, and it is told which pin was
+  // picked and where the pin is, so it can show the comment and its actions next to it (postMessage, any origin).
+  React.useEffect(() => {
+    if (!r.embed) return;
+    setCommenting(r.tool === 'comment'); setCode(r.tool === 'code'); setInspect(r.tool === 'inspect');
+    if (r.tool !== 'comment') setSelected(null);
+  }, [r.embed, r.tool]);
+  React.useEffect(() => {
+    if (r.embed && commenting) window.parent.postMessage({ type: 'atomica:comments', screen: curSlug, items: comments.map((c, i) => ({ id: c.id, n: i + 1, status: c.status })) }, '*');
+  }, [r.embed, commenting, comments, curSlug]);
+  React.useEffect(() => {
+    if (!r.embed || !selected) return;
+    const post = () => {
+      const b = (document.querySelector(`[data-pin="${selected}"]`) as HTMLElement | null)?.getBoundingClientRect();
+      window.parent.postMessage({ type: 'atomica:comment', id: selected, rect: b ? { x: b.left, y: b.top, w: b.width, h: b.height } : null }, '*');
+    };
+    const t = window.setTimeout(post, 700); // after focusComment's smooth scroll
+    const screen = document.querySelector('.fp-screen');
+    screen?.addEventListener('scroll', post, { passive: true });
+    return () => { window.clearTimeout(t); screen?.removeEventListener('scroll', post); };
+  }, [r.embed, selected]);
   // Code and Comments share the side of the screen: opening one closes the other.
   const toggleCode = () => { setCode(!code); if (!code) setCommenting(false); };
   // A comment from the list or a link: switch to the theme and language it was made in, scroll its pin into view
@@ -292,7 +313,7 @@ export function App() {
         <div className="mt-6 text-xs opacity-60">Figma: {PROJECT.figmaFile}<br />Exported {PROJECT.exportedAt.slice(0, 10)}</div>
       </aside>}
       <main className="flex min-w-0 flex-1 flex-col items-center overflow-y-auto overflow-x-hidden">
-        <div className="box-border flex w-full flex-wrap items-center justify-center gap-2 p-3">
+        {embed ? <div aria-hidden="true" className="h-3 shrink-0" /> : <div className="box-border flex w-full flex-wrap items-center justify-center gap-2 p-3">
           {!embed && <label className="w-full md:hidden">
             <span className="sr-only">Screen</span>
             <select value={slug} onChange={(e) => go(e.target.value)}
@@ -315,7 +336,7 @@ export function App() {
                 hint="Comment: tap an element to leave a comment for the design team" />
             </div>
           </div>
-        </div>
+        </div>}
         {inspect && narrow && <Inspector onPick={setPicked} />}
         {narrow ? (
           <div data-inspect={inspect ? 'on' : 'off'} className="relative" style={{ zoom }} aria-label="Screen">{screen}</div>
@@ -331,7 +352,7 @@ export function App() {
         {(code || commenting) && narrow && <div aria-hidden="true" className="h-[60vh] shrink-0" />}
       </main>
       {code && <CodePanel slug={slug} picked={picked} narrow={narrow} onClose={() => setCode(false)} />}
-      {commenting && (
+      {commenting && !embed && (
         <CommentsPanel comments={comments} pending={pending} narrow={narrow} selected={selected} error={commentError}
           onCancel={() => setPending(null)} onClose={toggleComments}
           onSelect={(id) => { const c = comments.find((x) => x.id === id); if (c) focusComment(c); }}
