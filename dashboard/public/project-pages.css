@@ -302,3 +302,12 @@ body.rail.focus .shell{grid-template-columns:minmax(0,1fr)}
 .tally .off dd.ftile .fnow{color:var(--yellow-ink)}
 .fdialog .fstatus .why{flex-basis:100%;color:var(--ink-2)}
 .ws-pubpop header b.failed{color:var(--magenta-ink)}
+
+/* publish preflight list */
+.pchk{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.pchk li{display:flex;gap:8px;align-items:flex-start}
+.pchk li .dot{margin-top:6px}
+.pchk li p{margin:2px 0 0}
+.pchk-ok{display:flex;align-items:center;gap:6px;color:var(--good);margin:0}
+.pchk-ok .ic{width:14px;height:14px}
+.ws-pubpop input.mono{flex:1;min-width:0;border:1px solid var(--rule-2);border-radius:var(--r);padding:6px 8px;background:var(--sheet);color:var(--ink);font-size:12px}

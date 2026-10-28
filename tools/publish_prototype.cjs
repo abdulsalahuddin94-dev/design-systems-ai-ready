@@ -2,6 +2,7 @@
 // Live Prototype trial (Screens_Handoff_Skill): publish a project's prototype to GitHub Pages in one command.
 // Usage (from the Root, after tools/build_prototype.py):
 //   node tools/publish_prototype.cjs "My Projects/<Project>" --repo <owner>/<name> [--create] [--title "<text>"]
+//   node tools/publish_prototype.cjs "My Projects/<Project>" --repo <owner>/<name> --check   preflight only (JSON)
 // --create  makes the repo (public) when it does not exist; never used without the user's yes.
 // Builds <project>/prototype with Vite for the sub-path /<name>/, checks the build for secrets, pushes it to the repo's
 // gh-pages branch (a normal commit on top of the last one, never a force push), and turns Pages on for that branch.
@@ -13,6 +14,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { execFileSync } = require('child_process');
+const { userEnv, runChecks, errText } = require('./publish_checks.cjs');
 
 const ROOT = path.resolve(__dirname, '..');
 const args = process.argv.slice(2);
@@ -27,8 +29,25 @@ if (!project || !repo || !/^[\w.-]+\/[\w.-]+$/.test(repo)) {
 const [owner, name] = repo.split('/');
 const app = path.join(project, 'prototype');
 // No shell: arguments go to the program as they are (no quoting problems, no Node DEP0190 warning).
-const run = (cmd, a, o = {}) => execFileSync(cmd, a, Object.assign({ encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }, o));
+// The user's full environment (home folders, Git and GitHub CLI on PATH), however this was started; prompts fail instead
+// of waiting.
+const ENV = userEnv();
+const run = (cmd, a, o = {}) => execFileSync(cmd, a, Object.assign({ encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], env: ENV }, o));
 const git = (cwd, ...a) => run('git', a, { cwd });
+
+// 0. Preflight (tools/publish_checks.cjs): packages, Git, the repo (git, not gh), write access, Pages, gh (optional).
+const pre = runChecks({ repo, app, env: ENV });
+if (flag('--check')) { console.log(JSON.stringify(pre, null, 1)); process.exit(0); }
+const failed = pre.checks.filter((c) => !c.ok && !c.optional && !(c.key === 'repo' && pre.repoState === 'missing' && flag('--create')));
+if (failed.length) {
+  // a repo that is truly missing needs the user's yes (--create); everything else gets its reason and fix
+  const missing = failed.find((c) => c.key === 'repo' && (pre.repoState === 'missing' || pre.repoState === 'missing-or-private'));
+  for (const c of failed) console.error(`${c.label}: ${c.reason} Fix: ${c.fix}`);
+  if (missing && failed.length === 1) console.error(`Run again with --create (public repo) after the user's yes.`);
+  console.error('Nothing published.');
+  process.exit(missing && failed.length === 1 ? 4 : 6);
+}
+if (pre.repoState === 'missing' && flag('--create') && !pre.gh.signedIn) { console.error('Creating a repo needs the GitHub CLI signed in. Fix: run gh auth login, then try again. Nothing published.'); process.exit(6); }
 
 // 1. Build for the sub-path.
 console.log(`Building ${path.relative(ROOT, app)} for /${name}/ ...`);
@@ -58,20 +77,9 @@ if (services.length && walk(dist).some((f) => services.some((k) => fs.readFileSy
   process.exit(3);
 }
 
-// 3. The repo. Only a real "not found" counts as missing: git ls-remote reads a public repo with no sign-in, and gh's
-// own error (not installed, not signed in, network) is reported as it is instead of "does not exist".
-const errText = (e) => String((e && (e.stderr || e.message)) || e).trim().split(/\r?\n/).slice(-3).join(' ');
-let exists = true;
-try { git(os.tmpdir(), 'ls-remote', '--heads', `https://github.com/${repo}.git`); } catch (e) {
-  let ghErr = null;
-  try { run('gh', ['repo', 'view', repo, '--json', 'name']); } catch (e2) { ghErr = errText(e2); }
-  if (ghErr && /could not resolve to a repository|not found|404/i.test(ghErr)) exists = false;
-  else if (ghErr) { console.error(`Could not check ${repo} on GitHub: ${ghErr}. Is the GitHub CLI installed and signed in (gh auth status), and is the network up? Nothing published.`); process.exit(6); }
-  else if (/not found|repository .* does not exist/i.test(errText(e))) exists = false;
-  // gh can see it (private repo): it exists.
-}
+// 3. The repo: checked in the preflight; a missing one is created only with --create (the user's yes).
+const exists = !(pre.repoState === 'missing' || pre.repoState === 'missing-or-private');
 if (!exists) {
-  if (!flag('--create')) { console.error(`${repo} does not exist. Run again with --create (public repo) after the user's yes.`); process.exit(4); }
   run('gh', ['repo', 'create', repo, '--public', '--description', opt('--title', 'Live prototype built from a Figma Design file with the Atomica workflow')]);
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'proto-main-'));
   fs.writeFileSync(path.join(tmp, 'README.md'), [

@@ -6,6 +6,7 @@ import path from "node:path";
 import os from "node:os";
 import { spawn, spawnSync } from "node:child_process";
 import { createRequire } from "node:module";
+const { userEnv } = createRequire(import.meta.url)("../tools/publish_checks.cjs");
 
 const readJson = (file, fallback = null) => {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return fallback; }
@@ -16,9 +17,34 @@ const readText = (file) => {
 const mtime = (file) => {
   try { return fs.statSync(file).mtimeMs; } catch { return 0; }
 };
+// A project's links, from its own config first (status.json > figma, prototype.url, storybook_url; the last publish),
+// then any other GitHub Pages link in its brief: one with "storybook" or "design-system" in it is the Storybook,
+// anything else a plain site link. Works for any project naming.
+export function projectLinks(status, brief, folder) {
+  const out = [];
+  const norm = (u) => String(u || "").replace(/\/+$/, "").toLowerCase();
+  const ds = status?.figma?.design_system;
+  if (ds?.url) out.push({ kind: "figma", label: ds.name || "Design System", url: ds.url });
+  for (const f of status?.figma?.design_files || []) if (f?.url) out.push({ kind: "figma", label: f.name || "Design file", url: f.url });
+  if (status?.team?.repo) out.push({ kind: "github", label: "Team repo", url: status.team.repo });
+  const proto = status?.prototype?.url || (folder ? readJson(path.join(folder, "prototype", "data", "publish.json"), {})?.url : null);
+  if (proto) out.push({ kind: "prototype", label: "Prototype · Live", url: proto });
+  const sb = status?.storybook_url || status?.storybook?.url || null;
+  if (sb) out.push({ kind: "storybook", label: "Storybook", url: sb });
+  const seen = new Set([norm(proto), norm(sb)]);
+  const pages = (JSON.stringify(status || {}) + "\n" + (brief || "")).match(/https:\/\/[\w.-]+\.github\.io\/[^\s"')>\]|]*/g) || [];
+  for (const url of new Set(pages)) {
+    if (seen.has(norm(url))) continue;
+    seen.add(norm(url));
+    if (/storybook|design-system/i.test(url) && !sb) out.push({ kind: "storybook", label: "Storybook", url });
+    else if (!/storybook|design-system/i.test(url)) out.push({ kind: "link", label: "Site", url });
+  }
+  return out;
+}
+
 // The newest change to what a publish builds: the prototype's source (generated screens, shell, strings), its data
 // (overrides, screens, strings) and public files. node_modules and dist are skipped.
-function newestPrototypeChange(proto) {
+export function newestPrototypeChange(proto) {
   let newest = 0;
   const walk = (d, depth = 0) => {
     let entries = [];
@@ -267,13 +293,14 @@ async function designState(dir) {
     publish,
     unpublished: publish?.at ? built > Date.parse(publish.at) : false,
     publishing: publishing.has(dir),
-    repo: publishRepo(publish),
+    repo: publishRepo(publish, status),
   };
 }
 
 // owner/name from publish.json, or from the GitHub Pages link.
-function publishRepo(publish) {
+function publishRepo(publish, status) {
   if (publish?.repo) return publish.repo;
+  if (status?.prototype?.repo) return status.prototype.repo;
   const m = String(publish?.url || "").match(/^https:\/\/([\w-]+)\.github\.io\/([\w.-]+)\/?$/);
   return m ? `${m[1]}/${m[2]}` : null;
 }
@@ -318,11 +345,17 @@ function stopPreview(dir) {
   return { ok: true };
 }
 
-// Publish = tools/publish_prototype.cjs to the repo it already uses (never --create from here).
-function publishPrototype(root, dir, repo) {
+// A new project's suggested repo: <GitHub login>/<project-slug>-prototype (created only after the user's click).
+function suggestRepo(dir) {
+  const r = spawnSync("gh", ["api", "user", "--jq", ".login"], { encoding: "utf8", windowsHide: true, timeout: 15000, env: userEnv() });
+  const login = (r.stdout || "").trim();
+  return /^[\w-]+$/.test(login) ? `${login}/${path.basename(dir).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-prototype` : null;
+}
+// Publish = tools/publish_prototype.cjs to the project's repo; a new repo only after the user's click.
+function publishPrototype(root, dir, repo, create = false) {
   return new Promise((resolve) => {
     publishing.add(dir);
-    const child = spawn(process.execPath, [path.join(root, "tools", "publish_prototype.cjs"), dir, "--repo", repo], { cwd: root, windowsHide: true });
+    const child = spawn(process.execPath, [path.join(root, "tools", "publish_prototype.cjs"), dir, "--repo", repo, ...(create ? ["--create"] : [])], { cwd: root, windowsHide: true, env: userEnv() });
     let out = "";
     child.stdout.on("data", (d) => { out += d; });
     child.stderr.on("data", (d) => { out += d; });
@@ -523,11 +556,30 @@ export async function handleProjectApi(req, res, url, { send, projectDir, readBo
   }
   if (req.method === "POST" && m[2] === "preview/start") { const r = await startPreview(dir); send(res, r.ok ? 200 : 400, r.ok ? await designState(dir) : r); return true; }
   if (req.method === "POST" && m[2] === "preview/stop") { const r = stopPreview(dir); send(res, r.ok ? 200 : 400, r.ok ? await designState(dir) : r); return true; }
+  if (req.method === "GET" && m[2] === "publish-check") {
+    // the preflight for this project's repo (or the repo it would create), in the user's full environment
+    const st = await designState(dir);
+    const repo = st.repo || url.searchParams.get("repo") || suggestRepo(dir);
+    if (!repo) { send(res, 200, { ok: false, repo: null, checks: [{ key: "repo", label: "GitHub repo", ok: false, reason: "No repo is recorded for this prototype, and the GitHub account could not be read.", fix: "Sign in with GitHub (Connect services > GitHub), then check again." }] }); return true; }
+    const r = await new Promise((resolve) => {
+      let out = "";
+      const child = spawn(process.execPath, [path.join(root, "tools", "publish_prototype.cjs"), dir, "--repo", repo, "--check"], { cwd: root, windowsHide: true, env: userEnv() });
+      child.stdout.on("data", (x) => { out += x; }); child.stderr.on("data", (x) => { out += x; });
+      child.on("close", () => resolve(out));
+    });
+    try { send(res, 200, { ...JSON.parse(r.slice(r.indexOf("{"))), recorded: !!st.repo }); } catch { send(res, 200, { ok: false, repo, checks: [{ key: "check", label: "Publish check", ok: false, reason: r.trim().slice(-300) || "The check did not run.", fix: "Run node tools/publish_prototype.cjs with --check in a terminal to see why." }] }); }
+    return true;
+  }
   if (req.method === "POST" && m[2] === "publish") {
     const st = await designState(dir);
-    if (!st.repo) { send(res, 400, { error: "No GitHub repo is recorded for this prototype yet: publish it once from the chat." }); return true; }
+    const b = await readBody(req);
+    // a new repo only with the user's explicit click (create: true) and a valid owner/name
+    const create = !st.repo && b.create === true && /^[\w.-]+\/[\w.-]+$/.test(String(b.repo || ""));
+    const repo = st.repo || (create ? b.repo : null);
+    if (!repo) { send(res, 400, { error: "No GitHub repo is recorded for this prototype yet: create one from the Publish panel." }); return true; }
     if (st.publishing) { send(res, 409, { error: "Already publishing." }); return true; }
-    const r = await publishPrototype(root, dir, st.repo);
+    const r = await publishPrototype(root, dir, repo, create);
+    if (r.ok && create) { const sf = path.join(dir, "status.json"); const s2 = readJson(sf, {}); s2.prototype = { ...(s2.prototype || {}), url: `https://${repo.split("/")[0]}.github.io/${repo.split("/")[1]}/`, repo }; fs.writeFileSync(sf, JSON.stringify(s2, null, 2) + "\n"); }
     send(res, r.ok ? 200 : 400, r.ok ? { ...(await designState(dir)), output: r.output } : { error: r.output || "Publish failed" });
     return true;
   }

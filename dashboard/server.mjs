@@ -17,7 +17,12 @@ import { fileURLToPath } from "node:url";
 import { query } from "@anthropic-ai/claude-agent-sdk";
 import { TOOLS, toolStatus, loginCommand, antigravityPath, usageStore, handoffCommand, LIMIT_RE, which } from "./tools.mjs";
 import { startAcp } from "./acp.mjs";
-import { handleProjectApi } from "./project-api.mjs";
+import { handleProjectApi, projectLinks } from "./project-api.mjs";
+import { createRequire as requireFrom } from "node:module";
+// However the dashboard was started (shortcut, script, another tool), its child processes (Claude, gh, git, publish)
+// get the user's full environment: home folders and the Git / GitHub CLI folders on PATH (tools/publish_checks.cjs).
+Object.assign(process.env, requireFrom(import.meta.url)("../tools/publish_checks.cjs").userEnv());
+delete process.env.GIT_TERMINAL_PROMPT; delete process.env.GCM_INTERACTIVE; // only the publish steps run without prompts
 import { handleFigmaTools } from "./figma-tools.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -90,22 +95,8 @@ function unsynced(changelog) {
   return (changelog.match(/^\s*-\s*Storybook synced:\s*no\b/gim) || []).length;
 }
 
-function links(status, brief, folder) {
-  const out = [];
-  const ds = status?.figma?.design_system;
-  if (ds?.url) out.push({ kind: "figma", label: ds.name || "Design System", url: ds.url });
-  for (const f of status?.figma?.design_files || []) if (f?.url) out.push({ kind: "figma", label: f.name || "Design file", url: f.url });
-  const team = status?.team?.repo;
-  if (team) out.push({ kind: "github", label: "Team repo", url: team });
-  const pages = (JSON.stringify(status || {}) + "\n" + brief).match(/https:\/\/[\w.-]+\.github\.io\/[^\s"')>\]]*/g) || [];
-  // The live prototype (status.json > prototype.url, or its last publish) is its own link; the other GitHub Pages
-  // links are the published Storybook.
-  const norm = (u) => String(u || "").replace(/\/+$/, "").toLowerCase();
-  const protoUrl = status?.prototype?.url || (folder ? readJson(path.join(folder, "prototype", "data", "publish.json"), {})?.url : null);
-  if (protoUrl) out.push({ kind: "prototype", label: "Prototype · Live", url: protoUrl });
-  for (const url of new Set(pages)) if (norm(url) !== norm(protoUrl)) out.push({ kind: "storybook", label: "Storybook", url });
-  return out;
-}
+// Project links: project-api.mjs > projectLinks (from the project's own config).
+const links = projectLinks;
 
 function listProjects() {
   const hidden = hiddenProjects();

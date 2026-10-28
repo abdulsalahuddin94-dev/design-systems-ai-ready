@@ -425,6 +425,20 @@ async function drawDesign(main, p) {
   const pop = el("div", { class: "ws-pop", role: "dialog", "aria-label": "Comment", hidden: true });
   const menu = el("div", { class: "ws-menu", role: "menu", hidden: true });
   const pubPop = el("div", { class: "ws-pubpop", role: "dialog", "aria-label": "Publish", hidden: true });
+  let pubCheck = null; // null | "running" | the preflight result (tools/publish_checks.cjs)
+  async function runPublishCheck() {
+    pubCheck = "running"; drawPubPop();
+    try { pubCheck = await api(`/api/project/${enc}/publish-check`); } catch (e) { pubCheck = { ok: false, checks: [{ label: "Publish check", ok: false, reason: e.message, fix: "Try again." }] }; }
+    drawPubPop();
+  }
+  // A new project: create its repo (public, GitHub Pages) only on this explicit click.
+  function createRepoBlock(chk) {
+    const input = el("input", { class: "mono", value: chk.repo, "aria-label": "New repo (owner/name)", spellcheck: "false" });
+    return el("div", { class: "pub-url" }, el("span", { class: "kicker" }, "No repo yet"),
+      el("p", { class: "small" }, "This prototype has no GitHub repo. Atomica can create a public one and publish to it:"),
+      el("div", { class: "row" }, input,
+        el("button", { class: "primary sm", type: "button", disabled: !chk.gh?.signedIn || null, title: chk.gh?.signedIn ? "" : "Sign in with GitHub first (Connect services)", onclick: () => doPublish(input.value.trim()) }, "Create the repo and publish")));
+  }
   let publishError = null; // the last publish failure, shown in the panel until the next try
   let liveState = null; // null | "waiting" | "live": after a publish, until GitHub Pages serves the new build
   const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" }, canvas, pubBox, pubPop, list, pop, menu, pill, openPill);
@@ -507,7 +521,10 @@ async function drawDesign(main, p) {
       pubPop.hidden = !pubPop.hidden;
       drawPubPop();
       // the page may have been open while Claude changed the prototype: read the publish state again
-      if (!pubPop.hidden && !st.publishing) { try { const fresh = await api(`/api/project/${enc}/design`); Object.assign(st, { unpublished: fresh.unpublished, publish: fresh.publish, repo: fresh.repo }); drawBar(); } catch {} }
+      if (!pubPop.hidden && !st.publishing) {
+        try { const fresh = await api(`/api/project/${enc}/design`); Object.assign(st, { unpublished: fresh.unpublished, publish: fresh.publish, repo: fresh.repo }); drawBar(); } catch {}
+        runPublishCheck();
+      }
     } },
       st.unpublished ? el("span", { class: "dot bad", "aria-hidden": "true" }) : null, st.publishing ? "Publishing…" : "Publish");
     pubBox.replaceChildren(pub);
@@ -689,6 +706,8 @@ async function drawDesign(main, p) {
         el("b", { class: publishError && !st.publishing ? "failed" : null }, publishError && !st.publishing ? "Publish failed" : st.publishing ? "Publishing…" : published ? "Published" : "Not published"),
         el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pubPop.hidden = true; drawBar(); } }, icon("i-x"))),
       el("p", { class: "muted small" }, status, st.publish?.at ? ` · last published ${fmtDate(st.publish.at)}` : ""),
+      pubCheck === "running" ? el("p", { class: "small muted" }, "Checking the publish setup…") : pubCheck ? publishChecksList(pubCheck, { onlyProblems: true }) : null,
+      !st.repo && pubCheck && pubCheck !== "running" && pubCheck.repo ? createRepoBlock(pubCheck) : null,
       published ? el("div", { class: "pub-url" },
         el("span", { class: "kicker" }, "Website URL"),
         el("div", { class: "row" }, el("a", { class: "mono", href: url, target: "_blank", rel: "noopener" }, url.replace(/^https?:\/\//, "")),
@@ -703,16 +722,16 @@ async function drawDesign(main, p) {
           el("a", { class: "ghost sm", href: `https://wa.me/?text=${encodeURIComponent(shareText())}`, target: "_blank", rel: "noopener" }, "WhatsApp"))) : null,
       published ? el("p", { class: "pub-note small" }, icon("i-shield"), el("span", {}, "Visible to anyone with the link. Until it moves to its own domain, some browsers may show a safety warning on first open; reviewers can continue to the site.")) : null,
       // Never stuck: when nothing new is detected it still publishes ("Publish again").
-      el("button", { class: "primary", type: "button", disabled: st.publishing || !st.repo || null, onclick: doPublish,
+      el("button", { class: "primary", type: "button", disabled: st.publishing || !st.repo || (pubCheck && pubCheck !== "running" && !pubCheck.ok) || null, onclick: () => doPublish(),
         title: st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first" },
         st.publishing ? "Publishing…" : !published ? "Publish" : st.unpublished ? "Publish changes" : "Publish again"),
     ].filter(Boolean));
   }
-  async function doPublish() {
+  async function doPublish(create = null) {
     publishError = null;
     st.publishing = true; drawBar();
     try {
-      st = await api(`/api/project/${enc}/publish`, {});
+      st = await api(`/api/project/${enc}/publish`, create ? { create: true, repo: create } : {});
       liveState = "waiting";
       waitForLive(st.publish?.build);
     }
@@ -824,6 +843,15 @@ async function drawConnect(main, p) {
     const g = c.github, sb = c.storybook, pw = c.playwright;
     body.replaceChildren(el("div", { class: "svc-grid" },
       figmaCard,
+      (() => {
+        const box = el("div", {}, el("p", { class: "small muted" }, "Checks Git, the GitHub repo, write access and Pages for this project's prototype."));
+        const btn = el("button", { class: "ghost sm", type: "button", onclick: async () => {
+          btn.disabled = true; btn.textContent = "Checking…";
+          try { const r = await api(`/api/project/${enc}/publish-check`); box.replaceChildren(publishChecksList(r)); } catch (e) { showError(e); }
+          btn.disabled = false; btn.textContent = "Check publish setup";
+        } }, icon("i-refresh"), "Check publish setup");
+        return el("section", { class: "p-panel svc", "data-svc": "Publishing" }, el("header", {}, el("h2", {}, "Publishing (live link)")), box, el("div", { class: "p-actions" }, btn));
+      })(),
       card("GitHub", g?.signedIn ? "ok" : g?.cli ? "warn" : "bad",
         g?.signedIn ? `Signed in as ${g.account}. Publishing the prototype and team projects use it.` : g?.cli ? "GitHub CLI is installed but not signed in." : "GitHub CLI (gh) is not installed.",
         !g?.signedIn && g?.cli ? el("div", { class: "p-actions" }, el("button", { class: "ghost sm", type: "button", onclick: async () => { try { toast((await api("/api/github/login", {})).ok ? "GitHub sign-in opened in a new window." : "Could not open it."); } catch (e) { showError(e); } } }, icon("i-login"), "Sign in with GitHub")) : null),
@@ -1024,4 +1052,13 @@ function openFigmaTool(key, { project, onChange } = {}) {
   if (!dlg.open) dlg.showModal();
   dlg.onclose = () => onChange?.();
   if (figmaToolsCache.tools.official.checking) refreshFigmaToolsLater(() => { if (dlg.open) drawStatus(); onChange?.(); });
+}
+
+// The publish preflight as a list: what works, and for each problem its reason and the exact fix.
+function publishChecksList(chk, { onlyProblems = false } = {}) {
+  const rows = (chk.checks || []).filter((c) => !onlyProblems || !c.ok);
+  if (onlyProblems && !rows.length) return el("p", { class: "small pchk-ok" }, icon("i-check"), " Ready to publish: Git, the repo and write access are fine.");
+  return el("ul", { class: "pchk" }, rows.map((c) => el("li", { class: c.ok ? "ok" : c.optional ? "warn" : "bad" },
+    el("span", { class: `dot ${c.ok ? "good" : c.optional ? "wait" : "bad"}` }),
+    el("div", {}, el("b", {}, c.label), c.ok ? null : el("p", { class: "small" }, c.reason), c.ok ? null : el("p", { class: "small muted" }, "Fix: ", c.fix)))));
 }
