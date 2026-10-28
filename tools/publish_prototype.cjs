@@ -58,9 +58,18 @@ if (services.length && walk(dist).some((f) => services.some((k) => fs.readFileSy
   process.exit(3);
 }
 
-// 3. The repo.
+// 3. The repo. Only a real "not found" counts as missing: git ls-remote reads a public repo with no sign-in, and gh's
+// own error (not installed, not signed in, network) is reported as it is instead of "does not exist".
+const errText = (e) => String((e && (e.stderr || e.message)) || e).trim().split(/\r?\n/).slice(-3).join(' ');
 let exists = true;
-try { run('gh', ['repo', 'view', repo, '--json', 'name']); } catch (e) { exists = false; }
+try { git(os.tmpdir(), 'ls-remote', '--heads', `https://github.com/${repo}.git`); } catch (e) {
+  let ghErr = null;
+  try { run('gh', ['repo', 'view', repo, '--json', 'name']); } catch (e2) { ghErr = errText(e2); }
+  if (ghErr && /could not resolve to a repository|not found|404/i.test(ghErr)) exists = false;
+  else if (ghErr) { console.error(`Could not check ${repo} on GitHub: ${ghErr}. Is the GitHub CLI installed and signed in (gh auth status), and is the network up? Nothing published.`); process.exit(6); }
+  else if (/not found|repository .* does not exist/i.test(errText(e))) exists = false;
+  // gh can see it (private repo): it exists.
+}
 if (!exists) {
   if (!flag('--create')) { console.error(`${repo} does not exist. Run again with --create (public repo) after the user's yes.`); process.exit(4); }
   run('gh', ['repo', 'create', repo, '--public', '--description', opt('--title', 'Live prototype built from a Figma Design file with the Atomica workflow')]);
@@ -98,9 +107,11 @@ fs.writeFileSync(path.join(app, 'data', 'publish.json'), JSON.stringify({
   build: (indexHtml.match(/assets\/index-([\w-]+)\.js/) || [])[1] || null, changed,
 }, null, 1) + '\n');
 
-// 5. Pages from gh-pages /.
+// 5. Pages from gh-pages /. Already on for a repo published before, so a gh problem here only warns.
 try { run('gh', ['api', `repos/${repo}/pages`]); } catch (e) {
-  run('gh', ['api', '-X', 'POST', `repos/${repo}/pages`, '-f', 'source[branch]=gh-pages', '-f', 'source[path]=/']);
-  console.log('GitHub Pages turned on (gh-pages, /).');
+  try {
+    run('gh', ['api', '-X', 'POST', `repos/${repo}/pages`, '-f', 'source[branch]=gh-pages', '-f', 'source[path]=/']);
+    console.log('GitHub Pages turned on (gh-pages, /).');
+  } catch (e2) { console.log(`Note: could not check GitHub Pages with gh (${errText(e2)}); if this is the first publish, turn Pages on for the gh-pages branch in the repo settings.`); }
 }
 console.log(`Live (after the Pages build, about a minute): https://${owner}.github.io/${name}/`);

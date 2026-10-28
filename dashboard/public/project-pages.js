@@ -681,11 +681,12 @@ async function drawDesign(main, p) {
     if (pubPop.hidden) return;
     const url = st.publish?.url;
     const published = !!url;
-    const status = publishError && !st.publishing ? `Publish failed: ${publishError}` : st.publishing ? "Publishing…" : liveState === "waiting" ? "Published · waiting for the live link to update" : st.unpublished ? "Unpublished changes" : published ? "Up to date" : "Not published yet";
+    // a failure shows the script's own reason (without its "Building ..." progress line)
+    const status = publishError && !st.publishing ? publishError.replace(/^Building .*?\.\.\.\s*/s, "") : st.publishing ? "Publishing…" : liveState === "waiting" ? "Published · waiting for the live link to update" : st.unpublished ? "Unpublished changes" : published ? "Up to date" : "Not published yet";
     const copy = async (text, done) => toast((await copyText(text)) ? done : "Could not copy. Select the text instead.");
     pubPop.replaceChildren(...[
-      el("header", {}, el("span", { class: `dot ${!published ? "wait" : st.unpublished || st.publishing || liveState === "waiting" ? "wait" : "good"}` }),
-        el("b", {}, published ? "Published" : "Not published"),
+      el("header", {}, el("span", { class: `dot ${publishError && !st.publishing ? "bad" : !published ? "wait" : st.unpublished || st.publishing || liveState === "waiting" ? "wait" : "good"}` }),
+        el("b", { class: publishError && !st.publishing ? "failed" : null }, publishError && !st.publishing ? "Publish failed" : st.publishing ? "Publishing…" : published ? "Published" : "Not published"),
         el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pubPop.hidden = true; drawBar(); } }, icon("i-x"))),
       el("p", { class: "muted small" }, status, st.publish?.at ? ` · last published ${fmtDate(st.publish.at)}` : ""),
       published ? el("div", { class: "pub-url" },

@@ -301,3 +301,4 @@ body.rail.focus .shell{grid-template-columns:minmax(0,1fr)}
 .tally dd.ftile .fnow{display:block;font:700 15px/1.5 var(--sans);font-stretch:110%;color:var(--good)}
 .tally .off dd.ftile .fnow{color:var(--yellow-ink)}
 .fdialog .fstatus .why{flex-basis:100%;color:var(--ink-2)}
+.ws-pubpop header b.failed{color:var(--magenta-ink)}
