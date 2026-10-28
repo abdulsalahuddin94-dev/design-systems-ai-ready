@@ -425,6 +425,7 @@ async function drawDesign(main, p) {
   const pop = el("div", { class: "ws-pop", role: "dialog", "aria-label": "Comment", hidden: true });
   const menu = el("div", { class: "ws-menu", role: "menu", hidden: true });
   const pubPop = el("div", { class: "ws-pubpop", role: "dialog", "aria-label": "Publish", hidden: true });
+  let publishError = null; // the last publish failure, shown in the panel until the next try
   let liveState = null; // null | "waiting" | "live": after a publish, until GitHub Pages serves the new build
   const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" }, canvas, pubBox, pubPop, list, pop, menu, pill, openPill);
   main.append(chatCol, stage);
@@ -502,7 +503,12 @@ async function drawDesign(main, p) {
       el("button", { class: "ws-tool", type: "button", "aria-label": "Refresh", title: "Refresh", onclick: () => loadFrame(true) }, icon("i-refresh")),
       more,
       el("button", { class: "ws-tool", type: "button", "aria-label": "Hide the controls", title: "Hide the controls", onclick: () => setCollapsed(true) }, icon("i-right")));
-    const pub = el("button", { class: "primary sm", type: "button", "aria-expanded": String(!pubPop.hidden), "aria-haspopup": "dialog", onclick: () => { pubPop.hidden = !pubPop.hidden; drawPubPop(); } },
+    const pub = el("button", { class: "primary sm", type: "button", "aria-expanded": String(!pubPop.hidden), "aria-haspopup": "dialog", onclick: async () => {
+      pubPop.hidden = !pubPop.hidden;
+      drawPubPop();
+      // the page may have been open while Claude changed the prototype: read the publish state again
+      if (!pubPop.hidden && !st.publishing) { try { const fresh = await api(`/api/project/${enc}/design`); Object.assign(st, { unpublished: fresh.unpublished, publish: fresh.publish, repo: fresh.repo }); drawBar(); } catch {} }
+    } },
       st.unpublished ? el("span", { class: "dot bad", "aria-hidden": "true" }) : null, st.publishing ? "Publishing…" : "Publish");
     pubBox.replaceChildren(pub);
     drawPubPop();
@@ -675,7 +681,7 @@ async function drawDesign(main, p) {
     if (pubPop.hidden) return;
     const url = st.publish?.url;
     const published = !!url;
-    const status = st.publishing ? "Publishing…" : liveState === "waiting" ? "Published · waiting for the live link to update" : st.unpublished ? "Unpublished changes" : published ? "Up to date" : "Not published yet";
+    const status = publishError && !st.publishing ? `Publish failed: ${publishError}` : st.publishing ? "Publishing…" : liveState === "waiting" ? "Published · waiting for the live link to update" : st.unpublished ? "Unpublished changes" : published ? "Up to date" : "Not published yet";
     const copy = async (text, done) => toast((await copyText(text)) ? done : "Could not copy. Select the text instead.");
     pubPop.replaceChildren(...[
       el("header", {}, el("span", { class: `dot ${!published ? "wait" : st.unpublished || st.publishing || liveState === "waiting" ? "wait" : "good"}` }),
@@ -695,19 +701,21 @@ async function drawDesign(main, p) {
           el("a", { class: "ghost sm", href: `mailto:?subject=${encodeURIComponent(`${p.title} prototype`)}&body=${encodeURIComponent(shareText())}` }, "Email"),
           el("a", { class: "ghost sm", href: `https://wa.me/?text=${encodeURIComponent(shareText())}`, target: "_blank", rel: "noopener" }, "WhatsApp"))) : null,
       published ? el("p", { class: "pub-note small" }, icon("i-shield"), el("span", {}, "Visible to anyone with the link. Until it moves to its own domain, some browsers may show a safety warning on first open; reviewers can continue to the site.")) : null,
-      el("button", { class: "primary", type: "button", disabled: st.publishing || !st.repo || (published && !st.unpublished) || null, onclick: doPublish,
+      // Never stuck: when nothing new is detected it still publishes ("Publish again").
+      el("button", { class: "primary", type: "button", disabled: st.publishing || !st.repo || null, onclick: doPublish,
         title: st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first" },
-        st.publishing ? "Publishing…" : published ? "Publish changes" : "Publish"),
+        st.publishing ? "Publishing…" : !published ? "Publish" : st.unpublished ? "Publish changes" : "Publish again"),
     ].filter(Boolean));
   }
   async function doPublish() {
+    publishError = null;
     st.publishing = true; drawBar();
     try {
       st = await api(`/api/project/${enc}/publish`, {});
       liveState = "waiting";
       waitForLive(st.publish?.build);
     }
-    catch (e) { showError(e); st.publishing = false; }
+    catch (e) { showError(e); st.publishing = false; publishError = e.message; pubPop.hidden = false; }
     drawBar();
   }
 

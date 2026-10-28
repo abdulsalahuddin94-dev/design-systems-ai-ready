@@ -16,6 +16,23 @@ const readText = (file) => {
 const mtime = (file) => {
   try { return fs.statSync(file).mtimeMs; } catch { return 0; }
 };
+// The newest change to what a publish builds: the prototype's source (generated screens, shell, strings), its data
+// (overrides, screens, strings) and public files. node_modules and dist are skipped.
+function newestPrototypeChange(proto) {
+  let newest = 0;
+  const walk = (d, depth = 0) => {
+    let entries = [];
+    try { entries = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.name === "node_modules" || e.name === "dist" || e.name.startsWith(".")) continue;
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (depth < 6) walk(p, depth + 1); }
+      else if (!/publish\.json$|build-report\.json$|code-report\.json$/.test(e.name)) newest = Math.max(newest, mtime(p));
+    }
+  };
+  for (const sub of ["src", "data", "public"]) walk(path.join(proto, sub));
+  return newest;
+}
 
 // CHANGELOG entries, newest first: "## 2026-10-25 · title" or "## 2026-10-25 - title" (the format example is skipped).
 export function changelogEntries(text, limit = 6) {
@@ -58,7 +75,7 @@ export async function projectOverview(folder) {
   const comments = inbox?.comments || [];
   const open = comments.filter((c) => c.status !== "resolved");
   const pending = status.prototype?.pending_figma_sync || [];
-  const built = mtime(path.join(proto, "src", "generated", "routes.tsx"));
+  const built = newestPrototypeChange(proto);
   const unpublished = publish && built > Date.parse(publish.at || 0) ? 1 : 0;
   const unsyncedStorybook = Number(status.unsynced_entries || 0);
   return {
@@ -239,7 +256,7 @@ async function designState(dir) {
   const status = readJson(path.join(dir, "status.json"), {});
   const proto = path.join(dir, "prototype");
   const publish = readJson(path.join(proto, "data", "publish.json"), null) || (status.prototype?.url ? { url: status.prototype.url, at: null } : null);
-  const built = mtime(path.join(proto, "src", "generated", "routes.tsx"));
+  const built = newestPrototypeChange(proto);
   const ours = previews.get(dir);
   return {
     hasPrototype: fs.existsSync(path.join(proto, "package.json")),
