@@ -468,7 +468,7 @@ export async function handleProjectApi(req, res, url, { send, projectDir, readBo
   }
   if (req.method === "POST" && m[2] === "comments/decide") {
     const b = await readBody(req);
-    if (!/^[0-9a-f-]{36}$/i.test(String(b.id || "")) || !["approved", "rejected", "asked", "proposed"].includes(b.decision)) { send(res, 400, { error: "bad decision" }); return true; }
+    if (!/^[0-9a-f-]{36}$/i.test(String(b.id || "")) || !["approved", "rejected", "asked", "proposed", "queued", "in-progress", "applied", "needs-ok"].includes(b.decision)) { send(res, 400, { error: "bad decision" }); return true; }
     send(res, 200, { triage: decide(dir, b.id, b.decision, b.note) });
     return true;
   }

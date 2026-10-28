@@ -125,7 +125,7 @@ const REVIEW_PROMPTS = {
   ask: (p, c) => `Help me decide on this prototype comment of "${p}" before anything changes. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Current proposal: ${c.triage.proposal}` : ""}. Give me the options with a recommendation.`,
 };
 const kindLabel = { fix: "Fix", flow: "New flow", decision: "Decision", info: "Info" };
-const decisionLabel = { proposed: "Proposed", approved: "Approved", rejected: "Rejected", asked: "Asked in chat" };
+const decisionLabel = { proposed: "Proposed", approved: "Approved", rejected: "Rejected", asked: "Asked in chat", queued: "Queued", "in-progress": "In progress", applied: "Applied", "needs-ok": "Plan ready: answer in chat" };
 
 async function drawReview(main, p, o) {
   const enc = encodeURIComponent(p.name);
@@ -301,7 +301,7 @@ async function drawDesign(main, p) {
     chatBody);
 
   const setMode = async (mode) => {
-    try { st = await api(`/api/project/${enc}/design/mode`, { mode }); drawMode(); if (!sessionId()) drawStarter(); }
+    try { st = await api(`/api/project/${enc}/design/mode`, { mode }); drawMode(); if (!sessionId()) drawStarter(); if (pendingApply) { const c = pendingApply; pendingApply = null; applyNow(c); } }
     catch (e) { showError(e); }
   };
   function drawMode() {
@@ -310,6 +310,8 @@ async function drawDesign(main, p) {
   const sessionId = () => readStore(designKey(p.name))?.id || null;
   // A request waiting for the chat box (Apply online / Ask on a comment): filled in, never sent; the user presses Send.
   let pendingPrefill = null;
+  let pendingApply = null; // an Apply pressed before Code first / Figma first was picked
+  let applyOnLoad = null; // Apply online pressed on the Review page
   function prefill(text) {
     const ta = chatBody.querySelector("#input") || chatBody.querySelector(".ws-start textarea");
     if (!ta) { pendingPrefill = text; return; }
@@ -525,7 +527,8 @@ async function drawDesign(main, p) {
     const n = (c) => pins.find((x) => x.id === c.id)?.n;
     list.replaceChildren(el("h3", {}, `Comments on this screen · ${open.length}`),
       ...(open.length ? open.map((c) => el("button", { type: "button", class: view.comment === c.id ? "on" : null, onclick: () => focusComment(c.id) },
-        el("span", { class: "pin" }, String(n(c) || "•")), el("span", { class: "t", dir: "auto" }, el("b", {}, c.author || "Anonymous"), ` ${c.body}`)))
+        el("span", { class: "pin" }, String(n(c) || "•")),
+        el("span", { class: "t" }, el("b", {}, c.author || "Anonymous", c.triage?.status && decisionLabel[c.triage.status] && c.triage.status !== "proposed" ? el("span", { class: `st st-${c.triage.status}` }, decisionLabel[c.triage.status]) : null), el("span", { class: "tb", dir: "auto" }, c.body))))
         : [el("p", { class: "muted small" }, "No open comments on this screen.")]),
       el("a", { class: "small", href: `#/project/${enc}/review` }, "All comments"));
   }
@@ -538,7 +541,7 @@ async function drawDesign(main, p) {
   const onMessage = (ev) => {
     if (!canvas.isConnected) { window.removeEventListener("message", onMessage); return; }
     if (ev.source !== frame.contentWindow || !ev.data || typeof ev.data !== "object") return;
-    if (ev.data.type === "atomica:comments") { pins = ev.data.items || []; if (pins.some((x) => !byId(x.id))) loadComments(true); else drawList(); }
+    if (ev.data.type === "atomica:comments") { pins = ev.data.items || []; if (pins.some((x) => !byId(x.id))) loadComments(true); else drawList(); postStatuses(); }
     if (ev.data.type === "atomica:comment") { view.comment = ev.data.id; showPop(ev.data.id, ev.data.rect); drawList(); }
   };
   window.addEventListener("message", onMessage);
@@ -560,9 +563,9 @@ async function drawDesign(main, p) {
         el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pop.hidden = true; } }, icon("i-x"))),
       el("div", { class: "pop-body" }, el("p", { class: "body", dir: "auto" }, c.body),
         c.localImages?.length ? el("div", { class: "thumbs" }, c.localImages.map((f2, i) => el("a", { href: img(f2), target: "_blank", rel: "noopener" }, el("img", { src: img(f2), alt: `Reference image ${i + 1}` })))) : null,
-        t?.proposal ? el("div", { class: "triage" }, el("span", { class: "kicker" }, "Claude's proposal"), el("p", {}, t.proposal)) : null),
+        t?.proposal ? el("div", { class: "triage" }, el("span", { class: "kicker" }, "Claude's proposal"), el("p", { dir: "auto" }, t.proposal)) : null),
       el("div", { class: "p-actions" },
-        el("button", { class: "primary sm", type: "button", onclick: () => act(c, "approved", APPLY_TEXT(c, screenName())) }, icon("i-check"), "Apply online"),
+        el("button", { class: "primary sm", type: "button", disabled: ["queued", "in-progress"].includes(t?.status) || null, onclick: () => { pop.hidden = true; applyNow(c); } }, icon("i-check"), t?.status === "queued" ? "Queued" : t?.status === "in-progress" ? "In progress…" : "Apply online"),
         el("button", { class: "ghost sm", type: "button", onclick: () => act(c, "rejected") }, icon("i-x"), "Reject"),
         el("button", { class: "ghost sm", type: "button", onclick: () => act(c, "asked", ASK_TEXT(c, screenName())) }, icon("i-message"), "Ask"),
         el("button", { class: "ghost sm", type: "button", onclick: () => replyClose(c) }, icon("i-send"), "Reply & close"))].filter(Boolean));
@@ -576,6 +579,60 @@ async function drawDesign(main, p) {
     else toast(decision === "rejected" ? "Marked as rejected. Reply & close tells the reviewer why." : "Saved.");
     if (!pop.hidden) showPop(c.id, null);
     pop.hidden = true;
+  }
+  // Apply online sends at once: the chat shows a short line, the full instructions go to Claude as hidden context.
+  // Progress shows on the comment and its pin: Queued (Claude is busy), In progress, then Applied, or "Plan ready" for a
+  // new flow, which stops for the user's OK in the chat first.
+  async function setStatus(c, status) {
+    try { const r = await api(`/api/project/${enc}/comments/decide`, { id: c.id, decision: status }); c.triage = { ...(c.triage || {}), ...r.triage }; }
+    catch (e) { showError(e); }
+    drawList(); postStatuses();
+  }
+  async function applyNow(c) {
+    if (!st.designMode) { pendingApply = c; toast("Pick Code first or Figma first above; the comment goes to Claude right after."); return; }
+    const screen = st.screens.find((s) => s.slug === c.screen)?.name || c.screen;
+    const short = `Apply ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` · ${c.component}` : ""}: «${c.body}»`;
+    const hidden = APPLY_CONTEXT(c, screen);
+    try {
+      let live = null;
+      if (sessionId()) live = (await api("/api/sessions")).live.find((x) => x.id === sessionId());
+      if (!live && sessionId()) { await openChat(); live = (await api("/api/sessions")).live.find((x) => x.id === sessionId()); }
+      let status = "in-progress";
+      if (live) {
+        status = live.busy ? "queued" : "in-progress";
+        await api(`/api/sessions/${live.id}/message`, { text: short, context: hidden });
+      } else {
+        const s = await api("/api/sessions", { prompt: short, context: `${DESIGN_CONTEXT(p.name, st.designMode, screen, view.where === "local" ? "local preview" : "live link")}\n\n${hidden}`, project: p.name, title: `Design: ${p.title}` });
+        writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || null });
+        mountChat(s.id);
+      }
+      await setStatus(c, status);
+      toast(status === "queued" ? "Queued: Claude takes it right after the current task." : "Sent to Claude.");
+      watchApply(c, sessionId(), c.triage?.kind === "flow" || /flow|فلو|new (screen|page)|(صمم|اعمل) (صفحة|شاشة)|(صفحة|شاشة) جديدة/i.test(c.body));
+    } catch (e) { showError(e); }
+  }
+  async function watchApply(c, id, planFirst) {
+    const t0 = Date.now();
+    let sawBusy = false;
+    while (Date.now() - t0 < 45 * 60000) {
+      await new Promise((r) => setTimeout(r, 3000));
+      if (!canvas.isConnected) return;
+      let s;
+      try { s = (await api("/api/sessions")).live.find((x) => x.id === id); } catch { continue; }
+      if (!s) return;
+      if (s.busy) { sawBusy = true; if (c.triage?.status === "queued" && Date.now() - t0 > 4000) { /* still the earlier task, or ours: keep Queued until Claude is idle */ } continue; }
+      if (sawBusy || Date.now() - t0 > 12000) {
+        await setStatus(c, planFirst ? "needs-ok" : "applied");
+        loadFrame(true);
+        toast(planFirst ? "Claude has a plan for this comment: answer it in the chat." : "Applied in the prototype. Reply & close when you are happy with it.");
+        return;
+      }
+    }
+  }
+  // the pins in the prototype show the same progress (queued, in progress, applied, plan ready)
+  function postStatuses() {
+    const map = Object.fromEntries(comments.filter((x) => ["queued", "in-progress", "applied", "needs-ok"].includes(x.triage?.status)).map((x) => [x.id, x.triage.status]));
+    try { frame.contentWindow?.postMessage({ type: "atomica:pin-status", map }, "*"); } catch {}
   }
   async function replyClose(c) {
     const reply = await askText({ title: "Reply & close", help: `The reply shows under ${c.author || "this"} comment in the prototype.`, okLabel: "Reply & close", placeholder: "What changed…" });
@@ -663,15 +720,18 @@ async function drawDesign(main, p) {
       if (st.screens.some((s) => s.slug === c.screen)) view.screen = c.screen;
       if (c.theme) view.mode = c.theme;
       view.tool = "comment"; view.comment = c.id;
-      if (q.get("apply")) pendingPrefill = APPLY_TEXT(c, st.screens.find((s) => s.slug === c.screen)?.name || c.screen);
+      if (q.get("apply")) applyOnLoad = c;
     }
     history.replaceState(null, "", `#/project/${enc}/design`);
   }
-  drawMode(); drawBar(); loadFrame(); openChat();
+  drawMode(); drawBar(); loadFrame();
+  await openChat();
+  if (applyOnLoad) applyNow(applyOnLoad);
 }
 
-// What Apply online and Ask put in the Design chat box (the user checks it and presses Send).
-const APPLY_TEXT = (c, screen) => `Apply ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` (${c.component}${c.figma_node ? ` ${c.figma_node}` : ""})` : ""}: "${c.body}". If it asks for a new flow or new screens, plan it first (flow map and screen spec) and wait for my OK before building; otherwise make the change in the prototype. Then give me the reply to close the comment with (id ${c.id}).`;
+// Hidden instructions sent with an Apply (the chat shows only the short line).
+const APPLY_CONTEXT = (c, screen) => `The user pressed Apply online on a prototype review comment. Comment id ${c.id} by ${c.author || "a reviewer"} on ${screen}${c.component ? ` (${c.component}${c.figma_node ? ` ${c.figma_node}` : ""})` : ""}: "${c.body}".${c.triage?.proposal ? ` Approved proposal: ${c.triage.proposal}` : ""} If it asks for a new flow, new screens or an IA change, plan it first (flow map and screen spec), show it and stop for the user's OK before building. Otherwise make the change in the prototype now with DS components and tokens only, rebuild and check it, and add it to status.json > prototype.pending_figma_sync. End with the reply to close the comment with.`;
+// What Ask puts in the Design chat box (the user checks it and presses Send).
 const ASK_TEXT = (c, screen) => `Help me decide on ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` (${c.component})` : ""} before anything changes: "${c.body}". Give me the options with a recommendation (comment id ${c.id}).`;
 
 // ---------- Connect services: status lights and the one-time Supabase setup ----------

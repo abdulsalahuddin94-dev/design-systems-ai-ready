@@ -62,7 +62,11 @@ const Divider = () => <span aria-hidden="true" className="mx-1 h-5 w-px shrink-0
 // Said on every page: browsers flag look-alike app screens on new URLs as phishing; this is a design preview.
 const BANNER_H = 28;
 
-type Pin = { id: string; n: number; x: number; y: number; resolved: boolean; pending?: boolean };
+type Pin = { id: string; n: number; x: number; y: number; resolved: boolean; pending?: boolean; status?: string };
+// Progress the Atomica dashboard reports for a comment it sent to Claude (embed only).
+const PIN_STATUS: Record<string, [string, string]> = {
+  queued: ['bg-amber-500', 'Queued'], 'in-progress': ['bg-sky-500 animate-pulse', 'In progress'], applied: ['bg-emerald-600', 'Applied'], 'needs-ok': ['bg-pink-600', 'Plan ready'],
+};
 
 function ScreenView({ slug, mode, lang, bare, height, pins, selected, onPin }: {
   slug: string; mode: string; lang: string; bare: boolean; height?: number; pins?: Pin[]; selected?: string | null; onPin?: (id: string) => void;
@@ -78,9 +82,9 @@ function ScreenView({ slug, mode, lang, bare, height, pins, selected, onPin }: {
       {pins && pins.length > 0 && (
         <div className="fp-pins" aria-label="Comment pins" style={{ position: 'absolute', left: 0, top: 0, width: def.w, height: def.h, pointerEvents: 'none' }}>
           {pins.map((p) => (
-            <button key={p.id} type="button" data-pin={p.id} title={p.pending ? 'New comment' : `Comment ${p.n}`} onClick={() => onPin?.(p.id)}
+            <button key={p.id} type="button" data-pin={p.id} title={p.pending ? 'New comment' : `Comment ${p.n}${p.status && PIN_STATUS[p.status] ? ` · ${PIN_STATUS[p.status][1]}` : ''}`} onClick={() => onPin?.(p.id)}
               style={{ position: 'absolute', left: p.x, top: p.y, transform: 'translate(-50%, -100%)', pointerEvents: 'auto' }}
-              className={`flex h-6 min-w-6 items-center justify-center rounded-full rounded-bl-none border-2 border-white px-1 text-[11px] font-semibold text-white shadow-md ${p.pending ? 'bg-indigo-400 animate-pulse' : p.resolved ? 'bg-neutral-500' : 'bg-indigo-500'} ${selected === p.id ? 'fp-pin-selected ring-2 ring-indigo-300' : ''}`}>
+              className={`flex h-6 min-w-6 items-center justify-center rounded-full rounded-bl-none border-2 border-white px-1 text-[11px] font-semibold text-white shadow-md ${p.pending ? 'bg-indigo-400 animate-pulse' : p.status && PIN_STATUS[p.status] ? PIN_STATUS[p.status][0] : p.resolved ? 'bg-neutral-500' : 'bg-indigo-500'} ${selected === p.id ? 'fp-pin-selected ring-2 ring-indigo-300' : ''}`}>
               {p.pending ? '+' : p.n}
             </button>
           ))}
@@ -167,6 +171,7 @@ export function App() {
   const [pending, setPending] = React.useState<Pending | null>(null);
   const [selected, setSelected] = React.useState<string | null>(null);
   const [commentError, setCommentError] = React.useState<string | null>(null);
+  const [pinStatus, setPinStatus] = React.useState<Record<string, string>>({});
   // The floating controls at the bottom (Lovable-like pill); collapsed to a round button, remembered per browser.
   const [pillOpen, setPillOpen] = React.useState(() => { try { return localStorage.getItem('fpPill') !== 'closed'; } catch { return true; } });
   const setPill = (open: boolean) => { setPillOpen(open); try { localStorage.setItem('fpPill', open ? 'open' : 'closed'); } catch { /* private window */ } };
@@ -202,6 +207,12 @@ export function App() {
   React.useEffect(() => {
     if (r.embed && commenting) window.parent.postMessage({ type: 'atomica:comments', screen: curSlug, items: comments.map((c, i) => ({ id: c.id, n: i + 1, status: c.status })) }, '*');
   }, [r.embed, commenting, comments, curSlug]);
+  React.useEffect(() => {
+    if (!r.embed) return;
+    const on = (e: MessageEvent) => { if (e.source === window.parent && e.data?.type === 'atomica:pin-status') setPinStatus(e.data.map || {}); };
+    window.addEventListener('message', on);
+    return () => window.removeEventListener('message', on);
+  }, [r.embed]);
   React.useEffect(() => {
     if (!r.embed || !selected) return;
     const post = () => {
@@ -320,7 +331,7 @@ export function App() {
     <>
       <ScreenView slug={slug} mode={r.mode} lang={r.lang} bare={false} height={screenH} selected={selected}
         pins={commenting ? [
-          ...comments.filter((c) => c.status !== 'resolved' || c.id === selected).map((c) => ({ id: c.id, n: comments.indexOf(c) + 1, x: (c.lang === 'ar') !== (r.lang === 'ar') ? def.w - c.x : c.x, y: c.y, resolved: c.status === 'resolved' })), // RTL mirrors the layout, so the pin mirrors too
+          ...comments.filter((c) => c.status !== 'resolved' || c.id === selected).map((c) => ({ id: c.id, n: comments.indexOf(c) + 1, x: (c.lang === 'ar') !== (r.lang === 'ar') ? def.w - c.x : c.x, y: c.y, resolved: c.status === 'resolved', status: pinStatus[c.id] })), // RTL mirrors the layout, so the pin mirrors too
           ...(pending ? [{ id: 'pending', n: 0, x: pending.x, y: pending.y, resolved: false, pending: true }] : []),
         ] : undefined}
         onPin={(id) => { const c = comments.find((x) => x.id === id); if (c) focusComment(c); }} />

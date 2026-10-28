@@ -675,12 +675,14 @@ async function loadFigmaTally() {
   const lines = d?.figma?.lines || [];
   const yolo = lines.find((l) => /yolo/i.test(l)) || "";
   const bridge = lines.find((l) => /desktop bridge/i.test(l)) || "";
-  const state = /port 9222 open/i.test(yolo) ? ["Connected", "ok"] : /installed/i.test(bridge) || /installed/i.test(yolo) ? ["Not running", "off"] : ["Not set up", "off"];
+  // Connected = FigCli Yolo's debugging port 9222 answers. Figma open without it usually means a Figma update undid the
+  // patch: run FigCli's connect again (as administrator), then daemon restart.
+  const state = /port 9222 open/i.test(yolo) ? ["Connected", "ok"] : d?.figma?.running ? ["Open · FigCli off", "off"] : /installed/i.test(bridge) || /installed/i.test(yolo) ? ["Not running", "off"] : ["Not set up", "off"];
   const dd = $("#t-figma");
   if (!dd) return;
   dd.textContent = state[0];
   dd.parentElement.classList.toggle("off", state[1] === "off");
-  dd.parentElement.title = lines.join("\n");
+  dd.parentElement.title = [d?.figma?.running && !/port 9222 open/i.test(yolo) ? "Figma is open, but FigCli Yolo is not connected (port 9222 closed). After a Figma update, run FigCli's connect again as administrator, then daemon restart." : "", ...lines].filter(Boolean).join("\n");
 }
 
 // "Worth a look": facts from the projects, usage and workflow, each with one action. Nothing is invented.

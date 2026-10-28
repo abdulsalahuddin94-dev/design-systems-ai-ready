@@ -806,21 +806,25 @@ async function pump(s) {
   }
 }
 
-function sendMessage(s, text, images) {
+// context: instructions Claude gets with this message but the conversation does not show (only text is shown).
+function sendMessage(s, text, images, context) {
+  const full = context ? `${String(context).slice(0, 8000)}
+
+${text}` : text;
   if (s.agent === "gemini") {
     emit(s, { type: "user", text, images: images || [] });
-    geminiSend(s, text, images);
+    geminiSend(s, full, images);
     return true;
   }
   if (s.ended && !s.claudeSessionId) return false;
   emit(s, { type: "user", text, images: images || [] });
   // While Claude is over its limit, messages wait here and go out together when it is back.
   if (s.limit) {
-    s.held.push({ text, images: images || [] });
+    s.held.push({ text: full, images: images || [] });
     emit(s, { type: "held", count: s.held.length, resetsAt: s.limit.at });
     return true;
   }
-  return deliver(s, text, images);
+  return deliver(s, full, images);
 }
 
 function setAutoResume(s, on) {
@@ -1064,7 +1068,11 @@ function integrations(force) {
   const figma = pyCmd ? sh(pyCmd, ["tools/figma_tools_check.py"], 20000).out : "";
   const value = {
     github: { cli: !/not recognized|ENOENT/i.test(ghs.out) && ghs.out !== "", signedIn: !!account, account, repo: origin.replace(/\.git$/, "") },
-    figma: { lines: figma.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !/token/i.test(l)).slice(0, 6) },
+    figma: {
+      lines: figma.split(/\r?\n/).map((l) => l.trim()).filter((l) => l && !/token/i.test(l)).slice(0, 6),
+      // is the Figma app itself running (as opposed to reachable through FigCli's port)?
+      running: process.platform === "win32" ? /figma\.exe/i.test(sh("tasklist", ["/FI", "IMAGENAME eq Figma.exe", "/NH"], 5000).out) : sh("pgrep", ["-x", "Figma"], 5000).ok,
+    },
     machine: {
       node: process.version,
       python: py ? py.out.replace(/^Python\s*/, "") : "",
@@ -1272,7 +1280,7 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       const body = req.method === "POST" ? await readBody(req) : {};
-      if (action === "/message") return send(res, sendMessage(s, body.text || "", body.images) ? 200 : 409, { ok: !s.ended });
+      if (action === "/message") return send(res, sendMessage(s, body.text || "", body.images, body.context) ? 200 : 409, { ok: !s.ended });
       if (action === "/answer") return send(res, answer(s, body.requestId, body) ? 200 : 404, { ok: true });
       if (action === "/stop") {
         if (s.agent === "gemini" && s.gemini?.sessionId) { s.gemini.client.notify("session/cancel", { sessionId: s.gemini.sessionId }); cancelGeminiAsks(s); }
