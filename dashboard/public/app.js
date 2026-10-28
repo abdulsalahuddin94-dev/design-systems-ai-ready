@@ -641,7 +641,7 @@ const icon = (name, cls = "ic") => {
 };
 
 function linkChip(l) {
-  const mark = l.kind === "figma" ? figmaIcon() : l.kind === "github" ? brandIcon("b-github") : l.kind === "storybook" ? brandIcon("b-storybook") : icon("i-external");
+  const mark = l.kind === "figma" ? figmaIcon() : l.kind === "github" ? brandIcon("b-github") : l.kind === "storybook" ? brandIcon("b-storybook") : l.kind === "prototype" ? icon("i-phone") : icon("i-external");
   return el("a", { class: "chip", href: l.url, target: "_blank", rel: "noopener", title: l.url }, mark, l.kind === "figma" ? `Figma · ${l.label}` : l.label);
 }
 

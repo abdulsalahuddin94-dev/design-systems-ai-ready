@@ -90,7 +90,7 @@ function unsynced(changelog) {
   return (changelog.match(/^\s*-\s*Storybook synced:\s*no\b/gim) || []).length;
 }
 
-function links(status, brief) {
+function links(status, brief, folder) {
   const out = [];
   const ds = status?.figma?.design_system;
   if (ds?.url) out.push({ kind: "figma", label: ds.name || "Design System", url: ds.url });
@@ -98,7 +98,12 @@ function links(status, brief) {
   const team = status?.team?.repo;
   if (team) out.push({ kind: "github", label: "Team repo", url: team });
   const pages = (JSON.stringify(status || {}) + "\n" + brief).match(/https:\/\/[\w.-]+\.github\.io\/[^\s"')>\]]*/g) || [];
-  for (const url of new Set(pages)) out.push({ kind: "storybook", label: "Storybook", url });
+  // The live prototype (status.json > prototype.url, or its last publish) is its own link; the other GitHub Pages
+  // links are the published Storybook.
+  const norm = (u) => String(u || "").replace(/\/+$/, "").toLowerCase();
+  const protoUrl = status?.prototype?.url || (folder ? readJson(path.join(folder, "prototype", "data", "publish.json"), {})?.url : null);
+  if (protoUrl) out.push({ kind: "prototype", label: "Prototype · Live", url: protoUrl });
+  for (const url of new Set(pages)) if (norm(url) !== norm(protoUrl)) out.push({ kind: "storybook", label: "Storybook", url });
   return out;
 }
 
@@ -129,7 +134,7 @@ function listProjects() {
       unsynced: unsynced(changelog),
       team: String(status.collaboration || "").toLowerCase() === "team",
       storybook: !!status.has_storybook,
-      links: links(status, brief),
+      links: links(status, brief, folder),
       updated: mtime,
     };
   }).sort((a, b) => b.updated - a.updated);
