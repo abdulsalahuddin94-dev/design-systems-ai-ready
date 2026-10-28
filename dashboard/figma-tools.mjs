@@ -53,12 +53,21 @@ function mcpList(force) {
   return mcpCache.running;
 }
 function officialFrom(text) {
-  const line = text.split(/\r?\n/).find((l) => /mcp\.figma\.com\/mcp/i.test(l));
-  if (!line) return { configured: false, connected: false, name: null, reason: "Not added to Claude Code yet." };
+  const lines = text.split(/\r?\n/);
+  // Every entry pointing at Figma's own server (figma-official, the Claude plugin's plugin:figma:figma, older names):
+  // connected if any of them is signed in; otherwise the one named figma-official speaks for them.
+  const all = lines.filter((l) => /mcp\.figma\.com\/mcp/i.test(l));
+  const ok = all.find((l) => /✔|connected/i.test(l) && !/needs auth|failed/i.test(l));
+  const line = ok || all.find((l) => /^figma-official:/i.test(l)) || all[0];
+  // A community server also called "figma" (figma-developer-mcp, needs a key) failing is what /mcp reports as
+  // "Failed to reconnect to figma: CONNECTION_CLOSED"; it is not the official one.
+  const community = lines.find((l) => /^figma:\s/i.test(l) && !/mcp\.figma\.com/i.test(l) && /failed|closed/i.test(l));
+  const note = community ? ' The "Failed to reconnect to figma: CONNECTION_CLOSED" message comes from another server also called "figma" (figma-developer-mcp), not from this one; it can be removed with: claude mcp remove figma -s user' : "";
+  if (!line) return { configured: false, connected: false, name: null, reason: "Not added to Claude Code yet." + note };
   const name = line.split(/:\s+https?:/)[0].trim();
-  if (/✔|connected/i.test(line) && !/needs auth|failed/i.test(line)) return { configured: true, connected: true, name, reason: "Signed in with Figma." };
-  if (/needs auth/i.test(line)) return { configured: true, connected: false, name, reason: "Added, but not signed in with Figma yet." };
-  return { configured: true, connected: false, name, reason: (line.split(" - ").pop() || "Could not connect.").replace(/^[^\w]+/, "") };
+  if (ok) return { configured: true, connected: true, name, reason: "Signed in with Figma." };
+  if (/needs auth/i.test(line)) return { configured: true, connected: false, name, reason: `Added (${name}), but not signed in with Figma yet.` + note };
+  return { configured: true, connected: false, name, reason: (line.split(" - ").pop() || "Could not connect.").replace(/^[^\w]+/, "") + note };
 }
 
 export async function figmaToolsState(root, { fresh } = {}) {
@@ -160,9 +169,11 @@ export async function handleFigmaTools(req, res, url, { send, readBody, runInTer
         mcpCache.at = 0;
         if (!r.ok) { send(res, 400, { error: r.out.slice(0, 300) || "Could not add Figma's server." }); return true; }
       }
-      // Sign-in happens in Claude Code (OAuth in the browser): open it on /mcp.
-      const t = runInTerminal('claude "/mcp"');
-      send(res, 200, { message: t.ok ? "Claude Code opened: pick Figma (mcp.figma.com) and choose Authenticate; your browser asks you to allow access. Then press Connect." : t.message });
+      // Sign-in happens in Claude Code (OAuth in the browser). It opens plainly: passing /mcp as an argument only
+      // reconnects the servers and shows errors from others (e.g. a community server also called "figma").
+      const t = runInTerminal("claude");
+      const name = st.tools.official.name || "figma-official";
+      send(res, 200, { message: t.ok ? `Claude Code opened. Type /mcp, press Enter, pick "${name}" (mcp.figma.com), choose Authenticate and allow access in the browser. Then press Connect here.` : t.message });
       return true;
     }
     send(res, 400, { error: "unknown tool" });
