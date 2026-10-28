@@ -670,19 +670,22 @@ const jobNo = (i) => `No.${String(i + 1).padStart(3, "0")}`;
 // Figma connection for the Home counter: FigCli Yolo answers on port 9222 when Figma Desktop runs patched.
 let integrationsCache = null;
 const getIntegrations = () => (integrationsCache ||= api("/api/integrations").catch(() => null));
+// The Figma tile: the default tool and its state, then the three tools with a dot each (click one for details and setup).
 async function loadFigmaTally() {
-  const d = await getIntegrations();
-  const lines = d?.figma?.lines || [];
-  const yolo = lines.find((l) => /yolo/i.test(l)) || "";
-  const bridge = lines.find((l) => /desktop bridge/i.test(l)) || "";
-  // Connected = FigCli Yolo's debugging port 9222 answers. Figma open without it usually means a Figma update undid the
-  // patch: run FigCli's connect again (as administrator), then daemon restart.
-  const state = /port 9222 open/i.test(yolo) ? ["Connected", "ok"] : d?.figma?.running ? ["Open · FigCli off", "off"] : /installed/i.test(bridge) || /installed/i.test(yolo) ? ["Not running", "off"] : ["Not set up", "off"];
   const dd = $("#t-figma");
   if (!dd) return;
-  dd.textContent = state[0];
-  dd.parentElement.classList.toggle("off", state[1] === "off");
-  dd.parentElement.title = [d?.figma?.running && !/port 9222 open/i.test(yolo) ? "Figma is open, but FigCli Yolo is not connected (port 9222 closed). After a Figma update, run FigCli's connect again as administrator, then daemon restart." : "", ...lines].filter(Boolean).join("\n");
+  let st;
+  try { st = await getFigmaTools(); } catch { dd.textContent = "–"; return; }
+  const draw = () => {
+    if (!dd.isConnected) return;
+    const def = figmaToolsCache.tools[figmaToolsCache.default];
+    dd.classList.add("ftile");
+    dd.replaceChildren(el("span", { class: "fnow" }, `${figmaToolName(figmaToolsCache.default)} · ${def.checking ? "checking" : def.connected ? "Connected" : "Needs setup"}`), figmaToolRows(figmaToolsCache));
+    dd.parentElement.classList.toggle("off", !def.connected);
+    dd.parentElement.title = def.reason;
+  };
+  draw();
+  refreshFigmaToolsLater(draw);
 }
 
 // "Worth a look": facts from the projects, usage and workflow, each with one action. Nothing is invented.

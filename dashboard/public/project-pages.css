@@ -269,4 +269,35 @@ main.project.design-ws{max-width:none;padding:0;height:calc(100dvh - 5px);displa
 .tag.k-flow{background:var(--magenta-soft);color:var(--magenta-ink);border-color:transparent}
 /* a chat page opened while the menu is collapsed: the conversation takes the whole width */
 body.rail.focus .shell{grid-template-columns:minmax(0,1fr)}
+/* Figma tools: the three-tool list (Home tile, Connect services) and its popup */
+.ftools{display:grid;gap:2px;margin-top:4px}
+.ftool{display:flex;align-items:center;gap:8px;border:0;background:none;color:var(--ink);font:500 13px var(--sans);padding:4px 6px;margin:0 -6px;border-radius:6px;cursor:pointer;text-align:left}
+.ftool:hover{background:var(--paper)}
+.ftool .n{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ftool .rec,.fdialog .rec{font:600 10.5px var(--sans);padding:1px 6px;border-radius:999px;background:var(--cyan-soft);color:var(--cyan-ink)}
+.ftool .def{font:600 10.5px var(--sans);padding:1px 6px;border-radius:999px;border:1px solid var(--rule-2);color:var(--ink-2)}
+.fhint{font-size:11.5px;color:var(--yellow-ink);margin:2px 0 0}
+.fdialog{width:min(560px,calc(100vw - 32px));border:1px solid var(--rule);border-radius:14px;background:var(--sheet);color:var(--ink);padding:18px;box-shadow:0 18px 48px rgba(0,0,0,.3)}
+.fdialog::backdrop{background:rgba(0,0,0,.35)}
+.fdialog header{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.fdialog header h3{font-size:18px;flex:1;margin:0}
+.fdialog .fstatus{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13.5px;margin:4px 0 8px}
+.fdialog .fline{font-size:14px;line-height:1.45;margin:0 0 12px}
+.fcompare{width:100%;border-collapse:collapse;font-size:12.5px;margin-bottom:12px}
+.fcompare th,.fcompare td{padding:5px 8px;border-bottom:1px solid var(--rule);text-align:left}
+.fcompare thead th{font-size:12px;color:var(--ink-2)}
+.fcompare tbody th{font-weight:500;color:var(--ink-2)}
+.fcompare .on{background:color-mix(in srgb,var(--cyan) 12%,transparent);color:var(--ink);font-weight:600}
+.fextra{display:grid;gap:8px;margin-bottom:10px}
+.fsteps{margin:0;padding-left:18px;display:grid;gap:6px}
+.frow{display:flex;align-items:center;gap:6px;margin-top:4px}
+.frow code{font-size:11.5px;background:var(--paper);padding:3px 6px;border-radius:4px;overflow-wrap:anywhere}
+.flog{max-height:160px;overflow:auto;font-size:11px;background:var(--paper);padding:8px;border-radius:6px;margin:0;white-space:pre-wrap}
+.fdialog footer{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.fdialog .err{color:var(--magenta-ink)}
 @media (max-width:980px){.pipe{grid-template-columns:1fr}.pipe .step+.step{border-left:1px solid var(--rule);border-top:0}.grid2,.sync,.svc-grid,.plan{grid-template-columns:1fr}.p-tally{flex-wrap:wrap}main.project{padding:18px 16px}}
+/* Home: the Figma tile lists the three tools under the default's state */
+.tally dd.word-val.ftile{font:400 13px/1.4 var(--sans);font-stretch:100%;color:var(--ink)}
+.tally dd.ftile .fnow{display:block;font:700 15px/1.5 var(--sans);font-stretch:110%;color:var(--good)}
+.tally .off dd.ftile .fnow{color:var(--yellow-ink)}
+.fdialog .fstatus .why{flex-basis:100%;color:var(--ink-2)}

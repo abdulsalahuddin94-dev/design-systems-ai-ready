@@ -798,12 +798,23 @@ async function drawConnect(main, p) {
       details);
   }
 
+  // Figma: the three tools (dot each; click for details, Connect, setup and "Use for this project")
+  const figmaCard = el("section", { class: "p-panel svc", "data-svc": "Figma" }, el("header", {}, el("h2", {}, "Figma")), el("p", { class: "small muted" }, "Checking the Figma tools…"));
+  const fillFigma = () => {
+    const st = figmaToolsCache;
+    if (!st || !figmaCard.isConnected) return;
+    const def = st.tools[st.default];
+    figmaCard.replaceChildren(
+      el("header", {}, el("span", { class: `dot ${def.connected ? "good" : "bad"}` }), el("h2", {}, "Figma"), el("span", { class: `tag ${def.connected ? "res" : "open"}` }, def.connected ? "Connected" : "Needs setup")),
+      el("p", { class: "small" }, `Default: ${figmaToolName(st.default)}. ${def.reason}`),
+      figmaToolRows(st, { project: p.name }),
+      el("p", { class: "muted small" }, "Click a tool for what it does, a comparison, Connect and setup."));
+  };
+  getFigmaTools().then(() => { fillFigma(); refreshFigmaToolsLater(fillFigma); }).catch(() => {});
   function draw() {
-    const f = c.figcli, g = c.github, sb = c.storybook, pw = c.playwright;
+    const g = c.github, sb = c.storybook, pw = c.playwright;
     body.replaceChildren(el("div", { class: "svc-grid" },
-      card("Figma (FigCli Yolo)", f.port ? "ok" : "warn",
-        f.port ? "Figma is open with the debugging port; Claude can read and write the open files." : "Figma is not reachable on port 9222. Open Figma Desktop; after a Figma update run FigCli's connect yourself (it patches Figma, so Claude never runs it).",
-        f.lines.length ? el("dl", { class: "p-kv" }, f.lines.flatMap((l) => { const [k, ...v] = l.split(":"); return [el("dt", {}, k.trim()), el("dd", {}, v.join(":").trim() || "–")]; })) : null),
+      figmaCard,
       card("GitHub", g?.signedIn ? "ok" : g?.cli ? "warn" : "bad",
         g?.signedIn ? `Signed in as ${g.account}. Publishing the prototype and team projects use it.` : g?.cli ? "GitHub CLI is installed but not signed in." : "GitHub CLI (gh) is not installed.",
         !g?.signedIn && g?.cli ? el("div", { class: "p-actions" }, el("button", { class: "ghost sm", type: "button", onclick: async () => { try { toast((await api("/api/github/login", {})).ok ? "GitHub sign-in opened in a new window." : "Could not open it."); } catch (e) { showError(e); } } }, icon("i-login"), "Sign in with GitHub")) : null),
@@ -816,6 +827,7 @@ async function drawConnect(main, p) {
         : card("Storybook MCP", "warn", "This project has no Storybook yet."),
       card("Playwright (checks)", pw.core && pw.chrome ? "ok" : "warn",
         pw.core && pw.chrome ? "Ready: fidelity and live checks run in Chrome." : [!pw.core && "the prototype's playwright-core is not installed (npm install in the prototype folder)", !pw.chrome && "Google Chrome is not installed"].filter(Boolean).join("; ") + ".")));
+    fillFigma(); // the tools may have arrived before this card was on the page
   }
   await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not run the checks.")); showError(e); });
 }
@@ -883,4 +895,124 @@ async function drawPlan(main, p) {
     el("p", {}, el("b", {}, "No plan yet.")),
     el("p", { class: "small" }, "Claude reads the Inputs (or drafts a PRD from a short brief, with every assumption marked), then writes users and jobs, the information architecture, flows with every state, screen specs from DS components and the gap list. It stops at three checkpoints for your approval."),
     el("button", { class: "primary sm", type: "button", onclick: () => chatBtn.click() }, icon("i-message"), "Start planning in chat")));
+}
+
+// ---------- Figma tools: the three ways to reach Figma (Home tile and Connect services) ----------
+// Each tool has a dot (green connected, red not), a popup with what it is, a comparison, Connect (check), Set up and
+// "Use this tool" (this computer's default, or this project's in status.json > figma.tool).
+const FIGMA_TOOLS = [
+  ["official", "Official Figma MCP", null, "Easiest to set up, no Figma Desktop needed, but has a daily limit based on your Figma plan."],
+  ["bridge", "Desktop Bridge plugin", null, "If the plugin is all you have; it must be open inside the file."],
+  ["figcli", "FigCli", "Recommended", "No limits or tokens, works offline, but needs Figma Desktop and a reconnect after every Figma update."],
+];
+const FIGMA_COMPARE = [
+  // [row, official, bridge, figcli]
+  ["Reads files and screenshots", "✓", "✓", "✓"],
+  ["Writes (builds, fixes)", "✓", "✓", "✓"],
+  ["Slots", "–", "✓", "–"],
+  ["Comments", "–", "✓", "–"],
+  ["Full audits (every variant)", "–", "✓", "✓"],
+  ["Speed", "Slower", "Medium", "Fast"],
+  ["Limits", "Daily, by plan", "None", "None"],
+  ["Needs installing", "No", "Plugin", "FigCli"],
+  ["Patches Figma Desktop", "No", "No", "Yes (admin)"],
+];
+const figmaToolName = (k) => FIGMA_TOOLS.find((t) => t[0] === k)?.[1] || k;
+let figmaToolsCache = null;
+async function getFigmaTools(fresh) {
+  figmaToolsCache = await api(`/api/figma-tools${fresh ? "?fresh=1" : ""}`);
+  return figmaToolsCache;
+}
+// Claude Code's connector list takes ~20 s: the official tool shows "checking" first, then this fills it in.
+function refreshFigmaToolsLater(redraw) {
+  if (!figmaToolsCache?.tools?.official?.checking) return;
+  getFigmaTools(true).then(redraw).catch(() => {});
+}
+function figmaToolRows(st, { project } = {}) {
+  const box = el("div", { class: "ftools", role: "list" });
+  for (const [k, name, tag] of FIGMA_TOOLS) {
+    const t = st.tools[k];
+    box.append(el("button", { type: "button", class: "ftool", role: "listitem", "data-tool": k, title: t.reason, onclick: (ev) => { ev.stopPropagation(); openFigmaTool(k, { project, onChange: () => box.replaceWith(figmaToolRows(figmaToolsCache, { project })) }); } },
+      el("span", { class: `dot ${t.checking ? "wait" : t.connected ? "good" : "bad"}`, "aria-hidden": "true" }),
+      el("span", { class: "n" }, name),
+      tag ? el("span", { class: "rec" }, tag) : null,
+      st.default === k ? el("span", { class: "def" }, "Default") : null));
+  }
+  // the default is down but another tool works: say so
+  const def = st.tools[st.default];
+  const alt = FIGMA_TOOLS.map((x) => x[0]).find((k) => k !== st.default && st.tools[k].connected);
+  if (def && !def.connected && !def.checking && alt) box.append(el("p", { class: "fhint" }, `${figmaToolName(st.default)} is off · ${figmaToolName(alt)} is ready`));
+  return box;
+}
+
+function openFigmaTool(key, { project, onChange } = {}) {
+  let dlg = document.getElementById("figma-tool-dialog");
+  if (!dlg) { dlg = el("dialog", { id: "figma-tool-dialog", class: "fdialog" }); document.body.append(dlg); }
+  const [, name, tag, line] = FIGMA_TOOLS.find((t) => t[0] === key);
+  const col = { official: 1, bridge: 2, figcli: 3 }[key];
+  const status = el("p", { class: "fstatus", role: "status" });
+  const extra = el("div", { class: "fextra" });
+  const drawStatus = () => {
+    const t = figmaToolsCache.tools[key];
+    status.replaceChildren(el("span", { class: `dot ${t.checking ? "wait" : t.connected ? "good" : "bad"}` }), el("b", {}, t.checking ? "Checking…" : t.connected ? "Connected" : "Needs setup"), el("span", { class: "why" }, t.reason));
+    setup.hidden = !!t.connected;
+    setup.textContent = key === "figcli" ? (t.installed ? "Connect as administrator" : "Set up FigCli") : key === "bridge" ? (t.installed ? "Show the plugin steps" : "Add the Desktop Bridge") : t.configured ? "Sign in with Figma" : "Add and sign in with Figma";
+    useBtn.textContent = figmaToolsCache.default === key ? "Default on this computer" : "Use this tool";
+    useBtn.disabled = figmaToolsCache.default === key;
+  };
+  const connect = el("button", { class: "ghost sm", type: "button", onclick: async () => {
+    connect.disabled = true; connect.textContent = "Checking…";
+    try { const r = await api("/api/figma-tools/connect", { tool: key }); figmaToolsCache = r; drawStatus(); onChange?.(); toast(r.result.connected ? `${name}: Connected.` : `${name}: needs setup. ${r.result.reason}`); }
+    catch (e) { showError(e); }
+    connect.disabled = false; connect.textContent = "Connect";
+  } }, "Connect");
+  const setup = el("button", { class: "primary sm", type: "button", onclick: async () => {
+    setup.disabled = true;
+    try {
+      const r = await api("/api/figma-tools/setup", { tool: key });
+      extra.replaceChildren(el("p", { class: "small" }, r.message || ""));
+      if (r.manifest || key === "bridge") extra.append(el("ol", { class: "small fsteps" },
+        el("li", {}, "In Figma Desktop: Plugins > Development > Import plugin from manifest…, and pick:",
+          r.manifest ? el("div", { class: "frow" }, el("code", {}, r.manifest), el("button", { class: "iconbtn sq", type: "button", "aria-label": "Copy the path", onclick: async () => toast((await copyText(r.manifest)) ? "Path copied." : r.manifest) }, icon("i-copy"))) : el("div", { class: "muted" }, "(it appears after the first Claude conversation with the Bridge)")),
+        el("li", {}, "Open your file, then Plugins > Development > Figma Desktop Bridge > Run. Keep it open while you work."),
+        el("li", {}, "Press Connect here.")));
+      if (r.job) pollJob(r.job);
+    } catch (e) { extra.replaceChildren(el("p", { class: "small err" }, e.message)); }
+    setup.disabled = false;
+  } });
+  async function pollJob(job) {
+    const log = el("pre", { class: "flog" });
+    extra.append(log);
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 1500));
+      if (!dlg.open) return;
+      const j = await api(`/api/figma-tools/job?name=${job}`).catch(() => null);
+      if (!j) return;
+      log.textContent = j.lines.join("\n"); log.scrollTop = log.scrollHeight;
+      if (j.done) { extra.append(el("p", { class: `small ${j.ok ? "" : "err"}` }, j.ok ? "FigCli is installed. Now press Connect as administrator." : "The setup stopped; see the log above.")); await getFigmaTools(); drawStatus(); onChange?.(); return; }
+    }
+  }
+  const useBtn = el("button", { class: "ghost sm", type: "button", onclick: async () => {
+    try { figmaToolsCache = await api("/api/figma-tools/default", { tool: key }); drawStatus(); onChange?.(); toast(`${name} is now the default on this computer.`); }
+    catch (e) { showError(e); }
+  } });
+  const useProject = project ? el("button", { class: "ghost sm", type: "button", onclick: async () => {
+    try { figmaToolsCache = await api("/api/figma-tools/default", { tool: key, project }); toast(`${name} is set for this project (status.json, logged in its CHANGELOG).`); onChange?.(); }
+    catch (e) { showError(e); }
+  } }, "Use for this project") : null;
+  dlg.replaceChildren(
+    el("header", {}, el("h3", {}, name), tag ? el("span", { class: "rec" }, tag) : null,
+      el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => dlg.close() }, icon("i-x"))),
+    status,
+    el("p", { class: "fline" }, line),
+    el("table", { class: "fcompare" },
+      el("thead", {}, el("tr", {}, el("th", {}, ""), ...["Official MCP", "Desktop Bridge", "FigCli"].map((h, i) => el("th", { class: i + 1 === col ? "on" : null }, h)))),
+      el("tbody", {}, FIGMA_COMPARE.map((r) => el("tr", {}, el("th", {}, r[0]), ...r.slice(1).map((v, i) => el("td", { class: i + 1 === col ? "on" : null }, v)))))),
+    key === "figcli" ? el("p", { class: "muted small" }, "The administrator step patches Figma Desktop so it opens a local debugging port (9222, no password, this computer only). You confirm it in a Windows prompt; Atomica never runs it on its own. Repeat it after a Figma update.") : null,
+    extra,
+    el("footer", {}, connect, setup, el("span", { style: "flex:1" }), useProject, useBtn));
+  drawStatus();
+  if (!dlg.open) dlg.showModal();
+  dlg.onclose = () => onChange?.();
+  if (figmaToolsCache.tools.official.checking) refreshFigmaToolsLater(() => { if (dlg.open) drawStatus(); onChange?.(); });
 }

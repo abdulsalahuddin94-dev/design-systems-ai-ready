@@ -18,6 +18,7 @@ import { query } from "@anthropic-ai/claude-agent-sdk";
 import { TOOLS, toolStatus, loginCommand, antigravityPath, usageStore, handoffCommand, LIMIT_RE, which } from "./tools.mjs";
 import { startAcp } from "./acp.mjs";
 import { handleProjectApi } from "./project-api.mjs";
+import { handleFigmaTools } from "./figma-tools.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, "..");
@@ -1205,6 +1206,7 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
   try {
     if (req.method === "GET" && p === "/api/projects") return send(res, 200, { projects: listProjects() });
+    if (p.startsWith("/api/figma-tools") && await handleFigmaTools(req, res, url, { send, readBody, runInTerminal, root: ROOT, projectDir })) return;
     if (p.startsWith("/api/project/") && await handleProjectApi(req, res, url, { send, projectDir, readBody, root: ROOT, integrations })) return;
     if (req.method === "POST" && p === "/api/projects") { const b = await readBody(req); const r = createProject(b.title); return send(res, r.ok ? 200 : 400, r); }
     const pr = p.match(/^\/api\/projects\/([^/]+)(\/inputs|\/restore)?$/);
