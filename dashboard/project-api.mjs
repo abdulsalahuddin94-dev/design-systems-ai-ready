@@ -1,0 +1,613 @@
+// Project pages (Pipeline, Review, Sync, Design, Connect, Plan): what one project's files say, for the dashboard.
+// Read-only facts from the project folder (status.json, CHANGELOG.md, the live prototype's reports, the comment inbox);
+// every action that changes something runs the workflow's own tools or starts a Claude conversation.
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { spawn, spawnSync } from "node:child_process";
+import { createRequire } from "node:module";
+const { userEnv } = createRequire(import.meta.url)("../tools/publish_checks.cjs");
+
+const readJson = (file, fallback = null) => {
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); } catch { return fallback; }
+};
+const readText = (file) => {
+  try { return fs.readFileSync(file, "utf8"); } catch { return ""; }
+};
+const mtime = (file) => {
+  try { return fs.statSync(file).mtimeMs; } catch { return 0; }
+};
+// A project's links, from its own config first (status.json > figma, prototype.url, storybook_url; the last publish),
+// then any other GitHub Pages link in its brief: one with "storybook" or "design-system" in it is the Storybook,
+// anything else a plain site link. Works for any project naming.
+export function projectLinks(status, brief, folder) {
+  const out = [];
+  const norm = (u) => String(u || "").replace(/\/+$/, "").toLowerCase();
+  const ds = status?.figma?.design_system;
+  if (ds?.url) out.push({ kind: "figma", label: ds.name || "Design System", url: ds.url });
+  for (const f of status?.figma?.design_files || []) if (f?.url) out.push({ kind: "figma", label: f.name || "Design file", url: f.url });
+  if (status?.team?.repo) out.push({ kind: "github", label: "Team repo", url: status.team.repo });
+  const proto = status?.prototype?.url || (folder ? readJson(path.join(folder, "prototype", "data", "publish.json"), {})?.url : null);
+  if (proto) out.push({ kind: "prototype", label: "Prototype · Live", url: proto });
+  const sb = status?.storybook_url || status?.storybook?.url || null;
+  if (sb) out.push({ kind: "storybook", label: "Storybook", url: sb });
+  const seen = new Set([norm(proto), norm(sb)]);
+  const pages = (JSON.stringify(status || {}) + "\n" + (brief || "")).match(/https:\/\/[\w.-]+\.github\.io\/[^\s"')>\]|]*/g) || [];
+  for (const url of new Set(pages)) {
+    if (seen.has(norm(url))) continue;
+    seen.add(norm(url));
+    if (/storybook|design-system/i.test(url) && !sb) out.push({ kind: "storybook", label: "Storybook", url });
+    else if (!/storybook|design-system/i.test(url)) out.push({ kind: "link", label: "Site", url });
+  }
+  return out;
+}
+
+// The newest change to what a publish builds: the prototype's source (generated screens, shell, strings), its data
+// (overrides, screens, strings) and public files. node_modules and dist are skipped.
+export function newestPrototypeChange(proto) {
+  let newest = 0;
+  const walk = (d, depth = 0) => {
+    let entries = [];
+    try { entries = fs.readdirSync(d, { withFileTypes: true }); } catch { return; }
+    for (const e of entries) {
+      if (e.name === "node_modules" || e.name === "dist" || e.name.startsWith(".")) continue;
+      const p = path.join(d, e.name);
+      if (e.isDirectory()) { if (depth < 6) walk(p, depth + 1); }
+      else if (!/publish\.json$|build-report\.json$|code-report\.json$/.test(e.name)) newest = Math.max(newest, mtime(p));
+    }
+  };
+  for (const sub of ["src", "data", "public"]) walk(path.join(proto, sub));
+  return newest;
+}
+
+// CHANGELOG entries, newest first: "## 2026-10-25 · title" or "## 2026-10-25 - title" (the format example is skipped).
+export function changelogEntries(text, limit = 6) {
+  const body = text.replace(/```[\s\S]*?```/g, "");
+  const out = [];
+  for (const m of body.matchAll(/^## (\d{4}-\d{2}-\d{2})\s*[·-]\s*(.+)$/gm)) {
+    out.push({ date: m[1], title: m[2].trim() });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+// Is the prototype's local dev server answering (Vite, port 5190 by default)?
+async function localPreview(port = 5190) {
+  // Vite started with `npm run dev` may listen on ::1 only (Node 17+ on Windows), so both addresses are tried.
+  for (const host of ["127.0.0.1", "[::1]"]) {
+    try {
+      const r = await fetch(`http://${host}:${port}/`, { signal: AbortSignal.timeout(400) });
+      if (r.ok) return { running: true, url: `http://localhost:${port}/` };
+    } catch {}
+  }
+  return { running: false, url: `http://localhost:${port}/` };
+}
+
+export async function projectOverview(folder) {
+  const status = readJson(path.join(folder, "status.json"), {});
+  const proto = path.join(folder, "prototype");
+  const has = fs.existsSync(path.join(proto, "package.json"));
+  const registry = readJson(path.join(folder, "data", "component-registry.json"), {});
+  const tokens = readJson(path.join(folder, "data", "tokens.json"), {});
+  const screens = readJson(path.join(proto, "data", "screens.json"), null);
+  const build = readJson(path.join(proto, "data", "build-report.json"), {});
+  const code = readJson(path.join(proto, "data", "code-report.json"), null);
+  const overrides = readJson(path.join(proto, "data", "overrides.json"), { changes: [] });
+  const publish = readJson(path.join(proto, "data", "publish.json"), null);
+  const inbox = readJson(path.join(proto, "comments", "inbox.json"), null);
+  const fidelity = readJson(path.join(proto, "fidelity", "report.json"), []);
+  const changelog = readText(path.join(folder, "CHANGELOG.md"));
+  const scored = (Array.isArray(fidelity) ? fidelity : []).filter((r) => r.score1px != null && !r.codeAhead);
+  const comments = inbox?.comments || [];
+  const open = comments.filter((c) => c.status !== "resolved");
+  const pending = status.prototype?.pending_figma_sync || [];
+  const built = newestPrototypeChange(proto);
+  const unpublished = publish && built > Date.parse(publish.at || 0) ? 1 : 0;
+  const unsyncedStorybook = Number(status.unsynced_entries || 0);
+  return {
+    hasPrototype: has,
+    ds: { components: (registry.components || []).length, tokens: Object.keys(tokens.variables || {}).length, storybook: !!status.has_storybook },
+    screens: screens ? { count: new Set(screens.screens.map((s) => s.n.replace(/\s*\/\s*(Dark|Light)$/i, ""))).size, exportedAt: screens.exported_at, file: screens.file } : null,
+    build: { screens: (build.screens || []).length, codeAhead: build.code_ahead || [], raw: build.raw || 0, missing: Object.keys(build.missing || {}).length },
+    code: code ? { unknown: (code.unknown || []).length, raw: (code.raw || []).length } : null,
+    fidelity: scored.length ? Math.round(scored.reduce((a, r) => a + r.score1px, 0) / scored.length * 100) / 100 : null,
+    fidelityRows: Array.isArray(fidelity) ? fidelity.length : 0,
+    comments: { pulledAt: inbox?.pulled_at || null, open: open.length, resolved: comments.length - open.length, byAuthor: open.reduce((m, c) => ({ ...m, [c.author || "Anonymous"]: (m[c.author || "Anonymous"] || 0) + 1 }), {}) },
+    overrides: (overrides.changes || []).map((c) => ({ id: c.id, screen: c.screen, description: c.description, comment: c.comment })),
+    pendingFigmaSync: pending,
+    rules: status.prototype?.rules || [],
+    publish: publish || (status.prototype?.url ? { url: status.prototype.url, at: null } : null),
+    unpublished,
+    local: has ? await localPreview() : { running: false },
+    storybook: { unsynced: unsyncedStorybook },
+    activity: changelogEntries(changelog),
+    figma: status.figma ? { designSystem: status.figma.design_system?.name, designFiles: (status.figma.design_files || []).map((f) => f.name) } : null,
+  };
+}
+
+// The five pipeline steps and the one next step, from the overview.
+export function pipeline(o) {
+  const steps = [];
+  steps.push(o.ds.components
+    ? { key: "ds", title: "Design System", state: "done", text: `${o.ds.components} components, ${o.ds.tokens} tokens${o.ds.storybook ? ". Storybook built." : "."}` }
+    : { key: "ds", title: "Design System", state: "wait", text: "No components recorded yet." });
+  steps.push(o.screens
+    ? { key: "screens", title: "Screens (Figma)", state: "done", text: `${o.screens.count} screens, exported ${String(o.screens.exportedAt || "").slice(0, 10)}.` }
+    : { key: "screens", title: "Screens (Figma)", state: "wait", text: "No screens exported to the prototype yet." });
+  const codeBad = o.code && (o.code.unknown || o.code.raw);
+  steps.push(!o.hasPrototype
+    ? { key: "proto", title: "Live Prototype", state: "wait", text: "No prototype yet." }
+    : codeBad ? { key: "proto", title: "Live Prototype", state: "prob", text: `Code check: ${o.code.unknown} unknown names, ${o.code.raw} raw values.` }
+    : o.unpublished ? { key: "proto", title: "Live Prototype", state: "wait", text: "Built locally, not published yet." }
+    : { key: "proto", title: "Live Prototype", state: "done", text: o.publish?.at ? `Published ${String(o.publish.at).slice(0, 16).replace("T", " ")}.` : "Published." });
+  steps.push(o.comments.open
+    ? { key: "review", title: "Review (Comments)", state: "wait", text: `${o.comments.open} open comment${o.comments.open > 1 ? "s" : ""}.` }
+    : { key: "review", title: "Review (Comments)", state: "done", text: o.comments.pulledAt ? `No open comments (pulled ${String(o.comments.pulledAt).slice(0, 10)}).` : "No comments pulled yet." });
+  const syncN = o.pendingFigmaSync.length + (o.storybook.unsynced ? 1 : 0);
+  steps.push(syncN
+    ? { key: "sync", title: "Sync", state: "prob", text: [o.pendingFigmaSync.length ? `${o.pendingFigmaSync.length} change${o.pendingFigmaSync.length > 1 ? "s" : ""} in the prototype, not in Figma.` : "", o.storybook.unsynced ? `${o.storybook.unsynced} Figma change${o.storybook.unsynced > 1 ? "s" : ""} not in Storybook.` : ""].filter(Boolean).join(" ") }
+    : { key: "sync", title: "Sync", state: "done", text: "Prototype, Figma and Storybook agree." });
+  let next = { title: "Everything is up to date", text: "Write in Design to change a screen, or wait for new comments.", go: "design", label: "Open Design" };
+  if (o.comments.open) next = { title: `Triage ${o.comments.open} open comment${o.comments.open > 1 ? "s" : ""}`, text: "Claude proposes a change for each one; nothing is applied without your OK.", go: "review", label: "Open Review" };
+  else if (codeBad) next = { title: "Fix the code check", text: "The reference code uses a name or value outside the design system.", go: "design", label: "Open Design" };
+  else if (o.unpublished) next = { title: "Publish the prototype", text: "The local build has changes the live link does not have yet.", go: "design", label: "Open Design" };
+  else if (o.pendingFigmaSync.length) next = { title: "Decide the Figma sync", text: "Changes made in the prototype are not in Figma yet.", go: "sync", label: "Open Sync" };
+  return { steps, next };
+}
+
+// ---------- Review: comments from the live prototype ----------
+// The workflow's own tool talks to Supabase (keys stay in ~/.atomica/supabase.env); the dashboard only runs it.
+function commentsTool(root, dir, ...args) {
+  const r = spawnSync(process.execPath, [path.join(root, "tools", "prototype_comments.cjs"), dir, ...args], { encoding: "utf8", timeout: 60000 });
+  return { code: r.status, out: (r.stdout || "").trim(), err: (r.stderr || "").trim() };
+}
+const triageFile = (dir) => path.join(dir, "prototype", "comments", "triage.json");
+
+export function readComments(dir) {
+  const inbox = readJson(path.join(dir, "prototype", "comments", "inbox.json"), null);
+  const triage = readJson(triageFile(dir), {});
+  const imgDir = path.join(dir, "prototype", "comments", "images");
+  let files = [];
+  try { files = fs.readdirSync(imgDir); } catch {}
+  const comments = (inbox?.comments || []).map((c) => ({
+    ...c,
+    localImages: files.filter((f) => f.startsWith(c.id + "-")).sort(),
+    triage: triage[c.id] || null,
+  }));
+  return { pulledAt: inbox?.pulled_at || null, project: inbox?.project || null, comments };
+}
+
+function decide(dir, id, decision, note) {
+  const file = triageFile(dir);
+  const all = readJson(file, {});
+  all[id] = { ...(all[id] || {}), status: decision, note: note || all[id]?.note || null, decidedAt: new Date().toISOString() };
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
+  return all[id];
+}
+
+// ---------- Sync: what differs between the prototype, Figma and Storybook ----------
+// Nothing moves from here: Push / Pull only add a request to data/sync-queue.json, which a chat run then works
+// through with the workflow's own rules (FigCli, audit, the user's approvals).
+const queueFile = (dir) => path.join(dir, "data", "sync-queue.json");
+
+// Changelog entries still marked "Storybook synced: no".
+export function unsyncedEntries(text) {
+  const body = text.replace(/```[\s\S]*?```/g, "");
+  const parts = body.split(/^(?=## \d{4}-\d{2}-\d{2})/m).slice(1);
+  return parts.filter((e) => /Storybook synced:\s*no\b/i.test(e)).map((e) => {
+    const m = e.match(/^## (\d{4}-\d{2}-\d{2})\s*[·-]\s*(.+)$/m);
+    return { date: m?.[1] || null, title: (m?.[2] || "").trim() };
+  });
+}
+
+// Is Figma open with FigCli Yolo's debugging port (9222)? Read-only, no token.
+async function figcliPort() {
+  try {
+    const r = await fetch("http://127.0.0.1:9222/json/version", { signal: AbortSignal.timeout(500) });
+    return r.ok;
+  } catch { return false; }
+}
+
+const versionsCache = new Map();
+async function syncState(root, dir) {
+  const status = readJson(path.join(dir, "status.json"), {});
+  const overrides = readJson(path.join(dir, "prototype", "data", "overrides.json"), { changes: [] });
+  const queue = readJson(queueFile(dir), { requests: [] }).requests || [];
+  const queued = (ref) => queue.find((q) => q.ref === ref && q.status === "queued") || null;
+  const push = (status.prototype?.pending_figma_sync || []).map((c) => {
+    const ov = (overrides.changes || []).find((o) => o.id === c.override);
+    const ref = `push:${c.override || c.comment || c.change}`;
+    return { ref, title: ov?.description || c.change, change: c.change, file: c.file, screen: ov?.screen || null, comment: c.comment || null, approved: ov?.approved || null, queued: queued(ref) };
+  });
+  const pull = [];
+  let versions = null;
+  try {
+    // tools/figma_versions.cjs: the DS file's Figma history since the last Storybook sync (at most ~3 s, skipped offline).
+    const fv = createRequire(import.meta.url)(path.join(root, "tools", "figma_versions.cjs"));
+    const hit = versionsCache.get(dir);
+    if (hit && Date.now() - hit.at < 60000) versions = hit.value; // Queue / Undo clicks reuse the last read
+    else if (fv.checkFolder) { versions = await fv.checkFolder(dir); versionsCache.set(dir, { at: Date.now(), value: versions }); }
+  } catch {}
+  if (versions?.changed) {
+    const ref = `pull:figma-versions:${versions.latest}`;
+    pull.push({ ref, title: `DS file: ${versions.changed} Figma version${versions.changed > 1 ? "s" : ""} since the last Storybook sync`, meta: ["Figma version history", `${String(versions.latest).slice(0, 16).replace("T", " ")}${versions.editors?.length ? ` · ${versions.editors.join(", ")}` : ""}`], queued: queued(ref) });
+  }
+  for (const e of unsyncedEntries(readText(path.join(dir, "CHANGELOG.md")))) {
+    const ref = `pull:changelog:${e.date}:${e.title}`;
+    pull.push({ ref, title: e.title, meta: ["CHANGELOG, Storybook synced: no", e.date], queued: queued(ref) });
+  }
+  return {
+    push, pull,
+    rules: status.prototype?.rules || [],
+    queue: queue.filter((q) => q.status === "queued"),
+    figma: { designSystem: status.figma?.design_system?.name || null, designFiles: (status.figma?.design_files || []).map((f) => f.name), figcli: await figcliPort(), versionsChecked: versions !== null, versionsError: versions?.error || null },
+  };
+}
+
+function queueRequest(dir, item) {
+  const file = queueFile(dir);
+  const all = readJson(file, { requests: [] });
+  all.requests ||= [];
+  if (!all.requests.some((q) => q.ref === item.ref && q.status === "queued")) all.requests.push({ ...item, status: "queued", at: new Date().toISOString() });
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
+}
+function unqueueRequest(dir, ref) {
+  const file = queueFile(dir);
+  const all = readJson(file, { requests: [] });
+  all.requests = (all.requests || []).filter((q) => !(q.ref === ref && q.status === "queued"));
+  fs.writeFileSync(file, JSON.stringify(all, null, 1) + "\n");
+}
+
+// ---------- Design: the prototype workspace (chat on the left, preview on the right) ----------
+// Screens come from the generated routes (the same slugs the prototype uses). The local preview is the prototype's
+// own Vite dev server on 5190; the dashboard starts and stops only the one it started itself.
+const PREVIEW_PORT = 5190;
+const previews = new Map(); // project dir -> child process started here
+const publishing = new Set();
+
+function designScreens(dir) {
+  const routes = readText(path.join(dir, "prototype", "src", "generated", "routes.tsx"));
+  const status = readJson(path.join(dir, "status.json"), {});
+  const build = readJson(path.join(dir, "prototype", "data", "build-report.json"), {});
+  const ahead = new Set(build.code_ahead || []);
+  return [...routes.matchAll(/\{\s*slug:\s*"([^"]+)",\s*name:\s*"([^"]+)",\s*w:\s*(\d+),\s*h:\s*(\d+)/g)].map((m) => ({
+    slug: m[1], name: m[2], w: +m[3], h: +m[4],
+    source: status.prototype?.screens?.[m[2]]?.source || (ahead.has(m[2]) ? "code" : "figma"),
+  }));
+}
+
+async function designState(dir) {
+  const status = readJson(path.join(dir, "status.json"), {});
+  const proto = path.join(dir, "prototype");
+  const publish = readJson(path.join(proto, "data", "publish.json"), null) || (status.prototype?.url ? { url: status.prototype.url, at: null } : null);
+  const built = newestPrototypeChange(proto);
+  const ours = previews.get(dir);
+  return {
+    hasPrototype: fs.existsSync(path.join(proto, "package.json")),
+    installed: fs.existsSync(path.join(proto, "node_modules", "vite", "bin", "vite.js")),
+    screens: designScreens(dir),
+    designMode: status.prototype?.design_mode || null,
+    local: { ...(await localPreview(PREVIEW_PORT)), ours: !!(ours && ours.exitCode === null) },
+    publish,
+    unpublished: publish?.at ? built > Date.parse(publish.at) : false,
+    publishing: publishing.has(dir),
+    repo: publishRepo(publish, status),
+  };
+}
+
+// owner/name from publish.json, or from the GitHub Pages link.
+function publishRepo(publish, status) {
+  if (publish?.repo) return publish.repo;
+  if (status?.prototype?.repo) return status.prototype.repo;
+  const m = String(publish?.url || "").match(/^https:\/\/([\w-]+)\.github\.io\/([\w.-]+)\/?$/);
+  return m ? `${m[1]}/${m[2]}` : null;
+}
+
+function setDesignMode(dir, mode) {
+  const file = path.join(dir, "status.json");
+  const status = readJson(file, {});
+  status.prototype = { ...(status.prototype || {}), design_mode: mode };
+  fs.writeFileSync(file, JSON.stringify(status, null, 2) + "\n");
+}
+
+// The public Supabase keys for comments (VITE_ only, as publish_prototype.cjs does); never the service key.
+function previewEnv() {
+  const env = { ...process.env };
+  const shared = readText(path.join(os.homedir(), ".atomica", "supabase.env"));
+  for (const m of shared.matchAll(/^\s*(VITE_SUPABASE_URL|VITE_SUPABASE_ANON_KEY)\s*=\s*(.*?)\s*$/gm)) if (!env[m[1]]) env[m[1]] = m[2].replace(/^["']|["']$/g, "");
+  delete env.SUPABASE_SERVICE_KEY;
+  return env;
+}
+
+async function startPreview(dir) {
+  if ((await localPreview(PREVIEW_PORT)).running) return { ok: true };
+  const proto = path.join(dir, "prototype");
+  const vite = path.join(proto, "node_modules", "vite", "bin", "vite.js");
+  if (!fs.existsSync(vite)) return { ok: false, error: "The prototype's packages are not installed (npm install in its prototype folder)." };
+  const child = spawn(process.execPath, [vite, "--port", String(PREVIEW_PORT), "--strictPort", "--host", "127.0.0.1"], { cwd: proto, env: previewEnv(), stdio: "ignore", windowsHide: true });
+  previews.set(dir, child);
+  child.on("exit", () => { if (previews.get(dir) === child) previews.delete(dir); });
+  for (let i = 0; i < 40; i++) {
+    await new Promise((r) => setTimeout(r, 400));
+    if ((await localPreview(PREVIEW_PORT)).running) return { ok: true };
+    if (child.exitCode !== null) break;
+  }
+  return { ok: false, error: "The local preview did not start (is port 5190 used by another program?)." };
+}
+
+function stopPreview(dir) {
+  const child = previews.get(dir);
+  if (!child) return { ok: false, error: "This preview was not started from the dashboard; stop it where it runs." };
+  child.kill();
+  previews.delete(dir);
+  return { ok: true };
+}
+
+// A new project's suggested repo: <GitHub login>/<project-slug>-prototype (created only after the user's click).
+function suggestRepo(dir) {
+  const r = spawnSync("gh", ["api", "user", "--jq", ".login"], { encoding: "utf8", windowsHide: true, timeout: 15000, env: userEnv() });
+  const login = (r.stdout || "").trim();
+  return /^[\w-]+$/.test(login) ? `${login}/${path.basename(dir).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}-prototype` : null;
+}
+// Publish = tools/publish_prototype.cjs to the project's repo; a new repo only after the user's click.
+function publishPrototype(root, dir, repo, create = false) {
+  return new Promise((resolve) => {
+    publishing.add(dir);
+    const child = spawn(process.execPath, [path.join(root, "tools", "publish_prototype.cjs"), dir, "--repo", repo, ...(create ? ["--create"] : [])], { cwd: root, windowsHide: true, env: userEnv() });
+    let out = "";
+    child.stdout.on("data", (d) => { out += d; });
+    child.stderr.on("data", (d) => { out += d; });
+    child.on("close", (code) => { publishing.delete(dir); resolve({ ok: code === 0, output: out.trim().split(/\r?\n/).slice(-6).join("\n") }); });
+  });
+}
+
+// ---------- Connect services: what this computer is connected to ----------
+// Read-only checks, except the Supabase form, which writes only ~/.atomica/supabase.env (one Supabase project for
+// every Atomica project on this computer). Key values are never sent back to the page or printed.
+const SUPABASE_ENV = () => path.join(os.homedir(), ".atomica", "supabase.env");
+const envKeys = (text) => Object.fromEntries([...text.matchAll(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/gm)].filter((m) => !m[0].trim().startsWith("#")).map((m) => [m[1], m[2].replace(/^["']|["']$/g, "")]));
+
+async function answers(url, ms = 500) {
+  try { const r = await fetch(url, { signal: AbortSignal.timeout(ms) }); return r.status < 500; } catch { return false; }
+}
+
+async function connectState(root, dir, integrations) {
+  const shared = envKeys(readText(SUPABASE_ENV()));
+  const project = envKeys(readText(path.join(dir, "prototype", ".env.local")));
+  const env = { ...shared, ...project };
+  const ref = (String(env.VITE_SUPABASE_URL || "").match(/^https:\/\/([a-z0-9]+)\.supabase\.co\/?$/) || [])[1] || null;
+  let schema = null;
+  if (env.VITE_SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+    const r = commentsTool(root, dir, "--schema-status");
+    try { schema = JSON.parse(r.out); } catch { schema = { error: (r.err || r.out || "").slice(0, 200) }; }
+  }
+  // Storybook: the port from the project's storybook/package.json ("storybook dev -p 6009").
+  const sbPkg = readText(path.join(dir, "storybook", "package.json"));
+  const sbPort = +((sbPkg.match(/storybook dev[^"]*-p\s*(\d+)/) || [])[1] || 0) || null;
+  const sbRunning = sbPort ? await answers(`http://127.0.0.1:${sbPort}/`) || await answers(`http://[::1]:${sbPort}/`) : false;
+  const sbName = `${path.basename(dir).toLowerCase().replace(/[^a-z0-9]+/g, "-")}-storybook`;
+  // Playwright: the prototype's playwright-core and an installed Chrome (the fidelity and live checks use them).
+  const pw = fs.existsSync(path.join(dir, "prototype", "node_modules", "playwright-core", "package.json"));
+  const chrome = [process.env.PROGRAMFILES, process.env["PROGRAMFILES(X86)"], process.env.LOCALAPPDATA].filter(Boolean)
+    .some((d) => fs.existsSync(path.join(d, "Google", "Chrome", "Application", "chrome.exe"))) || fs.existsSync("/Applications/Google Chrome.app");
+  const integ = integrations ? integrations() : null;
+  return {
+    figcli: { port: await answers("http://127.0.0.1:9222/json/version"), lines: integ?.figma?.lines || [] },
+    github: integ ? { cli: integ.github.cli, signedIn: integ.github.signedIn, account: integ.github.account } : null,
+    supabase: {
+      file: "~/.atomica/supabase.env",
+      url: !!env.VITE_SUPABASE_URL, anon: !!env.VITE_SUPABASE_ANON_KEY, service: !!env.SUPABASE_SERVICE_KEY,
+      projectOverride: Object.keys(project).some((k) => /SUPABASE/.test(k)),
+      ref, host: ref ? `${ref}.supabase.co` : null,
+      sqlEditor: ref ? `https://supabase.com/dashboard/project/${ref}/sql/new` : null,
+      schema,
+    },
+    storybook: sbPort ? { port: sbPort, running: sbRunning, mcp: `http://localhost:${sbPort}/mcp`, name: sbName, add: `claude mcp add --transport http ${sbName} http://localhost:${sbPort}/mcp --scope local` } : null,
+    playwright: { core: pw, chrome },
+  };
+}
+
+// The Supabase form: only fields the user filled are written; the rest of the file is kept.
+function saveSupabase(b) {
+  const url = String(b.url || "").trim().replace(/\/$/, "");
+  const anon = String(b.anon || "").trim();
+  const service = String(b.service || "").trim();
+  if (url && !/^https:\/\/[a-z0-9]+\.supabase\.co$/.test(url)) return "The Project URL looks like https://<ref>.supabase.co.";
+  if (anon && !/^(eyJ[\w-]+\.[\w-]+\.[\w-]+|sb_publishable_[\w-]+)$/.test(anon)) return "The public key starts with sb_publishable_ (or eyJ for an older anon key).";
+  if (service && !/^(eyJ[\w-]+\.[\w-]+\.[\w-]+|sb_secret_[\w-]+)$/.test(service)) return "The secret key starts with sb_secret_ (or eyJ for an older service_role key).";
+  if (service && anon && service === anon) return "The secret key and the public key are the same; paste the secret one in its own field.";
+  if (/^sb_publishable_/.test(service)) return "That is the public (publishable) key; the secret key starts with sb_secret_.";
+  if (!url && !anon && !service) return "Nothing to save.";
+  const file = SUPABASE_ENV();
+  const lines = readText(file).split(/\r?\n/).filter((l) => l.trim() !== "");
+  const set = (k, v) => { if (!v) return; const i = lines.findIndex((l) => new RegExp(`^\\s*${k}\\s*=`).test(l)); if (i >= 0) lines[i] = `${k}=${v}`; else lines.push(`${k}=${v}`); };
+  if (!lines.length) lines.push("# Atomica: one Supabase project for every Atomica project on this computer (prototype comments).", "# The secret key stays on this computer; only tools/prototype_comments.cjs reads it.");
+  set("VITE_SUPABASE_URL", url); set("VITE_SUPABASE_ANON_KEY", anon); set("SUPABASE_SERVICE_KEY", service);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, lines.join("\n") + "\n", { mode: 0o600 });
+  return null;
+}
+
+// ---------- Plan: from PRD and research to approved flows and screen specs ----------
+// Reads <project>/Planning/: one NN-<step>.md per step, with a short front matter (status: draft | waiting | done,
+// approved: <date>). Three light checkpoints (IA, Flows, Gaps and plan). Read-only, except Approve, which writes
+// only that step's front matter.
+const PLAN_STEPS = [
+  ["00", "Input digest", "PRD, research, meetings read", false],
+  ["01", "Users and jobs", "personas and jobs to be done", false],
+  ["02", "Information architecture", "sitemap, navigation", true],
+  ["03", "Flows", "every screen, state and decision", true],
+  ["04", "Screen specs", "DS components per section", false],
+  ["05", "Gaps and plan", "DS gaps, Code first or Figma first", true],
+  ["06", "Usability pre-check", "Nielsen heuristics", false],
+];
+function frontMatter(text) {
+  const m = text.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
+  const front = {};
+  if (m) for (const l of m[1].split(/\r?\n/)) { const kv = l.match(/^\s*([\w-]+)\s*:\s*(.*?)\s*$/); if (kv) front[kv[1]] = kv[2].replace(/^["']|["']$/g, ""); }
+  return { front, body: m ? text.slice(m[0].length) : text };
+}
+function planState(dir) {
+  const pdir = path.join(dir, "Planning");
+  let files = [];
+  try { files = fs.readdirSync(pdir).filter((f) => /^\d\d-.*\.md$/i.test(f)).sort(); } catch {}
+  const inputs = {};
+  for (const k of ["Brand", "Inspiration", "Screens", "Research"]) { try { inputs[k] = fs.readdirSync(path.join(dir, "Inputs", k)).filter((f) => !f.startsWith(".")).length; } catch { inputs[k] = 0; } }
+  try { inputs.Other = fs.readdirSync(path.join(dir, "Inputs"), { withFileTypes: true }).filter((e) => e.isFile() && !e.name.startsWith(".")).length; } catch { inputs.Other = 0; }
+  const steps = PLAN_STEPS.map(([no, title, hint, checkpoint]) => {
+    const mine = files.filter((f) => f.startsWith(no + "-"));
+    const docs = mine.map((f) => {
+      const { front, body } = frontMatter(readText(path.join(pdir, f)));
+      return { file: f, title: front.title || (body.match(/^#\s+(.+)$/m) || [])[1] || f, status: front.status || "draft", approved: front.approved || null };
+    });
+    const status = !docs.length ? "todo" : docs.every((d) => d.approved || d.status === "done") ? "done" : docs.some((d) => d.status === "waiting") ? "waiting" : "draft";
+    return { no, title, hint, checkpoint, docs, status };
+  });
+  const next = steps.find((x) => x.status !== "done");
+  return { exists: files.length > 0, folder: "Planning/", inputs, steps, next: next ? next.no : null };
+}
+function planFile(dir, f) {
+  const name = path.basename(String(f || ""));
+  if (!/^\d\d-[\w .-]+\.md$/i.test(name)) return null;
+  const file = path.join(dir, "Planning", name);
+  if (!fs.existsSync(file)) return null;
+  return { file, name, ...frontMatter(readText(file)) };
+}
+function approvePlan(dir, f) {
+  const doc = planFile(dir, f);
+  if (!doc) return false;
+  const front = { ...doc.front, status: "done", approved: `${new Date().toISOString().slice(0, 10)} (dashboard)` };
+  const fm = Object.entries(front).map(([k, v]) => `${k}: ${v}`).join("\n");
+  fs.writeFileSync(doc.file, `---\n${fm}\n---\n${doc.body.replace(/^\n+/, "")}`);
+  return true;
+}
+
+const MIME = { ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".gif": "image/gif" };
+
+export async function handleProjectApi(req, res, url, { send, projectDir, readBody, root, integrations }) {
+  const m = url.pathname.match(/^\/api\/project\/([^/]+)\/([\w-]+(?:\/[\w-]+)?)$/);
+  if (!m) return false;
+  const dir = projectDir(decodeURIComponent(m[1]));
+  if (!dir) { send(res, 404, { error: "unknown project" }); return true; }
+  if (req.method === "GET" && m[2] === "overview") {
+    const o = await projectOverview(dir);
+    send(res, 200, { overview: o, pipeline: pipeline(o) });
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "comments") { send(res, 200, readComments(dir)); return true; }
+  if (req.method === "POST" && m[2] === "comments/pull") {
+    const r = commentsTool(root, dir, "--pull");
+    if (r.code !== 0) { send(res, 400, { error: r.err || "Pull failed", detail: r.out }); return true; }
+    send(res, 200, { message: r.out, ...readComments(dir) });
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "comments/resolve") {
+    const b = await readBody(req);
+    if (!/^[0-9a-f-]{36}$/i.test(String(b.id || ""))) { send(res, 400, { error: "bad comment id" }); return true; }
+    const args = ["--resolve", b.id];
+    if (b.reply) args.push("--reply", String(b.reply).slice(0, 2000));
+    const r = commentsTool(root, dir, ...args);
+    if (/SCHEMA_UPDATE_NEEDED/.test(r.err)) { send(res, 409, { error: "Supabase schema update needed: open Connect services.", schema: true }); return true; }
+    if (r.code !== 0) { send(res, 400, { error: r.err || "Could not close the comment" }); return true; }
+    if (b.decision) decide(dir, b.id, b.decision, b.reply);
+    commentsTool(root, dir, "--pull");
+    send(res, 200, { message: r.out, ...readComments(dir) });
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "comments/decide") {
+    const b = await readBody(req);
+    if (!/^[0-9a-f-]{36}$/i.test(String(b.id || "")) || !["approved", "rejected", "asked", "proposed", "queued", "in-progress", "applied", "needs-ok"].includes(b.decision)) { send(res, 400, { error: "bad decision" }); return true; }
+    send(res, 200, { triage: decide(dir, b.id, b.decision, b.note) });
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "comment-image") {
+    const f = path.basename(String(url.searchParams.get("f") || ""));
+    const file = path.join(dir, "prototype", "comments", "images", f);
+    if (!f || !MIME[path.extname(f).toLowerCase()] || !fs.existsSync(file)) { send(res, 404, { error: "no image" }); return true; }
+    res.writeHead(200, { "Content-Type": MIME[path.extname(f).toLowerCase()], "Cache-Control": "no-store" });
+    res.end(fs.readFileSync(file));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "schema-status") {
+    const r = commentsTool(root, dir, "--schema-status");
+    if (r.code !== 0) { send(res, 200, { keys: false, upToDate: false, error: r.err }); return true; }
+    try { send(res, 200, JSON.parse(r.out)); } catch { send(res, 200, { keys: false, upToDate: false, error: r.out }); }
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "sync") { send(res, 200, await syncState(root, dir)); return true; }
+  if (req.method === "POST" && (m[2] === "sync/queue" || m[2] === "sync/unqueue")) {
+    const b = await readBody(req);
+    const ref = String(b.ref || "");
+    if (!/^(push|pull):/.test(ref) || ref.length > 600) { send(res, 400, { error: "bad request" }); return true; }
+    if (m[2] === "sync/queue") queueRequest(dir, { ref, kind: ref.startsWith("push:") ? "push-figma" : "pull-figma", title: String(b.title || "").slice(0, 400) });
+    else unqueueRequest(dir, ref);
+    send(res, 200, await syncState(root, dir));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "design") { send(res, 200, await designState(dir)); return true; }
+  if (req.method === "POST" && m[2] === "design/mode") {
+    const b = await readBody(req);
+    if (!["code-first", "figma-first"].includes(b.mode)) { send(res, 400, { error: "bad mode" }); return true; }
+    setDesignMode(dir, b.mode);
+    send(res, 200, await designState(dir));
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "preview/start") { const r = await startPreview(dir); send(res, r.ok ? 200 : 400, r.ok ? await designState(dir) : r); return true; }
+  if (req.method === "POST" && m[2] === "preview/stop") { const r = stopPreview(dir); send(res, r.ok ? 200 : 400, r.ok ? await designState(dir) : r); return true; }
+  if (req.method === "GET" && m[2] === "publish-check") {
+    // the preflight for this project's repo (or the repo it would create), in the user's full environment
+    const st = await designState(dir);
+    const repo = st.repo || url.searchParams.get("repo") || suggestRepo(dir);
+    if (!repo) { send(res, 200, { ok: false, repo: null, checks: [{ key: "repo", label: "GitHub repo", ok: false, reason: "No repo is recorded for this prototype, and the GitHub account could not be read.", fix: "Sign in with GitHub (Connect services > GitHub), then check again." }] }); return true; }
+    const r = await new Promise((resolve) => {
+      let out = "";
+      const child = spawn(process.execPath, [path.join(root, "tools", "publish_prototype.cjs"), dir, "--repo", repo, "--check"], { cwd: root, windowsHide: true, env: userEnv() });
+      child.stdout.on("data", (x) => { out += x; }); child.stderr.on("data", (x) => { out += x; });
+      child.on("close", () => resolve(out));
+    });
+    try { send(res, 200, { ...JSON.parse(r.slice(r.indexOf("{"))), recorded: !!st.repo }); } catch { send(res, 200, { ok: false, repo, checks: [{ key: "check", label: "Publish check", ok: false, reason: r.trim().slice(-300) || "The check did not run.", fix: "Run node tools/publish_prototype.cjs with --check in a terminal to see why." }] }); }
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "publish") {
+    const st = await designState(dir);
+    const b = await readBody(req);
+    // a new repo only with the user's explicit click (create: true) and a valid owner/name
+    const create = !st.repo && b.create === true && /^[\w.-]+\/[\w.-]+$/.test(String(b.repo || ""));
+    const repo = st.repo || (create ? b.repo : null);
+    if (!repo) { send(res, 400, { error: "No GitHub repo is recorded for this prototype yet: create one from the Publish panel." }); return true; }
+    if (st.publishing) { send(res, 409, { error: "Already publishing." }); return true; }
+    const r = await publishPrototype(root, dir, repo, create);
+    if (r.ok && create) { const sf = path.join(dir, "status.json"); const s2 = readJson(sf, {}); s2.prototype = { ...(s2.prototype || {}), url: `https://${repo.split("/")[0]}.github.io/${repo.split("/")[1]}/`, repo }; fs.writeFileSync(sf, JSON.stringify(s2, null, 2) + "\n"); }
+    send(res, r.ok ? 200 : 400, r.ok ? { ...(await designState(dir)), output: r.output } : { error: r.output || "Publish failed" });
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "connect") { send(res, 200, await connectState(root, dir, integrations)); return true; }
+  if (req.method === "POST" && m[2] === "connect/supabase") {
+    const err = saveSupabase(await readBody(req));
+    if (err) { send(res, 400, { error: err }); return true; }
+    send(res, 200, await connectState(root, dir, integrations));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "schema-sql") {
+    res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" });
+    res.end(readText(path.join(root, "Screens_Handoff_Skill", "templates", "supabase", "schema.sql")));
+    return true;
+  }
+  if (req.method === "GET" && m[2] === "plan") { send(res, 200, planState(dir)); return true; }
+  if (req.method === "GET" && m[2] === "plan-file") {
+    const doc = planFile(dir, url.searchParams.get("f"));
+    if (!doc) { send(res, 404, { error: "no such planning file" }); return true; }
+    send(res, 200, { name: doc.name, front: doc.front, body: doc.body, path: `My Projects/${path.basename(dir)}/Planning/${doc.name}` });
+    return true;
+  }
+  if (req.method === "POST" && m[2] === "plan/approve") {
+    const b = await readBody(req);
+    if (!approvePlan(dir, b.file)) { send(res, 404, { error: "no such planning file" }); return true; }
+    send(res, 200, planState(dir));
+    return true;
+  }
+  send(res, 404, { error: "unknown project action" });
+  return true;
+}

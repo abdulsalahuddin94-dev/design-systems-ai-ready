@@ -1,0 +1,1064 @@
+// Project pages: Pipeline, Plan, Design, Review, Sync, Connect services (#/project/<folder>/<page>), and the
+// collapsible side menu. Uses app.js helpers ($, el, api, icon, start, showError, PROMPTS), so it loads before
+// app.js and only runs once app.js has defined them.
+"use strict";
+
+const PROJECT_PAGES = [
+  ["pipeline", "Pipeline", "i-pipe"],
+  ["plan", "Plan", "i-docs"],
+  ["design", "Design", "i-phone"],
+  ["review", "Review", "i-message"],
+  ["sync", "Sync", "i-refresh"],
+  ["connect", "Connect services", "i-plug"],
+];
+
+// ---------- side menu: collapse to an icon rail ----------
+function initRail() {
+  const btn = document.getElementById("collapse");
+  if (!btn) return;
+  const set = (on) => {
+    document.body.classList.toggle("rail", on);
+    btn.setAttribute("aria-label", on ? "Expand the menu" : "Collapse the menu");
+    btn.title = btn.getAttribute("aria-label");
+    try { localStorage.setItem("menuRail", on ? "1" : "0"); } catch {}
+  };
+  let saved = null;
+  try { saved = localStorage.getItem("menuRail"); } catch {}
+  set(saved === "1");
+  btn.addEventListener("click", () => set(!document.body.classList.contains("rail")));
+  // tooltips for the rail: the label of each menu link
+  for (const a of document.querySelectorAll(".side-nav a")) if (!a.dataset.tip) a.dataset.tip = a.textContent.trim();
+}
+
+// The project's pages in the side menu, under its name (only while a project page is open).
+function drawProjectNav(name, title, page, counts = {}) {
+  const box = document.getElementById("project-nav");
+  if (!box) return;
+  box.hidden = false;
+  box.replaceChildren(
+    el("h2", { class: "side-title" }, title),
+    el("nav", { class: "side-nav project-nav", "aria-label": title },
+      PROJECT_PAGES.map(([key, label, ic]) => el("a", { href: `#/project/${encodeURIComponent(name)}/${key}`, class: key === page ? "on" : null, "data-tip": label, "aria-current": key === page ? "page" : null },
+        icon(ic), el("span", { class: "label" }, label),
+        counts[key] ? el("span", { class: `count${key === "review" ? "" : " y"}` }, String(counts[key])) : null))));
+}
+function hideProjectNav() {
+  const box = document.getElementById("project-nav");
+  if (box) box.hidden = true;
+}
+
+const stateLabel = { done: "Done", wait: "Waiting on you", run: "Working…", prob: "Needs a look" };
+const stateDot = { done: null, wait: "bad", run: "run", prob: "wait" };
+const fmtDate = (s) => (s ? String(s).slice(0, 16).replace("T", " ") : "not recorded");
+
+async function renderProjectPage(name, page) {
+  const app = $("#app");
+  const projectsList = await api("/api/projects").catch(() => ({ projects: [] }));
+  const found = projectsList.projects.find((x) => x.name === name);
+  const p = found && { ...found, title: String(found.title).replace(/_/g, " ") };
+  if (!p) { app.replaceChildren(el("main", { class: "project" }, el("p", { class: "p-empty" }, "This project is not in My Projects."))); return; }
+  let data = null;
+  try { data = await api(`/api/project/${encodeURIComponent(name)}/overview`); } catch (e) { showError(e); }
+  const o = data?.overview;
+  drawProjectNav(name, p.title, page, o ? { review: o.comments.open, sync: o.pendingFigmaSync.length + (o.storybook.unsynced ? 1 : 0) } : {});
+  const main = el("main", { class: "project" });
+  app.replaceChildren(main);
+  if (page === "pipeline") return drawPipeline(main, p, o, data?.pipeline);
+  if (page === "review") return drawReview(main, p, o);
+  if (page === "sync") return drawSync(main, p);
+  if (page === "design") return drawDesign(main, p);
+  if (page === "connect") return drawConnect(main, p);
+  if (page === "plan") return drawPlan(main, p);
+  main.append(el("p", { class: "p-empty" }, "Unknown page."));
+}
+
+function head(p, title, sub, right = []) {
+  return el("div", {},
+    el("div", { class: "crumbs" }, el("a", { href: "#/projects" }, "Projects"), ` / ${p.title}`),
+    el("header", { class: "p-head" },
+      el("div", {}, el("h1", {}, title), el("p", { class: "sub" }, sub)),
+      el("div", { class: "right" }, right)));
+}
+
+function drawPipeline(main, p, o, pl) {
+  const chat = el("button", { class: "ghost sm", type: "button", onclick: () => start({ prompt: PROMPTS.project(p.name), project: p.name, title: p.title }).catch(showError) }, icon("i-message"), "Continue in chat");
+  const live = o?.publish?.url ? el("a", { class: "ghost sm", href: o.publish.url, target: "_blank", rel: "noopener" }, icon("i-external"), "Open live prototype") : null;
+  main.append(head(p, "Pipeline", "Where the project is, and the one thing to do next.", [live, chat]));
+  if (!o || !pl) { main.append(el("p", { class: "p-empty" }, "Could not read this project's files.")); return; }
+  main.append(el("div", { class: "pipe" }, pl.steps.map((s, i) => el("div", { class: `step ${s.state}`, "data-step": s.key },
+    el("span", { class: "n" }, String(i + 1).padStart(2, "0")), el("h3", {}, s.title),
+    el("span", { class: "st" }, s.state === "done" ? icon("i-check", "ic") : el("span", { class: `dot ${stateDot[s.state]}` }), stateLabel[s.state]),
+    el("p", {}, s.text)))));
+  const ok = pl.next.go === "design" && pl.next.title.startsWith("Everything");
+  main.append(el("div", { class: `next-step${ok ? " ok" : ""}` },
+    el("div", { class: "t" }, el("span", { class: "kicker" }, "Next step"), el("b", {}, pl.next.title), el("span", { class: "muted small" }, pl.next.text)),
+    el("button", { class: "primary", type: "button", onclick: () => { location.hash = `#/project/${encodeURIComponent(p.name)}/${pl.next.go}`; } }, pl.next.label, icon("i-right"))));
+  main.append(el("dl", { class: "p-tally" },
+    el("div", {}, el("dt", {}, "Fidelity"), el("dd", {}, o.fidelity != null ? `${o.fidelity}%` : "–")),
+    el("div", { class: "mag" }, el("dt", {}, "Open comments"), el("dd", {}, String(o.comments.open))),
+    el("div", { class: "warn" }, el("dt", {}, "Pending Figma sync"), el("dd", {}, String(o.pendingFigmaSync.length))),
+    el("div", { class: "live" }, el("dt", {}, "Code check"), el("dd", {}, o.code ? `${o.code.unknown}/${o.code.raw}` : "–"))));
+  const kv = [
+    ["Live link", o.publish?.url ? el("a", { href: o.publish.url, target: "_blank", rel: "noopener", class: "mono" }, o.publish.url.replace(/^https?:\/\//, "")) : "not published"],
+    ["Last publish", fmtDate(o.publish?.at)],
+    ["Local preview", el("span", {}, el("span", { class: `dot ${o.local.running ? "good" : "wait"}` }), o.local.running ? ` running · ${o.local.url}` : " not running", o.unpublished ? el("span", { class: "unpub", style: "margin-left:6px" }, "unpublished changes") : null)],
+    ["Screens", o.screens ? `${o.screens.count} from "${o.screens.file}"` : "none yet"],
+    ["Code ahead of Figma", o.build.codeAhead.length ? o.build.codeAhead.join(", ") : "none"],
+  ];
+  main.append(el("div", { class: "grid2" },
+    el("section", { class: "p-panel" }, el("h2", { class: "section-title" }, "Project status"),
+      el("dl", { class: "p-kv" }, kv.flatMap(([k, v]) => [el("dt", {}, k), el("dd", {}, v)])),
+      el("div", { class: "p-actions" },
+        el("button", { class: "primary sm", type: "button", onclick: () => { location.hash = `#/project/${encodeURIComponent(p.name)}/design`; } }, "Open Design"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => { location.hash = `#/project/${encodeURIComponent(p.name)}/review`; } }, "Review"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => { location.hash = `#/project/${encodeURIComponent(p.name)}/sync`; } }, "Sync"))),
+    el("section", { class: "p-panel" }, el("h2", { class: "section-title" }, "Activity"),
+      el("div", { class: "p-feed" }, o.activity.length ? o.activity.map((a) => el("div", {}, el("time", {}, a.date), el("span", {}, a.title))) : el("p", { class: "muted" }, "No changelog entries yet.")))));
+}
+
+// ---------- Review: comments from the live prototype ----------
+// Pull from Supabase, triage with Claude, decide here, reply and close. Changes are applied online in the
+// prototype first (overrides); Figma sync is asked at the end, on the Sync page.
+const REVIEW_PROMPTS = {
+  triage: (p) => `Triage the open prototype comments of "${p}" (My Projects/${p}/prototype/comments/inbox.json). For each open comment write an entry in prototype/comments/triage.json: {"<id>": {"kind": "fix" | "flow" | "decision" | "info", "proposal": "<what to change, DS components and tokens only>", "affects": ["<screen slugs>"], "status": "proposed"}}. Use "flow" when a comment asks for a new flow or new screens: its proposal is a short flow map, and applying it starts with a screen spec and a mini checkpoint, never a direct build. Keep existing decisions. Do not change the prototype or Figma yet.`,
+  apply: (p, c) => `Apply this approved prototype comment of "${p}" online in the prototype first (prototype/data/overrides.json, DS components and tokens only, then rebuild and check), and add it to status.json > prototype.pending_figma_sync. Do not touch Figma. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Proposal: ${c.triage.proposal}` : ""}. When done, tell me the reply to close it with.`,
+  ask: (p, c) => `Help me decide on this prototype comment of "${p}" before anything changes. Comment ${c.id} on ${c.screen}${c.component ? ` (${c.component})` : ""} by ${c.author || "Anonymous"}: "${c.body}"${c.triage?.proposal ? `. Current proposal: ${c.triage.proposal}` : ""}. Give me the options with a recommendation.`,
+};
+const kindLabel = { fix: "Fix", flow: "New flow", decision: "Decision", info: "Info" };
+const decisionLabel = { proposed: "Proposed", approved: "Approved", rejected: "Rejected", asked: "Asked in chat", queued: "Queued", "in-progress": "In progress", applied: "Applied", "needs-ok": "Plan ready: answer in chat" };
+
+async function drawReview(main, p, o) {
+  const enc = encodeURIComponent(p.name);
+  let filter = "open";
+  let data = await api(`/api/project/${enc}/comments`).catch((e) => { showError(e); return { comments: [] }; });
+  const notice = el("div", { class: "p-notice", role: "status", hidden: true });
+  const showSchemaNotice = () => {
+    notice.hidden = false;
+    notice.replaceChildren(icon("i-alert"), el("span", {}, el("b", {}, "Supabase schema update needed: "), "replies and images need the current schema. "),
+      el("a", { href: `#/project/${enc}/connect` }, "Open Connect services"));
+  };
+  const pull = el("button", { class: "ghost sm", type: "button" }, icon("i-download"), "Pull comments");
+  pull.onclick = async () => {
+    pull.disabled = true;
+    try { data = await api(`/api/project/${enc}/comments/pull`, {}); toast(data.message || "Pulled."); draw(); }
+    catch (e) { showError(e); }
+    finally { pull.disabled = false; }
+  };
+  const triage = el("button", { class: "primary sm", type: "button", onclick: () => start({ prompt: REVIEW_PROMPTS.triage(p.name), project: p.name, title: `Triage comments: ${p.title}` }).catch(showError) }, icon("i-sparkles"), "Triage open comments");
+  main.append(head(p, "Review", "Comments from the live prototype: decide, apply online, reply and close.", [pull, triage]), notice);
+  const tabs = el("div", { class: "p-seg", role: "tablist", "aria-label": "Filter comments" });
+  const pulled = el("span", { class: "muted small" });
+  const list = el("div", { class: "rv-list" });
+  main.append(el("div", { class: "rv-bar" }, tabs, pulled), list);
+
+  // Where "Show on screen" opens: the local preview when it runs, else the live link.
+  const base = o?.local?.running ? o.local.url : o?.publish?.url;
+  const screenLink = (c) => base && c.screen ? `${base.replace(/\/?$/, "/")}#/${c.screen}?${new URLSearchParams({ mode: c.theme || "Dark", lang: c.lang || "en", comment: c.id })}` : null;
+
+  async function closeWith(c, decision) {
+    const reply = await askText({ title: "Reply & close", help: `The reply shows under ${c.author || "this"} comment in the prototype.`, okLabel: "Reply & close", placeholder: decision === "rejected" ? "Why it stays as it is…" : "What changed…" });
+    if (!reply) return;
+    try { data = await api(`/api/project/${enc}/comments/resolve`, { id: c.id, reply, decision }); notice.hidden = true; toast("Comment closed."); draw(); }
+    catch (e) { if (/schema update needed/i.test(e.message)) showSchemaNotice(); else showError(e); }
+  }
+  async function setDecision(c, decision) {
+    try { const r = await api(`/api/project/${enc}/comments/decide`, { id: c.id, decision }); c.triage = { ...(c.triage || {}), ...r.triage }; draw(); }
+    catch (e) { showError(e); }
+  }
+
+  function card(c) {
+    const t = c.triage;
+    const open = c.status !== "resolved";
+    const link = screenLink(c);
+    const chat = (kind) => start({ prompt: REVIEW_PROMPTS[kind](p.name, c), project: p.name, title: `${kind === "apply" ? "Apply" : "Ask"}: ${c.screen}` }).catch(showError);
+    const img = (f) => `/api/project/${enc}/comment-image?f=${encodeURIComponent(f)}`;
+    return el("article", { class: `rv-card${open ? "" : " done"}`, "data-id": c.id },
+      el("header", {},
+        el("span", { class: "avatar", "aria-hidden": "true" }, (c.author || "?").trim().charAt(0).toUpperCase()),
+        el("div", { class: "who" }, el("b", {}, c.author || "Anonymous"), el("span", { class: "muted small" }, `${fmtDate(c.created_at)} · ${c.theme || "-"} / ${(c.lang || "-").toUpperCase()} · ${c.viewport || "-"}`)),
+        t?.kind ? el("span", { class: `tag k-${t.kind}` }, kindLabel[t.kind] || t.kind) : null,
+        el("span", { class: `tag ${open ? "open" : "res"}` }, open ? (t?.status && t.status !== "proposed" ? decisionLabel[t.status] : "Open") : "Resolved")),
+      el("div", { class: "where mono" }, c.screen || "-", c.component ? ` › ${c.component}` : "", c.figma_node ? ` · ${c.figma_node}` : ""),
+      el("p", { class: "body", dir: "auto" }, c.body),
+      c.localImages?.length ? el("div", { class: "thumbs" }, c.localImages.map((f, i) => el("a", { href: img(f), target: "_blank", rel: "noopener" },
+        el("img", { src: img(f), alt: `Reference image ${i + 1}`, loading: "lazy" })))) : null,
+      t?.proposal ? el("div", { class: "triage" }, el("span", { class: "kicker" }, "Proposal"), el("p", {}, t.proposal),
+        t.affects?.length ? el("span", { class: "muted small" }, `Affects: ${t.affects.join(", ")}`) : null) : null,
+      c.reply ? el("div", { class: "reply" }, el("span", { class: "kicker" }, "Reply"), el("p", { dir: "auto" }, c.reply)) : null,
+      el("div", { class: "p-actions" },
+        open ? [
+          // Apply opens the Design workspace on this comment: its screen, its pin, and the request waiting in the chat box.
+          el("button", { class: "primary sm", type: "button", onclick: async () => { await setDecision(c, "approved"); location.hash = `#/project/${enc}/design?comment=${c.id}&apply=1`; } }, icon("i-check"), "Apply online"),
+          el("button", { class: "ghost sm", type: "button", onclick: () => setDecision(c, "rejected") }, icon("i-x"), "Reject"),
+          el("button", { class: "ghost sm", type: "button", onclick: async () => { await setDecision(c, "asked"); chat("ask"); } }, icon("i-message"), "Ask"),
+          el("button", { class: "ghost sm", type: "button", onclick: () => closeWith(c, t?.status && t.status !== "proposed" ? t.status : null) }, icon("i-send"), "Reply & close"),
+        ] : null,
+        el("a", { class: "ghost sm", href: `#/project/${enc}/design?comment=${c.id}` }, icon("i-phone"), "Show on screen"),
+        link ? el("a", { class: "ghost sm", href: link, target: "_blank", rel: "noopener", title: "Open in the prototype (new tab)" }, icon("i-external")) : null));
+  }
+
+  function draw() {
+    const all = data.comments || [];
+    const openN = all.filter((c) => c.status !== "resolved").length;
+    tabs.replaceChildren(...[["open", `Open ${openN}`], ["resolved", `Resolved ${all.length - openN}`], ["all", `All ${all.length}`]].map(([k, label]) =>
+      el("button", { type: "button", role: "tab", class: k === filter ? "on" : null, "aria-selected": String(k === filter), onclick: () => { filter = k; draw(); } }, label)));
+    pulled.textContent = data.pulledAt ? `Pulled ${fmtDate(data.pulledAt)}` : "Not pulled yet";
+    const shown = all.filter((c) => filter === "all" || (filter === "open") === (c.status !== "resolved")).reverse();
+    list.replaceChildren(...(shown.length ? shown.map(card)
+      : [el("p", { class: "p-empty" }, all.length ? (filter === "open" ? "No open comments. Everything is answered." : "Nothing here.") : "No comments yet. Pull comments to fetch them from the live prototype.")]));
+  }
+  draw();
+}
+
+// ---------- Sync: prototype <-> Figma <-> Storybook ----------
+// Push / Pull only queue a request (data/sync-queue.json); "Run the queue in chat" hands the queued requests to
+// Claude, who does the Figma and Storybook work with the workflow's rules and asks before each write.
+const SYNC_PROMPT = (p, queue) => `Work through the queued sync requests of "${p}" (My Projects/${p}/data/sync-queue.json), one at a time, with the workflow's rules: open the right Figma file with the saved tool, ask me before each Figma write, audit after each change, then re-export so the prototype override reports "synced", update status.json > prototype.pending_figma_sync, the CHANGELOG and the Storybook as needed, and mark each request done in the queue. Requests:\n${queue.map((q, i) => `${i + 1}. [${q.kind}] ${q.title || q.ref}`).join("\n")}`;
+
+async function drawSync(main, p) {
+  const enc = encodeURIComponent(p.name);
+  const pill = el("span", { class: "p-pill", role: "status" });
+  const runBtn = el("button", { class: "primary sm", type: "button" }, icon("i-message"), "Run the queue in chat");
+  main.append(head(p, "Sync", "What differs between the prototype, Figma and Storybook. Nothing moves without your click.", [pill, runBtn]));
+  const body = el("div", {}, el("p", { class: "p-empty" }, "Reading the project and Figma's version history…"));
+  main.append(body);
+  let s;
+  const load = async () => { s = await api(`/api/project/${enc}/sync`); draw(); };
+  const act = async (url, item) => {
+    try { s = await api(`/api/project/${enc}/${url}`, { ref: item.ref, title: item.title }); draw(); }
+    catch (e) { showError(e); }
+  };
+  runBtn.onclick = () => s?.queue.length && start({ prompt: SYNC_PROMPT(p.name, s.queue), project: p.name, title: `Sync: ${p.title}` }).catch(showError);
+
+  const row = (item, verb) => el("div", { class: `srow${item.queued ? " queued" : ""}`, "data-ref": item.ref },
+    el("div", {}, el("b", {}, item.title),
+      el("div", { class: "cmeta" }, (item.meta || [item.screen, item.comment ? "from a review comment" : null, item.approved ? `approved: ${item.approved}` : null, item.file ? `Figma: ${item.file}` : null]).filter(Boolean).map((t) => el("span", {}, t)))),
+    item.queued
+      ? el("div", { class: "p-actions" }, el("span", { class: "tag k-decision" }, "Queued"), el("button", { class: "ghost sm", type: "button", onclick: () => act("sync/unqueue", item) }, icon("i-undo"), "Undo"))
+      : el("button", { class: "ghost sm", type: "button", onclick: () => act("sync/queue", item) }, verb));
+
+  const side = (title, items, verb, allVerb, empty) => el("section", { class: "sheet sync-side" },
+    el("div", { class: "shead" }, el("h3", {}, title),
+      items.some((x) => !x.queued) ? el("button", { class: "ghost sm", type: "button", onclick: async () => { for (const x of items.filter((y) => !y.queued)) await act("sync/queue", x); } }, allVerb) : null),
+    items.length ? items.map((x) => row(x, verb)) : el("p", { class: "muted srow-empty" }, empty));
+
+  function draw() {
+    pill.replaceChildren(el("span", { class: `dot ${s.figma.figcli ? "good" : "wait"}` }),
+      s.figma.figcli ? ` FigCli connected${s.figma.designFiles[0] ? ` · ${s.figma.designFiles[0]}` : ""}` : " Figma not connected (FigCli port closed)");
+    runBtn.disabled = !s.queue.length;
+    runBtn.title = s.queue.length ? `${s.queue.length} queued request${s.queue.length > 1 ? "s" : ""}` : "Queue a push or pull first";
+    body.replaceChildren(...[
+      el("div", { class: "sync" },
+        side("In the prototype, not in Figma", s.push, "Push to Figma", "Push all to Figma", "Nothing pending: every prototype change is in Figma."),
+        side("In Figma, not in Storybook", s.pull, "Pull from Figma", "Pull all",
+          s.figma.versionsError === "no-token" ? "No Figma token on this computer, so Figma's version history was not read. CHANGELOG shows nothing pending." : "Nothing pending: Storybook matches the DS file.")),
+      s.queue.length ? el("p", { class: "note" }, `${s.queue.length} request${s.queue.length > 1 ? "s" : ""} queued. Nothing has changed in Figma or Storybook yet: run the queue in chat when you are ready.`) : null,
+      s.rules.length ? el("section", { class: "p-panel", style: "margin-top:16px" }, el("h2", { class: "section-title" }, "Prototype rules (no Figma change)"),
+        s.rules.map((r) => el("p", { class: "small" }, r.rule))) : null,
+      el("p", { class: "note" }, "After a push: Figma audit, re-export, the override reports \"synced\" and the screen's source goes back to Figma.")].filter(Boolean));
+  }
+  await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not read the sync state.")); showError(e); });
+}
+
+// ---------- Design: Lovable-like workspace ----------
+// Left: this project's design conversation (the same chat as everywhere, mounted in a panel). Right: the prototype,
+// local (Vite on this computer) or live (the published link). Publish runs tools/publish_prototype.cjs; Push to Figma
+// only queues a request for the Sync page. Code first / Figma first is asked once per project.
+const MODE_TEXT = {
+  "code-first": ["Code first", "New screens and changes are built in the prototype first; Figma follows when you sync."],
+  "figma-first": ["Figma first", "Changes are designed in the Figma Design file first, then the prototype is rebuilt from it."],
+};
+// Sent to Claude with the first message but not shown in the conversation (only the typed request is).
+const DESIGN_CONTEXT = (p, mode, screen, where) => `Design workspace for "${p}" (My Projects/${p}), ${MODE_TEXT[mode][0].toLowerCase()}. ${mode === "code-first"
+  ? "Build each change in the prototype first (prototype/data/overrides.json, or a code-first screen), rebuild and check it, and add it to status.json > prototype.pending_figma_sync. Do not touch Figma."
+  : "Design each change in the Figma Design file first with the saved tool (ask me before each write), audit it, then re-export and rebuild the prototype."} Rules: only the project's design-system components and tokens (its Storybook React components and data/tokens.json), never raw values; a missing component or size is a DS gap: tell me and give me the options, never invent one. The preview shows "${screen}" (${where}). My request follows.`;
+const designKey = (name) => `designChat:${name}`;
+const readStore = (k) => { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; } };
+const writeStore = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+async function drawDesign(main, p) {
+  const enc = encodeURIComponent(p.name);
+  main.classList.add("design-ws");
+  let st = await api(`/api/project/${enc}/design`).catch((e) => { showError(e); return null; });
+  if (!st) { main.append(el("p", { class: "p-empty" }, "Could not read this project's prototype.")); return; }
+  // device: the frame (a phone for mobile screens, a browser window for web ones); the prototype fits it to the canvas
+  const view = { where: st.local.running ? "local" : "live", device: (st.screens[0]?.w || 375) >= 600 ? "desktop" : "phone", screen: st.screens[0]?.slug || "", mode: "Dark" };
+  try { Object.assign(view, JSON.parse(localStorage.getItem(`designView:${p.name}`) || "{}")); } catch {}
+  if (!st.screens.some((s) => s.slug === view.screen)) view.screen = st.screens[0]?.slug || "";
+  // the frame follows the screen (phone for mobile, browser window for web); the toolbar toggle overrides it for now
+  const autoDevice = () => ((st.screens.find((s) => s.slug === view.screen)?.w || 375) >= 600 ? "desktop" : "phone");
+  view.device = autoDevice();
+  const saveView = () => { try { localStorage.setItem(`designView:${p.name}`, JSON.stringify(view)); } catch {} };
+
+  // ----- left: chat -----
+  const modeSeg = el("div", { class: "p-seg", role: "radiogroup", "aria-label": "How changes start" });
+  const chatBody = el("div", { class: "ws-chat" });
+  const chatCol = el("section", { class: "ws-col", "aria-label": "Design conversation" },
+    el("div", { class: "ws-head" },
+      el("div", { class: "crumbs" }, el("a", { href: "#/projects" }, "Projects"), ` / ${p.title}`),
+      el("div", { class: "row" }, el("h1", {}, "Design"), modeSeg),
+      el("p", { class: "muted small" }, "Only design-system components and tokens. A missing component becomes a DS gap first.")),
+    chatBody);
+
+  const setMode = async (mode) => {
+    try { st = await api(`/api/project/${enc}/design/mode`, { mode }); drawMode(); if (!sessionId()) drawStarter(); if (pendingApply) { const c = pendingApply; pendingApply = null; applyNow(c); } }
+    catch (e) { showError(e); }
+  };
+  function drawMode() {
+    modeSeg.replaceChildren(...Object.entries(MODE_TEXT).map(([k, [label, d]]) => el("button", { type: "button", role: "radio", class: st.designMode === k ? "on" : null, "aria-checked": String(st.designMode === k), title: d, onclick: () => setMode(k) }, label)));
+  }
+  const sessionId = () => readStore(designKey(p.name))?.id || null;
+  // A request waiting for the chat box (Apply online / Ask on a comment): filled in, never sent; the user presses Send.
+  let pendingPrefill = null;
+  let pendingApply = null; // an Apply pressed before Code first / Figma first was picked
+  let applyOnLoad = null; // Apply online pressed on the Review page
+  function prefill(text) {
+    const ta = chatBody.querySelector("#input") || chatBody.querySelector(".ws-start textarea");
+    if (!ta) { pendingPrefill = text; return; }
+    pendingPrefill = null;
+    ta.value = text; ta.dispatchEvent(new Event("input", { bubbles: true })); ta.focus();
+  }
+  const screenName = () => st.screens.find((s) => s.slug === view.screen)?.name || view.screen || "no screen";
+
+  // No conversation yet: ask Code first / Figma first (once per project), then a composer that starts one.
+  function drawStarter() {
+    if (!st.designMode) {
+      chatBody.replaceChildren(el("div", { class: "ws-ask sheet" },
+        el("span", { class: "kicker" }, "Before the first change"),
+        el("h4", {}, "How should new screens and changes start in this project?"),
+        el("div", { class: "opts-list" }, Object.entries(MODE_TEXT).map(([k, [label, d]]) =>
+          el("button", { type: "button", class: "opt-btn", onclick: () => setMode(k) }, el("span", { class: "l" }, label), el("span", { class: "d" }, d)))),
+        el("p", { class: "muted small" }, "You can switch it any time at the top of this panel.")));
+      return;
+    }
+    const images = [];
+    const thumbs = el("div", { class: "attachments" });
+    const drawThumbs = () => thumbs.replaceChildren(...images.map((src, i) => el("figure", {}, el("img", { src, alt: "Image to send" }),
+      el("button", { type: "button", "aria-label": "Remove", onclick: () => { images.splice(i, 1); drawThumbs(); } }, icon("i-x")))));
+    const addFiles = (files) => { for (const f of files) { if (!/^image\/(png|jpeg|gif|webp)$/.test(f.type)) continue; const r = new FileReader(); r.onload = () => { images.push(r.result); drawThumbs(); }; r.readAsDataURL(f); } };
+    const ta = el("textarea", { rows: "3", dir: "auto", "aria-label": "Describe a screen, a flow or a change", placeholder: "Describe a screen, a flow or a change… (Arabic or English). Ctrl+V pastes a screenshot." });
+    const file = el("input", { type: "file", accept: "image/png,image/jpeg,image/gif,image/webp", multiple: true, hidden: true, onchange: (ev) => { addFiles(ev.target.files); ev.target.value = ""; } });
+    const go = el("button", { class: "primary sm", type: "submit" }, icon("i-send"), "Build");
+    ta.addEventListener("paste", (ev) => { const f = [...(ev.clipboardData?.files || [])]; if (f.length) { ev.preventDefault(); addFiles(f); } });
+    ta.addEventListener("keydown", (ev) => { if (ev.key === "Enter" && !ev.shiftKey && !ev.isComposing) { ev.preventDefault(); form.requestSubmit(); } });
+    const form = el("form", { class: "ws-start", onsubmit: async (ev) => {
+      ev.preventDefault();
+      const text = ta.value.trim();
+      if (!text && !images.length) return;
+      go.disabled = true;
+      try {
+        const s = await api("/api/sessions", { prompt: text || "See the attached image.", context: DESIGN_CONTEXT(p.name, st.designMode, screenName(), view.where === "local" ? "local preview" : "live link"), images, project: p.name, title: `Design: ${p.title}` });
+        writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || null });
+        mountChat(s.id);
+      } catch (e) { showError(e); go.disabled = false; }
+    } },
+      thumbs, ta,
+      el("div", { class: "row" },
+        el("label", { class: "addimg", title: "Add an image (or paste one with Ctrl+V)" }, file, icon("i-plus"), el("span", { class: "sr" }, "Add an image")),
+        el("span", { class: "muted small" }, "Ctrl+V to paste a screenshot"), el("span", { style: "flex:1" }), go));
+    form.addEventListener("dragover", (ev) => ev.preventDefault());
+    form.addEventListener("drop", (ev) => { ev.preventDefault(); addFiles(ev.dataTransfer.files); });
+    queueMicrotask(() => { if (pendingPrefill) prefill(pendingPrefill); });
+    chatBody.replaceChildren(el("div", { class: "ws-empty" },
+      el("p", {}, el("b", {}, MODE_TEXT[st.designMode][0]), `: ${MODE_TEXT[st.designMode][1]}`),
+      el("p", { class: "muted small" }, `Claude sees which screen the preview shows ("${screenName()}").`)), form);
+    ta.focus();
+  }
+  function mountChat(id) {
+    chatBody.replaceChildren();
+    renderChat(id, chatBody);
+    // Lovable-like composer for the narrow panel: the text box on top, then one row with attach, tool and model, and
+    // a single Send / Stop button; the status sits on its own line above the composer. Same elements, only moved.
+    const form = chatBody.querySelector("#composer");
+    const row = form.querySelector(".composer-row");
+    row.append(el("div", { class: "ws-cbar" }, row.querySelector(".attach"), form.querySelector("#agent-wrap"), form.querySelector("#model-wrap"), el("span", { class: "sp" }), row.querySelector("#stop"), row.querySelector("#send")));
+    const status = form.querySelector("#status-line");
+    status.classList.add("ws-status");
+    form.before(status);
+    form.querySelector(".composer-foot")?.remove();
+    if (pendingPrefill) prefill(pendingPrefill);
+    chatBody.append(el("div", { class: "ws-chat-foot" }, el("button", { type: "button", class: "textbtn", onclick: () => {
+      try { localStorage.removeItem(designKey(p.name)); } catch {}
+      if (current?.es) { current.es.close(); current.cleanup?.(); current = null; }
+      drawStarter();
+    } }, icon("i-plus"), "New design conversation")));
+  }
+  // The dashboard restarted mid-conversation: the chat found (or continued) it under a new id; mount that one here.
+  const onReconnect = (ev) => {
+    if (!chatBody.isConnected) { window.removeEventListener("chat-reconnect", onReconnect); return; }
+    if (ev.detail.from !== sessionId()) return;
+    ev.preventDefault();
+    writeStore(designKey(p.name), { id: ev.detail.to, claudeSessionId: ev.detail.claudeSessionId });
+    mountChat(ev.detail.to);
+  };
+  window.addEventListener("chat-reconnect", onReconnect);
+  // Reuse this project's design conversation: still running, or continued from its Claude session after a restart.
+  async function openChat() {
+    const saved = readStore(designKey(p.name));
+    if (!saved) return drawStarter();
+    try {
+      const { live, past } = await api("/api/sessions");
+      let s = live.find((x) => x.id === saved.id) || (saved.claudeSessionId && live.find((x) => x.claudeSessionId === saved.claudeSessionId));
+      if (!s && saved.claudeSessionId && past.some((x) => x.claudeSessionId === saved.claudeSessionId))
+        s = await api("/api/sessions", { resume: saved.claudeSessionId, project: p.name, title: `Design: ${p.title}` });
+      if (!s) { try { localStorage.removeItem(designKey(p.name)); } catch {} return drawStarter(); }
+      writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || saved.claudeSessionId || null });
+      mountChat(s.id);
+    } catch (e) { showError(e); drawStarter(); }
+  }
+
+  // ----- right: preview -----
+  // Controls float at the bottom of the canvas (Lovable-like pill, collapsible to a round button); Publish sits at the
+  // top right. Comments are reviewed on the design itself: the prototype (embed=1, tool=comment) draws the pins and
+  // tells this page which pin was picked and where, and the comment opens here with its actions.
+  const q = new URLSearchParams(location.hash.split("?")[1] || "");
+  Object.assign(view, { tool: null, comment: null });
+  let collapsed = false;
+  try { collapsed = localStorage.getItem("designPill") === "closed"; } catch {}
+  const frame = el("iframe", { title: "Prototype preview", class: "ws-frame" });
+  const canvas = el("div", { class: "ws-canvas" });
+  const badge = el("span", { class: "tag k-decision srcbadge", hidden: true });
+  const pill = el("div", { class: "ws-pill", role: "toolbar", "aria-label": "Preview controls" });
+  const openPill = el("button", { class: "ws-pill-open", type: "button", "aria-label": "Show the preview controls", title: "Show the preview controls", onclick: () => setCollapsed(false) }, icon("i-left"));
+  const pubBox = el("div", { class: "ws-publish" });
+  const list = el("aside", { class: "ws-clist", "aria-label": "Comments on this screen", hidden: true });
+  const pop = el("div", { class: "ws-pop", role: "dialog", "aria-label": "Comment", hidden: true });
+  const menu = el("div", { class: "ws-menu", role: "menu", hidden: true });
+  const pubPop = el("div", { class: "ws-pubpop", role: "dialog", "aria-label": "Publish", hidden: true });
+  let pubCheck = null; // null | "running" | the preflight result (tools/publish_checks.cjs)
+  async function runPublishCheck() {
+    pubCheck = "running"; drawPubPop();
+    try { pubCheck = await api(`/api/project/${enc}/publish-check`); } catch (e) { pubCheck = { ok: false, checks: [{ label: "Publish check", ok: false, reason: e.message, fix: "Try again." }] }; }
+    drawPubPop();
+  }
+  // A new project: create its repo (public, GitHub Pages) only on this explicit click.
+  function createRepoBlock(chk) {
+    const input = el("input", { class: "mono", value: chk.repo, "aria-label": "New repo (owner/name)", spellcheck: "false" });
+    return el("div", { class: "pub-url" }, el("span", { class: "kicker" }, "No repo yet"),
+      el("p", { class: "small" }, "This prototype has no GitHub repo. Atomica can create a public one and publish to it:"),
+      el("div", { class: "row" }, input,
+        el("button", { class: "primary sm", type: "button", disabled: !chk.gh?.signedIn || null, title: chk.gh?.signedIn ? "" : "Sign in with GitHub first (Connect services)", onclick: () => doPublish(input.value.trim()) }, "Create the repo and publish")));
+  }
+  let publishError = null; // the last publish failure, shown in the panel until the next try
+  let liveState = null; // null | "waiting" | "live": after a publish, until GitHub Pages serves the new build
+  const stage = el("section", { class: "ws-stage", "aria-label": "Prototype preview" }, canvas, pubBox, pubPop, list, pop, menu, pill, openPill);
+  main.append(chatCol, stage);
+
+  let comments = []; // from the dashboard (pulled from Supabase): author, body, images, triage
+  let pins = []; // from the prototype: the open comments of this screen, numbered as their pins
+  const setCollapsed = (on) => { collapsed = on; try { localStorage.setItem("designPill", on ? "closed" : "open"); } catch {} drawBar(); };
+  const baseUrl = () => (view.where === "local" ? st.local.url : st.publish?.url) || null;
+  // embed=1: the prototype hides its own screen list, banner, picker and toolbar (this page has them); a new tab shows
+  // it whole. tool and comment drive its comment, code and inspect modes.
+  const screenUrl = (embed = true) => {
+    const b = baseUrl();
+    if (!b || !view.screen) return b;
+    const p = new URLSearchParams({ mode: view.mode, lang: "en" });
+    if (embed) { p.set("embed", "1"); p.set("device", view.device); if (view.tool) p.set("tool", view.tool); if (view.tool === "comment" && view.comment) p.set("comment", view.comment); }
+    return `${b.replace(/\/?$/, "/")}#/${view.screen}?${p}`;
+  };
+  function loadFrame(force) {
+    const url = screenUrl();
+    const sc = st.screens.find((s) => s.slug === view.screen);
+    badge.hidden = !(sc?.source === "code");
+    badge.textContent = `${sc?.name || ""} · code ahead of Figma`;
+    if (view.where === "local" && !st.local.running) {
+      canvas.replaceChildren(el("div", { class: "p-empty ws-off" },
+        el("p", {}, el("b", {}, "The local preview is not running.")),
+        st.installed ? el("button", { class: "primary sm", type: "button", onclick: startLocal }, icon("i-zap"), "Start local preview")
+          : el("p", { class: "muted small" }, "Its packages are not installed: ask in the chat to install them (npm install in the prototype folder)."),
+        st.publish?.url ? el("button", { class: "ghost sm", type: "button", onclick: () => { view.where = "live"; saveView(); drawBar(); loadFrame(); } }, "Show the live link") : null));
+      return;
+    }
+    if (!url) { canvas.replaceChildren(el("p", { class: "p-empty ws-off" }, "Not published yet. Publish once from the chat to get a live link.")); return; }
+    // The frame is another origin, so a refresh reloads it with a cache-busting query; anything else only changes the hash.
+    if (force) { const u = new URL(url); u.searchParams.set("r", Date.now()); frame.src = u.href; frame.dataset.src = url; }
+    else if (frame.dataset.src !== url) { frame.dataset.src = url; frame.src = url; }
+    if (!canvas.contains(frame)) canvas.replaceChildren(badge, el("div", { class: "ws-device" }, frame));
+  }
+  async function startLocal(ev) {
+    const b = ev.currentTarget; b.disabled = true; b.lastChild.textContent = "Starting…";
+    try { st = await api(`/api/project/${enc}/preview/start`, {}); drawBar(); loadFrame(); }
+    catch (e) { showError(e); b.disabled = false; b.lastChild.textContent = "Start local preview"; }
+  }
+
+  const seg = (label, items, cur, pick, icons) => el("div", { class: `ws-seg${icons ? " icons" : ""}`, role: "radiogroup", "aria-label": label },
+    items.map(([k, text, ic]) => el("button", { type: "button", role: "radio", class: cur === k ? "on" : null, "aria-checked": String(cur === k), "aria-label": text, title: text, onclick: () => pick(k) },
+      ic ? icon(ic) : null, icons ? null : text)));
+  const tool = (k, label, ic, count) => el("button", { type: "button", class: `ws-tool${view.tool === k ? " on" : ""}`, "aria-pressed": String(view.tool === k), title: label, "aria-label": label,
+    onclick: () => setTool(view.tool === k ? null : k) }, icon(ic), count ? el("span", { class: "ws-count" }, String(count)) : null);
+  const openOnScreen = () => comments.filter((c) => c.status !== "resolved" && c.screen === view.screen).length;
+  function drawBar() {
+    const screenPick = el("select", { "aria-label": "Screen", onchange: () => { view.screen = screenPick.value; view.device = autoDevice(); view.comment = null; pop.hidden = true; saveView(); loadFrame(); drawBar(); } },
+      st.screens.map((s) => el("option", { value: s.slug }, s.name)));
+    screenPick.value = view.screen;
+    // "…": a menu above the pill (outside it, so the pill's scrolling never clips it)
+    menu.replaceChildren(
+      el("button", { type: "button", onclick: () => { menu.hidden = true; pushToFigma(); } }, icon("i-upload"), "Push this screen to Figma"),
+      el("a", { href: screenUrl(false) || "#", target: "_blank", rel: "noopener", onclick: () => { menu.hidden = true; } }, icon("i-external"), "Open in a new tab"),
+      el("a", { href: `#/project/${enc}/review` }, icon("i-message"), "All comments (Review)"));
+    const more = el("button", { class: "ws-tool", type: "button", "aria-label": "More", title: "More", "aria-expanded": String(!menu.hidden), onclick: (ev) => {
+      const b = ev.currentTarget.getBoundingClientRect(), s2 = stage.getBoundingClientRect();
+      menu.style.left = `${Math.min(b.left - s2.left, s2.width - 250)}px`; menu.style.bottom = `${s2.bottom - b.top + 10}px`;
+      menu.hidden = !menu.hidden; ev.currentTarget.setAttribute("aria-expanded", String(!menu.hidden));
+    } }, el("b", {}, "…"));
+    pill.hidden = collapsed; openPill.hidden = !collapsed;
+    pill.replaceChildren(
+      seg("Preview", [["local", "Local"], ["live", "Live"]], view.where, (k) => { view.where = k; saveView(); drawBar(); loadFrame(); }),
+      screenPick,
+      el("span", { class: "ws-div" }),
+      seg("Device", [["phone", "Phone", "i-phone"], ["desktop", "Desktop", "i-monitor"]], view.device, (k) => { view.device = k; saveView(); drawBar(); loadFrame(); }, true),
+      seg("Color mode", [["Light", "Light", "i-sun"], ["Dark", "Dark", "i-moon"]], view.mode, (k) => { view.mode = k; saveView(); drawBar(); loadFrame(); }, true),
+      el("span", { class: "ws-div" }),
+      tool("comment", "Comments", "i-message", openOnScreen()),
+      tool("inspect", "Inspect", "i-search"),
+      tool("code", "Code", "i-terminal"),
+      el("span", { class: "ws-div" }),
+      el("button", { class: "ws-tool", type: "button", "aria-label": "Refresh", title: "Refresh", onclick: () => loadFrame(true) }, icon("i-refresh")),
+      more,
+      el("button", { class: "ws-tool", type: "button", "aria-label": "Hide the controls", title: "Hide the controls", onclick: () => setCollapsed(true) }, icon("i-right")));
+    const pub = el("button", { class: "primary sm", type: "button", "aria-expanded": String(!pubPop.hidden), "aria-haspopup": "dialog", onclick: async () => {
+      pubPop.hidden = !pubPop.hidden;
+      drawPubPop();
+      // the page may have been open while Claude changed the prototype: read the publish state again
+      if (!pubPop.hidden && !st.publishing) {
+        try { const fresh = await api(`/api/project/${enc}/design`); Object.assign(st, { unpublished: fresh.unpublished, publish: fresh.publish, repo: fresh.repo }); drawBar(); } catch {}
+        runPublishCheck();
+      }
+    } },
+      st.unpublished ? el("span", { class: "dot bad", "aria-hidden": "true" }) : null, st.publishing ? "Publishing…" : "Publish");
+    pubBox.replaceChildren(pub);
+    drawPubPop();
+    drawList();
+  }
+
+  async function loadComments(pull) {
+    try { comments = (await api(`/api/project/${enc}/comments${pull ? "/pull" : ""}`, pull ? {} : undefined)).comments || []; }
+    catch (e) { showError(e); }
+    drawBar();
+  }
+  async function setTool(k) {
+    view.tool = k; view.comment = null; pop.hidden = true;
+    loadFrame(); drawBar();
+    if (k === "comment") await loadComments(true);
+  }
+  const byId = (id) => comments.find((c) => c.id === id);
+  function drawList() {
+    list.hidden = view.tool !== "comment";
+    if (list.hidden) return;
+    const open = comments.filter((c) => c.status !== "resolved" && c.screen === view.screen);
+    const n = (c) => pins.find((x) => x.id === c.id)?.n;
+    list.replaceChildren(el("h3", {}, `Comments on this screen · ${open.length}`),
+      ...(open.length ? open.map((c) => el("button", { type: "button", class: view.comment === c.id ? "on" : null, onclick: () => focusComment(c.id) },
+        el("span", { class: "pin" }, String(n(c) || "•")),
+        el("span", { class: "t" }, el("b", {}, c.author || "Anonymous", c.triage?.status && decisionLabel[c.triage.status] && c.triage.status !== "proposed" ? el("span", { class: `st st-${c.triage.status}` }, decisionLabel[c.triage.status]) : null), el("span", { class: "tb", dir: "auto" }, c.body))))
+        : [el("p", { class: "muted small" }, "No open comments on this screen.")]),
+      el("a", { class: "small", href: `#/project/${enc}/review` }, "All comments"));
+  }
+  function focusComment(id) {
+    view.comment = id; pop.hidden = true;
+    loadFrame(); drawList();
+  }
+
+  // The prototype says which pin was picked and where it is (in the frame's own coordinates).
+  const onMessage = (ev) => {
+    if (!canvas.isConnected) { window.removeEventListener("message", onMessage); return; }
+    if (ev.source !== frame.contentWindow || !ev.data || typeof ev.data !== "object") return;
+    if (ev.data.type === "atomica:comments") { pins = ev.data.items || []; if (pins.some((x) => !byId(x.id))) loadComments(true); else drawList(); postStatuses(); }
+    if (ev.data.type === "atomica:comment") { view.comment = ev.data.id; showPop(ev.data.id, ev.data.rect); drawList(); }
+  };
+  window.addEventListener("message", onMessage);
+
+  function showPop(id, rect) {
+    const c = byId(id);
+    if (!c || !rect) { pop.hidden = true; return; }
+    const f = frame.getBoundingClientRect(), s = stage.getBoundingClientRect();
+    const x = f.left - s.left + rect.x + rect.w, y = f.top - s.top + rect.y;
+    const w = 320, right = x + 12 + w <= s.width - 12;
+    pop.style.left = `${right ? x + 12 : Math.max(12, x - rect.w - 12 - w)}px`;
+    pop.hidden = false;
+    const t = c.triage;
+    const img = (f2) => `/api/project/${enc}/comment-image?f=${encodeURIComponent(f2)}`;
+    pop.replaceChildren(...[
+      el("header", {}, el("span", { class: "avatar", "aria-hidden": "true" }, (c.author || "?").trim().charAt(0).toUpperCase()),
+        el("div", { class: "who" }, el("b", {}, c.author || "Anonymous"), el("span", { class: "muted small" }, `${fmtDate(c.created_at)} · ${c.component || "Frame"}`)),
+        t?.status && t.status !== "proposed" ? el("span", { class: "tag open" }, decisionLabel[t.status]) : null,
+        el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pop.hidden = true; } }, icon("i-x"))),
+      el("div", { class: "pop-body" }, el("p", { class: "body", dir: "auto" }, c.body),
+        c.localImages?.length ? el("div", { class: "thumbs" }, c.localImages.map((f2, i) => el("a", { href: img(f2), target: "_blank", rel: "noopener" }, el("img", { src: img(f2), alt: `Reference image ${i + 1}` })))) : null,
+        t?.proposal ? el("div", { class: "triage" }, el("span", { class: "kicker" }, "Claude's proposal"), el("p", { dir: "auto" }, t.proposal)) : null),
+      el("div", { class: "p-actions" },
+        el("button", { class: "primary sm", type: "button", disabled: ["queued", "in-progress"].includes(t?.status) || null, onclick: () => { pop.hidden = true; applyNow(c); } }, icon("i-check"), t?.status === "queued" ? "Queued" : t?.status === "in-progress" ? "In progress…" : "Apply online"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => act(c, "rejected") }, icon("i-x"), "Reject"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => act(c, "asked", ASK_TEXT(c, screenName())) }, icon("i-message"), "Ask"),
+        el("button", { class: "ghost sm", type: "button", onclick: () => replyClose(c) }, icon("i-send"), "Reply & close"))].filter(Boolean));
+    // next to the pin, kept clear of the controls at the bottom
+    pop.style.top = `${Math.max(12, Math.min(y - 8, s.height - pop.offsetHeight - 84))}px`;
+  }
+  async function act(c, decision, text) {
+    try { const r = await api(`/api/project/${enc}/comments/decide`, { id: c.id, decision }); c.triage = { ...(c.triage || {}), ...r.triage }; }
+    catch (e) { showError(e); return; }
+    if (text) { prefill(text); toast("The request is in the chat box: check it, then press Send."); }
+    else toast(decision === "rejected" ? "Marked as rejected. Reply & close tells the reviewer why." : "Saved.");
+    if (!pop.hidden) showPop(c.id, null);
+    pop.hidden = true;
+  }
+  // Apply online sends at once: the chat shows a short line, the full instructions go to Claude as hidden context.
+  // Progress shows on the comment and its pin: Queued (Claude is busy), In progress, then Applied, or "Plan ready" for a
+  // new flow, which stops for the user's OK in the chat first.
+  async function setStatus(c, status) {
+    try { const r = await api(`/api/project/${enc}/comments/decide`, { id: c.id, decision: status }); c.triage = { ...(c.triage || {}), ...r.triage }; }
+    catch (e) { showError(e); }
+    drawList(); postStatuses();
+  }
+  async function applyNow(c) {
+    if (!st.designMode) { pendingApply = c; toast("Pick Code first or Figma first above; the comment goes to Claude right after."); return; }
+    const screen = st.screens.find((s) => s.slug === c.screen)?.name || c.screen;
+    const short = `Apply ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` · ${c.component}` : ""}: «${c.body}»`;
+    const hidden = APPLY_CONTEXT(c, screen);
+    try {
+      let live = null;
+      if (sessionId()) live = (await api("/api/sessions")).live.find((x) => x.id === sessionId());
+      if (!live && sessionId()) { await openChat(); live = (await api("/api/sessions")).live.find((x) => x.id === sessionId()); }
+      let status = "in-progress";
+      if (live) {
+        status = live.busy ? "queued" : "in-progress";
+        await api(`/api/sessions/${live.id}/message`, { text: short, context: hidden });
+      } else {
+        const s = await api("/api/sessions", { prompt: short, context: `${DESIGN_CONTEXT(p.name, st.designMode, screen, view.where === "local" ? "local preview" : "live link")}\n\n${hidden}`, project: p.name, title: `Design: ${p.title}` });
+        writeStore(designKey(p.name), { id: s.id, claudeSessionId: s.claudeSessionId || null });
+        mountChat(s.id);
+      }
+      await setStatus(c, status);
+      toast(status === "queued" ? "Queued: Claude takes it right after the current task." : "Sent to Claude.");
+      watchApply(c, sessionId(), c.triage?.kind === "flow" || /flow|فلو|new (screen|page)|(صمم|اعمل) (صفحة|شاشة)|(صفحة|شاشة) جديدة/i.test(c.body));
+    } catch (e) { showError(e); }
+  }
+  async function watchApply(c, id, planFirst) {
+    const t0 = Date.now();
+    let sawBusy = false;
+    while (Date.now() - t0 < 45 * 60000) {
+      await new Promise((r) => setTimeout(r, 3000));
+      if (!canvas.isConnected) return;
+      let s;
+      try { s = (await api("/api/sessions")).live.find((x) => x.id === id); } catch { continue; }
+      if (!s) return;
+      if (s.busy) { sawBusy = true; if (c.triage?.status === "queued" && Date.now() - t0 > 4000) { /* still the earlier task, or ours: keep Queued until Claude is idle */ } continue; }
+      if (sawBusy || Date.now() - t0 > 12000) {
+        await setStatus(c, planFirst ? "needs-ok" : "applied");
+        loadFrame(true);
+        toast(planFirst ? "Claude has a plan for this comment: answer it in the chat." : "Applied in the prototype. Reply & close when you are happy with it.");
+        return;
+      }
+    }
+  }
+  // the pins in the prototype show the same progress (queued, in progress, applied, plan ready)
+  function postStatuses() {
+    const map = Object.fromEntries(comments.filter((x) => ["queued", "in-progress", "applied", "needs-ok"].includes(x.triage?.status)).map((x) => [x.id, x.triage.status]));
+    try { frame.contentWindow?.postMessage({ type: "atomica:pin-status", map }, "*"); } catch {}
+  }
+  async function replyClose(c) {
+    const reply = await askText({ title: "Reply & close", help: `The reply shows under ${c.author || "this"} comment in the prototype.`, okLabel: "Reply & close", placeholder: "What changed…" });
+    if (!reply) return;
+    try {
+      const r = await api(`/api/project/${enc}/comments/resolve`, { id: c.id, reply, decision: c.triage?.status && c.triage.status !== "proposed" ? c.triage.status : null });
+      comments = r.comments || comments; pop.hidden = true; view.comment = null; toast("Comment closed."); loadFrame(true); drawBar();
+    } catch (e) { showError(e); }
+  }
+
+  async function pushToFigma() {
+    const sc = st.screens.find((s) => s.slug === view.screen);
+    if (!sc) return;
+    try { await api(`/api/project/${enc}/sync/queue`, { ref: `push:screen:${sc.slug}`, title: `Push screen "${sc.name}" from the prototype to Figma` }); toast(`"${sc.name}" is queued for Figma. Nothing changed in Figma yet: run the queue on the Sync page.`, { label: "Open Sync", icon: "i-refresh", run: () => { location.hash = `#/project/${enc}/sync`; } }); }
+    catch (e) { showError(e); }
+  }
+  // GitHub Pages serves a new build about a minute after the push (and caches the old page meanwhile): poll the live
+  // index for the build that was just published, then reload the Live preview so it never shows the old one.
+  async function waitForLive(build) {
+    const url = st.publish?.url;
+    if (!build || !url) return;
+    for (let i = 0; i < 36; i++) {
+      await new Promise((r) => setTimeout(r, 5000));
+      if (!canvas.isConnected) return;
+      try {
+        const html = await (await fetch(`${url}?r=${Date.now()}`, { cache: "no-store" })).text();
+        if (html.includes(`index-${build}.js`)) {
+          liveState = "live";
+          if (view.where === "live") loadFrame(true);
+          toast("Live: the link now shows the new version.");
+          drawBar();
+          return;
+        }
+      } catch {}
+    }
+  }
+  // Publish popover: status, the live link (copy / open), share it, and Publish changes.
+  const shareText = () => `${p.title} prototype (design preview, not a real app): ${st.publish?.url || ""}`;
+  function drawPubPop() {
+    if (pubPop.hidden) return;
+    const url = st.publish?.url;
+    const published = !!url;
+    // a failure shows the script's own reason (without its "Building ..." progress line)
+    const status = publishError && !st.publishing ? publishError.replace(/^Building .*?\.\.\.\s*/s, "") : st.publishing ? "Publishing…" : liveState === "waiting" ? "Published · waiting for the live link to update" : st.unpublished ? "Unpublished changes" : published ? "Up to date" : "Not published yet";
+    const copy = async (text, done) => toast((await copyText(text)) ? done : "Could not copy. Select the text instead.");
+    pubPop.replaceChildren(...[
+      el("header", {}, el("span", { class: `dot ${publishError && !st.publishing ? "bad" : !published ? "wait" : st.unpublished || st.publishing || liveState === "waiting" ? "wait" : "good"}` }),
+        el("b", { class: publishError && !st.publishing ? "failed" : null }, publishError && !st.publishing ? "Publish failed" : st.publishing ? "Publishing…" : published ? "Published" : "Not published"),
+        el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => { pubPop.hidden = true; drawBar(); } }, icon("i-x"))),
+      el("p", { class: "muted small" }, status, st.publish?.at ? ` · last published ${fmtDate(st.publish.at)}` : ""),
+      pubCheck === "running" ? el("p", { class: "small muted" }, "Checking the publish setup…") : pubCheck ? publishChecksList(pubCheck, { onlyProblems: true }) : null,
+      !st.repo && pubCheck && pubCheck !== "running" && pubCheck.repo ? createRepoBlock(pubCheck) : null,
+      published ? el("div", { class: "pub-url" },
+        el("span", { class: "kicker" }, "Website URL"),
+        el("div", { class: "row" }, el("a", { class: "mono", href: url, target: "_blank", rel: "noopener" }, url.replace(/^https?:\/\//, "")),
+          el("button", { class: "iconbtn sq", type: "button", "aria-label": "Copy the link", title: "Copy the link", onclick: () => copy(url, "Link copied.") }, icon("i-copy")),
+          el("a", { class: "iconbtn sq", href: url, target: "_blank", rel: "noopener", "aria-label": "Open the live link", title: "Open the live link" }, icon("i-external")))) : null,
+      published ? el("div", { class: "pub-share" },
+        el("span", { class: "kicker" }, "Share"),
+        el("div", { class: "row" },
+          el("button", { class: "ghost sm", type: "button", onclick: () => copy(shareText(), "Message with the link copied.") }, icon("i-copy"), "Copy message"),
+          navigator.share ? el("button", { class: "ghost sm", type: "button", onclick: () => navigator.share({ title: `${p.title} prototype`, text: shareText(), url }).catch(() => {}) }, icon("i-send"), "Share…") : null,
+          el("a", { class: "ghost sm", href: `mailto:?subject=${encodeURIComponent(`${p.title} prototype`)}&body=${encodeURIComponent(shareText())}` }, "Email"),
+          el("a", { class: "ghost sm", href: `https://wa.me/?text=${encodeURIComponent(shareText())}`, target: "_blank", rel: "noopener" }, "WhatsApp"))) : null,
+      published ? el("p", { class: "pub-note small" }, icon("i-shield"), el("span", {}, "Visible to anyone with the link. Until it moves to its own domain, some browsers may show a safety warning on first open; reviewers can continue to the site.")) : null,
+      // Never stuck: when nothing new is detected it still publishes ("Publish again").
+      el("button", { class: "primary", type: "button", disabled: st.publishing || !st.repo || (pubCheck && pubCheck !== "running" && !pubCheck.ok) || null, onclick: () => doPublish(),
+        title: st.repo ? `Build and publish to ${st.repo} (GitHub Pages)` : "Publish once from the chat first" },
+        st.publishing ? "Publishing…" : !published ? "Publish" : st.unpublished ? "Publish changes" : "Publish again"),
+    ].filter(Boolean));
+  }
+  async function doPublish(create = null) {
+    publishError = null;
+    st.publishing = true; drawBar();
+    try {
+      st = await api(`/api/project/${enc}/publish`, create ? { create: true, repo: create } : {});
+      liveState = "waiting";
+      waitForLive(st.publish?.build);
+    }
+    catch (e) { showError(e); st.publishing = false; publishError = e.message; pubPop.hidden = false; }
+    drawBar();
+  }
+
+  // Opened from Review (Apply online / Show on screen): that comment's screen, comments on, its pin focused, and for
+  // Apply the request waiting in the chat box.
+  if (q.get("comment")) {
+    await loadComments(false);
+    const c = byId(q.get("comment"));
+    if (c) {
+      if (st.screens.some((s) => s.slug === c.screen)) view.screen = c.screen;
+      if (c.theme) view.mode = c.theme;
+      view.tool = "comment"; view.comment = c.id;
+      if (q.get("apply")) applyOnLoad = c;
+    }
+    history.replaceState(null, "", `#/project/${enc}/design`);
+  }
+  drawMode(); drawBar(); loadFrame();
+  await openChat();
+  if (applyOnLoad) applyNow(applyOnLoad);
+}
+
+// Hidden instructions sent with an Apply (the chat shows only the short line).
+const APPLY_CONTEXT = (c, screen) => `The user pressed Apply online on a prototype review comment. Comment id ${c.id} by ${c.author || "a reviewer"} on ${screen}${c.component ? ` (${c.component}${c.figma_node ? ` ${c.figma_node}` : ""})` : ""}: "${c.body}".${c.triage?.proposal ? ` Approved proposal: ${c.triage.proposal}` : ""} If it asks for a new flow, new screens or an IA change, plan it first (flow map and screen spec), show it and stop for the user's OK before building. Otherwise make the change in the prototype now with DS components and tokens only, rebuild and check it, and add it to status.json > prototype.pending_figma_sync. End with the reply to close the comment with.`;
+// What Ask puts in the Design chat box (the user checks it and presses Send).
+const ASK_TEXT = (c, screen) => `Help me decide on ${c.author || "a reviewer"}'s comment on ${screen}${c.component ? ` (${c.component})` : ""} before anything changes: "${c.body}". Give me the options with a recommendation (comment id ${c.id}).`;
+
+// ---------- Connect services: status lights and the one-time Supabase setup ----------
+async function copyText(text) {
+  try { await Promise.race([navigator.clipboard.writeText(text), new Promise((_, no) => setTimeout(no, 1000))]); return true; } catch {
+    const t = el("textarea", { style: "position:fixed;opacity:0;pointer-events:none" });
+    t.value = text; document.body.append(t); t.select();
+    let ok = false; try { ok = document.execCommand("copy"); } catch {}
+    t.remove(); return ok;
+  }
+}
+
+async function drawConnect(main, p) {
+  const enc = encodeURIComponent(p.name);
+  const recheck = el("button", { class: "ghost sm", type: "button" }, icon("i-refresh"), "Check again");
+  main.append(head(p, "Connect services", "What this computer is connected to. Set up once per computer; every project uses it.", [recheck]));
+  const body = el("div", {}, el("p", { class: "p-empty" }, "Checking…"));
+  main.append(body);
+  let c;
+  const load = async () => { body.replaceChildren(el("p", { class: "p-empty" }, "Checking…")); c = await api(`/api/project/${enc}/connect`); draw(); };
+  recheck.onclick = () => load().catch(showError);
+
+  const light = (state) => el("span", { class: `dot ${state === "ok" ? "good" : state === "warn" ? "wait" : "bad"}` });
+  const card = (title, state, summary, ...rest) => el("section", { class: "p-panel svc", "data-svc": title },
+    el("header", {}, light(state), el("h2", {}, title), el("span", { class: `tag ${state === "ok" ? "res" : state === "warn" ? "k-decision" : "open"}` }, state === "ok" ? "Connected" : state === "warn" ? "Needs a look" : "Not connected")),
+    el("p", { class: "small" }, summary), ...rest.filter(Boolean));
+  const copyBtn = (label, get) => el("button", { class: "ghost sm", type: "button", onclick: async () => { toast((await copyText(await get())) ? "Copied." : "Could not copy. Select the text instead."); } }, icon("i-copy"), label);
+
+  function supabaseCard() {
+    const s = c.supabase;
+    const sc = s.schema;
+    const keysOk = s.url && s.anon && s.service;
+    const state = keysOk && sc?.upToDate ? "ok" : keysOk ? "warn" : "bad";
+    const summary = !keysOk ? "Prototype comments need a free Supabase project. Paste its three values once; they are saved on this computer only."
+      : sc?.error ? `Supabase did not answer the check: ${sc.error}`
+      : sc?.upToDate ? `Comments, replies and images work (${s.host}).`
+      : `Connected to ${s.host}, but the database needs the current schema: ${[!sc?.table && "the comments table", !sc?.reply && "replies", !sc?.images && "images", !sc?.bucket && "the image bucket"].filter(Boolean).join(", ")} missing.`;
+    const kv = el("dl", { class: "p-kv" },
+      ...[["Project URL", s.url], ["Public key", s.anon], ["Secret key", s.service]].flatMap(([k, ok]) => [el("dt", {}, k), el("dd", {}, light(ok ? "ok" : "bad"), ok ? " saved" : " missing")]),
+      el("dt", {}, "Schema"), el("dd", {}, sc ? [light(sc.upToDate ? "ok" : "warn"), sc.upToDate ? " up to date" : " update needed"] : "–"),
+      el("dt", {}, "Saved in"), el("dd", { class: "mono" }, s.file, s.projectOverride ? " (this project's prototype/.env.local overrides it)" : ""));
+    const steps = keysOk && sc && !sc.upToDate && !sc.error ? el("ol", { class: "small steps" },
+      el("li", {}, "Copy the schema SQL."),
+      el("li", {}, "Open the Supabase SQL Editor, paste it and press Run. It is safe to run again: it only adds what is missing."),
+      el("li", {}, "Press Check again.")) : null;
+    const form = el("form", { class: "svc-form", autocomplete: "off" },
+      el("label", {}, "Project URL", el("input", { name: "url", type: "url", placeholder: "https://<ref>.supabase.co", spellcheck: "false" })),
+      el("label", {}, "Public key (publishable or anon)", el("input", { name: "anon", type: "password", placeholder: "sb_publishable_…", spellcheck: "false", autocomplete: "off" })),
+      el("label", {}, "Secret key (secret or service_role)", el("input", { name: "service", type: "password", placeholder: "sb_secret_…", spellcheck: "false", autocomplete: "new-password" })),
+      el("p", { class: "muted small" }, "Supabase > Project Settings > API Keys. Leave a field empty to keep what is saved. The secret key never leaves this computer and is never shown again."),
+      el("div", { class: "p-actions" }, el("button", { class: "primary sm", type: "submit" }, "Save keys")));
+    form.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const f = new FormData(form);
+      try { c = await api(`/api/project/${enc}/connect/supabase`, { url: f.get("url"), anon: f.get("anon"), service: f.get("service") }); form.reset(); toast("Saved on this computer."); draw(); }
+      catch (e) { showError(e); }
+    };
+    const details = el("details", { class: "svc-more", open: !keysOk || null }, el("summary", {}, keysOk ? "Change the keys" : "Set up Supabase"), form);
+    return card("Supabase (comments)", state, summary, kv, steps,
+      el("div", { class: "p-actions" },
+        copyBtn("Copy schema SQL", () => fetch(`/api/project/${enc}/schema-sql`).then((r) => r.text())),
+        s.sqlEditor ? el("a", { class: "ghost sm", href: s.sqlEditor, target: "_blank", rel: "noopener" }, icon("i-external"), "Open SQL Editor") : null,
+        el("button", { class: "ghost sm", type: "button", onclick: () => load().catch(showError) }, icon("i-refresh"), "Schema status")),
+      details);
+  }
+
+  // Figma: the three tools (dot each; click for details, Connect, setup and "Use for this project")
+  const figmaCard = el("section", { class: "p-panel svc", "data-svc": "Figma" }, el("header", {}, el("h2", {}, "Figma")), el("p", { class: "small muted" }, "Checking the Figma tools…"));
+  const fillFigma = () => {
+    const st = figmaToolsCache;
+    if (!st || !figmaCard.isConnected) return;
+    const def = st.tools[st.default];
+    figmaCard.replaceChildren(
+      el("header", {}, el("span", { class: `dot ${def.connected ? "good" : "bad"}` }), el("h2", {}, "Figma"), el("span", { class: `tag ${def.connected ? "res" : "open"}` }, def.connected ? "Connected" : "Needs setup")),
+      el("p", { class: "small" }, `Default: ${figmaToolName(st.default)}. ${def.reason}`),
+      figmaToolRows(st, { project: p.name }),
+      el("p", { class: "muted small" }, "Click a tool for what it does, a comparison, Connect and setup."));
+  };
+  getFigmaTools().then(() => { fillFigma(); refreshFigmaToolsLater(fillFigma); }).catch(() => {});
+  function draw() {
+    const g = c.github, sb = c.storybook, pw = c.playwright;
+    body.replaceChildren(el("div", { class: "svc-grid" },
+      figmaCard,
+      (() => {
+        const box = el("div", {}, el("p", { class: "small muted" }, "Checks Git, the GitHub repo, write access and Pages for this project's prototype."));
+        const btn = el("button", { class: "ghost sm", type: "button", onclick: async () => {
+          btn.disabled = true; btn.textContent = "Checking…";
+          try { const r = await api(`/api/project/${enc}/publish-check`); box.replaceChildren(publishChecksList(r)); } catch (e) { showError(e); }
+          btn.disabled = false; btn.textContent = "Check publish setup";
+        } }, icon("i-refresh"), "Check publish setup");
+        return el("section", { class: "p-panel svc", "data-svc": "Publishing" }, el("header", {}, el("h2", {}, "Publishing (live link)")), box, el("div", { class: "p-actions" }, btn));
+      })(),
+      card("GitHub", g?.signedIn ? "ok" : g?.cli ? "warn" : "bad",
+        g?.signedIn ? `Signed in as ${g.account}. Publishing the prototype and team projects use it.` : g?.cli ? "GitHub CLI is installed but not signed in." : "GitHub CLI (gh) is not installed.",
+        !g?.signedIn && g?.cli ? el("div", { class: "p-actions" }, el("button", { class: "ghost sm", type: "button", onclick: async () => { try { toast((await api("/api/github/login", {})).ok ? "GitHub sign-in opened in a new window." : "Could not open it."); } catch (e) { showError(e); } } }, icon("i-login"), "Sign in with GitHub")) : null),
+      supabaseCard(),
+      sb ? card("Storybook MCP", sb.running ? "ok" : "warn",
+        sb.running ? `Storybook runs on port ${sb.port}; its MCP is at ${sb.mcp}.` : `Storybook is not running (port ${sb.port}). Start it to give Claude the components' docs and props.`,
+        el("p", { class: "muted small" }, "Register it once on this computer (local scope, never committed):"),
+        el("pre", { class: "mono svc-cmd" }, sb.add),
+        el("div", { class: "p-actions" }, copyBtn("Copy command", () => sb.add)))
+        : card("Storybook MCP", "warn", "This project has no Storybook yet."),
+      card("Playwright (checks)", pw.core && pw.chrome ? "ok" : "warn",
+        pw.core && pw.chrome ? "Ready: fidelity and live checks run in Chrome." : [!pw.core && "the prototype's playwright-core is not installed (npm install in the prototype folder)", !pw.chrome && "Google Chrome is not installed"].filter(Boolean).join("; ") + ".")));
+    fillFigma(); // the tools may have arrived before this card was on the page
+  }
+  await load().catch((e) => { body.replaceChildren(el("p", { class: "p-empty" }, "Could not run the checks.")); showError(e); });
+}
+
+// ---------- Plan: Planning/ steps, documents and the three light checkpoints ----------
+const PLAN_PROMPTS = {
+  start: (p) => `Plan the next work of "${p}" (My Projects/${p}) before anything is built: read its Inputs (PRD, research, meeting notes, screenshots) and write the Planning/ folder, one NN-<step>.md per step (00 Input digest, 01 Users and jobs, 02 Information architecture, 03 Flows, 04 Screen specs, 05 Gaps and plan, 06 Usability pre-check), each with front matter "status: draft | waiting | done". If there is no PRD, draft one from a short brief and mark every assumption. Stop at the three checkpoints (02, 03, 05) with "status: waiting" for my approval. Screen specs use only DS components; missing ones are DS gaps.`,
+  next: (p, step) => `Continue the plan of "${p}" (My Projects/${p}/Planning): step ${step.no} ${step.title}. Keep the same file format and stop at the next checkpoint for my approval.`,
+  change: (p, name, text) => `Change the planning document My Projects/${p}/Planning/${name} as follows, then set it back to "status: waiting" for my approval: ${text}`,
+};
+const planStatus = { todo: ["", "not started"], draft: ["k-decision", "draft"], waiting: ["open", "waiting on you"], done: ["res", "done"] };
+
+async function drawPlan(main, p) {
+  const enc = encodeURIComponent(p.name);
+  let st = await api(`/api/project/${enc}/plan`).catch((e) => { showError(e); return null; });
+  if (!st) { main.append(el("p", { class: "p-empty" }, "Could not read the Planning folder.")); return; }
+  const inputs = Object.entries(st.inputs).filter(([, n]) => n).map(([k, n]) => `${n} ${k === "Other" ? "other" : k}`);
+  const chatBtn = el("button", { class: "primary sm", type: "button" }, icon("i-message"), st.exists ? "Continue the plan in chat" : "Start planning in chat");
+  main.append(head(p, "Plan", "From PRD and research to approved flows and screen specs, before anything is built.", [
+    el("span", { class: "p-pill" }, `Inputs: ${inputs.length ? inputs.join(", ") : "none yet"}`), chatBtn]));
+  const list = el("div", { class: "sheet plan-steps" });
+  const doc = el("article", { class: "sheet plan-doc" });
+  main.append(el("div", { class: "plan" }, list, doc));
+  let open = null;
+  chatBtn.onclick = () => {
+    const step = st.steps.find((x) => x.no === st.next);
+    start({ prompt: st.exists && step ? PLAN_PROMPTS.next(p.name, step) : PLAN_PROMPTS.start(p.name), project: p.name, title: `Plan: ${p.title}` }).catch(showError);
+  };
+
+  function drawList() {
+    list.replaceChildren(...st.steps.map((x) => {
+      const [cls, label] = planStatus[x.status];
+      const sel = open && x.docs.some((d) => d.file === open);
+      return el("button", { type: "button", class: `pstep${sel ? " on" : ""}`, disabled: !x.docs.length || null, onclick: () => x.docs[0] && showDoc(x.docs[0].file) },
+        el("span", { class: "no" }, x.no),
+        el("span", {}, el("b", {}, x.title), el("small", {}, x.docs.length > 1 ? `${x.docs.length} documents` : x.hint)),
+        x.checkpoint ? el("span", { class: `cp${x.status === "done" ? " ok" : ""}` }, x.status === "done" ? "checkpoint ✓" : "checkpoint") : el("span", { class: `tag ${cls}` }, label));
+    }));
+  }
+  async function showDoc(file) {
+    open = file; drawList();
+    let d;
+    try { d = await api(`/api/project/${enc}/plan-file?f=${encodeURIComponent(file)}`); } catch (e) { showError(e); return; }
+    const step = st.steps.find((x) => x.docs.some((y) => y.file === file));
+    const meta = step.docs.find((y) => y.file === file);
+    const waiting = !meta.approved && meta.status !== "done";
+    doc.replaceChildren(...[
+      el("header", {}, el("h3", {}, `${step.no} · ${meta.title}`),
+        step.checkpoint ? el("span", { class: `cp${waiting ? "" : " ok"}` }, waiting ? (meta.status === "waiting" ? "checkpoint: waiting on you" : "checkpoint: draft") : `approved ${meta.approved || ""}`) : null),
+      step.docs.length > 1 ? el("div", { class: "p-seg" }, step.docs.map((y) => el("button", { type: "button", class: y.file === file ? "on" : null, onclick: () => showDoc(y.file) }, y.title))) : null,
+      el("div", { class: "md", dir: "auto", html: markdown(d.body) }),
+      el("div", { class: "p-actions" },
+        waiting ? el("button", { class: "primary sm", type: "button", onclick: async () => { try { st = await api(`/api/project/${enc}/plan/approve`, { file }); toast("Approved."); showDoc(file); } catch (e) { showError(e); } } }, icon("i-check"), step.checkpoint ? "Approve" : "Mark done") : null,
+        el("button", { class: "ghost sm", type: "button", onclick: async () => {
+          const t = await askText({ title: "Ask for changes", help: `What should change in ${d.name}? Claude edits it and sends it back for approval.`, okLabel: "Send to chat" });
+          if (t) start({ prompt: PLAN_PROMPTS.change(p.name, d.name, t), project: p.name, title: `Plan: ${d.name}` }).catch(showError);
+        } }, icon("i-message"), "Ask for changes"),
+        el("button", { class: "ghost sm", type: "button", onclick: async () => { toast((await copyText(d.path)) ? `Copied: ${d.path}` : d.path); } }, icon("i-copy"), "Copy file path"))].filter(Boolean));
+  }
+
+  drawList();
+  const first = st.steps.find((x) => x.no === st.next && x.docs.length) || st.steps.filter((x) => x.docs.length).pop();
+  if (first) showDoc(first.docs[0].file);
+  else doc.replaceChildren(el("div", { class: "p-empty plan-none" },
+    el("p", {}, el("b", {}, "No plan yet.")),
+    el("p", { class: "small" }, "Claude reads the Inputs (or drafts a PRD from a short brief, with every assumption marked), then writes users and jobs, the information architecture, flows with every state, screen specs from DS components and the gap list. It stops at three checkpoints for your approval."),
+    el("button", { class: "primary sm", type: "button", onclick: () => chatBtn.click() }, icon("i-message"), "Start planning in chat")));
+}
+
+// ---------- Figma tools: the three ways to reach Figma (Home tile and Connect services) ----------
+// Each tool has a dot (green connected, red not), a popup with what it is, a comparison, Connect (check), Set up and
+// "Use this tool" (this computer's default, or this project's in status.json > figma.tool).
+const FIGMA_TOOLS = [
+  ["official", "Official Figma MCP", null, "Easiest to set up, no Figma Desktop needed, but has a daily limit based on your Figma plan."],
+  ["bridge", "Desktop Bridge plugin", null, "If the plugin is all you have; it must be open inside the file."],
+  ["figcli", "FigCli", "Recommended", "No limits or tokens, works offline, but needs Figma Desktop and a reconnect after every Figma update."],
+];
+const FIGMA_COMPARE = [
+  // [row, official, bridge, figcli]
+  ["Reads files and screenshots", "✓", "✓", "✓"],
+  ["Writes (builds, fixes)", "✓", "✓", "✓"],
+  ["Slots", "–", "✓", "–"],
+  ["Comments", "–", "✓", "–"],
+  ["Full audits (every variant)", "–", "✓", "✓"],
+  ["Speed", "Slower", "Medium", "Fast"],
+  ["Limits", "Daily, by plan", "None", "None"],
+  ["Needs installing", "No", "Plugin", "FigCli"],
+  ["Patches Figma Desktop", "No", "No", "Yes (admin)"],
+];
+const figmaToolName = (k) => FIGMA_TOOLS.find((t) => t[0] === k)?.[1] || k;
+let figmaToolsCache = null;
+async function getFigmaTools(fresh) {
+  figmaToolsCache = await api(`/api/figma-tools${fresh ? "?fresh=1" : ""}`);
+  return figmaToolsCache;
+}
+// Claude Code's connector list takes ~20 s: the official tool shows "checking" first, then this fills it in.
+function refreshFigmaToolsLater(redraw) {
+  if (!figmaToolsCache?.tools?.official?.checking) return;
+  getFigmaTools(true).then(redraw).catch(() => {});
+}
+function figmaToolRows(st, { project } = {}) {
+  const box = el("div", { class: "ftools", role: "list" });
+  for (const [k, name, tag] of FIGMA_TOOLS) {
+    const t = st.tools[k];
+    box.append(el("button", { type: "button", class: "ftool", role: "listitem", "data-tool": k, title: t.reason, onclick: (ev) => { ev.stopPropagation(); openFigmaTool(k, { project, onChange: () => box.replaceWith(figmaToolRows(figmaToolsCache, { project })) }); } },
+      el("span", { class: `dot ${t.checking ? "wait" : t.connected ? "good" : "bad"}`, "aria-hidden": "true" }),
+      el("span", { class: "n" }, name),
+      tag ? el("span", { class: "rec" }, tag) : null,
+      st.default === k ? el("span", { class: "def" }, "Default") : null));
+  }
+  // the default is down but another tool works: say so
+  const def = st.tools[st.default];
+  const alt = FIGMA_TOOLS.map((x) => x[0]).find((k) => k !== st.default && st.tools[k].connected);
+  if (def && !def.connected && !def.checking && alt) box.append(el("p", { class: "fhint" }, `${figmaToolName(st.default)} is off · ${figmaToolName(alt)} is ready`));
+  return box;
+}
+
+function openFigmaTool(key, { project, onChange } = {}) {
+  let dlg = document.getElementById("figma-tool-dialog");
+  if (!dlg) { dlg = el("dialog", { id: "figma-tool-dialog", class: "fdialog" }); document.body.append(dlg); }
+  const [, name, tag, line] = FIGMA_TOOLS.find((t) => t[0] === key);
+  const col = { official: 1, bridge: 2, figcli: 3 }[key];
+  const status = el("p", { class: "fstatus", role: "status" });
+  const extra = el("div", { class: "fextra" });
+  const drawStatus = () => {
+    const t = figmaToolsCache.tools[key];
+    status.replaceChildren(el("span", { class: `dot ${t.checking ? "wait" : t.connected ? "good" : "bad"}` }), el("b", {}, t.checking ? "Checking…" : t.connected ? "Connected" : "Needs setup"), el("span", { class: "why" }, t.reason));
+    setup.hidden = !!t.connected;
+    setup.textContent = key === "figcli" ? (t.installed ? "Connect as administrator" : "Set up FigCli") : key === "bridge" ? (t.installed ? "Show the plugin steps" : "Add the Desktop Bridge") : t.configured ? "Sign in with Figma" : "Add and sign in with Figma";
+    useBtn.textContent = figmaToolsCache.default === key ? "Default on this computer" : "Use this tool";
+    useBtn.disabled = figmaToolsCache.default === key;
+  };
+  const connect = el("button", { class: "ghost sm", type: "button", onclick: async () => {
+    connect.disabled = true; connect.textContent = "Checking…";
+    try { const r = await api("/api/figma-tools/connect", { tool: key }); figmaToolsCache = r; drawStatus(); onChange?.(); toast(r.result.connected ? `${name}: Connected.` : `${name}: needs setup. ${r.result.reason}`); }
+    catch (e) { showError(e); }
+    connect.disabled = false; connect.textContent = "Connect";
+  } }, "Connect");
+  const setup = el("button", { class: "primary sm", type: "button", onclick: async () => {
+    setup.disabled = true;
+    try {
+      const r = await api("/api/figma-tools/setup", { tool: key });
+      extra.replaceChildren(el("p", { class: "small" }, r.message || ""));
+      if (r.manifest || key === "bridge") extra.append(el("ol", { class: "small fsteps" },
+        el("li", {}, "In Figma Desktop: Plugins > Development > Import plugin from manifest…, and pick:",
+          r.manifest ? el("div", { class: "frow" }, el("code", {}, r.manifest), el("button", { class: "iconbtn sq", type: "button", "aria-label": "Copy the path", onclick: async () => toast((await copyText(r.manifest)) ? "Path copied." : r.manifest) }, icon("i-copy"))) : el("div", { class: "muted" }, "(it appears after the first Claude conversation with the Bridge)")),
+        el("li", {}, "Open your file, then Plugins > Development > Figma Desktop Bridge > Run. Keep it open while you work."),
+        el("li", {}, "Press Connect here.")));
+      if (r.job) pollJob(r.job);
+    } catch (e) { extra.replaceChildren(el("p", { class: "small err" }, e.message)); }
+    setup.disabled = false;
+  } });
+  async function pollJob(job) {
+    const log = el("pre", { class: "flog" });
+    extra.append(log);
+    for (;;) {
+      await new Promise((r) => setTimeout(r, 1500));
+      if (!dlg.open) return;
+      const j = await api(`/api/figma-tools/job?name=${job}`).catch(() => null);
+      if (!j) return;
+      log.textContent = j.lines.join("\n"); log.scrollTop = log.scrollHeight;
+      if (j.done) { extra.append(el("p", { class: `small ${j.ok ? "" : "err"}` }, j.ok ? "FigCli is installed. Now press Connect as administrator." : "The setup stopped; see the log above.")); await getFigmaTools(); drawStatus(); onChange?.(); return; }
+    }
+  }
+  const useBtn = el("button", { class: "ghost sm", type: "button", onclick: async () => {
+    try { figmaToolsCache = await api("/api/figma-tools/default", { tool: key }); drawStatus(); onChange?.(); toast(`${name} is now the default on this computer.`); }
+    catch (e) { showError(e); }
+  } });
+  const useProject = project ? el("button", { class: "ghost sm", type: "button", onclick: async () => {
+    try { figmaToolsCache = await api("/api/figma-tools/default", { tool: key, project }); toast(`${name} is set for this project (status.json, logged in its CHANGELOG).`); onChange?.(); }
+    catch (e) { showError(e); }
+  } }, "Use for this project") : null;
+  dlg.replaceChildren(
+    el("header", {}, el("h3", {}, name), tag ? el("span", { class: "rec" }, tag) : null,
+      el("button", { class: "iconbtn sq", type: "button", "aria-label": "Close", onclick: () => dlg.close() }, icon("i-x"))),
+    status,
+    el("p", { class: "fline" }, line),
+    el("table", { class: "fcompare" },
+      el("thead", {}, el("tr", {}, el("th", {}, ""), ...["Official MCP", "Desktop Bridge", "FigCli"].map((h, i) => el("th", { class: i + 1 === col ? "on" : null }, h)))),
+      el("tbody", {}, FIGMA_COMPARE.map((r) => el("tr", {}, el("th", {}, r[0]), ...r.slice(1).map((v, i) => el("td", { class: i + 1 === col ? "on" : null }, v)))))),
+    key === "figcli" ? el("p", { class: "muted small" }, "The administrator step patches Figma Desktop so it opens a local debugging port (9222, no password, this computer only). You confirm it in a Windows prompt; Atomica never runs it on its own. Repeat it after a Figma update.") : null,
+    extra,
+    el("footer", {}, connect, setup, el("span", { style: "flex:1" }), useProject, useBtn));
+  drawStatus();
+  if (!dlg.open) dlg.showModal();
+  dlg.onclose = () => onChange?.();
+  if (figmaToolsCache.tools.official.checking) refreshFigmaToolsLater(() => { if (dlg.open) drawStatus(); onChange?.(); });
+}
+
+// The publish preflight as a list: what works, and for each problem its reason and the exact fix.
+function publishChecksList(chk, { onlyProblems = false } = {}) {
+  const rows = (chk.checks || []).filter((c) => !onlyProblems || !c.ok);
+  if (onlyProblems && !rows.length) return el("p", { class: "small pchk-ok" }, icon("i-check"), " Ready to publish: Git, the repo and write access are fine.");
+  return el("ul", { class: "pchk" }, rows.map((c) => el("li", { class: c.ok ? "ok" : c.optional ? "warn" : "bad" },
+    el("span", { class: `dot ${c.ok ? "good" : c.optional ? "wait" : "bad"}` }),
+    el("div", {}, el("b", {}, c.label), c.ok ? null : el("p", { class: "small" }, c.reason), c.ok ? null : el("p", { class: "small muted" }, "Fix: ", c.fix)))));
+}
