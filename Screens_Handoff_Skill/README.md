@@ -134,6 +134,7 @@ What is left is no longer a component difference: text anti-aliasing (the browse
 - The reference-code tree is shared by the five renderers: platform details (a Compose modifier, an RN style) are passed as arguments, never stored on the tree, or they leak into the next platform.
 
 ## Rules for the trial
+- No hover on mobile (Abdul, 2026-10-28): for a mobile project the prototype drops every `:hover` rule of the DS styles inside the device (Vite step in `templates/prototype/vite.config.ts`, from `ds.config.json > mobile`); Pressed (`:active`) stays the tap feedback. The shell's own controls keep hover (desktop pointer). Check: `node tools/check_no_hover.cjs "My Projects/<Project>"`.
 
 - All work happens in this branch's worktree; the Root stays on `master`.
 - Generated output for a real project stays outside the repo's tracked files (in the project's own folder under `My Projects/`, or in the git-ignored `.trial/`).

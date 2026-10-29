@@ -34,7 +34,20 @@ def load_screens(path):
     overrides.json: {"changes": [{"id", "comment", "screen", "op": "remove", "nodes": [Figma ids], "close_gap": true,
     "description"}]}. remove deletes the nodes; close_gap on a child of the screen frame moves the later children up and
     makes the frame shorter by its height, so bars pinned at the bottom stay at the bottom. A change whose nodes are no
-    longer in the export is reported as already in Figma (synced) and does nothing. data["_overrides"] lists the result."""
+    longer in the export is reported as already in Figma (synced) and does nothing. data["_overrides"] lists the result.
+    op "duplicate": {"nodes": [source ids], "after": [anchor ids, one per source]} copies each source node (with its
+    instances and their content) and inserts the copy right after its anchor sibling; copied ids get the suffix
+    "~<change id>" (images still come from the source node), later siblings move down and the screen frame grows by
+    the copy's height, so bars pinned at the bottom stay at the bottom. Synced when the anchor is gone from the export
+    or a sibling after the anchor already has the source's name and size (the copy exists in Figma).
+    op "add_screen": {"frames": [{"id", "n", "modes", "section", "w", "h", "tree" | "from": frame id, "add": [nodes],
+    "re": [reactions]}]} adds a new screen frame (e.g. a sheet or a confirmation of a new flow), its tree written in the
+    export's own node format (DS instances, tokens) or copied from another frame ("from", ids suffixed "~<change id>")
+    with "add" children on top and "re" reactions on its root. Synced when a frame with that name is in the export.
+    op "link": {"nodes": [ids], "re": [reactions]} gives nodes the Figma prototype reactions they have no export for yet
+    ({"on": "ON_CLICK", "a": "NODE", "to": frame id, "nav": "NAVIGATE" | "OVERLAY"} or {"a": "BACK"}). Synced when the
+    nodes already have reactions in the export."""
+    import copy as _copy
     path = Path(path)
     data = json.loads(path.read_text(encoding='utf-8'))
     ov_path = path.parent / 'overrides.json'
@@ -47,9 +60,76 @@ def load_screens(path):
             walk(c, n, screen)
     for scr in data['screens']:
         walk(scr['tree'], None, scr)
+    def grow(parent, scr, at_y, h):
+        for sib in parent['ch']:
+            # absolute bars pinned to the bottom (Mini Player, Bottom Navigation) follow the frame's bottom edge
+            pinned = parent is scr['tree'] and (sib.get('s') or {}).get('abs') and sib['y'] > parent['h'] / 2
+            if sib['y'] >= at_y or pinned:
+                sib['y'] += h
+        if parent is scr['tree']:
+            parent['h'] += h
+            if isinstance(scr.get('h'), (int, float)) and scr is not parent:
+                scr['h'] += h
+
+    def suffix_ids(n, sfx):
+        n['id'] = n['id'] + sfx
+        for c in n.get('ch') or []:
+            suffix_ids(c, sfx)
+
     result = []
     for ch in changes:
         done = []
+        if ch.get('op') == 'add_screen':
+            names = {s['n'] for s in data['screens']}
+            for fr in ch.get('frames', []):
+                if fr['n'] in names:
+                    continue  # already in Figma
+                if fr.get('from'):
+                    src = index.get(fr['from'])
+                    if not src:
+                        continue
+                    tree = _copy.deepcopy(src[0])
+                    suffix_ids(tree, '~' + ch.get('id', 'copy'))
+                    tree.update(id=fr['id'], n=fr['n'])
+                else:
+                    tree = _copy.deepcopy(fr['tree'])
+                    tree.update(id=fr['id'], n=fr['n'])
+                tree['ch'] = (tree.get('ch') or []) + _copy.deepcopy(fr.get('add') or [])
+                if fr.get('re'):
+                    tree['re'] = fr['re']
+                scr = {k: fr[k] for k in ('id', 'n', 'modes', 'section') if k in fr}
+                scr.update(w=tree['w'], h=tree['h'], tree=tree)
+                data['screens'].append(scr)
+                walk(tree, None, scr)
+                done.append(fr['id'])
+            result.append(dict(ch, applied=done, status='applied' if done else 'synced (not in the Figma export any more)'))
+            continue
+        if ch.get('op') == 'link':
+            for nid in ch.get('nodes', []):
+                hit = index.get(nid)
+                if not hit or hit[0].get('re'):
+                    continue  # gone, or Figma has its own reactions now
+                hit[0]['re'] = _copy.deepcopy(ch.get('re') or [])
+                done.append(nid)
+            result.append(dict(ch, applied=done, status='applied' if done else 'synced (not in the Figma export any more)'))
+            continue
+        if ch.get('op') == 'duplicate':
+            for nid, anchor_id in zip(ch.get('nodes', []), ch.get('after', [])):
+                src, anchor = index.get(nid), index.get(anchor_id)
+                if not src or not anchor or not anchor[1] or anchor[1] is not src[1]:
+                    continue
+                node, parent, scr = anchor
+                later = parent['ch'][parent['ch'].index(node) + 1:]
+                if any(s['n'] == src[0]['n'] and s['h'] == src[0]['h'] for s in later):
+                    continue  # already copied in Figma
+                dup = _copy.deepcopy(src[0])
+                suffix_ids(dup, '~' + ch.get('id', 'copy'))
+                dup['y'] = node['y'] + node['h']
+                grow(parent, scr, dup['y'], dup['h'])
+                parent['ch'].insert(parent['ch'].index(node) + 1, dup)
+                done.append(nid)
+            result.append(dict(ch, applied=done, status='applied' if done else 'synced (not in the Figma export any more)'))
+            continue
         for nid in ch.get('nodes', []):
             hit = index.get(nid)
             if not hit or not hit[1]:
@@ -120,7 +200,7 @@ ASSETS = set()  # exported image files; an image without one is left to the comp
 
 
 def asset_url(node_id):
-    name = re.sub(r'[:;]', '-', node_id) + '.png'
+    name = re.sub(r'[:;]', '-', node_id.split('~')[0]) + '.png'  # a code-first copy ("id~change") uses its source's image
     # Relative to the page, so the same build works at / (dev) and under a sub-path (GitHub Pages).
     return 'figma-img/' + name if name in ASSETS else None
 
@@ -346,7 +426,7 @@ def emit(node, parent_layout, ctx, ind=2):
         al = {'CENTER': 'center', 'RIGHT': 'end', 'JUSTIFIED': 'justify'}.get(node.get('al'))
         if al:
             style['textAlign'] = al
-        cls.append('whitespace-pre-wrap')
+        cls += ['m-0', 'whitespace-pre-wrap']  # no browser margin on <p>: Figma text boxes have none
         return '%s<p className=%s%s%s>%s</p>' % (pad, js(' '.join(cls)), attr_str(attrs), style_attr(style), jsx_text(node.get('chars', '')))
 
     if t == 'R':
@@ -387,7 +467,9 @@ def emit(node, parent_layout, ctx, ind=2):
             style['overflow'] = 'clip'  # clip, not hidden: hidden would stop the pinned dock from sticking to the screen
         else:
             cls.append('overflow-hidden')
-    if node.get('rt'):
+    if node.get('rts'):  # per corner [top-left, top-right, bottom-right, bottom-left], a token or 0
+        style['borderRadius'] = ' '.join('var(%s)' % ctx.var(t) if t else '0' for t in node['rts'])
+    elif node.get('rt'):
         style['borderRadius'] = 'var(%s)' % ctx.var(node['rt'])
     elif node.get('r'):
         style['borderRadius'] = node['r']
@@ -685,7 +767,13 @@ def main():
         ''])
     write(out_dir / 'routes.tsx', routes)
     write(out_dir / 'theme.css', theme_css(var_css))
-    write(app / 'ds.config.json', json.dumps({'storybookSrc': os.path.relpath(sb / 'src', app).replace('\\', '/')}, indent=1) + '\n')
+    # mobile: the brief says so (intake 1.1), or every screen is narrower than 600. Mobile has no hover (Abdul,
+    # 2026-10-28): vite.config.ts then drops the DS styles' :hover rules inside the device; Pressed (:active) stays.
+    brief = (project / 'Project_Brief.md').read_text(encoding='utf-8') if (project / 'Project_Brief.md').exists() else ''
+    m11 = re.search(r'\|\s*1\.1\s*\|[^|]*\|\s*([^|\n]*)\|', brief)
+    widths = [s.get('w', 0) for s in data['screens'] if s.get('w')]
+    mobile = bool(re.search(r'mobile|android|ios', m11.group(1), re.I)) if m11 and m11.group(1).strip() else bool(widths) and all(w < 600 for w in widths)
+    write(app / 'ds.config.json', json.dumps({'storybookSrc': os.path.relpath(sb / 'src', app).replace('\\', '/'), 'mobile': mobile}, indent=1) + '\n')
 
     # Fonts of the Storybook preview, images from the export.
     head = sb / '.storybook' / 'preview-head.html'

@@ -123,3 +123,26 @@ test("links: an older project without storybook_url still finds its Storybook by
   const links = projectLinks({}, "Storybook: https://someone.github.io/shop-design-system/", null);
   assert.deepEqual(links.map((l) => l.kind), ["storybook"]);
 });
+
+// No hover on mobile (2026-10-28): the check flags a mobile project's Hover and leaves a Web project alone.
+const { isMobileProject, findHover } = require("../check_no_hover.cjs");
+function fakeProject(platform, css, states) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "atomica-test-hover-"));
+  fs.writeFileSync(path.join(dir, "Project_Brief.md"), `| # | Question | Answer |\n|---|---|---|\n| 1.1 | Web / Mobile | ${platform} |\n`);
+  fs.mkdirSync(path.join(dir, "storybook", "src", "styles"), { recursive: true });
+  fs.writeFileSync(path.join(dir, "storybook", "src", "styles", "nav.css"), css);
+  fs.mkdirSync(path.join(dir, "data"));
+  fs.writeFileSync(path.join(dir, "data", "component-registry.json"), JSON.stringify({ components: [{ name: "Button", variants: { State: states } }] }));
+  return dir;
+}
+test("no hover: a mobile project's Hover is found (registry and styles), Pressed is fine", () => {
+  const dir = fakeProject("Mobile (Android)", ".btn:hover { opacity: .88 }\n.btn:active { opacity: .82 }\n", ["Enabled", "Hovered", "Pressed"]);
+  assert.equal(isMobileProject(dir), true);
+  const f = findHover(dir);
+  assert.equal(f.filter((x) => x.where === "registry").length, 1);
+  assert.equal(f.filter((x) => x.where === "storybook").length, 1);
+});
+test("no hover: a Web project may keep its hover", () => {
+  const dir = fakeProject("Web", ".btn:hover { opacity: .88 }\n", ["Enabled", "Hovered"]);
+  assert.equal(isMobileProject(dir), false);
+});

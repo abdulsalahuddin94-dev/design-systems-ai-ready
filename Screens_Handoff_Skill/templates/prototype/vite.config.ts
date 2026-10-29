@@ -5,11 +5,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // ds.config.json is written by tools/build_prototype.py: where the project's Storybook source lives (its components,
-// tokens and styles are imported from there through the @ds alias, never copied or re-created).
+// tokens and styles are imported from there through the @ds alias, never copied or re-created), and whether the
+// project is mobile (no hover on mobile: shell/noHover.ts drops the DS styles' :hover rules in the page).
 const cfg = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, 'ds.config.json'), 'utf8'));
 const dsSrc = path.resolve(import.meta.dirname, cfg.storybookSrc);
 
 export default defineConfig({
+  define: { __ATOMICA_MOBILE__: JSON.stringify(!!cfg.mobile) },
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { '@ds': dsSrc },
